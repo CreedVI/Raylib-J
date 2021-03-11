@@ -36,8 +36,7 @@ import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BILINEAR;
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
 import static com.creedvi.raylib.java.rlj.textures.Textures.SetTextureFilter;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_INFO;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_WARNING;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.*;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
@@ -47,8 +46,8 @@ public class Core{
 
     RLGL rlgl;
 
-    Window window;
-    Input input;
+    static Window window;
+    static Input input;
     static Time time;
 
     public Core(){
@@ -58,8 +57,12 @@ public class Core{
         rlgl = new RLGL();
     }
 
-    private Window getWindow(){
+    static Window getWindow(){
         return window;
+    }
+
+    public static Input getInput(){
+        return input;
     }
 
     //ANDROID
@@ -199,44 +202,18 @@ public class Core{
             long monitor = glfwGetWindowMonitor(window.handle);
             if (monitor <= 0){
                 Tracelog(LOG_WARNING, "GLFW: Failed to get monitor");
-                glfwSetWindowSizeCallback(window.handle, null);
+                //glfwSetWindowSizeCallback(window.handle, null);
                 glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.getWidth(),
                         window.screen.getHeight(), GLFW_DONT_CARE);
-                glfwSetWindowSizeCallback(window.handle, new GLFWWindowSizeCallback(){
-                    public void invoke(long window, int width, int height){
-                        SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-                        // Set current screen size
-                        Window w = getWindow();
-                        w.getScreen().setWidth(width);
-                        w.getScreen().setHeight(height);
-                        w.getCurrentFbo().setWidth(width);
-                        w.getCurrentFbo().setHeight(height);
-
-                        // NOTE: Postprocessing texture is not scaled to new size
-                        w.setResizedLastFrame(true);
-                    }
-                }); // NOTE: Resizing not allowed by default!);
+                glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback()); // NOTE: Resizing not allowed by default!);
                 return;
             }
 
             GLFWVidMode mode = glfwGetVideoMode(monitor);
-            glfwSetWindowSizeCallback(window.handle, null);
+            //glfwSetWindowSizeCallback(window.handle, null);
             glfwSetWindowMonitor(window.handle, monitor, 0, 0, window.screen.getWidth(), window.screen.getHeight(),
                     GLFW_DONT_CARE);
-            glfwSetWindowSizeCallback(window.handle, new GLFWWindowSizeCallback(){
-                public void invoke(long window, int width, int height){
-                    SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-                    // Set current screen size
-                    Window w = getWindow();
-                    w.getScreen().setWidth(width);
-                    w.getScreen().setHeight(height);
-                    w.getCurrentFbo().setWidth(width);
-                    w.getCurrentFbo().setHeight(height);
-
-                    // NOTE: Postprocessing texture is not scaled to new size
-                    w.setResizedLastFrame(true);
-                }
-            }); // NOTE: Resizing not allowed by default!);
+            glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback()); // NOTE: Resizing not allowed by default!);
 
             // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
             // NOTE: V-Sync can be enabled by graphic driver configuration
@@ -249,20 +226,8 @@ public class Core{
             glfwSetWindowMonitor(window.handle, 0, (int) window.position.getX(), (int) window.position.getY(),
                     window.screen.getWidth(),
                     window.screen.getHeight(), GLFW_DONT_CARE);
-            glfwSetWindowSizeCallback(window.handle, new GLFWWindowSizeCallback(){
-                public void invoke(long window, int width, int height){
-                    SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-                    // Set current screen size
-                    Window w = getWindow();
-                    w.getScreen().setWidth(width);
-                    w.getScreen().setHeight(height);
-                    w.getCurrentFbo().setWidth(width);
-                    w.getCurrentFbo().setHeight(height);
-
-                    // NOTE: Postprocessing texture is not scaled to new size
-                    w.setResizedLastFrame(true);
-                }
-            }); // NOTE: Resizing not allowed by default!);
+            glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback());
+            // NOTE: Resizing not allowed by default!);
         }
 
         window.fullscreen = !window.fullscreen;          // Toggle fullscreen flag
@@ -1192,7 +1157,7 @@ public class Core{
 
     //GetDroppedFiles
 
-    void ClearDroppedFiles(){
+    static void ClearDroppedFiles(){
         if (window.getDropFilesCount() > 0){
             for (int i = 0; i < window.getDropFilesCount(); i++){
                 window.dropFilesPath[i] = null;
@@ -1640,7 +1605,7 @@ public class Core{
         // NOTE: Framebuffer (render area - window.render.getWidth(), window.render.height) could include black bars...
         // ...in top-down or left-right to match display aspect ratio (no weird scalings)
 
-        GLFWErrorCallback.createPrint(System.err).set();
+        glfwSetErrorCallback(new Callbacks.ErrorCallback());
 
         if (!glfwInit()){
             Tracelog(LOG_WARNING, "GLFW: Failed to initialize GLFW");
@@ -1669,6 +1634,7 @@ public class Core{
 
         glfwDefaultWindowHints();                       // Set default windows hints
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);       // the window will stay hidden after creation
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         //glfwWindowHint(GLFW_RED_BITS, 8);             // Framebuffer red color component bits
         //glfwWindowHint(GLFW_GREEN_BITS, 8);           // Framebuffer green color component bits
         //glfwWindowHint(GLFW_BLUE_BITS, 8);            // Framebuffer blue color component bits
@@ -1783,7 +1749,7 @@ public class Core{
             // Obtain recommended window.display.getWidth()/window.display.getHeight() from a valid videomode for the monitor
             int count = 0;
             GLFWVidMode.Buffer modes = glfwGetVideoModes(glfwGetPrimaryMonitor());
-
+            count = modes.sizeof();
             // Get closest video mode to desired window.screen.getWidth()/window.screen.getHeight()
             for (int i = 0; i < count; i++){
                 if (modes.width() >= window.screen.getWidth()){
@@ -1858,130 +1824,19 @@ public class Core{
 
 
         // Set window callback events
-        glfwSetWindowSizeCallback(window.handle, new GLFWWindowSizeCallback(){
-            public void invoke(long window, int width, int height){
-                SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-                // Set current screen size
-                Window w = getWindow();
-                w.getScreen().setWidth(width);
-                w.getScreen().setHeight(height);
-                w.getCurrentFbo().setWidth(width);
-                w.getCurrentFbo().setHeight(height);
-
-                // NOTE: Postprocessing texture is not scaled to new size
-                w.setResizedLastFrame(true);
-            }
-        }); // NOTE: Resizing not allowed by default!
-        glfwSetWindowIconifyCallback(window.handle, new GLFWWindowIconifyCallback(){
-            @Override
-            public void invoke(long l, boolean b){
-                if (b){
-                    window.flags |= FLAG_WINDOW_MINIMIZED.getFlag();  // The window was iconified
-                }
-                else{
-                    window.flags &= ~FLAG_WINDOW_MINIMIZED.getFlag();           // The window was restored
-                }
-            }
-        });
-        glfwSetWindowFocusCallback(window.handle, new GLFWWindowFocusCallback(){
-            @Override
-            public void invoke(long l, boolean b){
-                if (b){
-                    window.flags &= ~FLAG_WINDOW_UNFOCUSED.getFlag();   // The window was focused
-                }
-                else{
-                    window.flags |= FLAG_WINDOW_UNFOCUSED.getFlag();            // The window lost focus
-                }
-            }
-        });
-        glfwSetDropCallback(window.handle, new GLFWDropCallback(){
-            @Override
-            public void invoke(long l, int i, long l1){
-                ClearDroppedFiles();
-                String[] paths = new String[(int) l1];
-
-                getWindow().setDropFilesPath(new String[i]);
-
-                for (int j = 0; j < i; j++){
-                    getWindow().getDropFilesPath()[i] = String.valueOf(MAX_FILEPATH_LENGTH);
-                    paths[j] = String.valueOf(getWindow().dropFilesPath[j]);
-                }
-
-                getWindow().setDropFilesCount(i);
-            }
-        });
+        glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback());
+        // NOTE: Resizing not allowed by default!
+        glfwSetWindowIconifyCallback(window.handle, new Callbacks.WindowIconifyCallback());
+        glfwSetWindowFocusCallback(window.handle, new Callbacks.WindowFocusCallback());
+        glfwSetDropCallback(window.handle, new Callbacks.WindowDropCallback());
         // Set input callback events
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window.handle, (window, key, scancode, action, mods) -> {
-            Tracelog(LOG_INFO, "Key Callback Triggered");
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ){
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-            }
-            else {
-                // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
-                // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
-                if (action == GLFW_RELEASE){
-                    input.keyboard.getCurrentKeyState()[key] = 0;
-                }
-                else{
-                    input.keyboard.getCurrentKeyState()[key] = 1;
-                }
-
-                // Check if there is space available in the key queue
-                if ((input.keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_RELEASE)) {
-                    // Add character to the queue
-                    input.keyboard.getKeyPressedQueue()[input.keyboard.getKeyPressedQueueCount()] = key;
-                    input.keyboard.setKeyPressedQueueCount(input.keyboard.getKeyPressedQueueCount() + 1);
-                }
-            }
-        });
-
-        glfwSetCharCallback(window.handle, new GLFWCharCallback(){
-            @Override
-            public void invoke(long l, int i){
-                //TRACELOG(LOG_DEBUG, "Char Callback: KEY:%i(%c)", key, key);
-
-                // NOTE: Registers any key down considering OS keyboard layout but
-                // do not detects action events, those should be managed by user...
-                // Ref: https://github.com/glfw/glfw/issues/668#issuecomment-166794907
-                // Ref: https://www.glfw.org/docs/latest/input_guide.html#input_char
-
-                // Check if there is space available in the queue
-                if (input.keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE){
-                    // Add character to the queue
-                    input.keyboard.getCharPressedQueue()[input.keyboard.getCharPressedQueueCount()] = i;
-                    input.keyboard.setCharPressedQueueCount(input.keyboard.getKeyPressedQueueCount() + 1);
-                }
-            }
-        });
-        glfwSetMouseButtonCallback(window.handle, new GLFWMouseButtonCallback(){
-            @Override
-            public void invoke(long l, int i, int i1, int i2){
-                char[] tmp = input.mouse.getCurrentButtonState();
-                tmp[i] = (char) i1;
-                input.mouse.setCurrentButtonState(tmp);
-            }
-        });
-        glfwSetCursorPosCallback(window.handle, new GLFWCursorPosCallback(){
-            @Override
-            public void invoke(long l, double v, double v1){
-                input.mouse.getPosition().setX((float) v);
-                input.mouse.getPosition().setY((float) v1);
-            }
-        });   // Track mouse position changes
-        glfwSetScrollCallback(window.handle, new GLFWScrollCallback(){
-            @Override
-            public void invoke(long l, double v, double v1){
-                input.mouse.setCurrentWheelMove((float) v1);
-            }
-        });
-        glfwSetCursorEnterCallback(window.handle, new GLFWCursorEnterCallback(){
-            @Override
-            public void invoke(long l, boolean b){
-                input.mouse.setCursorOnScreen(b);
-            }
-        });
-
+        glfwSetKeyCallback(window.handle, new Callbacks.KeyCallback());
+        glfwSetCharCallback(window.handle, new Callbacks.CharCallback());
+        glfwSetMouseButtonCallback(window.handle, new Callbacks.MouseButtonCallback());
+        glfwSetCursorPosCallback(window.handle, new Callbacks.MouseCursorPosCallback());   // Track mouse position changes
+        glfwSetScrollCallback(window.handle, new Callbacks.MouseScrollCallback());
+        glfwSetCursorEnterCallback(window.handle, new Callbacks.CursorEnterCallback());
         glfwMakeContextCurrent(window.handle);
         GL.createCapabilities();
 
@@ -2030,7 +1885,7 @@ public class Core{
         return true;
     }
 
-    void SetupViewport(int width, int height){
+    static void SetupViewport(int width, int height){
         window.render.setWidth(width);
         window.render.setHeight(height);
 
@@ -2240,28 +2095,6 @@ public class Core{
     void SwapBuffers(){
         glfwSwapBuffers(window.handle);
     }
-
-    //WindowSizeCallback
-
-    //WindowIconifyCallback
-
-    //WindowMaximizeCallback
-
-    //WindowFocusCallback
-
-    //KeyCallback
-
-    //CharCallback
-
-    //MouseButtonCallback
-
-    //MouseCursorPosCallback
-
-    //MouseScrollCallback
-
-    //CursorEnterCallback
-
-    //WindowDropCallback
 
     //AndroidCommandCallback
     //AndroidInputCallback

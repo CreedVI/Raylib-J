@@ -1127,7 +1127,7 @@ public class RLGL{
             UnloadRenderBatch(rlglData.getDefaultBatch());
 
             UnloadShaderDefault();          // Unload default shader
-            nglDeleteTextures(1, rlglData.getState().getDefaultTextureId()); // Unload default texture
+            glDeleteTextures(rlglData.getState().getDefaultTextureId()); // Unload default texture
 
             Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Unloaded default texture " +
                     "data from VRAM (GPU)");
