@@ -15,7 +15,7 @@ public class WindowTest{
 
         while(!rlj.core.WindowShouldClose()){
             rlj.core.BeginDrawing();
-            rlj.core.ClearBackground(Color.DARKPURPLE);
+            rlj.core.ClearBackground(Color.RAYWHITE);
             //rlj.text.DrawText("Congrats! You created your first window!", 190, 200, 20, Color.LIGHTGRAY);
             rlj.core.EndDrawing();
         }
