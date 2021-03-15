@@ -63,7 +63,6 @@ public class GL_33{
     static void rlEnd(){
         // Make sure vertexCount is the same for vertices, texcoords, colors and normals
         // NOTE: In OpenGL 1.1, one glColor call can be made for all the subsequent glVertex calls
-        //TODO: work out why this is failing. And fix it.
         // Make sure colors count match vertex count
         if (RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter != RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter){
             int addColors = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter - RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter;

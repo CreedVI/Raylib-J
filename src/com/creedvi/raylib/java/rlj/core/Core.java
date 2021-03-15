@@ -13,8 +13,10 @@ import com.creedvi.raylib.java.rlj.rlgl.RLGL;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.text.Text;
 import com.creedvi.raylib.java.rlj.textures.Image;
+import com.creedvi.raylib.java.rlj.textures.RenderTexture;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import java.io.File;
@@ -36,7 +38,8 @@ import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BILINEAR;
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
 import static com.creedvi.raylib.java.rlj.textures.Textures.SetTextureFilter;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.*;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_INFO;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_WARNING;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
@@ -489,12 +492,12 @@ public class Core{
     }
 
     // Get current screen width
-    int GetScreenWidth(){
+    public static int GetScreenWidth(){
         return window.screen.getWidth();
     }
 
     // Get current screen height
-    int GetScreenHeight(){
+    public static int GetScreenHeight(){
         return window.screen.getHeight();
     }
 
@@ -505,9 +508,9 @@ public class Core{
 
     // Get number of monitors
     int GetMonitorCount(){
-        //TODO
         int monitorCount = 0;
-        glfwGetMonitors();
+        PointerBuffer pb = glfwGetMonitors();
+        monitorCount = pb.sizeof();
         return monitorCount;
     }
 
@@ -518,8 +521,7 @@ public class Core{
         monitorCount = monitors.sizeof();
         long monitor;
 
-        if (monitorCount == 1) // easy out
-        {
+        if (monitorCount == 1){
             return 0;
         }
 
@@ -837,22 +839,21 @@ public class Core{
         rlgl.rlDisableDepthTest();               // Disable DEPTH_TEST for 2D
     }
 
-    /* TODO: RenderTextures - MODULE TEXTURES
     // Initializes render texture for drawing
-    void BeginTextureMode(RenderTexture2D target){
+    void BeginTextureMode(RenderTexture target){
         rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        rlEnableFramebuffer(target.id);     // Enable render target
+        rlEnableFramebuffer(target.getId());     // Enable render target
 
         // Set viewport to framebuffer size
-        rlViewport(0, 0, target.texture.width, target.texture.height);
+        rlViewport(0, 0, target.getTexture().getWidth(), target.getTexture().getHeight());
 
         rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
         rlLoadIdentity();                   // Reset current matrix (projection)
 
         // Set orthographic projection to current framebuffer size
         // NOTE: Configured top-left corner as (0, 0)
-        rlOrtho(0, target.texture.width, target.texture.height, 0, 0.0f, 1.0f);
+        rlOrtho(0, target.getTexture().getWidth(), target.getTexture().getHeight(), 0, 0.0f, 1.0f);
 
         rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
         rlLoadIdentity();                   // Reset current matrix (modelview)
@@ -861,8 +862,8 @@ public class Core{
 
         // Setup current width/height for proper aspect ratio
         // calculation when using BeginMode3D()
-        window.currentFbo.setWidth(target.texture.width);
-        window.currentFbo.setHeight(target.texture.height);
+        window.currentFbo.setWidth(target.getTexture().getWidth());
+        window.currentFbo.setHeight(target.getTexture().getHeight());
     }
 
     // Ends drawing to render texture
@@ -878,7 +879,6 @@ public class Core{
         window.currentFbo.setWidth(GetScreenWidth());
         window.currentFbo.setHeight(GetScreenHeight());
     }
-     */
 
     // Begin scissor mode (define screen area for following drawing)
     // NOTE: Scissor rec refers to bottom-left corner, we change it to upper-left
@@ -1787,7 +1787,6 @@ public class Core{
         }
         else{
             // No-fullscreen window creation
-            //TODO: SOMETHING HERE IS CAUSING THE DISPLAY TO RESIZE
             window.handle = glfwCreateWindow(window.screen.getWidth(), window.screen.getHeight(), (window.title != null)
                     ? window.title : " ", NULL, NULL);
 
@@ -1842,7 +1841,7 @@ public class Core{
 
         // Load OpenGL 3.3 extensions
         // NOTE: GLFW loader function is passed as parameter
-        //TODO
+        //TODO - rlLoadExtensions uses GLAD.
         //rlLoadExtensions(glfwGetProcAddress());
         rlLoadExtensions();
 
@@ -1983,7 +1982,7 @@ public class Core{
         time.setPrevious(GetTime());       // Get time as double
     }
 
-    //Wait()
+    //wait
 
     void PollInputEvents(){
         // Reset keys/chars pressed registered

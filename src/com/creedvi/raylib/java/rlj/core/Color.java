@@ -12,10 +12,10 @@ public class Color{
     }
 
     public Color(int r, int g, int b, int a){
-        this.r = Math.min(r, 255);
-        this.g = Math.min(g, 255);
-        this.b = Math.min(b, 255);;
-        this.a = Math.min(a, 255);;
+        this.r = r > 0 ? Math.min(r, 255) : 0;
+        this.g = g > 0 ? Math.min(g, 255) : 0;
+        this.b = b > 0 ? Math.min(b, 255) : 0;
+        this.a = a > 0 ? Math.min(a, 255) : 0;
     }
 
     public String ToString(){

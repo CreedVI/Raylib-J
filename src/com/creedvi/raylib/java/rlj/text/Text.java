@@ -1,6 +1,7 @@
 package com.creedvi.raylib.java.rlj.text;
 
 import com.creedvi.raylib.java.rlj.core.Color;
+import com.creedvi.raylib.java.rlj.core.Core;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.textures.Image;
@@ -15,7 +16,10 @@ import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 public class Text{
 
 
-    int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
+    int MAX_TEXTFORMAT_BUFFERS = 4;        // Maximum number of static buffers for text formatting
+    static int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
+
+    static int codepointByteCount;
 
     static Font defaultFont;
 
@@ -196,9 +200,18 @@ public class Text{
         }
     }
 
-    void DrawFPS(int posX, int posY){
-        //TODO - TextFormat()
-        //DrawText(TextFormat(Core.GetFPS() + " FPS"), posX, posY, 20, LIME);
+    public static int getCPBC(){
+        return codepointByteCount;
+    }
+
+    public void DrawFPS(int posX, int posY){
+        DrawText((Core.GetFPS() + " FPS"), posX, posY, 20, Color.LIME);
+        //DrawText(FormatText(Core.GetFPS() + " FPS"), posX, posY, 20, Color.LIME);
+    }
+
+    public void DrawFPS(int posX, int posY, Color textColor){
+        DrawText((Core.GetFPS() + " FPS"), posX, posY, 20, textColor);
+        //DrawText(FormatText(Core.GetFPS() + " FPS"), posX, posY, 20, textColor);
     }
 
     // Draw text (using default font)
@@ -229,7 +242,7 @@ public class Text{
 
         for (int i = 0; i < length; ){
             // Get next codepoint from byte string and glyph index in font
-            int codepointByteCount = 0;
+            codepointByteCount = 0;
             int codepoint = GetNextCodepoint(String.valueOf(text.charAt(i)), codepointByteCount);
             int index = GetGlyphIndex(font, codepoint);
 
@@ -306,7 +319,7 @@ public class Text{
     }
 
     // Measure string size for Font
-    Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing){
+    public static Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing){
         int len = TextLength(text);
         int tempLen = 0;                // Used to count longer text line num chars
         int lenCounter = 0;
@@ -360,7 +373,7 @@ public class Text{
     }
 
     // Returns index position for a unicode character on spritefont
-    int GetGlyphIndex(Font font, int codepoint){
+    public static int GetGlyphIndex(Font font, int codepoint){
         // Support charsets with any characters order
         int index = GLYPH_NOTFOUND_CHAR_FALLBACK;
         for (int i = 0; i < font.charsCount; i++){
@@ -372,19 +385,19 @@ public class Text{
         return index;
     }
 
-    int TextLength(String text){
+    static int TextLength(String text){
         return text.length();
     }
 
-    /* TODO
-    String TextFormat(String text) {
-        int MAX_TEXTFORMAT_BUFFERS = 4;        // Maximum number of static buffers for text formatting
+    //TODO - va_list?
+    /*String TextFormat(String text) {
 
         // We create an array of buffers so strings don't expire until MAX_TEXTFORMAT_BUFFERS invocations
         char[][] buffers = new char[MAX_TEXTFORMAT_BUFFERS][MAX_TEXT_BUFFER_LENGTH];
         int  index = 0;
 
         char currentBuffer = buffers[index][index];
+
         memset(currentBuffer, 0, MAX_TEXT_BUFFER_LENGTH);   // Clear buffer before using
 
         va_list args;
@@ -393,11 +406,12 @@ public class Text{
         va_end(args);
 
         index += 1;     // Move to next buffer for next function call
-        if (index >= MAX_TEXTFORMAT_BUFFERS) index = 0;
+        if (index >= MAX_TEXTFORMAT_BUFFERS){
+            index = 0;
+        }
 
         return currentBuffer;
-    }
-     */
+    }*/
 
     // Returns next codepoint in a UTF8 encoded text, scanning until '\0' is found
     // When a invalid UTF8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
@@ -405,7 +419,7 @@ public class Text{
     // NOTE: the standard says U+FFFD should be returned in case of errors
     // but that character is not supported by the default font in raylib
     // TODO: optimize this code for speed!!
-    int GetNextCodepoint(String text, int bytesProcessed){
+    public static int GetNextCodepoint(String text, int bytesProcessed){
 /*
     UTF8 specs from https://www.ietf.org/rfc/rfc3629.txt
     Char. number range  |        UTF-8 octet sequence
@@ -526,6 +540,8 @@ public class Text{
         if (code > 0x10ffff){
             code = 0x3f;     // Codepoints after U+10ffff are invalid
         }
+
+        codepointByteCount = bytesProcessed;
 
         return code;
     }

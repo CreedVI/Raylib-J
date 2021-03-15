@@ -15,4 +15,4 @@ LAST UPDATED :: 08/03/21
 [M] gestures - Will look into reimplementing later on (08/03/21)
 [ ] rlights
 [M] rmem - Module canceled as not needed for port (Thus far 08/03/21)
-[ ] rnet
+[ ] rnet - Will wait until module is fully functional before supporting
