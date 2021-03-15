@@ -38,13 +38,6 @@ public class Tracelog{
         if (logType.getTraceLogInt() < logTypeLevel)
             return;
 
-        /* TODO: figure out logcallback
-        if (logCallback){
-            logCallback(logType, text, args);
-            va_end(args);
-            return;
-        }*/
-
         StringBuilder buffer = new StringBuilder();
 
         switch (logType){
@@ -78,15 +71,6 @@ public class Tracelog{
     }
 
     public static void TracelogS(String text){
-        // Message has level below current threshold, don't emit
-
-        /* TODO: figure out logcallback
-        if (logCallback){
-            logCallback(logType, text, args);
-            va_end(args);
-            return;
-        }*/
-
         System.out.println(text);
     }
 

@@ -1,6 +1,6 @@
 package com.creedvi.raylib.java.rlj.raymath;
 
-class Vector4{
+public class Vector4{
     float x, y, z, w;
 
     public Vector4(){

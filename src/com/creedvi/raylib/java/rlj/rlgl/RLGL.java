@@ -32,9 +32,10 @@ import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.opengl.GL33.GL_TEXTURE_SWIZZLE_RGBA;
 import static org.lwjgl.opengl.GL41.GL_RGB565;
 import static org.lwjgl.opengles.GLES20.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS;
+import static org.lwjgl.opengles.OESDepth24.GL_DEPTH_COMPONENT24_OES;
+import static org.lwjgl.opengles.OESDepth32.GL_DEPTH_COMPONENT32_OES;
 
 public class RLGL{
-
 
     //*********************
     //GL API VERSION
@@ -42,7 +43,7 @@ public class RLGL{
     private static final boolean GRAPHICS_API_OPENGL_11 = false;
     private static final boolean GRAPHICS_API_OPENGL_21 = false;
     private static final boolean GRAPHICS_API_OPENGL_33 = true;
-    private static final boolean GRAPHICS_API_OPENGL_ES2 = false;
+    public static final boolean GRAPHICS_API_OPENGL_ES2 = false;
     private static final boolean SUPPORT_RENDER_TEXTURES_HINT = true;
 
     public static final int DEFAULT_BATCH_BUFFERS = 1;
@@ -103,17 +104,17 @@ public class RLGL{
     public static final int RL_TEXTURE_MIN_FILTER = 0x2801;      // GL_TEXTURE_MIN_FILTER
     public static final int RL_TEXTURE_ANISOTROPIC_FILTER = 0x3000;      // Anisotropic filter (custom identifier)
 
-    public static final int RL_FILTER_NEAREST = 0x2600;     // GL_NEAREST
-    public static final int RL_FILTER_LINEAR = 0x2601;     // GL_LINEAR
-    public static final int RL_FILTER_MIP_NEAREST = 0x2700;     // GL_NEAREST_MIPMAP_NEAREST
-    public static final int RL_FILTER_NEAREST_MIP_LINEAR = 0x2702;     // GL_NEAREST_MIPMAP_LINEAR
-    public static final int RL_FILTER_LINEAR_MIP_NEAREST = 0x2701;     // GL_LINEAR_MIPMAP_NEAREST
-    public static final int RL_FILTER_MIP_LINEAR = 0x2703;      // GL_LINEAR_MIPMAP_LINEAR
+    public static final int RL_TEXTURE_FILTER_NEAREST = 0x2600;     // GL_NEAREST
+    public static final int RL_TEXTURE_FILTER_LINEAR = 0x2601;     // GL_LINEAR
+    public static final int RL_TEXTURE_FILTER_MIP_NEAREST = 0x2700;     // GL_NEAREST_MIPMAP_NEAREST
+    public static final int RL_TEXTURE_FILTER_NEAREST_MIP_LINEAR = 0x2702;     // GL_NEAREST_MIPMAP_LINEAR
+    public static final int RL_TEXTURE_FILTER_LINEAR_MIP_NEAREST = 0x2701;     // GL_LINEAR_MIPMAP_NEAREST
+    public static final int RL_TEXTURE_FILTER_MIP_LINEAR = 0x2703;      // GL_LINEAR_MIPMAP_LINEAR
 
-    public static final int RL_WRAP_REPEAT = 0x2901;      // GL_REPEAT
-    public static final int RL_WRAP_CLAMP = 0x812F;      // GL_CLAMP_TO_EDGE
-    public static final int RL_WRAP_MIRROR_REPEAT = 0x8370;      // GL_MIRRORED_REPEAT
-    public static final int RL_WRAP_MIRROR_CLAMP = 0x8742;      // GL_MIRROR_CLAMP_EXT
+    public static final int RL_TEXTURE_WRAP_REPEAT = 0x2901;      // GL_REPEAT
+    public static final int RL_TEXTURE_WRAP_CLAMP = 0x812F;      // GL_CLAMP_TO_EDGE
+    public static final int RL_TEXTURE_WRAP_MIRROR_REPEAT = 0x8370;      // GL_MIRRORED_REPEAT
+    public static final int RL_TEXTURE_WRAP_MIRROR_CLAMP = 0x8742;      // GL_MIRROR_CLAMP_EXT
 
     // Matrix modes (equivalent to OpenGL)=
     public static final int RL_MODELVIEW = 0x1700;      // GL_MODELVIEW
@@ -493,55 +494,6 @@ public class RLGL{
 
     }
 
-    public static void rlTextureParameters(int id, int param, int value){
-        glBindTexture(GL_TEXTURE_2D, id);
-
-        switch (param){
-            case RL_TEXTURE_WRAP_S:
-            case RL_TEXTURE_WRAP_T:{
-                if (value == RL_WRAP_MIRROR_CLAMP){
-                    if (GRAPHICS_API_OPENGL_11){
-                        if (rlglData.getExtSupported().isTexMirrorClamp()){
-                            glTexParameteri(GL_TEXTURE_2D, param, value);
-                        }
-                        else{
-                            Tracelog(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
-                        }
-                    }
-                }
-                else{
-                    glTexParameteri(GL_TEXTURE_2D, param, value);
-                }
-
-            }
-            break;
-            case RL_TEXTURE_MAG_FILTER:
-            case RL_TEXTURE_MIN_FILTER:
-                glTexParameteri(GL_TEXTURE_2D, param, value);
-                break;
-            case RL_TEXTURE_ANISOTROPIC_FILTER:{
-                if (GRAPHICS_API_OPENGL_11){
-                    if (value <= rlglData.getExtSupported().getMaxAnisotropicLevel()){
-                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
-                    }
-                    else if (rlglData.getExtSupported().getMaxAnisotropicLevel() > 0.0f){
-                        Tracelog(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " + id + "X" +
-                                rlglData.getExtSupported().getMaxAnisotropicLevel());
-                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
-                    }
-                    else{
-                        Tracelog(LOG_WARNING, "GL: Anisotropic filtering not supported");
-                    }
-                }
-            }
-            break;
-            default:
-                break;
-        }
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
     // Set the viewport area (transformation from normalized device coordinates to window coordinates)
     public static void rlViewport(int x, int y, int width, int height){
         glViewport(x, y, width, height);
@@ -710,15 +662,84 @@ public class RLGL{
         }
     }
 
-    //rlTextureParameters
+    // Set texture parameters (wrap mode/filter mode)
+    public static void rlTextureParameters(int id, int param, int value){
+        glBindTexture(GL_TEXTURE_2D, id);
 
-    //rlEnableShader
+        switch (param){
+            case RL_TEXTURE_WRAP_S:
+            case RL_TEXTURE_WRAP_T:{
+                if (value == RL_TEXTURE_WRAP_MIRROR_CLAMP){
+                    if (GRAPHICS_API_OPENGL_11){
+                        if (rlglData.getExtSupported().isTexMirrorClamp()){
+                            glTexParameteri(GL_TEXTURE_2D, param, value);
+                        }
+                        else{
+                            Tracelog(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
+                        }
+                    }
+                }
+                else{
+                    glTexParameteri(GL_TEXTURE_2D, param, value);
+                }
 
-    //rlDisableShader
+            }
+            break;
+            case RL_TEXTURE_MAG_FILTER:
+            case RL_TEXTURE_MIN_FILTER:
+                glTexParameteri(GL_TEXTURE_2D, param, value);
+                break;
+            case RL_TEXTURE_ANISOTROPIC_FILTER:{
+                if (GRAPHICS_API_OPENGL_11){
+                    if (value <= rlglData.getExtSupported().getMaxAnisotropicLevel()){
+                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
+                    }
+                    else if (rlglData.getExtSupported().getMaxAnisotropicLevel() > 0.0f){
+                        Tracelog(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " + id + "X" +
+                                rlglData.getExtSupported().getMaxAnisotropicLevel());
+                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
+                    }
+                    else{
+                        Tracelog(LOG_WARNING, "GL: Anisotropic filtering not supported");
+                    }
+                }
+            }
+            break;
+            default:
+                break;
+        }
 
-    //rlEnableFrameBuffer
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
-    //rlDisableFrameBuffer
+
+    // Enable shader program usage
+    void rlEnableShader(int id){
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            glUseProgram(id);
+        }
+    }
+
+    // Disable shader program usage
+    void rlDisableShader(){
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            glUseProgram(0);
+        }
+    }
+
+    // Enable rendering to texture (fbo)
+    public static void rlEnableFramebuffer(int id){
+        if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
+            glBindFramebuffer(GL_FRAMEBUFFER, id);
+        }
+    }
+
+    // Disable rendering to texture
+    public static void rlDisableFramebuffer(){
+        if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+    }
 
     // Enable depth test
     public void rlEnableDepthTest(){
@@ -765,24 +786,49 @@ public class RLGL{
         glScissor(x, y, width, height);
     }
 
-    //rlEnableWireMode
+    // Enable wire mode
+    void rlEnableWireMode(){
+        if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
+            // NOTE: glPolygonMode() not available on OpenGL ES
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+    }
 
-    //rlDisableWireMode
+    // Disable wire mode
+    void rlDisableWireMode(){
+        if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
+            // NOTE: glPolygonMode() not available on OpenGL ES
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+    }
 
     // Set the line drawing width
     void rlSetLineWidth(float width){
         glLineWidth(width);
     }
 
-    //rlGetLineWidth
+    // Get the line drawing width
+    float rlGetLineWidth(){
+        return glGetFloat(GL_LINE_WIDTH);
+    }
 
-    //rlEnableSmoothLines
+    // Enable line aliasing
+    void rlEnableSmoothLines(){
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_11){
+            glEnable(GL_LINE_SMOOTH);
+        }
+    }
 
-    //rlDisableSmoothLines
+    // Disable line aliasing
+    void rlDisableSmoothLines(){
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_11){
+            glDisable(GL_LINE_SMOOTH);
+        }
+    }
 
     // Unload framebuffer from GPU memory
     // NOTE: All attached textures/cubemaps/renderbuffers are also deleted
-    void rlUnloadFramebuffer(int id){
+    public static void rlUnloadFramebuffer(int id){
         if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
 
             // Query depth attachment to automatically delete texture/renderbuffer
@@ -846,7 +892,6 @@ public class RLGL{
         // TODO: Automatize extensions loading using rlLoadExtensions() and GLAD
         // Actually, when rlglInit() is called in InitWindow() in core.c,
         // OpenGL context has already been created and required extensions loaded
-        //todo extensions i guess
         int numExt = Character.SIZE;
         String[] extList;
 
@@ -1386,11 +1431,172 @@ public class RLGL{
         return id;
     }
 
-    //rlLoadTextureDepth
+    // Load depth texture/renderbuffer (to be attached to fbo)
+    // WARNING: OpenGL ES 2.0 requires GL_OES_depth_texture/WEBGL_depth_texture extensions
+    int rlLoadTextureDepth(int width, int height, boolean useRenderBuffer){
+        int id = 0;
 
-    //rlLoadTextureCubeMap
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            // In case depth textures not supported, we force renderbuffer usage
+            if (!rlglData.getExtSupported().isTexDepth()){
+                useRenderBuffer = true;
+            }
 
-    //rlUpdateTexture
+            // NOTE: We let the implementation to choose the best bit-depth
+            // Possible formats: GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32 and GL_DEPTH_COMPONENT32F
+            int glInternalFormat = GL_DEPTH_COMPONENT;
+
+            if (GRAPHICS_API_OPENGL_ES2){
+                if (rlglData.getExtSupported().getMaxDepthBits() == 32){
+                    glInternalFormat = GL_DEPTH_COMPONENT32_OES;
+                }
+                else if (rlglData.getExtSupported().getMaxDepthBits() == 24){
+                    glInternalFormat = GL_DEPTH_COMPONENT24_OES;
+                }
+                else{
+                    glInternalFormat = GL_DEPTH_COMPONENT16;
+                }
+            }
+
+            if (!useRenderBuffer && rlglData.getExtSupported().isTexDepth()){
+                id = glGenTextures();
+                glBindTexture(GL_TEXTURE_2D, id);
+                glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, (int[]) null);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                Tracelog(LOG_INFO, "TEXTURE: Depth texture loaded successfully");
+            }
+            else{
+                // Create the renderbuffer that will serve as the depth attachment for the framebuffer
+                // NOTE: A renderbuffer is simpler than a texture and could offer better performance on embedded devices
+                id = glGenRenderbuffers();
+                glBindRenderbuffer(GL_RENDERBUFFER, id);
+                glRenderbufferStorage(GL_RENDERBUFFER, glInternalFormat, width, height);
+
+                glBindRenderbuffer(GL_RENDERBUFFER, 0);
+                int logTmp = rlglData.getExtSupported().getMaxDepthBits() >= 24 ? rlglData.getExtSupported().getMaxDepthBits() : 16;
+                Tracelog(LOG_INFO, "TEXTURE: [ID " + id + "] Depth renderbuffer loaded successfully (" + logTmp + " bits)");
+
+            }
+        }
+        return id;
+    }
+
+    // Load texture cubemap
+    // NOTE: Cubemap data is expected to be 6 images in a single data array (one after the other),
+    // expected the following convention: +X, -X, +Y, -Y, +Z, -Z
+    int rlLoadTextureCubemap(int[] data, int size, int format){
+        int id = 0;
+
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            int dataSize = GetPixelDataSize(size, size, format);
+
+            id = glGenTextures();
+            glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+            int glInternalFormat = 0;
+            int glFormat = 0;
+            int glType = 0;
+            rlGetGlTextureFormats(format, glInternalFormat, glFormat, glType);
+
+            if (glInternalFormat != -1){
+                // Load cubemap faces
+                for (int i = 0; i< 6; i++) {
+                    if (data == null){
+                        if (format < COMPRESSED_DXT1_RGB.getPixForInt()){
+                            if (format == UNCOMPRESSED_R32G32B32.getPixForInt()){
+                                // Instead of using a sized internal texture format (GL_RGB16F, GL_RGB32F), we let the driver to choose the better format for us (GL_RGB)
+                                if (rlglData.getExtSupported().isTexFloat32()){
+                                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, size, size,
+                                            0, GL_RGB, GL_FLOAT, (int[]) null);
+                                }
+                                else{
+                                    Tracelog(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
+                                }
+                            }
+                            else if ((format == UNCOMPRESSED_R32.getPixForInt()) || (format == UNCOMPRESSED_R32G32B32A32.getPixForInt())){
+                                Tracelog(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
+                            }
+                            else{
+                                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
+                                        glFormat, glType, (int[])null);
+                            }
+                        }
+                        else{
+                            Tracelog(LOG_WARNING, "TEXTURES: Empty cubemap creation does not support compressed " +
+                                    "format");
+                        }
+                    }
+                    else{
+                        if (format < COMPRESSED_DXT1_RGB.getPixForInt()){
+                            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
+                                    glFormat, glType, data[i]*dataSize);
+                        }
+                         else
+                        glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size,
+                                size, 0, dataSize, (long) data[i] * dataSize);
+                    }
+                    int[] swizzleMask;
+
+                    if (GRAPHICS_API_OPENGL_33){
+                        if (format == UNCOMPRESSED_GRAYSCALE.getPixForInt()){
+                            swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ONE};
+                            glTexParameteriv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+                        }
+                        else if (format == UNCOMPRESSED_GRAY_ALPHA.getPixForInt()){
+                            if (GRAPHICS_API_OPENGL_21){
+                                swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ALPHA};
+                            }
+                            else if (GRAPHICS_API_OPENGL_33){
+                                swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_GREEN};
+                            }
+                            glTexParameteriv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+                        }
+                    }
+                }
+            }
+
+            // Set cubemap texture sampling parameters
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            if (GRAPHICS_API_OPENGL_33){
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);  // Flag not supported on OpenGL ES 2.0
+            }
+
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        }
+
+        if (id > 0){
+            Tracelog(LOG_INFO, "TEXTURE: [ID " + id + "] Cubemap texture created successfully (" + size + "x" + size + ")");
+        }
+        else{
+            Tracelog(LOG_WARNING, "TEXTURE: Failed to load cubemap texture");
+        }
+
+        return id;
+    }
+
+    public static void rlUpdateTexture(int id, int offsetX, int offsetY, int width, int height, int format, int[] data){
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        int glInternalFormat = 0, glFormat = 0, glType = 0;
+        rlGetGlTextureFormats(format, glInternalFormat, glFormat, glType);
+
+        if ((glInternalFormat != -1) && (format < COMPRESSED_DXT1_RGB.getPixForInt())){
+            glTexSubImage2D(GL_TEXTURE_2D, 0, offsetX, offsetY, width, height, glFormat, glType, data);
+        }
+        else{
+            Tracelog(LOG_WARNING, "TEXTURE: [ID " + id + "] Failed to update for current texture format (" + format + ")");
+        }
+    }
 
     // Get OpenGL internal formats and data type from raylib PixelFormat
     static void rlGetGlTextureFormats(int format, int glInternalFormat, int glFormat, int glType){
@@ -1604,7 +1810,7 @@ public class RLGL{
 
     // Load a framebuffer to be used for rendering
     // NOTE: No textures attached
-    int rlLoadFramebuffer(int width, int height){
+    static int rlLoadFramebuffer(int width, int height){
         int fboId = 0;
 
         if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
@@ -1712,7 +1918,7 @@ public class RLGL{
     }
 
     // Generate mipmap data for selected texture
-    void rlGenerateMipmaps(Texture2D texture){
+    public static void rlGenerateMipmaps(Texture2D texture){
         glBindTexture(GL_TEXTURE_2D, texture.getId());
 
         // Check if texture is power-of-two (POT)
@@ -1785,6 +1991,7 @@ public class RLGL{
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    // TODO: 3/11/21
     //rlLoadMesh
 
     //rlLoadAttribBuffer
@@ -1799,10 +2006,13 @@ public class RLGL{
 
     //rlUnloadMesh
 
-    //rlReadScreenPixels
+    //TODO
+    public static int[] rlReadScreenPixels(int width, int height){
+        return null;
+    }
 
     // Read texture pixel data
-    int[] rlReadTexturePixels(Texture2D texture){
+    public static int[] rlReadTexturePixels(Texture2D texture){
         int[] pixels = null;
 
         if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
@@ -2184,6 +2394,7 @@ public class RLGL{
         return matrix;
     }
 
+    // TODO: 3/11/21
     //GenTextureCubeMap
 
     //GenTextureIrradience
@@ -2193,7 +2404,7 @@ public class RLGL{
     //GenTextureBRDF
 
     // Begin blending mode (alpha, additive, multiplied)
-// NOTE: Only 3 blending modes supported, default blend mode is alpha
+    // NOTE: Only 3 blending modes supported, default blend mode is alpha
     void BeginBlendMode(int mode){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getState().getCurrentBlendMode() != mode){
@@ -2241,6 +2452,7 @@ public class RLGL{
     }
 
     //SUPPORT_VR_SIMULATOR
+    // TODO: 3/11/21 - VR
     //InitVrSimulator
 
     //CloseVrSimulator
@@ -2900,6 +3112,7 @@ public class RLGL{
         rlglData.setCurrentBatch(rlglData.getDefaultBatch());
     }
 
+    // TODO: 3/11/21
     //GenDrawQuad
 
     //GenDrawCube

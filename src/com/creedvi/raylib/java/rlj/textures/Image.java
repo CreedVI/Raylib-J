@@ -1,5 +1,7 @@
 package com.creedvi.raylib.java.rlj.textures;
 
+import com.creedvi.raylib.java.rlj.core.Color;
+
 public class Image{
 
     int[] data;             // Image raw data
@@ -9,6 +11,20 @@ public class Image{
     int format;             // Data format (PixelFormat type)
 
     public Image(){
+    }
+
+    public Image(Color[] pixels, int width, int height, int pixForInt, int mipmaps){
+        data = new int[pixels.length*4];
+        for(int i = 0; i < pixels.length; i += 4){
+            data[i] = pixels[i].getR();
+            data[i + 1] = pixels[i].getG();
+            data[i + 2] = pixels[i].getB();
+            data[i + 3] = pixels[i].getA();
+        }
+        this.width = width;
+        this.height = height;
+        this.format = pixForInt;
+        this.mipmaps = mipmaps;
     }
 
     public int[] getData(){
