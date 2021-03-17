@@ -539,7 +539,7 @@ public class RLGL{
     }
 
     // Define one vertex (position)
-    void rlVertex2i(int x, int y){
+    public static void rlVertex2i(int x, int y){
         if (GRAPHICS_API_OPENGL_33){
             GL_33.rlVertex2i(x, y);
         }
@@ -1212,7 +1212,7 @@ public class RLGL{
         return version.getGlType();
     }
 
-    static boolean rlCheckBufferLimit(int vCount){
+    public static boolean rlCheckBufferLimit(int vCount){
         boolean overflow = false;
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if ((rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().getCurrentBuffer()].getvCounter() + vCount) >=
@@ -2098,7 +2098,7 @@ public class RLGL{
     }
 
     // Get texture to draw shapes (RAII)
-    Texture2D GetShapesTexture(){
+    public static Texture2D GetShapesTexture(){
         if (GRAPHICS_API_OPENGL_11){
             Texture2D texture = new Texture2D();
             return texture;
@@ -2109,7 +2109,7 @@ public class RLGL{
     }
 
     // Get texture rectangle to draw shapes
-    Rectangle GetShapesTextureRec(){
+    public static Rectangle GetShapesTextureRec(){
         if (GRAPHICS_API_OPENGL_11){
             Rectangle rect = new Rectangle();
             return rect;

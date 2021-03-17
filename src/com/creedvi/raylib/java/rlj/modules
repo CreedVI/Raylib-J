@@ -1,17 +1,17 @@
-LAST UPDATED :: 08/03/21
+LAST UPDATED :: 17/03/21
 
 [O] core
-[o] shapes
+[X] shapes
 [o] textures
 [o] text
 [ ] models
 [ ] shaders
 [ ] audio
 [O] RLGL
-[x] raymath
+[X] raymath
 [ ] physac
 [ ] raygui+ricons
-[ ] easings - Look into purpose and if it's needed
+[X] easings
 [M] gestures - Will look into reimplementing later on (08/03/21)
 [ ] rlights
 [M] rmem - Module canceled as not needed for port (Thus far 08/03/21)
