@@ -2,6 +2,11 @@ package com.creedvi.raylib.java.rlj;
 
 public class Config{
 
+    /**
+     * Raylib configuration flags
+     * This file defines all the configuration flags for the different raylib modules
+     */
+
     public static final String RAYLIB_VERSION = "3.5";
 
     //------------------------------------------------------------------------------------
@@ -12,32 +17,60 @@ public class Config{
     public static boolean __APPLE__ = (OS.contains("mac"));
     public static boolean __LINUX__ = (OS.contains("nix") || OS.contains("nux") || OS.contains("aix"));
 
-    // Camera module is included (camera.h) and multiple predefined cameras are available: free, 1st/3rd person, orbital
-    final static boolean SUPPORT_CAMERA_SYSTEM = true;
-    // Gestures module is included (gestures.h) to support gestures detection: tap, hold, swipe, drag
-    final static boolean SUPPORT_GESTURES_SYSTEM = true;
-    // Mouse gestures are directly mapped like touches and processed by gestures system
-    final static boolean SUPPORT_MOUSE_GESTURES = true;
-    // Reconfigure standard input to receive key inputs, works with SSH connection.
-    final static boolean SUPPORT_SSH_KEYBOARD_RPI = true;
-    // Draw a mouse pointer on screen
-    final static boolean SUPPORT_MOUSE_CURSOR_NATIVE = true;
-    // Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
-    //#define SUPPORT_BUSY_WAIT_LOOP      1
-    // Use a half-busy wait loop, in this case frame sleeps for some time and runs a busy-wait-loop at the end
-    final static boolean SUPPORT_HALFBUSY_WAIT_LOOP = true;
-    // Wait for events passively (sleeping while no events) instead of polling them actively every frame
-    public final static boolean SUPPORT_EVENTS_WAITING = false;
-    // Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
-    final static boolean SUPPORT_SCREEN_CAPTURE = true;
-    // Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
-    final static boolean SUPPORT_GIF_RECORDING = true;
-    // Support CompressData() and DecompressData() functions
-    final static boolean SUPPORT_COMPRESSION_API = true;
-    // Support saving binary data automatically to a generated storage.data file. This file is managed internally.
-    final static boolean SUPPORT_DATA_STORAGE = true;
-
-    public final static boolean SUPPORT_STANDARD_FILEIO = true;
+    /**
+     * Camera module is included (core.camera.java) and multiple predefined cameras are available: free, 1st/3rd
+     * person,
+     * orbital
+     */
+    static boolean SUPPORT_CAMERA_SYSTEM = true;
+    /**
+     * Gestures module is included (core.input.gestures.java) to support gestures detection: tap, hold, swipe, drag
+     */
+    static boolean SUPPORT_GESTURES_SYSTEM = false;
+    /**
+     * Mouse gestures are directly mapped like touches and processed by gestures system
+     */
+    static boolean SUPPORT_MOUSE_GESTURES = false;
+    /**
+     * Reconfigure standard input to receive key inputs, works with SSH connection.
+     */
+    static boolean SUPPORT_SSH_KEYBOARD_RPI = false;
+    /**
+     * Draw a mouse pointer on screen
+     */
+    static boolean SUPPORT_MOUSE_CURSOR_NATIVE = true;
+    /**
+     * Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
+     */
+    static boolean SUPPORT_BUSY_WAIT_LOOP = false;
+    /**
+     * Use a half-busy wait loop, in this case frame sleeps for some time and runs a busy-wait-loop at the end
+     */
+    static boolean SUPPORT_HALFBUSY_WAIT_LOOP = true;
+    /**
+     * Wait for events passively (sleeping while no events) instead of polling them actively every frame
+     */
+    public static boolean SUPPORT_EVENTS_WAITING = false;
+    /**
+     * Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
+     */
+    static boolean SUPPORT_SCREEN_CAPTURE = false;
+    /**
+     * Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
+     */
+    static boolean SUPPORT_GIF_RECORDING = false;
+    /**
+     * Support CompressData() and DecompressData() functions
+     */
+    static boolean SUPPORT_COMPRESSION_API = true;
+    /**
+     * Support saving binary data automatically to a generated storage.data file. This file is managed internally.
+     */
+    static boolean SUPPORT_DATA_STORAGE = true;
+    /**
+     * Support standard file IO functions in utils.Files.java
+     */
+    public static boolean SUPPORT_STANDARD_FILEIO = true;
 
     // core: Configuration values
     //------------------------------------------------------------------------------------
@@ -57,8 +90,10 @@ public class Config{
     //------------------------------------------------------------------------------------
     // Module: rlgl - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Support VR simulation functionality (stereo rendering)
-    public final static boolean SUPPORT_VR_SIMULATOR = true;
+    /**
+     * Support VR simulation functionality (stereo rendering)
+     */
+    public static boolean SUPPORT_VR_SIMULATOR = false;
 
     // rlgl: Configuration values
     //------------------------------------------------------------------------------------
@@ -97,53 +132,71 @@ public class Config{
     //------------------------------------------------------------------------------------
     // Module: shapes - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Draw rectangle shapes using font texture white character instead of default white texture
-    // Allows drawing rectangles and text with a single draw call, very useful for GUI systems!
-    final static boolean SUPPORT_FONT_TEXTURE = true;
-    // Use QUADS instead of TRIANGLES for drawing when possible
-    // Some lines-based shapes could still use lines
-    final static boolean SUPPORT_QUADS_DRAW_MODE = true;
+    /**
+     * Draw rectangle shapes using font texture white character instead of default white texture
+     * Allows drawing rectangles and text with a single draw call, very useful for GUI systems!
+     */
+    static boolean SUPPORT_FONT_TEXTURE = true;
+    /**
+     * Use QUADS instead of TRIANGLES for drawing when possible
+     * Some lines-based shapes could still use lines
+     */
+    static boolean SUPPORT_QUADS_DRAW_MODE = true;
 
 
     //------------------------------------------------------------------------------------
     // Module: textures - Configuration Flags
     //------------------------------------------------------------------------------------
     // Selecte desired fileformats to be supported for image data loading
-    final static boolean SUPPORT_FILEFORMAT_PNG = true;
-    //#final static int SUPPORT_FILEFORMAT_BMP      1
+    static boolean SUPPORT_FILEFORMAT_PNG = true;
+    //#static int SUPPORT_FILEFORMAT_BMP      1
     //#define SUPPORT_FILEFORMAT_TGA      1
     //#define SUPPORT_FILEFORMAT_JPG      1
-    final static boolean SUPPORT_FILEFORMAT_GIF = true;
+    static boolean SUPPORT_FILEFORMAT_GIF = true;
     //#define SUPPORT_FILEFORMAT_PSD      1
-    final static boolean SUPPORT_FILEFORMAT_DDS = true;
-    final static boolean SUPPORT_FILEFORMAT_HDR = true;
+    static boolean SUPPORT_FILEFORMAT_DDS = true;
+    static boolean SUPPORT_FILEFORMAT_HDR = true;
     //#define SUPPORT_FILEFORMAT_KTX      1
     //#define SUPPORT_FILEFORMAT_ASTC     1
     //#define SUPPORT_FILEFORMAT_PKM      1
     //#define SUPPORT_FILEFORMAT_PVR      1
-
-    // Support image export functionality (.png, .bmp, .tga, .jpg)
-    final static boolean SUPPORT_IMAGE_EXPORT = true;
-    // Support procedural image generation functionality (gradient, spot, perlin-noise, cellular)
-    final static boolean SUPPORT_IMAGE_GENERATION = true;
-    // Support multiple image editing functions to scale, adjust colors, flip, draw on images, crop...
-    // If not defined, still some functions are supported: ImageFormat(), ImageCrop(), ImageToPOT()
-    public final static boolean SUPPORT_IMAGE_MANIPULATION = true;
+    /**
+     * Support image export functionality (.png, .bmp, .tga, .jpg)
+     */
+    static boolean SUPPORT_IMAGE_EXPORT = true;
+    /**
+     * Support procedural image generation functionality (gradient, spot, perlin-noise, cellular)
+     */
+    static boolean SUPPORT_IMAGE_GENERATION = true;
+    /**
+     * Support multiple image editing functions to scale, adjust colors, flip, draw on images, crop...
+     * If not defined, still some functions are supported: ImageFormat(), ImageCrop(), ImageToPOT()
+     */
+    public static boolean SUPPORT_IMAGE_MANIPULATION = true;
 
 
     //------------------------------------------------------------------------------------
     // Module: text - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Default font is loaded on window initialization to be available for the user to render simple text
-    // NOTE: If enabled, uses external module functions to load default raylib font
-    public final static boolean SUPPORT_DEFAULT_FONT = true;
-    // Selected desired font fileformats to be supported for loading
-    final static boolean SUPPORT_FILEFORMAT_FNT = true;
-    final static boolean SUPPORT_FILEFORMAT_TTF = true;
+    /**
+     * Default font is loaded on window initialization to be available for the user to render simple text
+     * NOTE: If enabled, uses external module functions to load default raylib font
+     */
+    public static boolean SUPPORT_DEFAULT_FONT = true;
+    /**
+     * Selected .fnt to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_FNT = true;
+    /**
+     * Selected .ttf to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_TTF = true;
 
-    // Support text management functions
-    // If not defined, still some functions are supported: TextLength(), TextFormat()
-    final static boolean SUPPORT_TEXT_MANIPULATION = true;
+    /**
+     * Support text management functions
+     * If not defined, still some functions are supported: TextLength(), TextFormat()
+     */
+    static boolean SUPPORT_TEXT_MANIPULATION = true;
 
     // text: Configuration values
     //------------------------------------------------------------------------------------
@@ -156,29 +209,59 @@ public class Config{
     //------------------------------------------------------------------------------------
     // Module: models - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Selected desired model fileformats to be supported for loading
-    final static boolean SUPPORT_FILEFORMAT_OBJ = true;
-    final static boolean SUPPORT_FILEFORMAT_MTL = true;
-    final static boolean SUPPORT_FILEFORMAT_IQM = true;
-    final static boolean SUPPORT_FILEFORMAT_GLTF = true;
-    // Support procedural mesh generation functions, uses external par_shapes.h library
-    // NOTE: Some generated meshes DO NOT include generated texture coordinates
-    final static boolean SUPPORT_MESH_GENERATION = true;
+    /**
+     * Select .obj to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_OBJ = true;
+    /**
+     * Select .mtl to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_MTL = true;
+    /**
+     * Select .iqm to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_IQM = true;
+    /**
+     * Select .gltf to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_GLTF = true;
+    /**
+     * Support procedural mesh generation functions, uses external par_shapes.h library
+     * NOTE: Some generated meshes DO NOT include generated texture coordinates
+     */
+    static boolean SUPPORT_MESH_GENERATION = true;
 
 
     //------------------------------------------------------------------------------------
     // Module: audio - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Desired audio fileformats to be supported for loading
-    final static boolean SUPPORT_FILEFORMAT_WAV = true;
-    final static boolean SUPPORT_FILEFORMAT_OGG = true;
-    final static boolean SUPPORT_FILEFORMAT_XM = true;
-    final static boolean SUPPORT_FILEFORMAT_MOD = true;
-    final static boolean SUPPORT_FILEFORMAT_MP3 = true;
-    //#define SUPPORT_FILEFORMAT_FLAC     1
+    /**
+     * Support .wav to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_WAV = true;
+    /**
+     * Support .ogg to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_OGG = true;
+    /**
+     * Support .xm to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_XM = true;
+    /**
+     * Support .mod to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_MOD = true;
+    /**
+     * Support .mp3 to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_MP3 = true;
+    /**
+     * Support .flac to be supported for loading
+     */
+    static boolean SUPPORT_FILEFORMAT_FLAC = true;
 
     // audio: Configuration values
-//------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     final static String AUDIO_DEVICE_FORMAT = "ma_format_f32";    // Device output format (miniaudio: float-32bit)
     final static int AUDIO_DEVICE_CHANNELS = 2;    // Device output channels: stereo
     final static int AUDIO_DEVICE_SAMPLE_RATE = 44100;    // Device output sample rate
@@ -189,10 +272,15 @@ public class Config{
     //------------------------------------------------------------------------------------
     // Module: utils - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Show TRACELOG() output messages
-    // NOTE: By default LOG_DEBUG traces not shown
-    final static boolean SUPPORT_TRACELOG = true;
-    //#define SUPPORT_TRACELOG_DEBUG      1
+    /**
+     * Show TRACELOG() output messages
+     */
+    public static boolean SUPPORT_TRACELOG = true;
+    /**
+     * Show LOG_DEFAULT output messages
+     * NOTE: By default LOG_DEBUG traces not shown
+     */
+    public static boolean SUPPORT_TRACELOG_DEBUG = true;
 
     // utils: Configuration values
     //------------------------------------------------------------------------------------
@@ -229,4 +317,323 @@ public class Config{
     public Config(){
     }
 
+    /**
+     * Define support for Raylib's built in camera system
+     * @param supportCameraSystem flag for support
+     */
+    public static void setSupportCameraSystem(boolean supportCameraSystem){
+        SUPPORT_CAMERA_SYSTEM = supportCameraSystem;
+    }
+
+    /**
+     * Define support for Raylib's gesture system
+     * @param supportGesturesSystem flag for support
+     */
+    public static void setSupportGesturesSystem(boolean supportGesturesSystem){
+        SUPPORT_GESTURES_SYSTEM = supportGesturesSystem;
+    }
+
+    /**
+     * Define support for Raylib's mouse gesture system
+     * @param supportMouseGestures flag for support
+     */
+    public static void setSupportMouseGestures(boolean supportMouseGestures){
+        SUPPORT_MOUSE_GESTURES = supportMouseGestures;
+    }
+
+    /**
+     * Define support for SSH keyboard for PRI
+     * @param supportSshKeyboardRpi flag for support
+     */
+    public static void setSupportSshKeyboardRpi(boolean supportSshKeyboardRpi){
+        SUPPORT_SSH_KEYBOARD_RPI = supportSshKeyboardRpi;
+    }
+
+    /**
+     * Define support for native mouse cursor drawing
+     * @param supportMouseCursorNative flag for support
+     */
+    public static void setSupportMouseCursorNative(boolean supportMouseCursorNative){
+        SUPPORT_MOUSE_CURSOR_NATIVE = supportMouseCursorNative;
+    }
+
+    /**
+     * Define support for busy wait loop
+     * @param supportBusyWaitLoop flag for support
+     */
+    public static void setSupportBusyWaitLoop(boolean supportBusyWaitLoop){
+        SUPPORT_BUSY_WAIT_LOOP = supportBusyWaitLoop;
+    }
+
+    /**
+     * Define support for half busy wait loop
+     * @param supportHalfbusyWaitLoop flag for support
+     */
+   public static void setSupportHalfbusyWaitLoop(boolean supportHalfbusyWaitLoop){
+        SUPPORT_HALFBUSY_WAIT_LOOP = supportHalfbusyWaitLoop;
+    }
+
+    /**
+     * Define support for Event Waiting
+     * @param supportEventsWaiting flag for support
+     */
+    public static void setSupportEventsWaiting(boolean supportEventsWaiting){
+        SUPPORT_EVENTS_WAITING = supportEventsWaiting;
+    }
+
+    /**
+     * Define support for screen capture
+     * @param supportScreenCapture flag for support
+     */
+    public static void setSupportScreenCapture(boolean supportScreenCapture){
+        SUPPORT_SCREEN_CAPTURE = supportScreenCapture;
+    }
+
+    /**
+     * Define support for gif recording
+     * @param supportGifRecording flag for support
+     */
+    public static void setSupportGifRecording(boolean supportGifRecording){
+        SUPPORT_GIF_RECORDING = supportGifRecording;
+    }
+
+    /**
+     * Define support for Raylib's compression API
+     * @param supportCompressionApi flag for support
+     */
+    public static void setSupportCompressionApi(boolean supportCompressionApi){
+        SUPPORT_COMPRESSION_API = supportCompressionApi;
+    }
+
+    /**
+     * Define support for data storage
+     * @param supportDataStorage flag for support
+     */
+    public static void setSupportDataStorage(boolean supportDataStorage){
+        SUPPORT_DATA_STORAGE = supportDataStorage;
+    }
+
+    /**
+     * Define support for Raylib's built in file IO
+     * @param supportStandardFileio flag for support
+     */
+    public static void setSupportStandardFileio(boolean supportStandardFileio){
+        SUPPORT_STANDARD_FILEIO = supportStandardFileio;
+    }
+
+    /**
+     * Define support for VR simulation
+     * @param supportVrSimulator flag for support
+     */
+    public static void setSupportVrSimulator(boolean supportVrSimulator){
+        SUPPORT_VR_SIMULATOR = supportVrSimulator;
+    }
+
+    /**
+     * Define support for font texture
+     * @param supportFontTexture flag for support
+     */
+    public static void setSupportFontTexture(boolean supportFontTexture){
+        SUPPORT_FONT_TEXTURE = supportFontTexture;
+    }
+
+    /**
+     * Define support for Quad drawing
+     * @param supportQuadsDrawMode flag for support
+     */
+    public static void setSupportQuadsDrawMode(boolean supportQuadsDrawMode){
+        SUPPORT_QUADS_DRAW_MODE = supportQuadsDrawMode;
+    }
+
+    /**
+     * Define support for .png files
+     * @param supportFileformatPng flag for support
+     */
+    public static void setSupportFileformatPng(boolean supportFileformatPng){
+        SUPPORT_FILEFORMAT_PNG = supportFileformatPng;
+    }
+
+    /**
+     * Define support for .gif files
+     * @param supportFileformatGif flag for support
+     */
+    public static void setSupportFileformatGif(boolean supportFileformatGif){
+        SUPPORT_FILEFORMAT_GIF = supportFileformatGif;
+    }
+
+    /**
+     * Define support for .dds files
+     * @param supportFileformatDds flag for support
+     */
+    public static void setSupportFileformatDds(boolean supportFileformatDds){
+        SUPPORT_FILEFORMAT_DDS = supportFileformatDds;
+    }
+
+    /**
+     * Define support for .hdr files
+     * @param supportFileformatHdr flag for support
+     */
+    public static void setSupportFileformatHdr(boolean supportFileformatHdr){
+        SUPPORT_FILEFORMAT_HDR = supportFileformatHdr;
+    }
+
+    /**
+     * Define support for image export
+     * @param supportImageExport flag for support
+     */
+    public static void setSupportImageExport(boolean supportImageExport){
+        SUPPORT_IMAGE_EXPORT = supportImageExport;
+    }
+
+    /**
+     * Define support for image generation
+     * @param supportImageGeneration flag for support
+     */
+    public static void setSupportImageGeneration(boolean supportImageGeneration){
+        SUPPORT_IMAGE_GENERATION = supportImageGeneration;
+    }
+
+    /**
+     * Define support for image manipulation
+     * @param supportImageManipulation flag for support
+     */
+    public static void setSupportImageManipulation(boolean supportImageManipulation){
+        SUPPORT_IMAGE_MANIPULATION = supportImageManipulation;
+    }
+
+    /**
+     * Define support for Raylib's default font
+     * @param supportDefaultFont flag for support
+     */
+    public static void setSupportDefaultFont(boolean supportDefaultFont){
+        SUPPORT_DEFAULT_FONT = supportDefaultFont;
+    }
+
+    /**
+     * Define support for .fnt files
+     * @param supportFileformatFnt flag for support
+     */
+    public static void setSupportFileformatFnt(boolean supportFileformatFnt){
+        SUPPORT_FILEFORMAT_FNT = supportFileformatFnt;
+    }
+
+    /**
+     * Define support for .ttf files
+     * @param supportFileformatTtf flag for support
+     */
+    public static void setSupportFileformatTtf(boolean supportFileformatTtf){
+        SUPPORT_FILEFORMAT_TTF = supportFileformatTtf;
+    }
+
+    /**
+     * Define support for text manipulation
+     * @param supportTextManipulation flag for support
+     */
+    public static void setSupportTextManipulation(boolean supportTextManipulation){
+        SUPPORT_TEXT_MANIPULATION = supportTextManipulation;
+    }
+
+    /**
+     * Define support for .obj files
+     * @param supportFileformatObj flag for support
+     */
+    public static void setSupportFileformatObj(boolean supportFileformatObj){
+        SUPPORT_FILEFORMAT_OBJ = supportFileformatObj;
+    }
+
+    /**
+     * Define support for .mtl files
+     * @param supportFileformatMtl flag for support
+     */
+    public static void setSupportFileformatMtl(boolean supportFileformatMtl){
+        SUPPORT_FILEFORMAT_MTL = supportFileformatMtl;
+    }
+
+    /**
+     * Define support for .iqm files
+     * @param supportFileformatIqm flag for support
+     */
+    public static void setSupportFileformatIqm(boolean supportFileformatIqm){
+        SUPPORT_FILEFORMAT_IQM = supportFileformatIqm;
+    }
+
+    /**
+     * Define support for .gltf files
+     * @param supportFileformatGltf flag for support
+     */
+    public static void setSupportFileformatGltf(boolean supportFileformatGltf){
+        SUPPORT_FILEFORMAT_GLTF = supportFileformatGltf;
+    }
+
+    /**
+     * Define support for mesh generation
+     * @param supportMeshGeneration flag for support
+     */
+    public static void setSupportMeshGeneration(boolean supportMeshGeneration){
+        SUPPORT_MESH_GENERATION = supportMeshGeneration;
+    }
+
+    /**
+     * Define support for .wav files
+     * @param supportFileformatWav flag for support
+     */
+    public static void setSupportFileformatWav(boolean supportFileformatWav){
+        SUPPORT_FILEFORMAT_WAV = supportFileformatWav;
+    }
+
+    /**
+     * Define support for .ogg files
+     * @param supportFileformatOgg flag for support
+     */
+    public static void setSupportFileformatOgg(boolean supportFileformatOgg){
+        SUPPORT_FILEFORMAT_OGG = supportFileformatOgg;
+    }
+
+    /**
+     * Define support for .xm files
+     * @param supportFileformatXm flag for support
+     */
+    public static void setSupportFileformatXm(boolean supportFileformatXm){
+        SUPPORT_FILEFORMAT_XM = supportFileformatXm;
+    }
+
+    /**
+     * Define support for .mod files
+     * @param supportFileformatMod flag for support
+     */
+    public static void setSupportFileformatMod(boolean supportFileformatMod){
+        SUPPORT_FILEFORMAT_MOD = supportFileformatMod;
+    }
+
+    /**
+     * Define support for .mp3 files
+     * @param supportFileformatMp3 flag for support
+     */
+    public static void setSupportFileformatMp3(boolean supportFileformatMp3){
+        SUPPORT_FILEFORMAT_MP3 = supportFileformatMp3;
+    }
+
+    /**
+     * Define support for .flac files
+     * @param supportFileformatFlac flag for support
+     */
+    public static void setSupportFileformatFlac(boolean supportFileformatFlac){
+        SUPPORT_FILEFORMAT_FLAC = supportFileformatFlac;
+    }
+
+    /**
+     * Define support for trace log messages
+     * @param supportTracelog flag for support
+     */
+    public static void setSupportTracelog(boolean supportTracelog){
+        SUPPORT_TRACELOG = supportTracelog;
+    }
+
+    /**
+     * Define support for debug trace log messages
+     * @param supportTracelogDebug flag for support
+     */
+    public static void setSupportTracelogDebug(boolean supportTracelogDebug){
+        SUPPORT_TRACELOG_DEBUG = supportTracelogDebug;
+    }
 }

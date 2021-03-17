@@ -10,7 +10,7 @@ import com.creedvi.raylib.java.rlj.textures.Textures;
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_DEFAULT_FONT;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_GRAY_ALPHA;
 import static com.creedvi.raylib.java.rlj.textures.Textures.*;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_INFO;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 
 public class Text{

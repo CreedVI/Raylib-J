@@ -15,11 +15,8 @@ public class WindowTest{
 
         while(!rlj.core.WindowShouldClose()){
 
-            //System.out.println(rlj.core.GetFPS());
-
             rlj.core.BeginDrawing();
             rlj.core.ClearBackground(Color.RAYWHITE);
-            rlj.text.DrawFPS(10,10, Color.DARKPURPLE);
             rlj.text.DrawText("Congrats! You created your first window!", 190, 200, 20, Color.LIGHTGRAY);
             rlj.core.EndDrawing();
         }

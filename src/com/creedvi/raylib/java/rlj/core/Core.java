@@ -38,8 +38,8 @@ import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BILINEAR;
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
 import static com.creedvi.raylib.java.rlj.textures.Textures.SetTextureFilter;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_INFO;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_WARNING;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
@@ -79,6 +79,9 @@ public class Core{
     //RestoreTerminal
     //END RPI | DRM
 
+
+    // Initialize window and OpenGL context
+    // NOTE: data parameter could be used to pass any kind of required data to the initialization
     public void initWindow(int width, int height, String title){
         Tracelog(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
 
@@ -122,6 +125,7 @@ public class Core{
         glfwShowWindow(window.handle);
     }
 
+    // Close window and unload OpenGL context
     public void CloseWindow(){
         if (SUPPORT_DEFAULT_FONT){
             Text.UnloadFontDefault();
@@ -135,6 +139,7 @@ public class Core{
         Tracelog(LOG_INFO, "Window closed successfully");
     }
 
+    // Check if KEY_ESCAPE pressed or Close icon pressed
     public boolean WindowShouldClose(){
         if (window.isReady()){
             // While window minimized, stop loop execution
