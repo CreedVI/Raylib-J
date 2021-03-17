@@ -5,7 +5,7 @@ import com.creedvi.raylib.java.rlj.raymath.Vector3;
 
 import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_ERROR;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_ERROR;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 
 public class GL_33{

@@ -9,6 +9,9 @@ public class Raylib{
     Config config;
     public Text text;
 
+    /**
+     * Creates new Raylib instance.
+     */
     public Raylib(){
         core = new Core();
         text = new Text();

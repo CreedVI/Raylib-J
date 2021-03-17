@@ -7,8 +7,8 @@ import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.FLAG_WINDOW_UNFOCUSE
 import static com.creedvi.raylib.java.rlj.Config.MAX_FILEPATH_LENGTH;
 import static com.creedvi.raylib.java.rlj.Config.MAX_KEY_PRESSED_QUEUE;
 import static com.creedvi.raylib.java.rlj.core.Core.getWindow;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_DEBUG;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_WARNING;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_DEBUG;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;

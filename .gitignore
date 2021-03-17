@@ -1,3 +1,4 @@
 *.log
-out/*
-.idea/*
+*.iml
+.idea/
+out/

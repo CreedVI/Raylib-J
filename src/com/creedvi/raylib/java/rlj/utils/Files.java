@@ -5,9 +5,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_STANDARD_FILEIO;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.*;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.*;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_INFO;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TraceLogType.LOG_WARNING;
 
 public class Files{
     /*
@@ -115,8 +114,11 @@ public class Files{
         return success;
     }
     */
-    // Load text data from file, returns a '\0' terminated string
-    // NOTE: text chars array should be freed manually
+    /**
+     * Load text data from file, returns a '\0' terminated string
+     * NOTE: text chars array should be freed manually
+     * @param fileName name and extension of file to be loaded
+     */
     public static String LoadFileText(String fileName) throws IOException{
         String text = "";
         File file = new File(fileName);
