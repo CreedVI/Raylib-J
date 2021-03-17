@@ -141,7 +141,7 @@ public class Config{
      * Use QUADS instead of TRIANGLES for drawing when possible
      * Some lines-based shapes could still use lines
      */
-    static boolean SUPPORT_QUADS_DRAW_MODE = true;
+    public static boolean SUPPORT_QUADS_DRAW_MODE = true;
 
 
     //------------------------------------------------------------------------------------
