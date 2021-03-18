@@ -14,6 +14,7 @@ Raylib-J is a handwritten binding of <a href="https://github.com/raysan5/raylib"
 ## Known Issues:
 <ul>Windows clears background, but does not render anything</ul>
 <ul>JRE crashes after closing out window</ul>
+<ul>Window will stop responding after several (~3-7) seconds</ul>
 
 <hr>
 

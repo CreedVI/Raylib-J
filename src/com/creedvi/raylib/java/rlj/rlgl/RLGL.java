@@ -19,6 +19,7 @@ import static com.creedvi.raylib.java.rlj.rlgl.RLGL.FramebufferTexType.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.ShaderLocationIndex.*;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.ShaderUniformDataType.*;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
@@ -365,9 +366,6 @@ public class RLGL{
         }
     }
 
-    //#define LOC_MAP_DIFFUSE      LOC_MAP_ALBEDO
-    //#define LOC_MAP_SPECULAR     LOC_MAP_METALNESS
-
     // Material map type
     public enum MaterialMapType{
         MAP_ALBEDO(0),       // MAP_DIFFUSE
@@ -711,7 +709,6 @@ public class RLGL{
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-
 
     // Enable shader program usage
     void rlEnableShader(int id){
@@ -1507,7 +1504,7 @@ public class RLGL{
 
             if (glInternalFormat != -1){
                 // Load cubemap faces
-                for (int i = 0; i< 6; i++) {
+                for (int i = 0; i < 6; i++){
                     if (data == null){
                         if (format < COMPRESSED_DXT1_RGB.getPixForInt()){
                             if (format == UNCOMPRESSED_R32G32B32.getPixForInt()){
@@ -1525,7 +1522,7 @@ public class RLGL{
                             }
                             else{
                                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
-                                        glFormat, glType, (int[])null);
+                                        glFormat, glType, (int[]) null);
                             }
                         }
                         else{
@@ -1536,11 +1533,12 @@ public class RLGL{
                     else{
                         if (format < COMPRESSED_DXT1_RGB.getPixForInt()){
                             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
-                                    glFormat, glType, data[i]*dataSize);
+                                    glFormat, glType, data[i] * dataSize);
                         }
-                         else
-                        glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size,
-                                size, 0, dataSize, (long) data[i] * dataSize);
+                        else{
+                            glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size,
+                                    size, 0, dataSize, (long) data[i] * dataSize);
+                        }
                     }
                     int[] swizzleMask;
 
@@ -2006,9 +2004,29 @@ public class RLGL{
 
     //rlUnloadMesh
 
-    //TODO
     public static int[] rlReadScreenPixels(int width, int height){
-        return null;
+        int[] screenData = new int[width * height * 4];
+
+        // NOTE 1: glReadPixels returns image flipped vertically -> (0,0) is the bottom left corner of the framebuffer
+        // NOTE 2: We are getting alpha channel! Be careful, it can be transparent if not cleared properly!
+        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, screenData);
+
+        // Flip image vertically!
+        int[] imgData = new int[width * height * 4];
+
+        for (int y = height - 1; y >= 0; y--){
+            for (int x = 0; x < (width * 4); x++){
+                imgData[((height - 1) - y) * width * 4 + x] = screenData[(y * width * 4) + x];  // Flip line
+
+                // Set alpha component value to 255 (no trasparent image retrieval)
+                // NOTE: Alpha value has already been applied to RGB in framebuffer, we don't need it!
+                if (((x + 1) % 4) == 0) imgData[((height - 1) - y) * width * 4 + x] = 255;
+            }
+        }
+
+        screenData = null;
+
+        return imgData;     // NOTE: image data should be freed
     }
 
     // Read texture pixel data
@@ -2077,7 +2095,6 @@ public class RLGL{
 
         return pixels;
     }
-
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition - Shaders Functions
@@ -2310,9 +2327,53 @@ public class RLGL{
         return location;
     }
 
-    //SetShaderValue
+    /* TODO
+     Set shader uniform value
+    void SetShaderValue(Shader shader, int uniformLoc, int[] value, int uniformType)
+    {
+        SetShaderValueV(shader, uniformLoc, value, uniformType, 1);
+    }
 
-    //SetShaderValueV
+    // Set shader uniform value vector
+    void SetShaderValueV(Shader shader, int uniformLoc, int[] value, int uniformType, int count){
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            glUseProgram(shader.getId());
+
+            switch (uniformType){
+                case UNIFORM_FLOAT:
+                    glUniform1f(uniformLoc, count);
+                    break;
+                case UNIFORM_VEC2:
+                    glUniform2f(uniformLoc, count);
+                    break;
+                case UNIFORM_VEC3:
+                    glUniform3f(uniformLoc, count);
+                    break;
+                case UNIFORM_VEC4:
+                    glUniform4f(uniformLoc, count);
+                    break;
+                case UNIFORM_INT:
+                    glUniform1i(uniformLoc, count);
+                    break;
+                case UNIFORM_IVEC2:
+                    glUniform2i(uniformLoc, count);
+                    break;
+                case UNIFORM_IVEC3:
+                    glUniform3i(uniformLoc, count);
+                    break;
+                case UNIFORM_IVEC4:
+                    glUniform4i(uniformLoc, count);
+                    break;
+                case UNIFORM_SAMPLER2D:
+                    glUniform1i(uniformLoc, count);
+                    break;
+                default:
+                    Tracelog(LOG_WARNING, "SHADER: [ID " + shader.getId() + "] Failed to set uniform, data type not recognized");
+            }
+
+            //glUseProgram(0);      // Avoid reseting current shader program, in case other uniforms are set
+        }
+    }
 
     void SetShaderValueMatrix(Shader shader, int uniformLoc, Matrix mat){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2350,6 +2411,7 @@ public class RLGL{
             //glUseProgram(0);
         }
     }
+    */
 
     // Set a custom projection matrix (replaces internal projection matrix)
     static void SetMatrixProjection(Matrix projection){
@@ -2659,7 +2721,7 @@ public class RLGL{
     }
 
     // Get location handlers to for shader attributes and uniforms
-// NOTE: If any location is not found, loc point becomes -1
+    // NOTE: If any location is not found, loc point becomes -1
     static void SetShaderDefaultLocations(Shader shader){
         // NOTE: Default shader attrib locations have been fixed before linking:
         //          vertex position location    = 0
@@ -2917,7 +2979,6 @@ public class RLGL{
             }
         }
         //------------------------------------------------------------------------------------------------------------
-
         // Draw batch vertex buffers (considering VR stereo if required)
         //------------------------------------------------------------------------------------------------------------
         Matrix matProjection = rlglData.getState().getProjection();
@@ -3026,7 +3087,6 @@ public class RLGL{
             glUseProgram(0);    // Unbind shader program
         }
         //------------------------------------------------------------------------------------------------------------
-
         // Reset batch buffers
         //------------------------------------------------------------------------------------------------------------
         // Reset vertex counters for next frame

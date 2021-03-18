@@ -78,7 +78,11 @@ public class Tracelog{
             }
 
             buffer.append(text).append("\n");
-            if(logType != LOG_DEBUG || SUPPORT_TRACELOG_DEBUG){
+            if(logType != LOG_DEBUG){
+                System.out.print(buffer.toString());
+            }
+
+            if (logType == LOG_DEBUG && SUPPORT_TRACELOG_DEBUG){
                 System.out.print(buffer.toString());
             }
 

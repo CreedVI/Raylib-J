@@ -18,7 +18,7 @@ public class Color{
         this.a = a > 0 ? Math.min(a, 255) : 0;
     }
 
-    public String ToString(){
+    public String toString(){
         return r + " " + g + " " + b + " " + a;
     }
 

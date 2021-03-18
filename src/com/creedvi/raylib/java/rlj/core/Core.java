@@ -52,6 +52,12 @@ public class Core{
     static Window window;
     static Input input;
     static Time time;
+    private Callbacks.KeyCallback keyCallback;
+    private Callbacks.CharCallback charCallback;
+    private Callbacks.MouseButtonCallback mouseBtnCallback;
+    private Callbacks.MouseCursorPosCallback cursorPosCallback;
+    private Callbacks.MouseScrollCallback scrollCallback;
+    private Callbacks.CursorEnterCallback cursorEnterCallback;
 
     public Core(){
         window = new Window();
@@ -136,6 +142,13 @@ public class Core{
         glfwDestroyWindow(window.handle);
         glfwTerminate();
 
+        keyCallback.free();
+        charCallback.free();
+        mouseBtnCallback.free();
+        cursorEnterCallback.free();
+        cursorPosCallback.free();
+        scrollCallback.free();
+
         Tracelog(LOG_INFO, "Window closed successfully");
     }
 
@@ -161,47 +174,47 @@ public class Core{
     }
 
     // Check if window has been initialized successfully
-    boolean IsWindowReady(){
+    public boolean IsWindowReady(){
         return window.ready;
     }
 
     // Check if window is currently fullscreen
-    boolean IsWindowFullscreen(){
+    public boolean IsWindowFullscreen(){
         return window.fullscreen;
     }
 
     // Check if window is currently hidden
-    boolean IsWindowHidden(){
+    public boolean IsWindowHidden(){
         return ((window.flags & FLAG_WINDOW_HIDDEN.getFlag()) > 0);
     }
 
     // Check if window has been minimized
-    boolean IsWindowMinimized(){
+    public boolean IsWindowMinimized(){
         return ((window.flags & FLAG_WINDOW_MINIMIZED.getFlag()) > 0);
     }
 
     // Check if window has been maximized (only PLATFORM_DESKTOP)
-    boolean IsWindowMaximized(){
+    public boolean IsWindowMaximized(){
         return ((window.flags & FLAG_WINDOW_MAXIMIZED.getFlag()) > 0);
     }
 
     // Check if window has the focus
-    boolean IsWindowFocused(){
+    public boolean IsWindowFocused(){
         return ((window.flags & FLAG_WINDOW_UNFOCUSED.getFlag()) == 0);      // TODO!
     }
 
     // Check if window has been resizedLastFrame
-    boolean IsWindowResized(){
+    public boolean IsWindowResized(){
         return window.resizedLastFrame;
     }
 
     // Check if one specific window flag is enabled
-    boolean IsWindowState(int flag){
+    public boolean IsWindowState(int flag){
         return ((window.flags & flag) > 0);
     }
 
     // Toggle fullscreen mode (only PLATFORM_DESKTOP)
-    void ToggleFullscreen(){
+    public void ToggleFullscreen(){
         // NOTE: glfwSetWindowMonitor() doesn't work properly (bugs)
         if (!window.fullscreen){
             // Store previous window position (in case we exit fullscreen)
@@ -244,7 +257,7 @@ public class Core{
     }
 
     // Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
-    void MaximizeWindow(){
+    public void MaximizeWindow(){
         if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
             glfwMaximizeWindow(window.handle);
             window.flags |= FLAG_WINDOW_MAXIMIZED.getFlag();
@@ -252,13 +265,13 @@ public class Core{
     }
 
     // Set window state: minimized (only PLATFORM_DESKTOP)
-    void MinimizeWindow(){
+    public void MinimizeWindow(){
         // NOTE: Following function launches callback that sets appropiate flag!
         glfwIconifyWindow(window.handle);
     }
 
     // Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
-    void RestoreWindow(){
+    public void RestoreWindow(){
         if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
             // Restores the specified window if it was previously iconified (minimized) or maximized
             glfwRestoreWindow(window.handle);
@@ -268,7 +281,7 @@ public class Core{
     }
 
     // Set window configuration state using flags
-    void SetWindowState(int flags){
+    public void SetWindowState(int flags){
         // Check previous state and requested state to apply required changes
         // NOTE: In most cases the functions already change the flags internally
 
@@ -355,7 +368,7 @@ public class Core{
     }
 
     // Clear window configuration state flags
-    void ClearWindowState(int flags){
+    public void ClearWindowState(int flags){
         // Check previous state and requested state to apply required changes
         // NOTE: In most cases the functions already change the flags internally
 
@@ -440,7 +453,7 @@ public class Core{
 
     // Set icon for window (only PLATFORM_DESKTOP)
     // NOTE: Image must be in RGBA format, 8bit per channel
-    void SetWindowIcon(Image image){
+    public void SetWindowIcon(Image image){
         if (image.getFormat() == UNCOMPRESSED_R8G8B8A8.getPixForInt()){
             GLFWImage[] icon = new GLFWImage[1];
 
@@ -1117,14 +1130,14 @@ public class Core{
     //TakeScreenShot
 
     // Returns a random value between min and max (both included)
-    int GetRandomValue(int min, int max){
+    public int GetRandomValue(int min, int max){
         if (min > max){
             int tmp = max;
             max = min;
             min = tmp;
         }
 
-        return (int) (Math.random() % (Math.abs(max - min) + 1) + min);
+        return (int) (Math.random() * (max - min + 1) + min);
     }
 
     // Check if the file exists
@@ -1518,7 +1531,7 @@ public class Core{
     }
 
     // Returns mouse cursor
-    int GetMouseCursor(){
+    long GetMouseCursor(){
         return input.mouse.getCursor();
     }
 
@@ -1810,6 +1823,9 @@ public class Core{
             }
         }
 
+        input.mouse.setCursor(glfwCreateStandardCursor(GLFW_CURSOR_NORMAL));
+        glfwSetCursor(window.handle, input.mouse.getCursor());
+
         if (window.handle <= 0){
             glfwTerminate();
             Tracelog(LOG_WARNING, "GLFW: Failed to initialize Window");
@@ -1835,12 +1851,13 @@ public class Core{
         glfwSetDropCallback(window.handle, new Callbacks.WindowDropCallback());
         // Set input callback events
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window.handle, new Callbacks.KeyCallback());
-        glfwSetCharCallback(window.handle, new Callbacks.CharCallback());
-        glfwSetMouseButtonCallback(window.handle, new Callbacks.MouseButtonCallback());
-        glfwSetCursorPosCallback(window.handle, new Callbacks.MouseCursorPosCallback());   // Track mouse position changes
-        glfwSetScrollCallback(window.handle, new Callbacks.MouseScrollCallback());
-        glfwSetCursorEnterCallback(window.handle, new Callbacks.CursorEnterCallback());
+        glfwSetKeyCallback(window.handle, keyCallback = new Callbacks.KeyCallback());
+        glfwSetCharCallback(window.handle, charCallback = new Callbacks.CharCallback());
+        glfwSetMouseButtonCallback(window.handle, mouseBtnCallback = new Callbacks.MouseButtonCallback());
+        glfwSetCursorPosCallback(window.handle, cursorPosCallback = new Callbacks.MouseCursorPosCallback());
+        // Track mouse position changes
+        glfwSetScrollCallback(window.handle, scrollCallback = new Callbacks.MouseScrollCallback());
+        glfwSetCursorEnterCallback(window.handle, cursorEnterCallback = new Callbacks.CursorEnterCallback());
         glfwMakeContextCurrent(window.handle);
         GL.createCapabilities();
 

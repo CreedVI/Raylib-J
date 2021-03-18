@@ -243,7 +243,9 @@ public class Shapes{
         float angle = (float) startAngle;
 
         if (SUPPORT_QUADS_DRAW_MODE){
-            if (rlCheckBufferLimit(4 * segments / 2)) rlglDraw();
+            if (rlCheckBufferLimit(4 * segments / 2)){
+                rlglDraw();
+            }
 
             rlEnableTexture(GetShapesTexture().getId());
 
