@@ -9,7 +9,6 @@ public class BasicShapes{
     final static int SCREEN_WIDTH = 800;
     final static int SCREEN_HEIGHT = 450;
 
-
     public static void main(String[] args){
         Raylib rlj = new Raylib();
 
@@ -45,9 +44,5 @@ public class BasicShapes{
             rlj.shapes.DrawTriangleLines(new Vector2(SCREEN_WIDTH/4*3, 160), new Vector2(SCREEN_WIDTH/4*3 - 20, 230), new Vector2(SCREEN_WIDTH/4*3 + 20, 230), Color.DARKBLUE);
             rlj.core.EndDrawing();
         }
-
-        rlj.core.CloseWindow();
-
     }
-
 }

@@ -2,8 +2,7 @@ package com.creedvi.raylib.java.rlj.core;
 
 import org.lwjgl.glfw.*;
 
-import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.FLAG_WINDOW_MINIMIZED;
-import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.FLAG_WINDOW_UNFOCUSED;
+import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.*;
 import static com.creedvi.raylib.java.rlj.Config.MAX_FILEPATH_LENGTH;
 import static com.creedvi.raylib.java.rlj.Config.MAX_KEY_PRESSED_QUEUE;
 import static com.creedvi.raylib.java.rlj.core.Core.getWindow;
@@ -54,15 +53,18 @@ public class Callbacks{
         public void invoke(long window, int width, int height){
             Tracelog(LOG_DEBUG, "Window Size Callback Triggered");
             Core.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-            // Set current screen size
-            Window w = getWindow();
-            w.getScreen().setWidth(width);
-            w.getScreen().setHeight(height);
-            w.getCurrentFbo().setWidth(width);
-            w.getCurrentFbo().setHeight(height);
+            Core.getWindow().currentFbo.setWidth(width);
+            Core.getWindow().currentFbo.setHeight(height);
+            Core.getWindow().setResizedLastFrame(true);
 
+            if(Core.IsWindowFullscreen()){
+                return;
+            }
+
+            // Set current screen size
+            Core.getWindow().screen.setWidth(width);
+            Core.getWindow().screen.setHeight(height);
             // NOTE: Postprocessing texture is not scaled to new size
-            w.setResizedLastFrame(true);
         }
 
         @Override
@@ -114,7 +116,12 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, boolean maximized){
-
+            if (maximized){
+                Core.getWindow().flags |= FLAG_WINDOW_MAXIMIZED.getFlag();  // The window was maximized
+            }
+            else{
+                Core.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED.getFlag();           // The window was restored
+            }
         }
 
         @Override
@@ -166,7 +173,10 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods){
-            Tracelog(LOG_DEBUG, "Key Callback Triggered");
+            //Tracelog(LOG_DEBUG, "Key Callback Triggered");
+            Tracelog(LOG_DEBUG, "Key Callback: KEY: " + key + "(" + Character.highSurrogate(key) + ") - SCANCODE:" +
+                    scancode + " (STATE: " + action + ")");
+
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ){
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
@@ -246,9 +256,9 @@ public class Callbacks{
         @Override
         public void invoke(long window, int button, int action, int mods){
             Tracelog(LOG_DEBUG, "Mouse Button Callback Triggered");
-            char[] tmp = Core.getInput().mouse.getCurrentButtonState();
-            tmp[button] = (char) action;
-            Core.getInput().mouse.setCurrentButtonState(tmp);
+            // WARNING: GLFW could only return GLFW_PRESS (1) or GLFW_RELEASE (0) for now,
+            // but future releases may add more actions (i.e. GLFW_REPEAT)
+            Core.getInput().mouse.getCurrentButtonState()[button] = action;
         }
 
         @Override

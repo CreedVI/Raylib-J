@@ -12,8 +12,8 @@ public class Mouse{
     boolean cursorHidden;              // Track if cursor is hidden
     boolean cursorOnScreen;            // Tracks if cursor is inside client area
 
-    char[] currentButtonState;     // Registers current mouse button state
-    char[] previousButtonState;    // Registers previous mouse button state
+    int[] currentButtonState;     // Registers current mouse button state
+    int[] previousButtonState;    // Registers previous mouse button state
     float currentWheelMove;         // Registers current mouse wheel variation
     float previousWheelMove;        // Registers previous mouse wheel variation
 
@@ -58,8 +58,8 @@ public class Mouse{
         offset = new Vector2();
         scale = new Vector2();
 
-        currentButtonState = new char[3];
-        previousButtonState = new char[3];
+        currentButtonState = new int[3];
+        previousButtonState = new int[3];
     }
 
     public Vector2 getPosition(){
@@ -110,19 +110,19 @@ public class Mouse{
         this.cursorOnScreen = cursorOnScreen;
     }
 
-    public char[] getCurrentButtonState(){
+    public int[] getCurrentButtonState(){
         return currentButtonState;
     }
 
-    public void setCurrentButtonState(char[] currentButtonState){
+    public void setCurrentButtonState(int[] currentButtonState){
         this.currentButtonState = currentButtonState;
     }
 
-    public char[] getPreviousButtonState(){
+    public int[] getPreviousButtonState(){
         return previousButtonState;
     }
 
-    public void setPreviousButtonState(char[] previousButtonState){
+    public void setPreviousButtonState(int[] previousButtonState){
         this.previousButtonState = previousButtonState;
     }
 

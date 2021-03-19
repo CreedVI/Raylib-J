@@ -14,12 +14,10 @@ public class WindowTest{
         rlj.core.SetTargetFPS(60);
 
         while(!rlj.core.WindowShouldClose()){
-
             rlj.core.BeginDrawing();
             rlj.core.ClearBackground(Color.RAYWHITE);
             rlj.text.DrawText("Congrats! You created your first window!", 190, 200, 20, Color.LIGHTGRAY);
             rlj.core.EndDrawing();
         }
-        rlj.core.CloseWindow();
     }
 }

@@ -1,4 +1,4 @@
-package com.creedvi.raylib.java.examples;
+package com.creedvi.raylib.java.tests;
 
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;

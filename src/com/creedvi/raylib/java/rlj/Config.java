@@ -42,11 +42,11 @@ public class Config{
     /**
      * Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
      */
-    static boolean SUPPORT_BUSY_WAIT_LOOP = false;
+    public static boolean SUPPORT_BUSY_WAIT_LOOP = false;
     /**
      * Use a half-busy wait loop, in this case frame sleeps for some time and runs a busy-wait-loop at the end
      */
-    static boolean SUPPORT_HALFBUSY_WAIT_LOOP = true;
+    public static boolean SUPPORT_HALFBUSY_WAIT_LOOP = true;
     /**
      * Wait for events passively (sleeping while no events) instead of polling them actively every frame
      */

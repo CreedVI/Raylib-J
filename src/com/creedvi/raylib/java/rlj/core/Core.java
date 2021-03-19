@@ -58,6 +58,11 @@ public class Core{
     private Callbacks.MouseCursorPosCallback cursorPosCallback;
     private Callbacks.MouseScrollCallback scrollCallback;
     private Callbacks.CursorEnterCallback cursorEnterCallback;
+    private Callbacks.WindowSizeCallback sizeCallback;
+    private Callbacks.WindowMaximizeCallback maximizeCallback;
+    private Callbacks.WindowIconifyCallback iconifyCallback;
+    private Callbacks.WindowFocusCallback focusCallback;
+    private Callbacks.WindowDropCallback dropCallback;
 
     public Core(){
         window = new Window();
@@ -148,6 +153,11 @@ public class Core{
         cursorEnterCallback.free();
         cursorPosCallback.free();
         scrollCallback.free();
+        sizeCallback.free();
+        maximizeCallback.free();
+        iconifyCallback.free();
+        focusCallback.free();
+        dropCallback.free();
 
         Tracelog(LOG_INFO, "Window closed successfully");
     }
@@ -169,6 +179,8 @@ public class Core{
             return window.isShouldClose();
         }
         else{
+            CloseWindow();
+
             return true;
         }
     }
@@ -179,7 +191,7 @@ public class Core{
     }
 
     // Check if window is currently fullscreen
-    public boolean IsWindowFullscreen(){
+    public static boolean IsWindowFullscreen(){
         return window.fullscreen;
     }
 
@@ -223,7 +235,7 @@ public class Core{
             long monitor = glfwGetWindowMonitor(window.handle);
             if (monitor <= 0){
                 Tracelog(LOG_WARNING, "GLFW: Failed to get monitor");
-                //glfwSetWindowSizeCallback(window.handle, null);
+                glfwSetWindowSizeCallback(window.handle, sizeCallback = new Callbacks.WindowSizeCallback());
                 glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.getWidth(),
                         window.screen.getHeight(), GLFW_DONT_CARE);
                 glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback()); // NOTE: Resizing not allowed by default!);
@@ -231,7 +243,7 @@ public class Core{
             }
 
             GLFWVidMode mode = glfwGetVideoMode(monitor);
-            //glfwSetWindowSizeCallback(window.handle, null);
+            glfwSetWindowSizeCallback(window.handle, sizeCallback = new Callbacks.WindowSizeCallback());
             glfwSetWindowMonitor(window.handle, monitor, 0, 0, window.screen.getWidth(), window.screen.getHeight(),
                     GLFW_DONT_CARE);
             glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback()); // NOTE: Resizing not allowed by default!);
@@ -766,13 +778,15 @@ public class Core{
 
         // Wait for some milliseconds...
         if (time.frame < time.target){
-            try{
+            /*try{
                 synchronized (this){
                     this.wait((long) ((float) (time.target - time.frame) * 1000.0f));
                 }
             } catch (InterruptedException e){
                 e.printStackTrace();
-            }
+            }*/
+
+            Wait((float) ((time.target - time.frame)*1000.0f));
 
             time.current = GetTime();
             double waitTime = time.current - time.previous;
@@ -1753,6 +1767,7 @@ public class Core{
         }
 
         if (Config.MAX_GAMEPADS > 0){
+            //TODO
             glfwSetJoystickCallback(null);
         }
 
@@ -1761,8 +1776,12 @@ public class Core{
             window.position.setX(window.display.getWidth() / 2 - window.screen.getWidth() / 2);
             window.position.setY(window.display.getHeight() / 2 - window.screen.getHeight() / 2);
 
-            if (window.position.getX() < 0) window.position.setX(0);
-            if (window.position.getX() < 0) window.position.setY(0);
+            if (window.position.getX() < 0) {
+                window.position.setX(0);
+            }
+            if (window.position.getX() < 0) {
+                window.position.setY(0);
+            }
 
             // Obtain recommended window.display.getWidth()/window.display.getHeight() from a valid videomode for the monitor
             int count = 0;
@@ -1844,11 +1863,12 @@ public class Core{
 
 
         // Set window callback events
-        glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback());
+        glfwSetWindowMaximizeCallback(window.handle, maximizeCallback = new Callbacks.WindowMaximizeCallback());
+        glfwSetWindowSizeCallback(window.handle, sizeCallback = new Callbacks.WindowSizeCallback());
         // NOTE: Resizing not allowed by default!
-        glfwSetWindowIconifyCallback(window.handle, new Callbacks.WindowIconifyCallback());
-        glfwSetWindowFocusCallback(window.handle, new Callbacks.WindowFocusCallback());
-        glfwSetDropCallback(window.handle, new Callbacks.WindowDropCallback());
+        glfwSetWindowIconifyCallback(window.handle, iconifyCallback = new Callbacks.WindowIconifyCallback());
+        glfwSetWindowFocusCallback(window.handle, focusCallback = new Callbacks.WindowFocusCallback());
+        glfwSetDropCallback(window.handle, dropCallback = new Callbacks.WindowDropCallback());
         // Set input callback events
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window.handle, keyCallback = new Callbacks.KeyCallback());
@@ -1858,6 +1878,7 @@ public class Core{
         // Track mouse position changes
         glfwSetScrollCallback(window.handle, scrollCallback = new Callbacks.MouseScrollCallback());
         glfwSetCursorEnterCallback(window.handle, cursorEnterCallback = new Callbacks.CursorEnterCallback());
+
         glfwMakeContextCurrent(window.handle);
         GL.createCapabilities();
 
@@ -2004,7 +2025,24 @@ public class Core{
         time.setPrevious(GetTime());       // Get time as double
     }
 
-    //wait
+    void Wait(float ms){
+        if(SUPPORT_BUSY_WAIT_LOOP){
+            double prevTime = GetTime();
+            double nextTime = 0.0;
+
+            // Busy wait loop
+            while ((nextTime - prevTime) < ms/1000.0f){
+                nextTime = GetTime();
+            }
+        }
+        else{
+            if(SUPPORT_HALFBUSY_WAIT_LOOP){
+                int MAX_HALFBUSY_WAIT_TIME = 4;
+                double destTime = GetTime() + ms/1000;
+                if (ms > MAX_HALFBUSY_WAIT_TIME) ms -= MAX_HALFBUSY_WAIT_TIME;
+            }
+        }
+    }
 
     void PollInputEvents(){
         // Reset keys/chars pressed registered
@@ -2019,11 +2057,12 @@ public class Core{
         // Register previous mouse states
         input.mouse.setPreviousButtonState(input.mouse.getCurrentButtonState());
 
-
         // Register previous mouse wheel state
         input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());
         input.mouse.setCurrentWheelMove(0.0f);
 
+        /*
+        //TODO: GAMEPAD SUPPORT
         // Check if gamepads are ready
         // NOTE: We do it here in case of disconnection
         boolean[] gamepadReady = new boolean[MAX_GAMEPADS];
@@ -2033,8 +2072,8 @@ public class Core{
         input.gamepad.setReady(gamepadReady);
 
         // Register gamepads buttons events
-        //TODO: GAMEPAD SUPPORT
-        /*for (int i = 0; i < MAX_GAMEPADS; i++) {
+
+        for (int i = 0; i < MAX_GAMEPADS; i++) {
             if (input.gamepad.getReady()[i]) {     // Check if gamepad is available
                 // Register previous gamepad states
                 input.gamepad.setPreviousState(input.gamepad.getCurrentState());
