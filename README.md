@@ -36,7 +36,6 @@ automatically!
 [ ] rlights <br>
 [p] rmem - Module canceled as not needed for port (Thus far 08/03/21) <br>
 [p] rnet - Will wait until module is fully functional before supporting <br>
-Last updated: 17/03/21
 <br>
 <div>
 <b>Key:</b>
