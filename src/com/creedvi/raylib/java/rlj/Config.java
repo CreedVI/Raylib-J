@@ -321,7 +321,7 @@ public class Config{
      * Define support for Raylib's built in camera system
      * @param supportCameraSystem flag for support
      */
-    public static void setSupportCameraSystem(boolean supportCameraSystem){
+    public void setSupportCameraSystem(boolean supportCameraSystem){
         SUPPORT_CAMERA_SYSTEM = supportCameraSystem;
     }
 
@@ -329,7 +329,7 @@ public class Config{
      * Define support for Raylib's gesture system
      * @param supportGesturesSystem flag for support
      */
-    public static void setSupportGesturesSystem(boolean supportGesturesSystem){
+    public void setSupportGesturesSystem(boolean supportGesturesSystem){
         SUPPORT_GESTURES_SYSTEM = supportGesturesSystem;
     }
 
@@ -337,7 +337,7 @@ public class Config{
      * Define support for Raylib's mouse gesture system
      * @param supportMouseGestures flag for support
      */
-    public static void setSupportMouseGestures(boolean supportMouseGestures){
+    public void setSupportMouseGestures(boolean supportMouseGestures){
         SUPPORT_MOUSE_GESTURES = supportMouseGestures;
     }
 
@@ -345,7 +345,7 @@ public class Config{
      * Define support for SSH keyboard for PRI
      * @param supportSshKeyboardRpi flag for support
      */
-    public static void setSupportSshKeyboardRpi(boolean supportSshKeyboardRpi){
+    public void setSupportSshKeyboardRpi(boolean supportSshKeyboardRpi){
         SUPPORT_SSH_KEYBOARD_RPI = supportSshKeyboardRpi;
     }
 
@@ -353,7 +353,7 @@ public class Config{
      * Define support for native mouse cursor drawing
      * @param supportMouseCursorNative flag for support
      */
-    public static void setSupportMouseCursorNative(boolean supportMouseCursorNative){
+    public void setSupportMouseCursorNative(boolean supportMouseCursorNative){
         SUPPORT_MOUSE_CURSOR_NATIVE = supportMouseCursorNative;
     }
 
@@ -361,7 +361,7 @@ public class Config{
      * Define support for busy wait loop
      * @param supportBusyWaitLoop flag for support
      */
-    public static void setSupportBusyWaitLoop(boolean supportBusyWaitLoop){
+    public void setSupportBusyWaitLoop(boolean supportBusyWaitLoop){
         SUPPORT_BUSY_WAIT_LOOP = supportBusyWaitLoop;
     }
 
@@ -369,7 +369,7 @@ public class Config{
      * Define support for half busy wait loop
      * @param supportHalfbusyWaitLoop flag for support
      */
-   public static void setSupportHalfbusyWaitLoop(boolean supportHalfbusyWaitLoop){
+   public void setSupportHalfbusyWaitLoop(boolean supportHalfbusyWaitLoop){
         SUPPORT_HALFBUSY_WAIT_LOOP = supportHalfbusyWaitLoop;
     }
 
@@ -377,7 +377,7 @@ public class Config{
      * Define support for Event Waiting
      * @param supportEventsWaiting flag for support
      */
-    public static void setSupportEventsWaiting(boolean supportEventsWaiting){
+    public void setSupportEventsWaiting(boolean supportEventsWaiting){
         SUPPORT_EVENTS_WAITING = supportEventsWaiting;
     }
 
@@ -385,7 +385,7 @@ public class Config{
      * Define support for screen capture
      * @param supportScreenCapture flag for support
      */
-    public static void setSupportScreenCapture(boolean supportScreenCapture){
+    public void setSupportScreenCapture(boolean supportScreenCapture){
         SUPPORT_SCREEN_CAPTURE = supportScreenCapture;
     }
 
@@ -393,7 +393,7 @@ public class Config{
      * Define support for gif recording
      * @param supportGifRecording flag for support
      */
-    public static void setSupportGifRecording(boolean supportGifRecording){
+    public void setSupportGifRecording(boolean supportGifRecording){
         SUPPORT_GIF_RECORDING = supportGifRecording;
     }
 
@@ -401,7 +401,7 @@ public class Config{
      * Define support for Raylib's compression API
      * @param supportCompressionApi flag for support
      */
-    public static void setSupportCompressionApi(boolean supportCompressionApi){
+    public void setSupportCompressionApi(boolean supportCompressionApi){
         SUPPORT_COMPRESSION_API = supportCompressionApi;
     }
 
@@ -409,7 +409,7 @@ public class Config{
      * Define support for data storage
      * @param supportDataStorage flag for support
      */
-    public static void setSupportDataStorage(boolean supportDataStorage){
+    public void setSupportDataStorage(boolean supportDataStorage){
         SUPPORT_DATA_STORAGE = supportDataStorage;
     }
 
@@ -417,7 +417,7 @@ public class Config{
      * Define support for Raylib's built in file IO
      * @param supportStandardFileio flag for support
      */
-    public static void setSupportStandardFileio(boolean supportStandardFileio){
+    public void setSupportStandardFileio(boolean supportStandardFileio){
         SUPPORT_STANDARD_FILEIO = supportStandardFileio;
     }
 
@@ -425,7 +425,7 @@ public class Config{
      * Define support for VR simulation
      * @param supportVrSimulator flag for support
      */
-    public static void setSupportVrSimulator(boolean supportVrSimulator){
+    public void setSupportVrSimulator(boolean supportVrSimulator){
         SUPPORT_VR_SIMULATOR = supportVrSimulator;
     }
 
@@ -433,7 +433,7 @@ public class Config{
      * Define support for font texture
      * @param supportFontTexture flag for support
      */
-    public static void setSupportFontTexture(boolean supportFontTexture){
+    public void setSupportFontTexture(boolean supportFontTexture){
         SUPPORT_FONT_TEXTURE = supportFontTexture;
     }
 
@@ -441,7 +441,7 @@ public class Config{
      * Define support for Quad drawing
      * @param supportQuadsDrawMode flag for support
      */
-    public static void setSupportQuadsDrawMode(boolean supportQuadsDrawMode){
+    public void setSupportQuadsDrawMode(boolean supportQuadsDrawMode){
         SUPPORT_QUADS_DRAW_MODE = supportQuadsDrawMode;
     }
 
@@ -449,7 +449,7 @@ public class Config{
      * Define support for .png files
      * @param supportFileformatPng flag for support
      */
-    public static void setSupportFileformatPng(boolean supportFileformatPng){
+    public void setSupportFileformatPng(boolean supportFileformatPng){
         SUPPORT_FILEFORMAT_PNG = supportFileformatPng;
     }
 
@@ -457,7 +457,7 @@ public class Config{
      * Define support for .gif files
      * @param supportFileformatGif flag for support
      */
-    public static void setSupportFileformatGif(boolean supportFileformatGif){
+    public void setSupportFileformatGif(boolean supportFileformatGif){
         SUPPORT_FILEFORMAT_GIF = supportFileformatGif;
     }
 
@@ -465,7 +465,7 @@ public class Config{
      * Define support for .dds files
      * @param supportFileformatDds flag for support
      */
-    public static void setSupportFileformatDds(boolean supportFileformatDds){
+    public void setSupportFileformatDds(boolean supportFileformatDds){
         SUPPORT_FILEFORMAT_DDS = supportFileformatDds;
     }
 
@@ -473,7 +473,7 @@ public class Config{
      * Define support for .hdr files
      * @param supportFileformatHdr flag for support
      */
-    public static void setSupportFileformatHdr(boolean supportFileformatHdr){
+    public void setSupportFileformatHdr(boolean supportFileformatHdr){
         SUPPORT_FILEFORMAT_HDR = supportFileformatHdr;
     }
 
@@ -481,7 +481,7 @@ public class Config{
      * Define support for image export
      * @param supportImageExport flag for support
      */
-    public static void setSupportImageExport(boolean supportImageExport){
+    public void setSupportImageExport(boolean supportImageExport){
         SUPPORT_IMAGE_EXPORT = supportImageExport;
     }
 
@@ -489,7 +489,7 @@ public class Config{
      * Define support for image generation
      * @param supportImageGeneration flag for support
      */
-    public static void setSupportImageGeneration(boolean supportImageGeneration){
+    public void setSupportImageGeneration(boolean supportImageGeneration){
         SUPPORT_IMAGE_GENERATION = supportImageGeneration;
     }
 
@@ -497,7 +497,7 @@ public class Config{
      * Define support for image manipulation
      * @param supportImageManipulation flag for support
      */
-    public static void setSupportImageManipulation(boolean supportImageManipulation){
+    public void setSupportImageManipulation(boolean supportImageManipulation){
         SUPPORT_IMAGE_MANIPULATION = supportImageManipulation;
     }
 
@@ -505,7 +505,7 @@ public class Config{
      * Define support for Raylib's default font
      * @param supportDefaultFont flag for support
      */
-    public static void setSupportDefaultFont(boolean supportDefaultFont){
+    public void setSupportDefaultFont(boolean supportDefaultFont){
         SUPPORT_DEFAULT_FONT = supportDefaultFont;
     }
 
@@ -513,7 +513,7 @@ public class Config{
      * Define support for .fnt files
      * @param supportFileformatFnt flag for support
      */
-    public static void setSupportFileformatFnt(boolean supportFileformatFnt){
+    public void setSupportFileformatFnt(boolean supportFileformatFnt){
         SUPPORT_FILEFORMAT_FNT = supportFileformatFnt;
     }
 
@@ -521,7 +521,7 @@ public class Config{
      * Define support for .ttf files
      * @param supportFileformatTtf flag for support
      */
-    public static void setSupportFileformatTtf(boolean supportFileformatTtf){
+    public void setSupportFileformatTtf(boolean supportFileformatTtf){
         SUPPORT_FILEFORMAT_TTF = supportFileformatTtf;
     }
 
@@ -529,7 +529,7 @@ public class Config{
      * Define support for text manipulation
      * @param supportTextManipulation flag for support
      */
-    public static void setSupportTextManipulation(boolean supportTextManipulation){
+    public void setSupportTextManipulation(boolean supportTextManipulation){
         SUPPORT_TEXT_MANIPULATION = supportTextManipulation;
     }
 
@@ -537,7 +537,7 @@ public class Config{
      * Define support for .obj files
      * @param supportFileformatObj flag for support
      */
-    public static void setSupportFileformatObj(boolean supportFileformatObj){
+    public void setSupportFileformatObj(boolean supportFileformatObj){
         SUPPORT_FILEFORMAT_OBJ = supportFileformatObj;
     }
 
@@ -545,7 +545,7 @@ public class Config{
      * Define support for .mtl files
      * @param supportFileformatMtl flag for support
      */
-    public static void setSupportFileformatMtl(boolean supportFileformatMtl){
+    public void setSupportFileformatMtl(boolean supportFileformatMtl){
         SUPPORT_FILEFORMAT_MTL = supportFileformatMtl;
     }
 
@@ -553,7 +553,7 @@ public class Config{
      * Define support for .iqm files
      * @param supportFileformatIqm flag for support
      */
-    public static void setSupportFileformatIqm(boolean supportFileformatIqm){
+    public void setSupportFileformatIqm(boolean supportFileformatIqm){
         SUPPORT_FILEFORMAT_IQM = supportFileformatIqm;
     }
 
@@ -561,7 +561,7 @@ public class Config{
      * Define support for .gltf files
      * @param supportFileformatGltf flag for support
      */
-    public static void setSupportFileformatGltf(boolean supportFileformatGltf){
+    public void setSupportFileformatGltf(boolean supportFileformatGltf){
         SUPPORT_FILEFORMAT_GLTF = supportFileformatGltf;
     }
 
@@ -569,7 +569,7 @@ public class Config{
      * Define support for mesh generation
      * @param supportMeshGeneration flag for support
      */
-    public static void setSupportMeshGeneration(boolean supportMeshGeneration){
+    public void setSupportMeshGeneration(boolean supportMeshGeneration){
         SUPPORT_MESH_GENERATION = supportMeshGeneration;
     }
 
@@ -577,7 +577,7 @@ public class Config{
      * Define support for .wav files
      * @param supportFileformatWav flag for support
      */
-    public static void setSupportFileformatWav(boolean supportFileformatWav){
+    public void setSupportFileformatWav(boolean supportFileformatWav){
         SUPPORT_FILEFORMAT_WAV = supportFileformatWav;
     }
 
@@ -585,7 +585,7 @@ public class Config{
      * Define support for .ogg files
      * @param supportFileformatOgg flag for support
      */
-    public static void setSupportFileformatOgg(boolean supportFileformatOgg){
+    public void setSupportFileformatOgg(boolean supportFileformatOgg){
         SUPPORT_FILEFORMAT_OGG = supportFileformatOgg;
     }
 
@@ -593,7 +593,7 @@ public class Config{
      * Define support for .xm files
      * @param supportFileformatXm flag for support
      */
-    public static void setSupportFileformatXm(boolean supportFileformatXm){
+    public void setSupportFileformatXm(boolean supportFileformatXm){
         SUPPORT_FILEFORMAT_XM = supportFileformatXm;
     }
 
@@ -601,7 +601,7 @@ public class Config{
      * Define support for .mod files
      * @param supportFileformatMod flag for support
      */
-    public static void setSupportFileformatMod(boolean supportFileformatMod){
+    public void setSupportFileformatMod(boolean supportFileformatMod){
         SUPPORT_FILEFORMAT_MOD = supportFileformatMod;
     }
 
@@ -609,7 +609,7 @@ public class Config{
      * Define support for .mp3 files
      * @param supportFileformatMp3 flag for support
      */
-    public static void setSupportFileformatMp3(boolean supportFileformatMp3){
+    public void setSupportFileformatMp3(boolean supportFileformatMp3){
         SUPPORT_FILEFORMAT_MP3 = supportFileformatMp3;
     }
 
@@ -617,7 +617,7 @@ public class Config{
      * Define support for .flac files
      * @param supportFileformatFlac flag for support
      */
-    public static void setSupportFileformatFlac(boolean supportFileformatFlac){
+    public void setSupportFileformatFlac(boolean supportFileformatFlac){
         SUPPORT_FILEFORMAT_FLAC = supportFileformatFlac;
     }
 
@@ -625,7 +625,7 @@ public class Config{
      * Define support for trace log messages
      * @param supportTracelog flag for support
      */
-    public static void setSupportTracelog(boolean supportTracelog){
+    public void setSupportTracelog(boolean supportTracelog){
         SUPPORT_TRACELOG = supportTracelog;
     }
 
@@ -633,7 +633,7 @@ public class Config{
      * Define support for debug trace log messages
      * @param supportTracelogDebug flag for support
      */
-    public static void setSupportTracelogDebug(boolean supportTracelogDebug){
+    public void setSupportTracelogDebug(boolean supportTracelogDebug){
         SUPPORT_TRACELOG_DEBUG = supportTracelogDebug;
     }
 }

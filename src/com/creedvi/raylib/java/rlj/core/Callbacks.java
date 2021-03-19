@@ -6,49 +6,21 @@ import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.*;
 import static com.creedvi.raylib.java.rlj.Config.MAX_FILEPATH_LENGTH;
 import static com.creedvi.raylib.java.rlj.Config.MAX_KEY_PRESSED_QUEUE;
 import static com.creedvi.raylib.java.rlj.core.Core.getWindow;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_DEBUG;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class Callbacks{
 
     static class ErrorCallback extends GLFWErrorCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(int error, long description){
             Tracelog(LOG_WARNING, "GLFW: Error: " + error + " Description: " + description);
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class WindowSizeCallback extends GLFWWindowSizeCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, int width, int height){
             Tracelog(LOG_DEBUG, "Window Size Callback Triggered");
@@ -66,25 +38,9 @@ public class Callbacks{
             Core.getWindow().screen.setHeight(height);
             // NOTE: Postprocessing texture is not scaled to new size
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class WindowIconifyCallback extends GLFWWindowIconifyCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, boolean iconified){
             Tracelog(LOG_DEBUG, "Iconify Callback Triggered");
@@ -95,25 +51,9 @@ public class Callbacks{
                 Core.getWindow().flags &= ~FLAG_WINDOW_MINIMIZED.getFlag();           // The window was restored
             }
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class WindowMaximizeCallback extends GLFWWindowMaximizeCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, boolean maximized){
             if (maximized){
@@ -123,25 +63,9 @@ public class Callbacks{
                 Core.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED.getFlag();           // The window was restored
             }
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class WindowFocusCallback extends GLFWWindowFocusCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, boolean focused){
             Tracelog(LOG_DEBUG, "Focus Callback Triggered");
@@ -152,28 +76,11 @@ public class Callbacks{
                 Core.getWindow().flags |= FLAG_WINDOW_UNFOCUSED.getFlag();            // The window lost focus
             }
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class KeyCallback extends GLFWKeyCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods){
-            //Tracelog(LOG_DEBUG, "Key Callback Triggered");
             Tracelog(LOG_DEBUG, "Key Callback: KEY: " + key + "(" + Character.highSurrogate(key) + ") - SCANCODE:" +
                     scancode + " (STATE: " + action + ")");
 
@@ -198,25 +105,9 @@ public class Callbacks{
                 }
             }
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class CharCallback extends GLFWCharCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, int codepoint){
             Tracelog(LOG_DEBUG, "Char Callback: KEY:"+codepoint+"("+ Character.highSurrogate(codepoint) +")");
@@ -234,25 +125,9 @@ public class Callbacks{
                 Core.getInput().keyboard.setCharPressedQueueCount(Core.getInput().keyboard.getKeyPressedQueueCount() + 1);
             }
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class MouseButtonCallback extends GLFWMouseButtonCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, int button, int action, int mods){
             Tracelog(LOG_DEBUG, "Mouse Button Callback Triggered");
@@ -260,98 +135,34 @@ public class Callbacks{
             // but future releases may add more actions (i.e. GLFW_REPEAT)
             Core.getInput().mouse.getCurrentButtonState()[button] = action;
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class MouseCursorPosCallback extends GLFWCursorPosCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, double xpos, double ypos){
             Tracelog(LOG_DEBUG, "Cursor Position Callback Triggered");
             Core.getInput().mouse.getPosition().setX((float) xpos);
             Core.getInput().mouse.getPosition().setY((float) ypos);
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class MouseScrollCallback extends GLFWScrollCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, double xoffset, double yoffset){
             Tracelog(LOG_DEBUG, "Scroll Callback Triggered");
             Core.getInput().mouse.setCurrentWheelMove((float) yoffset);
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class CursorEnterCallback extends GLFWCursorEnterCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, boolean entered){
             Tracelog(LOG_DEBUG, "Cursor Enter Callback Triggered");
             Core.getInput().mouse.setCursorOnScreen(entered);
         }
-
-        @Override
-        public void close(){
-
-        }
     }
 
     static class WindowDropCallback extends GLFWDropCallback{
-
-        @Override
-        public String getSignature(){
-            return null;
-        }
-
-        @Override
-        public void callback(long args){
-
-        }
-
         @Override
         public void invoke(long window, int count, long names){
             Tracelog(LOG_DEBUG, "Drop Callback Triggered");
@@ -366,11 +177,6 @@ public class Callbacks{
             }
 
             Core.getWindow().setDropFilesCount(count);
-        }
-
-        @Override
-        public void close(){
-
         }
     }
 }

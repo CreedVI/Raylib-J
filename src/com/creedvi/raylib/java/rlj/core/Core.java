@@ -38,9 +38,9 @@ import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BILINEAR;
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
 import static com.creedvi.raylib.java.rlj.textures.Textures.SetTextureFilter;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.*;
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -63,6 +63,7 @@ public class Core{
     private Callbacks.WindowIconifyCallback iconifyCallback;
     private Callbacks.WindowFocusCallback focusCallback;
     private Callbacks.WindowDropCallback dropCallback;
+    private Callbacks.ErrorCallback errorCallback;
 
     public Core(){
         window = new Window();
@@ -90,9 +91,13 @@ public class Core{
     //RestoreTerminal
     //END RPI | DRM
 
-
-    // Initialize window and OpenGL context
-    // NOTE: data parameter could be used to pass any kind of required data to the initialization
+    /**
+     * Initialize window and OpenGL context.
+     * NOTE: data parameter could be used to pass any kind of required data to the initialization
+     * @param width Window width in pixels
+     * @param height Window height in pixels
+     * @param title Window title
+     */
     public void initWindow(int width, int height, String title){
         Tracelog(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
 
@@ -136,7 +141,9 @@ public class Core{
         glfwShowWindow(window.handle);
     }
 
-    // Close window and unload OpenGL context
+    /**
+     * Close window and unload OpenGL context
+     */
     public void CloseWindow(){
         if (SUPPORT_DEFAULT_FONT){
             Text.UnloadFontDefault();
@@ -144,25 +151,18 @@ public class Core{
 
         RLGL.rlglClose();                // De-init rlgl
 
+        glfwFreeCallbacks(window.handle);
         glfwDestroyWindow(window.handle);
         glfwTerminate();
-
-        keyCallback.free();
-        charCallback.free();
-        mouseBtnCallback.free();
-        cursorEnterCallback.free();
-        cursorPosCallback.free();
-        scrollCallback.free();
-        sizeCallback.free();
-        maximizeCallback.free();
-        iconifyCallback.free();
-        focusCallback.free();
-        dropCallback.free();
 
         Tracelog(LOG_INFO, "Window closed successfully");
     }
 
-    // Check if KEY_ESCAPE pressed or Close icon pressed
+    /**
+     * Check if KEY_ESCAPE pressed or close icon pressed
+     * @return <code>true</code> if window is ready to close.
+     *      NOTE: Must be inverted for use in a while loop
+     */
     public boolean WindowShouldClose(){
         if (window.isReady()){
             // While window minimized, stop loop execution
@@ -185,17 +185,26 @@ public class Core{
         }
     }
 
-    // Check if window has been initialized successfully
+    /**
+     * Check if window has been initialized successfully
+     * @return <code>true</code> if window was initialized successfully
+     */
     public boolean IsWindowReady(){
         return window.ready;
     }
 
-    // Check if window is currently fullscreen
+    /**
+     * Check if window is currently fullscreen
+     * @return <code>true</code> if window is fullscreen
+     */
     public static boolean IsWindowFullscreen(){
         return window.fullscreen;
     }
 
-    // Check if window is currently hidden
+    /**
+     * Check if window is currently hidden
+     * @return <code>true</code> if window is hidden
+     */
     public boolean IsWindowHidden(){
         return ((window.flags & FLAG_WINDOW_HIDDEN.getFlag()) > 0);
     }
@@ -778,14 +787,6 @@ public class Core{
 
         // Wait for some milliseconds...
         if (time.frame < time.target){
-            /*try{
-                synchronized (this){
-                    this.wait((long) ((float) (time.target - time.frame) * 1000.0f));
-                }
-            } catch (InterruptedException e){
-                e.printStackTrace();
-            }*/
-
             Wait((float) ((time.target - time.frame)*1000.0f));
 
             time.current = GetTime();
@@ -1637,7 +1638,7 @@ public class Core{
         // NOTE: Framebuffer (render area - window.render.getWidth(), window.render.height) could include black bars...
         // ...in top-down or left-right to match display aspect ratio (no weird scalings)
 
-        glfwSetErrorCallback(new Callbacks.ErrorCallback());
+        glfwSetErrorCallback(errorCallback = new Callbacks.ErrorCallback());
 
         if (!glfwInit()){
             Tracelog(LOG_WARNING, "GLFW: Failed to initialize GLFW");
@@ -1666,7 +1667,6 @@ public class Core{
 
         glfwDefaultWindowHints();                       // Set default windows hints
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);       // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         //glfwWindowHint(GLFW_RED_BITS, 8);             // Framebuffer red color component bits
         //glfwWindowHint(GLFW_GREEN_BITS, 8);           // Framebuffer green color component bits
         //glfwWindowHint(GLFW_BLUE_BITS, 8);            // Framebuffer blue color component bits

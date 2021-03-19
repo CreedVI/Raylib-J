@@ -4,13 +4,23 @@ public class Color{
 
     int r, g, b, a;
 
+    /**
+     * Creates new color (Black)
+     */
     public Color(){
         this.r = 0;
         this.g = 0;
         this.b = 0;
-        this.a = 0;
+        this.a = 255;
     }
 
+    /**
+     * Creates new color with desired RGBA
+     * @param r Red (0-255)
+     * @param g Green (0-255)
+     * @param b Blue (0-255)
+     * @param a Alpha (0-255)
+     */
     public Color(int r, int g, int b, int a){
         this.r = r > 0 ? Math.min(r, 255) : 0;
         this.g = g > 0 ? Math.min(g, 255) : 0;
@@ -18,8 +28,12 @@ public class Color{
         this.a = a > 0 ? Math.min(a, 255) : 0;
     }
 
+    /**
+     * String value of Color
+     * @return R, G, B, A
+     */
     public String toString(){
-        return r + " " + g + " " + b + " " + a;
+        return r + ", " + g + ", " + b + ", " + a;
     }
 
     public static  Color LIGHTGRAY = new Color(200, 200, 200, 255);
@@ -49,34 +63,66 @@ public class Color{
     public static Color MAGENTA = new Color(255, 0, 255, 255);
     public static Color RAYWHITE = new Color(245, 245, 245, 255);
 
+    /**
+     * Returns red value
+     * @return Red
+     */
     public int getR(){
         return r;
     }
 
+    /**
+     * Sets the red value
+     * @param r Red (0-255)
+     */
     public void setR(int r){
         this.r = r;
     }
 
+    /**
+     * Returns green value
+     * @return green
+     */
     public int getG(){
         return g;
     }
 
+    /**
+     * Sets the green value
+     * @param g Green (0-255)
+     */
     public void setG(int g){
         this.g = g;
     }
 
+    /**
+     * Returns the blue value
+     * @return blue
+     */
     public int getB(){
         return b;
     }
 
+    /**
+     * Sets the blue value
+     * @param b Blue (0-255)
+     */
     public void setB(int b){
         this.b = b;
     }
 
+    /**
+     * Returns the Alpha value
+     * @return Alpha
+     */
     public int getA(){
         return a;
     }
 
+    /**
+     * Sets that Alpha value
+     * @param a Alpha (0-255)
+     */
     public void setA(int a){
         this.a = a;
     }

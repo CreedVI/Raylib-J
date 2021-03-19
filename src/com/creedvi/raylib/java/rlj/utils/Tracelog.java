@@ -12,11 +12,10 @@ public class Tracelog{
      * printed.
      */
 
-
     final int MAX_TRACELOG_MSG_LENGTH = 128;     // Max length of one trace-log message
     final int MAX_UWP_MESSAGES = 512;           // Max UWP messages to process
 
-    static int logTypeLevel = LOG_INFO.getTraceLogInt();                     // Minimum log type level
+    static int logTypeLevel = LOG_ALL.getTraceLogInt();                     // Minimum log type level
     static int logTypeExit = LOG_ERROR.getTraceLogInt();                     // Log type that exits
 
     public enum TracelogType{
@@ -106,7 +105,7 @@ public class Tracelog{
      * Set the current threshold (minimum) log level
      * @param logType Minimum log type to be shown
      */
-    void SetTraceLogLevel(TracelogType logType){
+    public static void SetTraceLogLevel(TracelogType logType){
         logTypeLevel = logType.getTraceLogInt();
     }
 
