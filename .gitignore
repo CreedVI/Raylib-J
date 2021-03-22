@@ -2,5 +2,6 @@
 *.dmp
 *.iml
 .idea/
+logo/rlj_old.png
 out/
 tests/
