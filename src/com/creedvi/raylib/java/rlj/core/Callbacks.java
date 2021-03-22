@@ -85,7 +85,8 @@ public class Callbacks{
                     scancode + " (STATE: " + action + ")");
 
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ){
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+                getWindow().setReady(false);
+                //glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
             else {
                 // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1

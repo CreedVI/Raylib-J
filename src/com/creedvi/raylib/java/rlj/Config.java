@@ -280,7 +280,7 @@ public class Config{
      * Show LOG_DEFAULT output messages
      * NOTE: By default LOG_DEBUG traces not shown
      */
-    public static boolean SUPPORT_TRACELOG_DEBUG = true;
+    public static boolean SUPPORT_TRACELOG_DEBUG = false;
 
     // utils: Configuration values
     //------------------------------------------------------------------------------------
