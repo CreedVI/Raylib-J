@@ -130,6 +130,9 @@ public class RLGL{
 
     static rlglData rlglData;
 
+    /**
+     * Version of OpenGL being used by Raylib-J
+     */
     public enum GlVersion{
         NOGL(0),
         OPENGL_11(1),
@@ -202,7 +205,9 @@ public class RLGL{
         }
     }
 
-    // Texture formats (support depends on OpenGL version)
+    /**
+     * Texture formats (support depends on OpenGL version)
+     */
     public enum PixelFormat{
         PLACEHOLDER(0),
         UNCOMPRESSED_GRAYSCALE(1),     // 8 bit per pixel (no alpha)
@@ -885,19 +890,20 @@ public class RLGL{
         Tracelog(LOG_INFO, "    > GLSL: " + glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         String glVersion = glGetString(GL_VERSION);
+        float glVersionF = Float.parseFloat(glVersion.substring(0,3));
 
-        if(Float.parseFloat(glVersion.substring(0,2)) >= 3.3){
+        if(glVersionF >= 3.3f){
             GRAPHICS_API_OPENGL_33 = true;
             GRAPHICS_API_OPENGL_21 = false;
             GRAPHICS_API_OPENGL_11 = false;
 
         }
-        else if(Float.parseFloat(glVersion.substring(0,2)) < 3.3 && Float.parseFloat(glVersion.substring(0,2)) >= 2.1){
+        else if(glVersionF < 3.3f && glVersionF >= 2.1f){
             GRAPHICS_API_OPENGL_33 = false;
             GRAPHICS_API_OPENGL_21 = true;
             GRAPHICS_API_OPENGL_11 = false;
         }
-        else if(Float.parseFloat(glVersion.substring(0,2)) < 2.1 && Float.parseFloat(glVersion.substring(0,2)) >= 1.1){
+        else if(glVersionF < 2.1f && glVersionF >= 1.1f){
             GRAPHICS_API_OPENGL_33 = false;
             GRAPHICS_API_OPENGL_21 = false;
             GRAPHICS_API_OPENGL_11 = true;
@@ -906,7 +912,7 @@ public class RLGL{
         // TODO: Automatize extensions loading using rlLoadExtensions() and GLAD
         // Actually, when rlglInit() is called in InitWindow() in core.c,
         // OpenGL context has already been created and required extensions loaded
-        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+       if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             int numExt = 0;
             String[] extList = new String[numExt];
 
@@ -1251,9 +1257,6 @@ public class RLGL{
 
     //TODO: ??the fuck is GLAD??
     public static void rlLoadExtensions(){
-
-
-
         /*if (GRAPHICS_API_OPENGL_33){
             // NOTE: glad is generated and contains only required OpenGL 3.3 Core extensions (and lower versions)
             if (!__APPLE__){
@@ -2984,7 +2987,7 @@ public class RLGL{
 
             // Colors buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[2]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter * 4L,IntBuffer.wrap(batch.vertexBuffer[batch.currentBuffer].colors));
+            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter * 4L, batch.vertexBuffer[batch.currentBuffer].colors);
             //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].colors, GL_DYNAMIC_DRAW);
 
             // NOTE: glMapBuffer() causes sync issue.

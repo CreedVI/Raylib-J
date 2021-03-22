@@ -31,8 +31,7 @@ import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_ES
 import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
 import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
 import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.OPENGL_21;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.OPENGL_33;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_R8G8B8A8;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BILINEAR;
@@ -136,8 +135,7 @@ public class Core{
             // Set default font texture filter for HighDPI (blurry)
             SetTextureFilter(GetFontDefault().getTexture(), FILTER_BILINEAR.getTextureFilterInt());
         }
-
-        glfwMakeContextCurrent(window.handle);
+;
         glfwShowWindow(window.handle);
     }
 
@@ -1765,7 +1763,24 @@ public class Core{
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);          // Choose OpenGL minor version (just hint)
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Profiles Hint: Only 3.3 and above!
-            glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+            if(__APPLE__){
+                glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+            }
+            else{
+                glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_FALSE);
+            }
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+        }
+        else if(RLGL.rlGetVersion() == OPENGL_ES_20.getGlType()){
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+            if(PLATFORM_DESKTOP){
+                glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+            }
+            else {
+                glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+            }
         }
 
         if (Config.MAX_GAMEPADS > 0){

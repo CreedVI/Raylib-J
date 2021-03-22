@@ -16,6 +16,7 @@ public class Config{
     public static boolean __WINDOWS__ = (OS.contains("win"));
     public static boolean __APPLE__ = (OS.contains("mac"));
     public static boolean __LINUX__ = (OS.contains("nix") || OS.contains("nux") || OS.contains("aix"));
+    public static boolean PLATFORM_DESKTOP = (__WINDOWS__ || __APPLE__ || __LINUX__);
 
     /**
      * Camera module is included (core.camera.java) and multiple predefined cameras are available: free, 1st/3rd

@@ -1,4 +1,5 @@
 *.log
+*.dmp
 *.iml
 .idea/
 out/

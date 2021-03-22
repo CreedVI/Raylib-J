@@ -124,7 +124,7 @@ public class Files{
         File file = new File(fileName);
         if(SUPPORT_STANDARD_FILEIO){
             if (file.exists()){
-                text = java.nio.file.Files.readString(Path.of(fileName));
+                //text = java.nio.file.Files.readString(Path.of(fileName));
                 Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Text file loaded successfully");
             }
             else{
