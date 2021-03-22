@@ -151,6 +151,7 @@ public class Core{
 
         RLGL.rlglClose();                // De-init rlgl
 
+        glfwSetWindowShouldClose(window.handle, true);
         glfwFreeCallbacks(window.handle);
         glfwDestroyWindow(window.handle);
         glfwTerminate();
@@ -175,7 +176,6 @@ public class Core{
             // Reset close status for next frame
             //glfwSetWindowShouldClose(window.handle, GLFW_FALSE);
             glfwSetWindowShouldClose(window.handle, false);
-
             return window.isShouldClose();
         }
         else{
@@ -1162,6 +1162,7 @@ public class Core{
         return file.exists();
     }
 
+    // TODO: 3/20/21
     //IsFileExtension
 
     //DirectoryExists
@@ -1202,6 +1203,7 @@ public class Core{
         }
     }
 
+    // TODO: 3/20/21
     //GetFileModTime
 
     //CompressData
@@ -1786,7 +1788,7 @@ public class Core{
             // Obtain recommended window.display.getWidth()/window.display.getHeight() from a valid videomode for the monitor
             int count = 0;
             GLFWVidMode.Buffer modes = glfwGetVideoModes(glfwGetPrimaryMonitor());
-            count = modes.sizeof();
+            count = modes != null ? modes.sizeof() : 0;
             // Get closest video mode to desired window.screen.getWidth()/window.screen.getHeight()
             for (int i = 0; i < count; i++){
                 if (modes.width() >= window.screen.getWidth()){
@@ -1842,9 +1844,6 @@ public class Core{
             }
         }
 
-        input.mouse.setCursor(glfwCreateStandardCursor(GLFW_CURSOR_NORMAL));
-        glfwSetCursor(window.handle, input.mouse.getCursor());
-
         if (window.handle <= 0){
             glfwTerminate();
             Tracelog(LOG_WARNING, "GLFW: Failed to initialize Window");
@@ -1860,7 +1859,6 @@ public class Core{
                     "    > Screen size:  " + window.screen.getWidth() + " x " + window.screen.getHeight());
             Tracelog(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
         }
-
 
         // Set window callback events
         glfwSetWindowMaximizeCallback(window.handle, maximizeCallback = new Callbacks.WindowMaximizeCallback());

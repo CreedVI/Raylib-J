@@ -164,7 +164,7 @@ public class GL_33{
 
     // Multiply the current matrix by a rotation matrix
     static void rlRotatef(float angleDeg, float x, float y, float z){
-        Matrix matRotation = MatrixIdentity();
+        Matrix matRotation;
 
         Vector3 axis = new Vector3(x, y, z);
         matRotation = MatrixRotate(Vector3Normalize(axis), angleDeg * DEG2RAD);
