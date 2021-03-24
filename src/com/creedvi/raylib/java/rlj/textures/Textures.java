@@ -9,8 +9,10 @@ import com.creedvi.raylib.java.rlj.rlgl.RLGL;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.text.Font;
 import com.creedvi.raylib.java.rlj.text.Text;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_IMAGE_MANIPULATION;
 import static com.creedvi.raylib.java.rlj.core.Color.BLANK;
@@ -147,28 +149,28 @@ public class Textures{
 
                 switch (tmppf){
                     case UNCOMPRESSED_GRAYSCALE:{
-                        image.data = new int[image.width * image.height * Character.SIZE];
+                        image.data = MemoryUtil.memAllocInt(image.width * image.height);
 
                         for (int i = 0; i < image.width * image.height; i++){
-                            image.data[i] =
-                                    (int) ((pixels[i].getX() * 0.299f + pixels[i].getY() * 0.587f + pixels[i].getZ() * 0.114f) * 255.0f);
+                            image.data.put(i,
+                                    (int) ((pixels[i].getX() * 0.299f + pixels[i].getY() * 0.587f + pixels[i].getZ() * 0.114f) * 255.0f));
                         }
 
                     }
                     break;
                     case UNCOMPRESSED_GRAY_ALPHA:{
-                        image.data = new int[image.width * image.height * 2 * Character.SIZE];
+                        image.data = MemoryUtil.memAllocInt(image.width * image.height * 2);
 
                         for (int i = 0; i < image.width * image.height * 2; i += 2, k++){
-                            image.data[i] =
-                                    (int) ((pixels[k].getX() * 0.299f + pixels[k].getY() * 0.587f + pixels[k].getZ() * 0.114f) * 255.0f);
-                            image.data[i + 1] = (int) (pixels[k].getW() * 255.0f);
+                            image.data.put(i,
+                                    (int) ((pixels[k].getX() * 0.299f + pixels[k].getY() * 0.587f + pixels[k].getZ() * 0.114f) * 255.0f));
+                            image.data.put(i + 1, (int) (pixels[k].getW() * 255.0f));
                         }
 
                     }
                     break;
                     case UNCOMPRESSED_R5G6B5:{
-                        image.data = new int[image.width * image.height * Short.SIZE];
+                        image.data.put(image.width * image.height);
 
                         char r;
                         char g;
@@ -179,23 +181,23 @@ public class Textures{
                             g = (char) Math.round(pixels[i].getY() * 63.0f);
                             b = (char) Math.round(pixels[i].getZ() * 31.0f);
 
-                            image.data[i] = r << 11 | g << 5 | b;
+                            image.data.put(i, r << 11 | g << 5 | b);
                         }
 
                     }
                     break;
                     case UNCOMPRESSED_R8G8B8:{
-                        image.data = new int[image.width * image.height * 3 * Character.SIZE];
+                        image.data.put(image.width * image.height * 3);
                         k = 0;
                         for (int i = 0; i < image.width * image.height * 3; i += 3, k++){
-                            image.data[i] = (int) (pixels[k].getX() * 255.0f);
-                            image.data[i + 1] = (int) (pixels[k].getY() * 255.0f);
-                            image.data[i + 2] = (int) (pixels[k].getZ() * 255.0f);
+                            image.data.put(i, (int) (pixels[k].getX() * 255.0f));
+                            image.data.put(i + 1, (int) (pixels[k].getY() * 255.0f));
+                            image.data.put(i + 2, (int) (pixels[k].getZ() * 255.0f));
                         }
                     }
                     break;
                     case UNCOMPRESSED_R5G5B5A1:{
-                        image.data = new int[image.width * image.height * Short.SIZE];
+                        image.data.put(image.width * image.height);
 
                         char r;
                         char g;
@@ -208,13 +210,13 @@ public class Textures{
                             b = (char) (Math.round(pixels[i].getZ() * 31.0f));
                             a = (char) ((pixels[i].getW() > ((float) UNCOMPRESSED_R5G5B5A1_ALPHA_THRESHOLD / 255.0f)) ? 1 : 0);
 
-                            image.data[i] = r << 11 | g << 6 | b << 1 | a;
+                            image.data.put(i, r << 11 | g << 6 | b << 1 | a);
                         }
 
                     }
                     break;
                     case UNCOMPRESSED_R4G4B4A4:{
-                        image.data = new int[image.width * image.height * Short.SIZE];
+                        image.data.put(image.width * image.height);
 
                         char r;
                         char g;
@@ -227,53 +229,54 @@ public class Textures{
                             b = (char) (Math.round(pixels[i].getZ() * 15.0f));
                             a = (char) (Math.round(pixels[i].getW() * 15.0f));
 
-                            image.data[i] = r << 12 | g << 8 | b << 4 | a;
+                            image.data.put(i, r << 12 | g << 8 | b << 4 | a);
                         }
 
                     }
                     break;
                     case UNCOMPRESSED_R8G8B8A8:{
-                        image.data = new int[image.width * image.height * 4 * Character.SIZE];
+                        image.data.put(image.width * image.height * 4);
 
                         k = 0;
                         for (int i = 0; i < image.width * image.height * 4; i += 4, k++){
-                            image.data[i] = (int) (pixels[k].getX() * 255.0f);
-                            image.data[i + 1] = (int) (pixels[k].getY() * 255.0f);
-                            image.data[i + 2] = (int) (pixels[k].getZ() * 255.0f);
-                            image.data[i + 3] = (int) (pixels[k].getW() * 255.0f);
+                            image.data.put(i, (int) (pixels[k].getX() * 255.0f));
+                            image.data.put(i + 1, (int) (pixels[k].getY() * 255.0f));
+                            image.data.put(i + 2, (int) (pixels[k].getZ() * 255.0f));
+                            image.data.put(i + 3, (int) (pixels[k].getW() * 255.0f));
                         }
                     }
                     break;
                     case UNCOMPRESSED_R32:{
                         // WARNING: Image is converted to GRAYSCALE eqeuivalent 32bit
 
-                        image.data = new int[image.width * image.height * Float.SIZE];
+                        image.data.put(image.width * image.height);
 
                         for (int i = 0; i < image.width * image.height; i++){
-                            image.data[i] = (int) (pixels[i].getX() * 0.299f + pixels[i].getY() * 0.587f + pixels[i].getZ() * 0.114f);
+                            image.data.put(i,
+                                    (int) (pixels[i].getX() * 0.299f + pixels[i].getY() * 0.587f + pixels[i].getZ() * 0.114f));
                         }
                     }
                     break;
                     case UNCOMPRESSED_R32G32B32:{
-                        image.data = new int[image.width * image.height * 3 * Float.SIZE];
+                        image.data.put(image.width * image.height * 3);
 
                         k = 0;
                         for (int i = 0; i < image.width * image.height * 3; i += 3, k++){
-                            image.data[i] = (int) pixels[k].getX();
-                            image.data[i + 1] = (int) pixels[k].getY();
-                            image.data[i + 2] = (int) pixels[k].getZ();
+                            image.data.put(i, (int) pixels[k].getX());
+                            image.data.put(i + 1, (int) pixels[k].getY());
+                            image.data.put(i + 2, (int) pixels[k].getZ());
                         }
                     }
                     break;
                     case UNCOMPRESSED_R32G32B32A32:{
-                        image.data = new int[image.width * image.height * 4 * Float.SIZE];
+                        image.data.put(image.width * image.height * 4);
 
                         k = 0;
                         for (int i = 0; i < image.width * image.height * 4; i += 4, k++){
-                            image.data[i] = (int) pixels[k].getX();
-                            image.data[i + 1] = (int) pixels[k].getY();
-                            image.data[i + 2] = (int) pixels[k].getZ();
-                            image.data[i + 3] = (int) pixels[k].getW();
+                            image.data.put(i, (int) pixels[k].getX());
+                            image.data.put(i + 1, (int) pixels[k].getY());
+                            image.data.put(i + 2, (int) pixels[k].getZ());
+                            image.data.put(i + 3, (int) pixels[k].getW());
                         }
                     }
                     break;
@@ -414,43 +417,43 @@ public class Textures{
             fastPath = true;
         }
 
-        byte[] tmpb = new byte[image.data.length];
+        ByteBuffer tmpb = MemoryUtil.memAlloc(image.data.array().length);
 
-        for (int i = 0; i < image.data.length; i++){
-            tmpb[i] = (byte) Math.min(image.data[i], 255);
+        for (int i = 0; i < image.data.array().length; i++){
+            tmpb.put(i, (byte) Math.min(image.data.get(i), 255));
         }
 
         int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
-        byte[] output = new byte[newWidth * newHeight * bytesPerPixel];
+        ByteBuffer output = MemoryUtil.memAlloc(newWidth * newHeight * bytesPerPixel);
         if (fastPath){
 
             PixelFormat tmppf = PixelFormat.getByInt(image.getFormat());
 
             switch (tmppf){
                 case UNCOMPRESSED_GRAYSCALE:
-                    stbir_resize_uint8(ByteBuffer.wrap(tmpb), image.width, image.height, 0, ByteBuffer.wrap(output),
+                    stbir_resize_uint8(tmpb, image.width, image.height, 0, output,
                             newWidth, newHeight, 0, 1);
                     break;
                 case UNCOMPRESSED_GRAY_ALPHA:
-                    stbir_resize_uint8(ByteBuffer.wrap(tmpb), image.width, image.height, 0, ByteBuffer.wrap(output),
+                    stbir_resize_uint8(tmpb, image.width, image.height, 0, output,
                             newWidth, newHeight, 0, 2);
                     break;
                 case UNCOMPRESSED_R8G8B8:
-                    stbir_resize_uint8(ByteBuffer.wrap(tmpb), image.width, image.height, 0, ByteBuffer.wrap(output),
+                    stbir_resize_uint8(tmpb, image.width, image.height, 0, output,
                             newWidth, newHeight, 0, 3);
                     break;
                 case UNCOMPRESSED_R8G8B8A8:
-                    stbir_resize_uint8(ByteBuffer.wrap(tmpb), image.width, image.height, 0, ByteBuffer.wrap(output),
+                    stbir_resize_uint8(tmpb, image.width, image.height, 0, output,
                             newWidth, newHeight, 0, 4);
                     break;
                 default:
                     break;
             }
 
-            int[] outputi = new int[output.length];
+            IntBuffer outputi = MemoryUtil.memAllocInt(output.array().length);
 
-            for (int i = 0; i < outputi.length; i++){
-                outputi[i] = output[i];
+            for (int i = 0; i < outputi.array().length; i++){
+                outputi.put(i, output.get(i));
             }
 
             image.data = null;
@@ -462,17 +465,17 @@ public class Textures{
             // Get data as Color pixels array to work with it
 
             // NOTE: Color data is casted to ( char *), there shouldn't been any problem...
-            stbir_resize_uint8(ByteBuffer.wrap(tmpb), image.width, image.height, 0, ByteBuffer.wrap(output),
+            stbir_resize_uint8(tmpb, image.width, image.height, 0, output,
                     newWidth, newHeight, 0, 4);
 
             int format = image.format;
 
             image.data = null;
 
-            int[] outputi = new int[output.length];
+            IntBuffer outputi = MemoryUtil.memAllocInt(output.array().length);
 
-            for (int i = 0; i < outputi.length; i++){
-                outputi[i] = output[i];
+            for (int i = 0; i < outputi.array().length; i++){
+                outputi.put(i, output.get(i));
             }
 
             image.data = outputi;
@@ -492,7 +495,7 @@ public class Textures{
         }
 
         Color[] pixels = LoadImageColors(image);
-        int[] output = new int[newWidth * newHeight * 4];
+        IntBuffer output = MemoryUtil.memAllocInt(newWidth * newHeight * 4);
 
         // EDIT: added +1 to account for an early rounding problem
         int xRatio = ((image.width << 16) / newWidth) + 1;
@@ -556,7 +559,7 @@ public class Textures{
         }
 
         if (image.mipmaps < mipCount){
-            int[] temp = image.data;
+            IntBuffer temp = image.data;
 
             if (temp != null){
                 image.data = temp;      // Assign new pointer (new size) to store mipmaps data
@@ -566,7 +569,7 @@ public class Textures{
             }
 
             // Pointer to allocated memory point where store next mipmap level data
-            int nextmip = image.data.length + GetPixelDataSize(image.width, image.height, image.format);
+            int nextmip = image.data.array().length + GetPixelDataSize(image.width, image.height, image.format);
 
             mipWidth = image.width / 2;
             mipHeight = image.height / 2;
@@ -579,7 +582,7 @@ public class Textures{
 
                 ImageResize(imCopy, mipWidth, mipHeight);  // Uses internally Mitchell cubic downscale filter
 
-                nextmip = imCopy.data.length;
+                nextmip = imCopy.data.array().length;
                 nextmip += mipSize;
                 image.mipmaps++;
 
@@ -646,24 +649,24 @@ public class Textures{
             for (int i = 0, k = 0; i < image.width * image.height; i++){
                 switch (tmpPixFmt){
                     case UNCOMPRESSED_GRAYSCALE:{
-                        pixels[i].setR(image.data[i]);
-                        pixels[i].setG(image.data[i]);
-                        pixels[i].setB(image.data[i]);
+                        pixels[i].setR(image.data.get(i));
+                        pixels[i].setG(image.data.get(i));
+                        pixels[i].setB(image.data.get(i));
                         pixels[i].setA(255);
 
                     }
                     break;
                     case UNCOMPRESSED_GRAY_ALPHA:{
-                        pixels[i].setR(image.data[k]);
-                        pixels[i].setG(image.data[k]);
-                        pixels[i].setB(image.data[k]);
-                        pixels[i].setA(image.data[k + 1]);
+                        pixels[i].setR(image.data.get(k));
+                        pixels[i].setG(image.data.get(k));
+                        pixels[i].setB(image.data.get(k));
+                        pixels[i].setA(image.data.get(k + 1));
 
                         k += 2;
                     }
                     break;
                     case UNCOMPRESSED_R5G5B5A1:{
-                        short pixel = (short) image.data[i];
+                        short pixel = (short) image.data.get(i);
 
                         pixels[i].setR(((pixel & 0b1111100000000000) >> 11) * (255 / 31));
                         pixels[i].setG(((pixel & 0b0000011111000000) >> 6) * (255 / 31));
@@ -673,7 +676,7 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R5G6B5:{
-                        short pixel = (short) image.data[i];
+                        short pixel = (short) image.data.get(i);
 
                         pixels[i].setR(((pixel & 0b1111100000000000) >> 11) * (255 / 31));
                         pixels[i].setG(((pixel & 0b0000011111100000) >> 5) * (255 / 63));
@@ -683,7 +686,7 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R4G4B4A4:{
-                        short pixel = (short) image.data[i];
+                        short pixel = (short) image.data.get(i);
 
                         pixels[i].setR(((pixel & 0b1111000000000000) >> 12) * (255 / 15));
                         pixels[i].setG(((pixel & 0b0000111100000000) >> 8) * (255 / 15));
@@ -693,25 +696,25 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R8G8B8A8:{
-                        pixels[i].setR(image.data[k]);
-                        pixels[i].setG(image.data[k + 1]);
-                        pixels[i].setB(image.data[k + 2]);
-                        pixels[i].setA(image.data[k + 3]);
+                        pixels[i].setR(image.data.get(k));
+                        pixels[i].setG(image.data.get(k + 1));
+                        pixels[i].setB(image.data.get(k + 2));
+                        pixels[i].setA(image.data.get(k + 3));
 
                         k += 4;
                     }
                     break;
                     case UNCOMPRESSED_R8G8B8:{
-                        pixels[i].setR(image.data[k]);
-                        pixels[i].setG(image.data[k + 1]);
-                        pixels[i].setB(image.data[k + 2]);
+                        pixels[i].setR(image.data.get(k));
+                        pixels[i].setG(image.data.get(k + 1));
+                        pixels[i].setB(image.data.get(k + 2));
                         pixels[i].setA(255);
 
                         k += 3;
                     }
                     break;
                     case UNCOMPRESSED_R32:{
-                        pixels[i].setR((int) (image.data[k] * 255.0f));
+                        pixels[i].setR((int) (image.data.get(k) * 255.0f));
                         pixels[i].setG(0);
                         pixels[i].setB(0);
                         pixels[i].setA(255);
@@ -719,19 +722,19 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R32G32B32:{
-                        pixels[i].setR((int) (image.data[k] * 255.0f));
-                        pixels[i].setG((int) (image.data[k + 1] * 255.0f));
-                        pixels[i].setB((int) (image.data[k + 2] * 255.0f));
+                        pixels[i].setR((int) (image.data.get(k) * 255.0f));
+                        pixels[i].setG((int) (image.data.get(k + 1) * 255.0f));
+                        pixels[i].setB((int) (image.data.get(k + 2) * 255.0f));
                         pixels[i].setA(255);
 
                         k += 3;
                     }
                     break;
                     case UNCOMPRESSED_R32G32B32A32:{
-                        pixels[i].setR((int) (image.data[k] * 255.0f));
-                        pixels[i].setG((int) (image.data[k] * 255.0f));
-                        pixels[i].setB((int) (image.data[k] * 255.0f));
-                        pixels[i].setA((int) (image.data[k] * 255.0f));
+                        pixels[i].setR((int) (image.data.get(k) * 255.0f));
+                        pixels[i].setG((int) (image.data.get(k) * 255.0f));
+                        pixels[i].setB((int) (image.data.get(k) * 255.0f));
+                        pixels[i].setA((int) (image.data.get(k) * 255.0f));
 
                         k += 4;
                     }
@@ -769,24 +772,24 @@ public class Textures{
             for (int i = 0, k = 0; i < image.width * image.height; i++){
                 switch (tmpPixFmt){
                     case UNCOMPRESSED_GRAYSCALE:{
-                        pixels[i].setX((float) (image.data)[i] / 255.0f);
-                        pixels[i].setY((float) (image.data)[i] / 255.0f);
-                        pixels[i].setZ((float) (image.data)[i] / 255.0f);
+                        pixels[i].setX((float) image.data.get(i) / 255.0f);
+                        pixels[i].setY((float) image.data.get(i) / 255.0f);
+                        pixels[i].setZ((float) image.data.get(i) / 255.0f);
                         pixels[i].setW(1.0f);
 
                     }
                     break;
                     case UNCOMPRESSED_GRAY_ALPHA:{
-                        pixels[i].setX((float) (image.data)[k] / 255.0f);
-                        pixels[i].setY((float) (image.data)[k] / 255.0f);
-                        pixels[i].setZ((float) (image.data)[k] / 255.0f);
-                        pixels[i].setW((float) (image.data)[k + 1] / 255.0f);
+                        pixels[i].setX((float) image.data.get(k) / 255.0f);
+                        pixels[i].setY((float) image.data.get(k) / 255.0f);
+                        pixels[i].setZ((float) image.data.get(k) / 255.0f);
+                        pixels[i].setW((float) image.data.get(k + 1) / 255.0f);
 
                         k += 2;
                     }
                     break;
                     case UNCOMPRESSED_R5G5B5A1:{
-                        short pixel = (short) image.data[i];
+                        short pixel = (short) image.data.get(i);
 
                         pixels[i].setX((float) ((pixel & 0b1111100000000000) >> 11) * (1.0f / 31));
                         pixels[i].setY((float) ((pixel & 0b0000011111000000) >> 6) * (1.0f / 31));
@@ -796,7 +799,7 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R5G6B5:{
-                        short pixel = (short) image.data[i];
+                        short pixel = (short) image.data.get(i);
 
                         pixels[i].setX((float) ((pixel & 0b1111100000000000) >> 11) * (1.0f / 31));
                         pixels[i].setY((float) ((pixel & 0b0000011111100000) >> 5) * (1.0f / 63));
@@ -806,7 +809,7 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R4G4B4A4:{
-                        short pixel = (short) image.data[i];
+                        short pixel = (short) image.data.get(i);
 
                         pixels[i].setX((float) ((pixel & 0b1111000000000000) >> 12) * (1.0f / 15));
                         pixels[i].setY((float) ((pixel & 0b0000111100000000) >> 8) * (1.0f / 15));
@@ -816,25 +819,25 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R8G8B8A8:{
-                        pixels[i].setX((float) (image.data)[k] / 255.0f);
-                        pixels[i].setY((float) (image.data)[k + 1] / 255.0f);
-                        pixels[i].setZ((float) (image.data)[k + 2] / 255.0f);
-                        pixels[i].setW((float) (image.data)[k + 3] / 255.0f);
+                        pixels[i].setX((float) image.data.get(k) / 255.0f);
+                        pixels[i].setY((float) image.data.get(k + 1) / 255.0f);
+                        pixels[i].setZ((float) image.data.get(k + 2) / 255.0f);
+                        pixels[i].setW((float) image.data.get(k + 3) / 255.0f);
 
                         k += 4;
                     }
                     break;
                     case UNCOMPRESSED_R8G8B8:{
-                        pixels[i].setX((float) (image.data)[k] / 255.0f);
-                        pixels[i].setY((float) (image.data)[k + 1] / 255.0f);
-                        pixels[i].setZ((float) (image.data)[k + 2] / 255.0f);
+                        pixels[i].setX((float) image.data.get(k) / 255.0f);
+                        pixels[i].setY((float) image.data.get(k + 1) / 255.0f);
+                        pixels[i].setZ((float) image.data.get(k + 2) / 255.0f);
                         pixels[i].setW(1.0f);
 
                         k += 3;
                     }
                     break;
                     case UNCOMPRESSED_R32:{
-                        pixels[i].setX((float) image.data[k]);
+                        pixels[i].setX((float) image.data.get(k));
                         pixels[i].setY(0.0f);
                         pixels[i].setZ(0.0f);
                         pixels[i].setW(1.0f);
@@ -842,19 +845,19 @@ public class Textures{
                     }
                     break;
                     case UNCOMPRESSED_R32G32B32:{
-                        pixels[i].setX((float) image.data[k]);
-                        pixels[i].setY((float) image.data[k + 1]);
-                        pixels[i].setZ((float) image.data[k + 2]);
+                        pixels[i].setX((float) image.data.get(k));
+                        pixels[i].setY((float) image.data.get(k + 1));
+                        pixels[i].setZ((float) image.data.get(k + 2));
                         pixels[i].setW(1.0f);
 
                         k += 3;
                     }
                     break;
                     case UNCOMPRESSED_R32G32B32A32:{
-                        pixels[i].setX((float) image.data[k]);
-                        pixels[i].setY((float) image.data[k + 1]);
-                        pixels[i].setZ((float) image.data[k + 2]);
-                        pixels[i].setW((float) image.data[k + 3]);
+                        pixels[i].setX((float) image.data.get(k));
+                        pixels[i].setY((float) image.data.get(k + 1));
+                        pixels[i].setZ((float) image.data.get(k + 2));
+                        pixels[i].setW((float) image.data.get(k + 3));
 
                         k += 4;
                     }
@@ -892,7 +895,7 @@ public class Textures{
                         (float) color.getB() / 255.0f);
                 int gray = (int) ((coln.getX() * 0.299f + coln.getY() * 0.587f + coln.getZ() * 0.114f) * 255.0f);
 
-                dst.data[y * dst.getWidth() + x] = gray;
+                dst.data.put(y * dst.getWidth() + x, gray);
 
             }
             break;
@@ -902,8 +905,8 @@ public class Textures{
                         (float) color.getB() / 255.0f);
                 int gray = (int) ((coln.getX() * 0.299f + coln.getY() * 0.587f + coln.getZ() * 0.114f) * 255.0f);
 
-                dst.data[(y * dst.getWidth() + x) * 2] = gray;
-                dst.data[(y * dst.getWidth() + x) * 2 + 1] = color.getA();
+                dst.data.put((y * dst.getWidth() + x) * 2, gray);
+                dst.data.put((y * dst.getWidth() + x) * 2 + 1, color.getA());
 
             }
             break;
@@ -916,7 +919,7 @@ public class Textures{
                 int g = (Math.round(coln.getY() * 63.0f));
                 int b = (Math.round(coln.getZ() * 31.0f));
 
-                dst.data[y * dst.getWidth() + x] = r << 11 | g << 5 | b;
+                dst.data.put(y * dst.getWidth() + x, r << 11 | g << 5 | b);
 
             }
             break;
@@ -930,7 +933,7 @@ public class Textures{
                 char b = (char) (Math.round(coln.getZ() * 31.0f));
                 char a = (char) ((coln.getX() > (float) UNCOMPRESSED_R5G5B5A1_ALPHA_THRESHOLD / 255.0f) ? 1 : 0);
 
-                dst.data[y * dst.getWidth() + x] = r << 11 | g << 6 | b << 1 | a;
+                dst.data.put(y * dst.getWidth() + x, r << 11 | g << 6 | b << 1 | a);
 
             }
             break;
@@ -944,22 +947,22 @@ public class Textures{
                 char b = (char) (Math.round(coln.getZ() * 15.0f));
                 char a = (char) (Math.round(coln.getW() * 15.0f));
 
-                dst.data[y * dst.getWidth() + x] = r << 12 | g << 8 | b << 4 | a;
+                dst.data.put(y * dst.getWidth() + x, r << 12 | g << 8 | b << 4 | a);
 
             }
             break;
             case UNCOMPRESSED_R8G8B8:{
-                (dst.data)[(y * dst.getWidth() + x) * 3] = color.getR();
-                (dst.data)[(y * dst.getWidth() + x) * 3 + 1] = color.getG();
-                (dst.data)[(y * dst.getWidth() + x) * 3 + 2] = color.getB();
+                dst.data.put((y * dst.getWidth() + x) * 3, color.getR());
+                dst.data.put((y * dst.getWidth() + x) * 3 + 1, color.getG());
+                dst.data.put((y * dst.getWidth() + x) * 3 + 2, color.getB());
 
             }
             break;
             case UNCOMPRESSED_R8G8B8A8:{
-                (dst.data)[(y * dst.getWidth() + x) * 4] = color.getR();
-                (dst.data)[(y * dst.getWidth() + x) * 4 + 1] = color.getG();
-                (dst.data)[(y * dst.getWidth() + x) * 4 + 2] = color.getB();
-                (dst.data)[(y * dst.getWidth() + x) * 4 + 3] = color.getA();
+                dst.data.put((y * dst.getWidth() + x) * 4, color.getR());
+                dst.data.put((y * dst.getWidth() + x) * 4 + 1, color.getG());
+                dst.data.put((y * dst.getWidth() + x) * 4 + 2, color.getB());
+                dst.data.put((y * dst.getWidth() + x) * 4 + 3, color.getA());
 
             }
             break;
@@ -968,7 +971,8 @@ public class Textures{
                 Vector3 coln = new Vector3((float) color.getR() / 255.0f, (float) color.getG() / 255.0f,
                         (float) color.getB() / 255.0f);
 
-                dst.data[y * dst.width + x] = (int) (coln.getX() * 0.299f + coln.getY() * 0.587f + coln.getZ() * 0.114f);
+                dst.data.put(y * dst.width + x,
+                        (int) (coln.getX() * 0.299f + coln.getY() * 0.587f + coln.getZ() * 0.114f));
 
             }
             break;
@@ -977,9 +981,9 @@ public class Textures{
                 Vector3 coln = new Vector3((float) color.getR() / 255.0f, (float) color.getG() / 255.0f,
                         (float) color.getB() / 255.0f);
 
-                dst.data[(y * dst.getWidth() + x) * 3] = (int) coln.getX();
-                dst.data[(y * dst.getWidth() + x) * 3 + 1] = (int) coln.getY();
-                dst.data[(y * dst.getWidth() + x) * 3 + 2] = (int) coln.getZ();
+                dst.data.put((y * dst.getWidth() + x) * 3, (int) coln.getX());
+                dst.data.put((y * dst.getWidth() + x) * 3 + 1, (int) coln.getY());
+                dst.data.put((y * dst.getWidth() + x) * 3 + 2, (int) coln.getZ());
             }
             break;
             case UNCOMPRESSED_R32G32B32A32:{
@@ -987,10 +991,10 @@ public class Textures{
                 Vector4 coln = new Vector4((float) color.getR() / 255.0f, (float) color.getG() / 255.0f,
                         (float) color.getB() / 255.0f, (float) color.getA() / 255.0f);
 
-                dst.data[(y * dst.getWidth() + x) * 4] = (int) coln.getX();
-                dst.data[(y * dst.getWidth() + x) * 4 + 1] = (int) coln.getY();
-                dst.data[(y * dst.getWidth() + x) * 4 + 2] = (int) coln.getZ();
-                dst.data[(y * dst.getWidth() + x) * 4 + 3] = (int) coln.getW();
+                dst.data.put((y * dst.getWidth() + x) * 4, (int) coln.getX());
+                dst.data.put((y * dst.getWidth() + x) * 4 + 1, (int) coln.getY());
+                dst.data.put((y * dst.getWidth() + x) * 4 + 2, (int) coln.getZ());
+                dst.data.put((y * dst.getWidth() + x) * 4 + 3, (int) coln.getW());
 
             }
             break;
@@ -1367,7 +1371,7 @@ public class Textures{
         image.height = Core.GetScreenHeight();
         image.mipmaps = 1;
         image.format = UNCOMPRESSED_R8G8B8A8.getPixForInt();
-        image.data = rlReadScreenPixels(image.width, image.height);
+        image.data = IntBuffer.wrap(rlReadScreenPixels(image.width, image.height));
 
         return image;
     }

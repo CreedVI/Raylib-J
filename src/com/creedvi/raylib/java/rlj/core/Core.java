@@ -478,7 +478,7 @@ public class Core{
 
             icon[0].width(image.getWidth());
             icon[0].height(image.getHeight());
-            icon[0].pixels(image.getData()[0]);
+            icon[0].pixels(image.getData().get(0));
 
             // NOTE 1: We only support one image icon
             // NOTE 2: The specified image data is copied before this function returns

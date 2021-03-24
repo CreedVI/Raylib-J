@@ -6,6 +6,7 @@ import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.textures.Image;
 import com.creedvi.raylib.java.rlj.textures.Textures;
+import org.lwjgl.system.MemoryUtil;
 
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_DEFAULT_FONT;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_GRAY_ALPHA;
@@ -101,7 +102,7 @@ public class Text{
         // Re-construct image from defaultFontData and generate OpenGL texture
         //----------------------------------------------------------------------
         Image imFont = new Image();
-        imFont.setData(new int[128 * 128]);  // 2 bytes per pixel (gray + alpha)
+        imFont.setData(MemoryUtil.memAllocInt(128 * 128));  // 2 bytes per pixel (gray + alpha)
         imFont.setWidth(128);
         imFont.setHeight(128);
         imFont.setFormat(UNCOMPRESSED_GRAY_ALPHA.getPixForInt());
@@ -113,10 +114,10 @@ public class Text{
                 if (((defaultFontData[counter]) & 1 << j) == 1){
                     // NOTE: We are unreferencing data as short, so,
                     // we must consider data as little-endian order (alpha + gray)
-                    imFont.getData()[i + j] = 0xffff;
+                    imFont.getData().put(i + j, 0xffff);
                 }
                 else{
-                    imFont.getData()[i + j] = 0x00ff;
+                    imFont.getData().put(i + j, 0x00ff);
                 }
                 if(counter < 511){
                     counter++;

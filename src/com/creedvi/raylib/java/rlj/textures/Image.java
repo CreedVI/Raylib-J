@@ -1,10 +1,13 @@
 package com.creedvi.raylib.java.rlj.textures;
 
 import com.creedvi.raylib.java.rlj.core.Color;
+import org.lwjgl.system.MemoryUtil;
+
+import java.nio.IntBuffer;
 
 public class Image{
 
-    int[] data;             // Image raw data
+    IntBuffer data;             // Image raw data
     int width;              // Image base width
     int height;             // Image base height
     int mipmaps;            // Mipmap levels, 1 by default
@@ -14,12 +17,12 @@ public class Image{
     }
 
     public Image(Color[] pixels, int width, int height, int pixForInt, int mipmaps){
-        data = new int[pixels.length*4];
+        data = MemoryUtil.memAllocInt(pixels.length*4);
         for(int i = 0; i < pixels.length; i += 4){
-            data[i] = pixels[i].getR();
-            data[i + 1] = pixels[i].getG();
-            data[i + 2] = pixels[i].getB();
-            data[i + 3] = pixels[i].getA();
+            data.put(i, pixels[i].getR());
+            data.put(i + 1, pixels[i].getG());
+            data.put(i + 2, pixels[i].getB());
+            data.put(i + 3, pixels[i].getA());
         }
         this.width = width;
         this.height = height;
@@ -27,11 +30,11 @@ public class Image{
         this.mipmaps = mipmaps;
     }
 
-    public int[] getData(){
+    public IntBuffer getData(){
         return data;
     }
 
-    public void setData(int[] data){
+    public void setData(IntBuffer data){
         this.data = data;
     }
 
