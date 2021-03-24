@@ -69,7 +69,6 @@ public class GL_33{
 
             for (int i = 0; i < addColors; i++){
                 RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 4));
-                //currentBatch.vertexBuffer[0].colors[4 * 1] = currentBatch.vertexBuffer[0].colors[4 * 1 - 4]
                 RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 1, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 3));
                 RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 2, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 2));
                 RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 3, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 1));
@@ -252,7 +251,7 @@ public class GL_33{
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords.put(2 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter, x);
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords.put(2 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter + 1, y);
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter++;
-        }
+    }
 
     // Define one vertex (normal)
     // NOTE: Normals limited to TRIANGLES only?

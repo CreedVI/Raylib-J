@@ -19,6 +19,7 @@ public class Rectangle{
         this.width = w;
         this.height = h;
     }
+
     public Rectangle(Vector2 pos, float w, float h){
         this.x = pos.getX();
         this.y = pos.getY();
