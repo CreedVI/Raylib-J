@@ -7,6 +7,7 @@ import com.creedvi.raylib.java.rlj.rlgl.shader.Shader;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.textures.Texture2D;
 import com.creedvi.raylib.java.rlj.utils.Files;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -397,6 +398,12 @@ public class RLGL{
 
     public RLGL(){
         rlglData = new rlglData();
+    }
+
+    public static void forceGL11(){
+        GRAPHICS_API_OPENGL_33 = false;
+        GRAPHICS_API_OPENGL_21 = false;
+        GRAPHICS_API_OPENGL_11 = true;
     }
 
     public static rlglData getRlglData(){
@@ -909,6 +916,12 @@ public class RLGL{
             GRAPHICS_API_OPENGL_11 = true;
         }
 
+        /*
+         * TODO
+         *  DODODO
+         */
+        //forceGL11();
+
         // TODO: Automatize extensions loading using rlLoadExtensions() and GLAD
         // Actually, when rlglInit() is called in InitWindow() in core.c,
         // OpenGL context has already been created and required extensions loaded
@@ -1100,7 +1113,12 @@ public class RLGL{
             // Initialize buffers, default shaders and default textures
             //----------------------------------------------------------
             // Init default white texture
-            int[] pixels = {255, 255, 255, 255};   // 1 pixel RGBA (4 bytes)
+            IntBuffer pixels = MemoryUtil.memAllocInt(4);
+            pixels.put(0, 255);   // 1 pixel RGBA (4 bytes)
+            pixels.put(1, 255);   // 1 pixel RGBA (4 bytes)
+            pixels.put(2, 255);   // 1 pixel RGBA (4 bytes)
+            pixels.put(3, 255);   // 1 pixel RGBA (4 bytes)
+            pixels.flip();
             rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, UNCOMPRESSED_R8G8B8A8.getPixForInt(), 1));
 
             if (rlglData.getState().getDefaultTextureId() != 0){
@@ -1286,7 +1304,7 @@ public class RLGL{
     }
 
     // Convert image data to OpenGL texture (returns OpenGL valid Id)
-    public static int rlLoadTexture(int[] data, int width, int height, int format, int mipmapCount){
+    public static int rlLoadTexture(IntBuffer data, int width, int height, int format, int mipmapCount){
         glBindTexture(GL_TEXTURE_2D, 0);    // Free any old binding
 
         int id = 0;
@@ -1358,12 +1376,12 @@ public class RLGL{
             if (glInternalFormat != -1){
                 if (format < COMPRESSED_DXT1_RGB.pixForInt){
                     glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                            data.length + mipOffset);
+                            Math.abs(data.position() - data.remaining()) + mipOffset);
                 }
                 else{
                     if (!GRAPHICS_API_OPENGL_11){
                         glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, mipSize,
-                                data.length + mipOffset);
+                                Math.abs(data.position() - data.remaining()) + mipOffset);
                     }
                 }
 
@@ -1976,11 +1994,11 @@ public class RLGL{
                 // WARNING: Manual mipmap generation only works for RGBA 32bit textures!
                 if (texture.getFormat() == UNCOMPRESSED_R8G8B8A8.pixForInt){
                     // Retrieve texture data from VRAM
-                    int[] texData = rlReadTexturePixels(texture);
+                    IntBuffer texData = rlReadTexturePixels(texture);
 
                     // NOTE: Texture data size is reallocated to fit mipmaps data
                     // NOTE: CPU mipmap generation only supports RGBA 32bit data
-                    int mipmapCount = GenerateMipmaps(texData, texture.getWidth(), texture.getHeight());
+                    int mipmapCount = GenerateMipmaps(texData.array(), texture.getWidth(), texture.getHeight());
 
                     int size = texture.getWidth() * texture.getHeight() * 4;
                     int offset = size;
@@ -1991,7 +2009,7 @@ public class RLGL{
                     // Load the mipmaps
                     for (int level = 1; level < mipmapCount; level++){
                         glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA8, mipWidth, mipHeight, 0, GL_RGBA,
-                                GL_UNSIGNED_BYTE, texData.length + offset);
+                                GL_UNSIGNED_BYTE, texData.array().length + offset);
 
                         size = mipWidth * mipHeight * 4;
                         offset += size;
@@ -2074,8 +2092,8 @@ public class RLGL{
     }
 
     // Read texture pixel data
-    public static int[] rlReadTexturePixels(Texture2D texture){
-        int[] pixels = null;
+    public static IntBuffer rlReadTexturePixels(Texture2D texture){
+        IntBuffer pixels = null;
 
         if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
             glBindTexture(GL_TEXTURE_2D, texture.getId());
@@ -2098,7 +2116,7 @@ public class RLGL{
             int size = GetPixelDataSize(texture.getWidth(), texture.getHeight(), texture.getFormat());
 
             if ((glInternalFormat != -1) && (texture.getFormat() < COMPRESSED_DXT1_RGB.getPixForInt())){
-                pixels = new int[size];
+                pixels = MemoryUtil.memAllocInt(size);
                 glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, pixels);
             }
             else{
@@ -2128,7 +2146,8 @@ public class RLGL{
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
 
             // We read data as RGBA because FBO texture is configured as RGBA, despite binding another texture format
-            pixels = new int[GetPixelDataSize(texture.getWidth(), texture.getHeight(), UNCOMPRESSED_R8G8B8A8.getPixForInt())];
+            pixels = MemoryUtil.memAllocInt(GetPixelDataSize(texture.getWidth(), texture.getHeight(),
+                    UNCOMPRESSED_R8G8B8A8.getPixForInt()));
             glReadPixels(0, 0, texture.getWidth(), texture.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -2137,6 +2156,7 @@ public class RLGL{
             rlUnloadFramebuffer(fboId);
         }
 
+        pixels.flip();
         return pixels;
     }
 
@@ -2830,19 +2850,22 @@ public class RLGL{
         for (int i = 0; i < numBuffers; i++){
             batch.vertexBuffer[i].elementsCount = bufferElements;
 
-            batch.vertexBuffer[i].vertices = new float[bufferElements * 3 * 4];
+            batch.vertexBuffer[i].setVertices(MemoryUtil.memAllocFloat(bufferElements * 3 * 4));
+            //batch.vertexBuffer[i].vertices.flip();
             // 3 float by vertex, 4 vertex by quad
-            batch.vertexBuffer[i].texcoords = new float[bufferElements * 2 * 4];
+            batch.vertexBuffer[i].setTexcoords(MemoryUtil.memAllocFloat(bufferElements * 2 * 4));
+            //batch.vertexBuffer[i].texcoords.flip();
             // 2 float by texcoord, 4 texcoord by quad
-            batch.vertexBuffer[i].colors = new int[bufferElements * 4 * 4];
+            batch.vertexBuffer[i].setColors(MemoryUtil.memAllocInt(bufferElements * 4 * 4));
+            //batch.vertexBuffer[i].colors.flip();
             // 4 float by color, 4 colors by quad
             if (GRAPHICS_API_OPENGL_33){
                 //batch.vertexBuffer[i].setIndices_GL11() = (unsigned int *)RL_MALLOC(bufferElements * 6 * sizeof
                 // (unsigned int));
-                batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6]);
+                batch.getVertexBuffer()[i].setIndices_GL11(MemoryUtil.memAllocInt(bufferElements * 6));
             }// 6 int by quad (indices)
             else if (GRAPHICS_API_OPENGL_ES2){
-                batch.vertexBuffer[i].setIndices_ES20(new short[bufferElements * 6]);
+                batch.vertexBuffer[i].setIndices_ES20(MemoryUtil.memAllocShort(bufferElements * 6));
                 // 6 int by quad (indices)
             }
 
@@ -2851,12 +2874,12 @@ public class RLGL{
             if (GRAPHICS_API_OPENGL_33){
                 // Indices can be initialized right now
                 for (int j = 0; j < (6 * bufferElements); j += 6){
-                    batch.vertexBuffer[i].getIndices_GL11()[j] = 4 * k;
-                    batch.vertexBuffer[i].getIndices_GL11()[j + 1] = 4 * k + 1;
-                    batch.vertexBuffer[i].getIndices_GL11()[j + 2] = 4 * k + 2;
-                    batch.vertexBuffer[i].getIndices_GL11()[j + 3] = 4 * k;
-                    batch.vertexBuffer[i].getIndices_GL11()[j + 4] = 4 * k + 2;
-                    batch.vertexBuffer[i].getIndices_GL11()[j + 5] = 4 * k + 3;
+                    batch.vertexBuffer[i].getIndices_GL11().put(j, 4*k);
+                    batch.vertexBuffer[i].getIndices_GL11().put(j + 1, 4*k +1);
+                    batch.vertexBuffer[i].getIndices_GL11().put(j + 2, 4*k + 2);
+                    batch.vertexBuffer[i].getIndices_GL11().put(j + 3, 4*k);
+                    batch.vertexBuffer[i].getIndices_GL11().put(j + 4, 4*k + 2);
+                    batch.vertexBuffer[i].getIndices_GL11().put(j + 5, 4*k + 3);
 
                     k++;
                 }
@@ -2865,12 +2888,12 @@ public class RLGL{
             if (GRAPHICS_API_OPENGL_ES2){
                 // Indices can be initialized right now
                 for (int j = 0; j < (6 * bufferElements); j += 6){
-                    batch.vertexBuffer[i].getIndices_ES20()[j] = (short) (4 * k);
-                    batch.vertexBuffer[i].getIndices_ES20()[j + 1] = (short) (4 * k + 1);
-                    batch.vertexBuffer[i].getIndices_ES20()[j + 2] = (short) (4 * k + 2);
-                    batch.vertexBuffer[i].getIndices_ES20()[j + 3] = (short) (4 * k);
-                    batch.vertexBuffer[i].getIndices_ES20()[j + 4] = (short) (4 * k + 2);
-                    batch.vertexBuffer[i].getIndices_ES20()[j + 5] = (short) (4 * k + 3);
+                    batch.vertexBuffer[i].getIndices_ES20().put(j, (short) (4*k));
+                    batch.vertexBuffer[i].getIndices_ES20().put(j + 1, (short) (4*k +1));
+                    batch.vertexBuffer[i].getIndices_ES20().put(j + 2, (short) (4*k + 2));
+                    batch.vertexBuffer[i].getIndices_ES20().put(j + 3, (short) (4*k));
+                    batch.vertexBuffer[i].getIndices_ES20().put(j + 4, (short) (4*k + 2));
+                    batch.vertexBuffer[i].getIndices_ES20().put(j + 5, (short) (4*k + 3));
 
                     k++;
                 }
@@ -2879,6 +2902,12 @@ public class RLGL{
             batch.vertexBuffer[i].vCounter = 0;
             batch.vertexBuffer[i].tcCounter = 0;
             batch.vertexBuffer[i].cCounter = 0;
+            if(GRAPHICS_API_OPENGL_33){
+                batch.vertexBuffer[i].getIndices_GL11().flip();
+            }
+            if(GRAPHICS_API_OPENGL_ES2){
+                batch.vertexBuffer[i].getIndices_ES20().flip();
+            }
         }
 
         Tracelog(LOG_INFO, "RLGL: Internal vertex buffers initialized successfully in RAM (CPU)");
@@ -2895,7 +2924,7 @@ public class RLGL{
             // Quads - Vertex buffers binding and attributes enable
             // Vertex position buffer (shader-location = 0)
             glGenBuffers(batch.vertexBuffer[i].vboId);
-            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vboId[0]);
+            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vboId.get(0));
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vertices, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_POSITION.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_POSITION.getShaderLocationInt()],
@@ -2903,7 +2932,7 @@ public class RLGL{
 
             // Vertex texcoord buffer (shader-location = 1)
             glGenBuffers(batch.vertexBuffer[i].vboId);
-            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vboId[1]);
+            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vboId.get(1));
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].texcoords, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()],
@@ -2911,16 +2940,16 @@ public class RLGL{
 
             // Vertex color buffer (shader-location = 3)
             glGenBuffers(batch.vertexBuffer[i].vboId);
-            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vboId[2]);
+            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vboId.get(2));
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].colors, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_COLOR.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_COLOR.getShaderLocationInt()],
-                    4, GL_UNSIGNED_BYTE, true, 0, 0);
+                    4, GL_INT, true, 0, 0);
 
 
             // Fill index buffer
             glGenBuffers(batch.vertexBuffer[i].vboId);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[i].vboId[3]);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[i].vboId.get(3));
             if (GRAPHICS_API_OPENGL_33){
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[i].getIndices_GL11(), GL_STATIC_DRAW);
             }
@@ -2936,7 +2965,6 @@ public class RLGL{
             glBindVertexArray(0);
         }
         //--------------------------------------------------------------------------------------------
-
         // Init draw calls tracking system
         //--------------------------------------------------------------------------------------------
         //batch.draws = (DrawCall *)RL_MALLOC(DEFAULT_BATCH_DRAWCALLS*sizeof(DrawCall));
@@ -2975,19 +3003,20 @@ public class RLGL{
             if (rlglData.getExtSupported().isVao()){
                 glBindVertexArray(batch.vertexBuffer[batch.currentBuffer].vaoId);
             }
+
             // Vertex positions buffer
-            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[0]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter * 3L, batch.vertexBuffer[batch.currentBuffer].vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(0));
+            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter, batch.vertexBuffer[batch.currentBuffer].vertices);
             //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vertices, GL_DYNAMIC_DRAW);
 
             // Texture coordinates buffer
-            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[1]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter * 2L, batch.vertexBuffer[batch.currentBuffer].texcoords);
+            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(1));
+            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter, batch.vertexBuffer[batch.currentBuffer].texcoords);
             //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].texcoords, GL_DYNAMIC_DRAW);
 
             // Colors buffer
-            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[2]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter * 4L, batch.vertexBuffer[batch.currentBuffer].colors);
+            glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(2));
+            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter, batch.vertexBuffer[batch.currentBuffer].colors);
             //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].colors, GL_DYNAMIC_DRAW);
 
             // NOTE: glMapBuffer() causes sync issue.
@@ -3044,24 +3073,24 @@ public class RLGL{
                 }
                 else{
                     // Bind vertex attrib: position (shader-location = 0)
-                    glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[0]);
+                    glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(0));
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_POSITION.getShaderLocationInt()],
-                            3, 0, getBooleanFromInt(GL_FLOAT), 0, 0);
+                            3, GL_FLOAT, getBooleanFromInt(GL_FALSE), 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_POSITION.getShaderLocationInt()]);
 
                     // Bind vertex attrib: texcoord (shader-location = 1)
-                    glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[1]);
+                    glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(1));
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()],
-                            2, 0, getBooleanFromInt(GL_FLOAT), 0, 0);
+                            2, GL_FLOAT, getBooleanFromInt(GL_FALSE), 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()]);
 
                     // Bind vertex attrib: color (shader-location = 3)
-                    glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[2]);
+                    glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(2));
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_COLOR.getShaderLocationInt()],
                             4, GL_UNSIGNED_BYTE, getBooleanFromInt(GL_TRUE), 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs()[LOC_VERTEX_COLOR.getShaderLocationInt()]);
 
-                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[3]);
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(3));
                 }
 
                 // Setup some default shader values
@@ -3175,10 +3204,10 @@ public class RLGL{
         // Unload all vertex buffers data
         for (int i = 0; i < batch.buffersCount; i++){
             // Delete VBOs from GPU (VRAM)
-            glDeleteBuffers(batch.vertexBuffer[i].vboId[0]);
-            glDeleteBuffers(batch.vertexBuffer[i].vboId[1]);
-            glDeleteBuffers(batch.vertexBuffer[i].vboId[2]);
-            glDeleteBuffers(batch.vertexBuffer[i].vboId[3]);
+            glDeleteBuffers(batch.vertexBuffer[i].vboId.get(0));
+            glDeleteBuffers(batch.vertexBuffer[i].vboId.get(1));
+            glDeleteBuffers(batch.vertexBuffer[i].vboId.get(2));
+            glDeleteBuffers(batch.vertexBuffer[i].vboId.get(3));
 
             // Delete VAOs from GPU (VRAM)
             if (rlglData.getExtSupported().isVao()){
@@ -3338,15 +3367,15 @@ public class RLGL{
             for (int x = 0; x < width; x++){
                 x2 = 2 * x;
 
-                prow.setR((byte) ((srcData[y2 * srcWidth + x2].getR() + srcData[y2 * srcWidth + x2 + 1].getR()) / 2));
-                prow.setG((byte) ((srcData[y2 * srcWidth + x2].getG() + srcData[y2 * srcWidth + x2 + 1].getG()) / 2));
-                prow.setB((byte) ((srcData[y2 * srcWidth + x2].getB() + srcData[y2 * srcWidth + x2 + 1].getB()) / 2));
-                prow.setA((byte) ((srcData[y2 * srcWidth + x2].getA() + srcData[y2 * srcWidth + x2 + 1].getA()) / 2));
+                prow.setR(((srcData[y2 * srcWidth + x2].getR() + srcData[y2 * srcWidth + x2 + 1].getR()) / 2));
+                prow.setG(((srcData[y2 * srcWidth + x2].getG() + srcData[y2 * srcWidth + x2 + 1].getG()) / 2));
+                prow.setB(((srcData[y2 * srcWidth + x2].getB() + srcData[y2 * srcWidth + x2 + 1].getB()) / 2));
+                prow.setA(((srcData[y2 * srcWidth + x2].getA() + srcData[y2 * srcWidth + x2 + 1].getA()) / 2));
 
-                pcol.setR((byte) ((srcData[(y2 + 1) * srcWidth + x2].getR() + srcData[(y2 + 1) * srcWidth + x2 + 1].getR()) / 2));
-                pcol.setG((byte) ((srcData[(y2 + 1) * srcWidth + x2].getG() + srcData[(y2 + 1) * srcWidth + x2 + 1].getG()) / 2));
-                pcol.setB((byte) ((srcData[(y2 + 1) * srcWidth + x2].getB() + srcData[(y2 + 1) * srcWidth + x2 + 1].getB()) / 2));
-                pcol.setA((byte) ((srcData[(y2 + 1) * srcWidth + x2].getA() + srcData[(y2 + 1) * srcWidth + x2 + 1].getA()) / 2));
+                pcol.setR(((srcData[(y2 + 1) * srcWidth + x2].getR() + srcData[(y2 + 1) * srcWidth + x2 + 1].getR()) / 2));
+                pcol.setG(((srcData[(y2 + 1) * srcWidth + x2].getG() + srcData[(y2 + 1) * srcWidth + x2 + 1].getG()) / 2));
+                pcol.setB(((srcData[(y2 + 1) * srcWidth + x2].getB() + srcData[(y2 + 1) * srcWidth + x2 + 1].getB()) / 2));
+                pcol.setA(((srcData[(y2 + 1) * srcWidth + x2].getA() + srcData[(y2 + 1) * srcWidth + x2 + 1].getA()) / 2));
 
                 mipmap[y * width + x].setR((byte) ((prow.getR() + pcol.getR()) / 2));
                 mipmap[y * width + x].setG((byte) ((prow.getG() + pcol.getG()) / 2));

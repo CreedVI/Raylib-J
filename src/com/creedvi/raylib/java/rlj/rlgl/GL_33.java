@@ -68,11 +68,11 @@ public class GL_33{
             int addColors = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter - RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter;
 
             for (int i = 0; i < addColors; i++){
-                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter] = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 4];
+                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 4));
                 //currentBatch.vertexBuffer[0].colors[4 * 1] = currentBatch.vertexBuffer[0].colors[4 * 1 - 4]
-                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 1] = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 3];
-                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 2] = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 2];
-                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 3] = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors[4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 1];
+                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 1, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 3));
+                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 2, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 2));
+                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.put(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter + 3, RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].colors.get(4 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter - 1));
                 RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].cCounter++;
             }
         }
@@ -82,8 +82,8 @@ public class GL_33{
             int addTexCoords = RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter - RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].tcCounter;
 
             for (int i = 0; i < addTexCoords; i++){
-                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].texcoords[2 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].tcCounter] = 0.0f;
-                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].texcoords[2 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].tcCounter + 1] = 0.0f;
+                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].texcoords.put(2 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].tcCounter,0.0f);
+                RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].texcoords.put(2 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].tcCounter + 1,0.0f);
                 RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].tcCounter++;
             }
         }
@@ -223,9 +223,9 @@ public class GL_33{
 
         // Verify that current vertex buffer elements limit has not been reached
         if (RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter < (RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].elementsCount * 4)){
-            RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vertices[3 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter] = vec.getX();
-            RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vertices[3 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter + 1] = vec.getY();
-            RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vertices[3 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter + 2] = vec.getZ();
+            RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vertices.put(3 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter, vec.getX());
+            RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vertices.put(3 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter + 1, vec.getY());
+            RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vertices.put(3 * RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter + 2, vec.getZ());
             RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter++;
 
             RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexCount++;
@@ -249,10 +249,10 @@ public class GL_33{
     // Define one vertex (texture coordinate)
     // NOTE: Texture coordinates are limited to QUADS only
     static void rlTexCoord2f(float x, float y){
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords[2 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter] = x;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords[2 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter + 1] = y;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords.put(2 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter, x);
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords.put(2 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter + 1, y);
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].tcCounter++;
-    }
+        }
 
     // Define one vertex (normal)
     // NOTE: Normals limited to TRIANGLES only?
@@ -262,11 +262,12 @@ public class GL_33{
 
     // Define one vertex (color)
     static void rlColor4ub(int x, int y, int z, int w){
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter] = x;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 1] = y;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 2] = z;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 3] = w;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors.put(4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter, x);
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors.put(4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 1, y);
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors.put(4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 2, z);
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors.put(4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 3, w);
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter++;
+
     }
 
     // Define one vertex (color)
