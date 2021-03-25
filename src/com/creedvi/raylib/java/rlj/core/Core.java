@@ -46,7 +46,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Core{
 
-    RLGL rlgl;
+    public RLGL rlgl;
 
     static Window window;
     static Input input;

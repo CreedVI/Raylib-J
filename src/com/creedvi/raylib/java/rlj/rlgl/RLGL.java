@@ -10,12 +10,15 @@ import com.creedvi.raylib.java.rlj.utils.Files;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import static com.creedvi.raylib.java.rlj.Config.*;
 import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.BlendMode.BLEND_ALPHA;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.FramebufferAttachType.RL_ATTACHMENT_COLOR_CHANNEL0;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.FramebufferAttachType.RL_ATTACHMENT_DEPTH;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.FramebufferTexType.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.*;
@@ -524,7 +527,7 @@ public class RLGL{
         else{
             GL_11.rlEnd();
         }
-        rlFlipBuffers();
+        //rlFlipBuffers();
     }
 
     public static void rlResetBuffers(){
@@ -2552,14 +2555,59 @@ public class RLGL{
         return matrix;
     }
 
-    // TODO: 3/11/21
+    //TODO: 3/11/21 - CUBEMAP
     //GenTextureCubeMap
 
     //GenTextureIrradience
 
     //GenTexturePrefilter
 
-    //GenTextureBRDF
+    // Generate BRDF texture using cubemap data
+    // TODO: Review implementation: https://github.com/HectorMF/BRDFGenerator
+    Texture2D GenTextureBRDF(Shader shader, int size){
+        Texture2D brdf = new Texture2D();
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            // STEP 1: Setup framebuffer
+            //------------------------------------------------------------------------------------------
+            int rbo = rlLoadTextureDepth(size, size, true);
+            brdf.setId(rlLoadTexture(null, size, size, UNCOMPRESSED_R32G32B32.getPixForInt(), 1));
+
+            int fbo = rlLoadFramebuffer(size, size);
+            rlFramebufferAttach(fbo, rbo, RL_ATTACHMENT_DEPTH.getRlAttachInt(), RL_ATTACHMENT_RENDERBUFFER.getTexInt());
+            rlFramebufferAttach(fbo, brdf.getId(), RL_ATTACHMENT_COLOR_CHANNEL0.getRlAttachInt(), RL_ATTACHMENT_TEXTURE2D.getTexInt());
+            //------------------------------------------------------------------------------------------
+
+            // STEP 2: Draw to framebuffer
+            //------------------------------------------------------------------------------------------
+            // NOTE: Render BRDF LUT into a quad using FBO
+
+            rlEnableShader(shader.getId());
+
+            rlViewport(0, 0, size, size);
+
+            rlEnableFramebuffer(fbo);
+            rlClearScreenBuffers();
+            GenDrawQuad();
+            //------------------------------------------------------------------------------------------
+
+            // STEP 3: Unload framebuffer and reset state
+            //------------------------------------------------------------------------------------------
+            rlDisableShader();          // Unbind shader
+            rlDisableTexture();         // Unbind texture
+            rlDisableFramebuffer();     // Unbind framebuffer
+            rlUnloadFramebuffer(fbo);   // Unload framebuffer (and automatically attached depth texture/renderbuffer)
+
+            // Reset viewport dimensions to default
+            rlViewport(0, 0, rlglData.getState().getFramebufferWidth(), rlglData.getState().getFramebufferHeight());
+            //------------------------------------------------------------------------------------------
+
+            brdf.setWidth(size);
+            brdf.setHeight(size);
+            brdf.setMipmaps(1);
+            brdf.setFormat(UNCOMPRESSED_R32G32B32.getPixForInt());
+        }
+        return brdf;
+    }
 
     // Begin blending mode (alpha, additive, multiplied)
     // NOTE: Only 3 blending modes supported, default blend mode is alpha
@@ -2622,6 +2670,8 @@ public class RLGL{
     //ToggleVrMode
 
     //BeginVrDrawing
+
+    //EndVrDrawing
     //END SUPPORT_VR_SIMULATOR
 
     // Compile custom shader and return shader id
@@ -2687,8 +2737,7 @@ public class RLGL{
                 maxLength = glGetProgrami(program, GL_INFO_LOG_LENGTH);
 
                 if(maxLength > 0){
-                    String log = "";
-                    glGetProgramInfoLog(program, maxLength);
+                    String log = glGetProgramInfoLog(program, maxLength);
                     Tracelog(LOG_WARNING, "SHADER: [ID " + program + "] Link error: " + log);
                     log = null;
                 }
@@ -3039,20 +3088,25 @@ public class RLGL{
                 glBindVertexArray(batch.vertexBuffer[batch.currentBuffer].vaoId);
             }
 
-            // Vertex positions buffer
+            // Bind vertex attrib: position (shader-location = 0)
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(0));
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter, batch.vertexBuffer[batch.currentBuffer].vertices);
-            //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vertices, GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs().get(LOC_VERTEX_POSITION.getShaderLocationInt()),
+                    3, GL_FLOAT, getBooleanFromInt(GL_FALSE), 0, 0);
+            glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs().get(LOC_VERTEX_POSITION.getShaderLocationInt()));
 
-            // Texture coordinates buffer
+            // Bind vertex attrib: texcoord (shader-location = 1)
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(1));
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter, batch.vertexBuffer[batch.currentBuffer].texcoords);
-            //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].texcoords, GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs().get(LOC_VERTEX_TEXCOORD01.getShaderLocationInt()),
+                    2, GL_FLOAT, getBooleanFromInt(GL_FALSE), 0, 0);
+            glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs().get(LOC_VERTEX_TEXCOORD01.getShaderLocationInt()));
 
-            // Colors buffer
+            // Bind vertex attrib: color (shader-location = 3)
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(2));
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vCounter, batch.vertexBuffer[batch.currentBuffer].colors);
-            //glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].colors, GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(rlglData.getState().getCurrentShader().getLocs().get(LOC_VERTEX_COLOR.getShaderLocationInt()),
+                    4, GL_UNSIGNED_BYTE, getBooleanFromInt(GL_TRUE), 0, 0);
+            glEnableVertexAttribArray(rlglData.getState().getCurrentShader().getLocs().get(LOC_VERTEX_COLOR.getShaderLocationInt()));
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId.get(3));
 
             // NOTE: glMapBuffer() causes sync issue.
             // If GPU is working with this buffer, glMapBuffer() will wait(stall) until GPU to finish its job.
@@ -3159,8 +3213,9 @@ public class RLGL{
                             // We need to define the number of indices to be processed: quadsCount*6
                             // NOTE: The final parameter tells the GPU the offset in bytes from the
                             // start of the index buffer to the location of the first index to process
-                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT,
-                                    (vertexOffset / 4 * 6L * (Integer.BYTES)));
+                            //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, (vertexOffset / 4 * 6L * (Integer.BYTES)));
+                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount, GL_UNSIGNED_INT, 0);
+                            //glDrawElements(GL_TRIANGLES, batch.getVertexBuffer()[batch.getCurrentBuffer()].indices_GL11);
                         }
                         else if(GRAPHICS_API_OPENGL_ES2){
                             glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT,
@@ -3250,10 +3305,16 @@ public class RLGL{
             }
 
             // Free vertex arrays memory from CPU (RAM)
-            batch.vertexBuffer[i].setVertices(null);
-            batch.vertexBuffer[i].setTexcoords(null);
-            batch.vertexBuffer[i].setColors(null);
-            batch.vertexBuffer[i].setIndices_GL11(null);
+            MemoryUtil.memFree(batch.vertexBuffer[i].vboId);
+            MemoryUtil.memFree(batch.vertexBuffer[i].vertices);
+            MemoryUtil.memFree(batch.vertexBuffer[i].texcoords);
+            MemoryUtil.memFree(batch.vertexBuffer[i].colors);
+            if(GRAPHICS_API_OPENGL_33){
+                MemoryUtil.memFree(batch.vertexBuffer[i].indices_GL11);
+            }
+            if(GRAPHICS_API_OPENGL_ES2){
+                MemoryUtil.memFree(batch.vertexBuffer[i].indices_ES20);
+            }
         }
 
         // Unload arrays
@@ -3273,10 +3334,127 @@ public class RLGL{
         rlglData.setCurrentBatch(rlglData.getDefaultBatch());
     }
 
-    // TODO: 3/11/21
-    //GenDrawQuad
+    // Renders a 1x1 XY quad in NDC
+    public static void GenDrawQuad() {
+        int quadVAO = 0;
+        int quadVBO = 0;
 
-    //GenDrawCube
+        float vertices[] = {
+                // Positions         Texcoords
+                   0f,  1.0f, 0.0f,   0.0f, 1.0f,
+                   0f,    0f, 0.0f,   0.0f, 0.0f,
+                 1.0f,  1.0f, 0.0f,   1.0f, 1.0f,
+                 1.0f,    0f, 0.0f,   1.0f, 0.0f,
+        };
+
+        FloatBuffer vertFB = MemoryUtil.memAllocFloat(vertices.length);
+        vertFB.put(vertices);
+        vertFB.flip();
+
+        // Gen VAO to contain VBO
+        quadVAO = glGenVertexArrays();
+        glBindVertexArray(quadVAO);
+
+        // Gen and fill vertex buffer (VBO)
+        quadVBO = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, vertFB, GL_STATIC_DRAW);
+
+        // Bind vertex attributes (position, texcoords)
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5*Float.BYTES,0); //Positions
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5*Float.BYTES,3*Float.BYTES); //Texcoords
+
+        // Draw quad
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
+
+        // Delete buffers (VBO and VAO)
+        glDeleteBuffers(quadVBO);
+        glDeleteVertexArrays(quadVAO);
+    }
+
+    // Renders a 1x1 3D cube in NDC
+    public static void GenDrawCube() {
+        int cubeVAO = 0;
+        int cubeVBO = 0;
+
+        float vertices[] = {
+                // Positions          Normals               Texcoords
+                -1.0f, -1.0f, -1.0f,   0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
+                1.0f,  1.0f, -1.0f,   0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
+                1.0f, -1.0f, -1.0f,   0.0f,  0.0f, -1.0f,   1.0f, 0.0f,
+                1.0f,  1.0f, -1.0f,   0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
+                -1.0f, -1.0f, -1.0f,   0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
+                -1.0f,  1.0f, -1.0f,   0.0f,  0.0f, -1.0f,   0.0f, 1.0f,
+                -1.0f, -1.0f,  1.0f,   0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
+                1.0f, -1.0f,  1.0f,   0.0f,  0.0f,  1.0f,   1.0f, 0.0f,
+                1.0f,  1.0f,  1.0f,   0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
+                1.0f,  1.0f,  1.0f,   0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
+                -1.0f,  1.0f,  1.0f,   0.0f,  0.0f,  1.0f,   0.0f, 1.0f,
+                -1.0f, -1.0f,  1.0f,   0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
+                -1.0f,  1.0f,  1.0f,  -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+                -1.0f,  1.0f, -1.0f,  -1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
+                -1.0f, -1.0f, -1.0f,  -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+                -1.0f, -1.0f, -1.0f,  -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+                -1.0f, -1.0f,  1.0f,  -1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
+                -1.0f,  1.0f,  1.0f,  -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+                1.0f,  1.0f,  1.0f,   1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+                1.0f, -1.0f, -1.0f,   1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+                1.0f,  1.0f, -1.0f,   1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
+                1.0f, -1.0f, -1.0f,   1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+                1.0f,  1.0f,  1.0f,   1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+                1.0f, -1.0f,  1.0f,   1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
+                -1.0f, -1.0f, -1.0f,   0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
+                1.0f, -1.0f, -1.0f,   0.0f, -1.0f,  0.0f,   1.0f, 1.0f,
+                1.0f, -1.0f,  1.0f,   0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
+                1.0f, -1.0f,  1.0f,   0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
+                -1.0f, -1.0f,  1.0f,   0.0f, -1.0f,  0.0f,   0.0f, 0.0f,
+                -1.0f, -1.0f, -1.0f,   0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
+                -1.0f,  1.0f, -1.0f,   0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
+                1.0f,  1.0f,  1.0f,   0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
+                1.0f,  1.0f, -1.0f,   0.0f,  1.0f,  0.0f,   1.0f, 1.0f,
+                1.0f,  1.0f,  1.0f,   0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
+                -1.0f,  1.0f, -1.0f,   0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
+                -1.0f,  1.0f,  1.0f,   0.0f,  1.0f,  0.0f,   0.0f, 0.0f
+        };
+
+        FloatBuffer vertFB = MemoryUtil.memAllocFloat(vertices.length);
+        vertFB.put(vertices);
+        vertFB.flip();
+
+        // Gen VAO to contain VBO
+        cubeVAO = glGenVertexArrays();
+        glBindVertexArray(cubeVAO);
+
+        // Gen and fill vertex buffer (VBO)
+        cubeVBO = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+        glBufferData(GL_ARRAY_BUFFER, vertFB, GL_STATIC_DRAW);
+
+        // Bind vertex attributes (position, normals, texcoords)
+        glBindVertexArray(cubeVAO);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 8*Float.BYTES,0); //Positions
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 8*Float.BYTES,3*Float.BYTES); //Normals
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8*Float.BYTES,6*Float.BYTES); //Texcoords
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+        // Draw cube
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+
+        // Delete VBO and VAO
+        glDeleteBuffers(cubeVBO);
+        glDeleteVertexArrays(cubeVAO);
+    }
+
 
     //SUPPORT_VR_SIMULATOR
     // Set internal projection and modelview matrix depending on eyes tracking data
