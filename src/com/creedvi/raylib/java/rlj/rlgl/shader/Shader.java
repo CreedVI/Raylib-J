@@ -1,22 +1,18 @@
 package com.creedvi.raylib.java.rlj.rlgl.shader;
 
-import org.lwjgl.system.MemoryUtil;
-
-import java.nio.IntBuffer;
-
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.MAX_SHADER_LOCATIONS;
 
 public class Shader {
 
     int id;                 // Shader program id
-    IntBuffer locs;              // Shader locations array (MAX_SHADER_LOCATIONS)
+    public int[] locs;              // Shader locations array (MAX_SHADER_LOCATIONS)
 
     public Shader(){
         id = 0;
-        locs = MemoryUtil.memAllocInt(MAX_SHADER_LOCATIONS);
+        locs = new int[MAX_SHADER_LOCATIONS];
     }
 
-    public Shader(int id, IntBuffer locs){
+    public Shader(int id, int[] locs){
         this.id = id;
         this.locs = locs;
     }
@@ -29,11 +25,11 @@ public class Shader {
         this.id = id;
     }
 
-    public IntBuffer getLocs(){
+    public int[] getLocs(){
         return locs;
     }
 
-    public void setLocs(IntBuffer locs){
+    public void setLocs(int[] locs){
         this.locs = locs;
     }
 

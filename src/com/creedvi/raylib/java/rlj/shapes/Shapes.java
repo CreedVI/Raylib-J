@@ -100,7 +100,7 @@ public class Shapes{
         Vector2 delta = new Vector2(endPos.getX() - startPos.getX(), endPos.getY() - startPos.getY());
         float length = (float) Math.sqrt(delta.getX() * delta.getX() + delta.getY() * delta.getY());
 
-        if (length > 0 && thick > 0){
+        if(length > 0 && thick > 0){
             float scale = thick / (2 * length);
             Vector2 radius = new Vector2(-scale * delta.getY(), scale * delta.getX());
             Vector2[] strip = new Vector2[]{
@@ -126,7 +126,7 @@ public class Shapes{
         Vector2 previous = startPos;
         Vector2 current = new Vector2();
 
-        for (int i = 1; i <= BEZIER_LINE_DIVISIONS; i++){
+        for(int i = 1; i <= BEZIER_LINE_DIVISIONS; i++){
             // Cubic easing in-out
             // NOTE: Easing is calculated only for y position value
             current.setY(EaseCubicInOut((float) i, startPos.getY(), endPos.getY() - startPos.getY(), (float) BEZIER_LINE_DIVISIONS));
@@ -154,7 +154,7 @@ public class Shapes{
         Vector2 current = new Vector2();
         float t = 0.0f;
 
-        for (int i = 0; i <= BEZIER_LINE_DIVISIONS; i++){
+        for(int i = 0; i <= BEZIER_LINE_DIVISIONS; i++){
             t = step * i;
             float a = (float) Math.pow(1 - t, 2);
             float b = 2 * (1 - t) * t;
@@ -179,15 +179,15 @@ public class Shapes{
      */
     //TODO: replace pointsCount with points.length?
     public void DrawLineStrip(Vector2[] points, int pointsCount, Color color){
-        if (pointsCount >= 2){
-            if (rlCheckBufferLimit(pointsCount)){
+        if(pointsCount >= 2){
+            if(rlCheckBufferLimit(pointsCount)){
                 rlglDraw();
             }
 
             rlBegin(RL_LINES);
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
-            for (int i = 0; i < pointsCount - 1; i++){
+            for(int i = 0; i < pointsCount - 1; i++){
                 rlVertex2f(points[i].getX(), points[i].getY());
                 rlVertex2f(points[i + 1].getX(), points[i + 1].getY());
             }
@@ -219,31 +219,33 @@ public class Shapes{
      * @param color      color to draw circle sector
      */
     public void DrawCircleSector(Vector2 center, float radius, int startAngle, int endAngle, int segments, Color color){
-        if (radius <= 0.0f) {
+        if(radius <= 0.0f){
             radius = 0.1f;  // Apublic void div by zero
         }
 
         // Function expects (endAngle > startAngle)
-        if (endAngle < startAngle){
+        if(endAngle < startAngle){
             // Swap values
             int tmp = startAngle;
             startAngle = endAngle;
             endAngle = tmp;
         }
 
-        if (segments < 4){
+        if(segments < 4){
             // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
             float th = (float) Math.acos(2 * Math.pow(1 - SMOOTH_CIRCLE_ERROR_RATE / radius, 2) - 1);
             segments = (int) ((endAngle - startAngle) * Math.ceil(2 * PI / th) / 360);
 
-            if (segments <= 0) segments = 4;
+            if(segments <= 0){
+                segments = 4;
+            }
         }
 
         float stepLength = (float) (endAngle - startAngle) / (float) segments;
         float angle = (float) startAngle;
 
-        if (SUPPORT_QUADS_DRAW_MODE){
-            if (rlCheckBufferLimit(4 * segments / 2)){
+        if(SUPPORT_QUADS_DRAW_MODE){
+            if(rlCheckBufferLimit(4 * segments / 2)){
                 rlglDraw();
             }
 
@@ -251,7 +253,7 @@ public class Shapes{
 
             rlBegin(RL_QUADS);
             // NOTE: Every QUAD actually represents two segments
-            for (int i = 0; i < segments / 2; i++){
+            for(int i = 0; i < segments / 2; i++){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
@@ -270,7 +272,7 @@ public class Shapes{
             }
 
             // NOTE: In case number of segments is odd, we add one last piece to the cake
-            if (segments % 2 == 1){
+            if(segments % 2 == 1){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
@@ -290,10 +292,12 @@ public class Shapes{
             rlDisableTexture();
         }
         else{
-            if (rlCheckBufferLimit(3 * segments)) rlglDraw();
+            if(rlCheckBufferLimit(3 * segments)){
+                rlglDraw();
+            }
 
             rlBegin(RL_TRIANGLES);
-            for (int i = 0; i < segments; i++){
+            for(int i = 0; i < segments; i++){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlVertex2f(center.getX(), center.getY());
@@ -317,24 +321,26 @@ public class Shapes{
      * @param color      color to draw circle sector
      */
     public void DrawCircleSectorLines(Vector2 center, float radius, int startAngle, int endAngle, int segments, Color color){
-        if (radius <= 0.0f){
+        if(radius <= 0.0f){
             radius = 0.1f;  // Avoid div by zero issue
         }
 
         // Function expects (endAngle > startAngle)
-        if (endAngle < startAngle){
+        if(endAngle < startAngle){
             // Swap values
             int tmp = startAngle;
             startAngle = endAngle;
             endAngle = tmp;
         }
 
-        if (segments < 4){
+        if(segments < 4){
             // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
             float th = (float) Math.acos(2 * Math.pow(1 - SMOOTH_CIRCLE_ERROR_RATE / radius, 2) - 1);
             segments = (int) ((endAngle - startAngle) * Math.ceil(2 * PI / th) / 360);
 
-            if (segments <= 0) segments = 4;
+            if(segments <= 0){
+                segments = 4;
+            }
         }
 
         float stepLength = (float) (endAngle - startAngle) / (float) segments;
@@ -343,23 +349,23 @@ public class Shapes{
         // Hide the cap lines when the circle is full
         boolean showCapLines = true;
         int limit = 2 * (segments + 2);
-        if ((endAngle - startAngle) % 360 == 0){
+        if((endAngle - startAngle) % 360 == 0){
             limit = 2 * segments;
             showCapLines = false;
         }
 
-        if (rlCheckBufferLimit(limit)){
+        if(rlCheckBufferLimit(limit)){
             rlglDraw();
         }
 
         rlBegin(RL_LINES);
-        if (showCapLines){
+        if(showCapLines){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
             rlVertex2f(center.getX(), center.getY());
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * radius, center.getY() + (float) Math.cos(DEG2RAD * angle) * radius);
         }
 
-        for (int i = 0; i < segments; i++){
+        for(int i = 0; i < segments; i++){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * radius, center.getY() + (float) Math.cos(DEG2RAD * angle) * radius);
@@ -368,7 +374,7 @@ public class Shapes{
             angle += stepLength;
         }
 
-        if (showCapLines){
+        if(showCapLines){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
             rlVertex2f(center.getX(), center.getY());
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * radius, center.getY() + (float) Math.cos(DEG2RAD * angle) * radius);
@@ -387,10 +393,12 @@ public class Shapes{
      * @param color2  color at the end of the gradient
      */
     public void DrawCircleGradient(int centerX, int centerY, float radius, Color color1, Color color2){
-        if (rlCheckBufferLimit(3 * 36)) rlglDraw();
+        if(rlCheckBufferLimit(3 * 36)){
+            rlglDraw();
+        }
 
         rlBegin(RL_TRIANGLES);
-        for (int i = 0; i < 360; i += 10){
+        for(int i = 0; i < 360; i += 10){
             rlColor4ub(color1.getR(), color1.getG(), color1.getB(), color1.getA());
             rlVertex2f((float) centerX, (float) centerY);
             rlColor4ub(color2.getR(), color2.getG(), color2.getB(), color2.getA());
@@ -422,7 +430,7 @@ public class Shapes{
      * @param color   color to draw circle outline
      */
     public void DrawCircleLines(int centerX, int centerY, float radius, Color color){
-        if (rlCheckBufferLimit(2 * 36)){
+        if(rlCheckBufferLimit(2 * 36)){
             rlglDraw();
         }
 
@@ -430,7 +438,7 @@ public class Shapes{
         rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
         // NOTE: Circle outline is drawn pixel by pixel every degree (0 to 360)
-        for (int i = 0; i < 360; i += 10){
+        for(int i = 0; i < 360; i += 10){
             rlVertex2f(centerX + (float) Math.sin(DEG2RAD * i) * radius, centerY + (float) Math.cos(DEG2RAD * i) * radius);
             rlVertex2f(centerX + (float) Math.sin(DEG2RAD * (i + 10)) * radius, centerY + (float) Math.cos(DEG2RAD * (i + 10)) * radius);
         }
@@ -447,10 +455,12 @@ public class Shapes{
      * @param color   color to draw ellipse
      */
     public void DrawEllipse(int centerX, int centerY, float radiusH, float radiusV, Color color){
-        if (rlCheckBufferLimit(3 * 36)) rlglDraw();
+        if(rlCheckBufferLimit(3 * 36)){
+            rlglDraw();
+        }
 
         rlBegin(RL_TRIANGLES);
-        for (int i = 0; i < 360; i += 10){
+        for(int i = 0; i < 360; i += 10){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
             rlVertex2f((float) centerX, (float) centerY);
             rlVertex2f((float) centerX + (float) Math.sin(DEG2RAD * i) * radiusH, (float) centerY + (float) Math.cos(DEG2RAD * i) * radiusV);
@@ -469,10 +479,12 @@ public class Shapes{
      * @param color   color to draw ellipse
      */
     public void DrawEllipseLines(int centerX, int centerY, float radiusH, float radiusV, Color color){
-        if (rlCheckBufferLimit(2 * 36)) rlglDraw();
+        if(rlCheckBufferLimit(2 * 36)){
+            rlglDraw();
+        }
 
         rlBegin(RL_LINES);
-        for (int i = 0; i < 360; i += 10){
+        for(int i = 0; i < 360; i += 10){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
             rlVertex2f(centerX + (float) Math.sin(DEG2RAD * i) * radiusH, centerY + (float) Math.cos(DEG2RAD * i) * radiusV);
             rlVertex2f(centerX + (float) Math.sin(DEG2RAD * (i + 10)) * radiusH, centerY + (float) Math.cos(DEG2RAD * (i + 10)) * radiusV);
@@ -492,37 +504,41 @@ public class Shapes{
      * @param color       color to draw ring
      */
     public void DrawRing(Vector2 center, float innerRadius, float outerRadius, int startAngle, int endAngle, int segments, Color color){
-        if (startAngle == endAngle){
+        if(startAngle == endAngle){
             return;
         }
 
         // Function expects (outerRadius > innerRadius)
-        if (outerRadius < innerRadius){
+        if(outerRadius < innerRadius){
             float tmp = outerRadius;
             outerRadius = innerRadius;
             innerRadius = tmp;
 
-            if (outerRadius <= 0.0f) outerRadius = 0.1f;
+            if(outerRadius <= 0.0f){
+                outerRadius = 0.1f;
+            }
         }
 
         // Function expects (endAngle > startAngle)
-        if (endAngle < startAngle){
+        if(endAngle < startAngle){
             // Swap values
             int tmp = startAngle;
             startAngle = endAngle;
             endAngle = tmp;
         }
 
-        if (segments < 4){
+        if(segments < 4){
             // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
             float th = (float) Math.acos(2 * Math.pow(1 - SMOOTH_CIRCLE_ERROR_RATE / outerRadius, 2) - 1);
             segments = (int) ((endAngle - startAngle) * Math.ceil(2 * PI / th) / 360);
 
-            if (segments <= 0) segments = 4;
+            if(segments <= 0){
+                segments = 4;
+            }
         }
 
         // Not a ring
-        if (innerRadius <= 0.0f){
+        if(innerRadius <= 0.0f){
             DrawCircleSector(center, outerRadius, startAngle, endAngle, segments, color);
             return;
         }
@@ -530,13 +546,15 @@ public class Shapes{
         float stepLength = (float) (endAngle - startAngle) / (float) segments;
         float angle = (float) startAngle;
 
-        if (SUPPORT_QUADS_DRAW_MODE){
-            if (rlCheckBufferLimit(4 * segments)) rlglDraw();
+        if(SUPPORT_QUADS_DRAW_MODE){
+            if(rlCheckBufferLimit(4 * segments)){
+                rlglDraw();
+            }
 
             rlEnableTexture(GetShapesTexture().getId());
 
             rlBegin(RL_QUADS);
-            for (int i = 0; i < segments; i++){
+            for(int i = 0; i < segments; i++){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
@@ -564,10 +582,12 @@ public class Shapes{
             rlDisableTexture();
         }
         else{
-            if (rlCheckBufferLimit(6 * segments)) rlglDraw();
+            if(rlCheckBufferLimit(6 * segments)){
+                rlglDraw();
+            }
 
             rlBegin(RL_TRIANGLES);
-            for (int i = 0; i < segments; i++){
+            for(int i = 0; i < segments; i++){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * innerRadius);
@@ -596,36 +616,40 @@ public class Shapes{
      * @param color       color to draw ring
      */
     public void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, int startAngle, int endAngle, int segments, Color color){
-        if (startAngle == endAngle){
+        if(startAngle == endAngle){
             return;
         }
 
         // Function expects (outerRadius > innerRadius)
-        if (outerRadius < innerRadius){
+        if(outerRadius < innerRadius){
             float tmp = outerRadius;
             outerRadius = innerRadius;
             innerRadius = tmp;
 
-            if (outerRadius <= 0.0f) outerRadius = 0.1f;
+            if(outerRadius <= 0.0f){
+                outerRadius = 0.1f;
+            }
         }
 
         // Function expects (endAngle > startAngle)
-        if (endAngle < startAngle){
+        if(endAngle < startAngle){
             // Swap values
             int tmp = startAngle;
             startAngle = endAngle;
             endAngle = tmp;
         }
 
-        if (segments < 4){
+        if(segments < 4){
             // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
             float th = (float) Math.acos(2 * Math.pow(1 - SMOOTH_CIRCLE_ERROR_RATE / outerRadius, 2) - 1);
             segments = (int) ((endAngle - startAngle) * Math.ceil(2 * PI / th) / 360);
 
-            if (segments <= 0) segments = 4;
+            if(segments <= 0){
+                segments = 4;
+            }
         }
 
-        if (innerRadius <= 0.0f){
+        if(innerRadius <= 0.0f){
             DrawCircleSectorLines(center, outerRadius, startAngle, endAngle, segments, color);
             return;
         }
@@ -635,21 +659,23 @@ public class Shapes{
 
         boolean showCapLines = true;
         int limit = 4 * (segments + 1);
-        if ((endAngle - startAngle) % 360 == 0){
+        if((endAngle - startAngle) % 360 == 0){
             limit = 4 * segments;
             showCapLines = false;
         }
 
-        if (rlCheckBufferLimit(limit)) rlglDraw();
+        if(rlCheckBufferLimit(limit)){
+            rlglDraw();
+        }
 
         rlBegin(RL_LINES);
-        if (showCapLines){
+        if(showCapLines){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * outerRadius);
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * innerRadius);
         }
 
-        for (int i = 0; i < segments; i++){
+        for(int i = 0; i < segments; i++){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius,
@@ -665,7 +691,7 @@ public class Shapes{
             angle += stepLength;
         }
 
-        if (showCapLines){
+        if(showCapLines){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
             rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius,
                     center.getY() + (float) Math.cos(DEG2RAD * angle) * outerRadius);
@@ -720,7 +746,7 @@ public class Shapes{
      * @param color    color to draw rectangle
      */
     public void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color){
-        if (rlCheckBufferLimit(4)){
+        if(rlCheckBufferLimit(4)){
             rlglDraw();
         }
 
@@ -826,7 +852,7 @@ public class Shapes{
      * @param color  Color to draw rectangle
      */
     public void DrawRectangleLines(int posX, int posY, int width, int height, Color color){
-        if (SUPPORT_QUADS_DRAW_MODE){
+        if(SUPPORT_QUADS_DRAW_MODE){
             DrawRectangle(posX, posY, width, 1, color);
             DrawRectangle(posX + width - 1, posY + 1, 1, height - 2, color);
             DrawRectangle(posX, posY + height - 1, width, 1, color);
@@ -858,11 +884,13 @@ public class Shapes{
      * @param color     Color to draw rectangle
      */
     public void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color){
-        if (lineThick > rec.getWidth() || lineThick > rec.getHeight()){
-            if (rec.getWidth() > rec.getHeight()){
+        if(lineThick > rec.getWidth() || lineThick > rec.getHeight()){
+            if(rec.getWidth() > rec.getHeight()){
                 lineThick = (int) rec.getHeight() / 2;
             }
-            else if (rec.getWidth() < rec.getHeight()) lineThick = (int) rec.getWidth() / 2;
+            else if(rec.getWidth() < rec.getHeight()){
+                lineThick = (int) rec.getWidth() / 2;
+            }
         }
 
         DrawRectangle((int) rec.getX(), (int) rec.getY(), (int) rec.getWidth(), lineThick, color);
@@ -881,27 +909,29 @@ public class Shapes{
      */
     public void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color){
         // Not a rounded rectangle
-        if ((roundness <= 0.0f) || (rec.getWidth() < 1) || (rec.getHeight() < 1)){
+        if((roundness <= 0.0f) || (rec.getWidth() < 1) || (rec.getHeight() < 1)){
             DrawRectangleRec(rec, color);
             return;
         }
 
-        if (roundness >= 1.0f){
+        if(roundness >= 1.0f){
             roundness = 1.0f;
         }
 
         // Calculate corner radius
         float radius = (rec.getWidth() > rec.getHeight()) ? (rec.getHeight() * roundness) / 2 : (rec.getWidth() * roundness) / 2;
-        if (radius <= 0.0f){
+        if(radius <= 0.0f){
             return;
         }
 
         // Calculate number of segments to use for the corners
-        if (segments < 4){
+        if(segments < 4){
             // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
             float th = (float) Math.acos(2 * Math.pow(1 - SMOOTH_CIRCLE_ERROR_RATE / radius, 2) - 1);
             segments = (int) (Math.ceil(2 * PI / th) / 4.0f);
-            if (segments <= 0) segments = 4;
+            if(segments <= 0){
+                segments = 4;
+            }
         }
 
         float stepLength = 90.0f / (float) segments;
@@ -945,19 +975,21 @@ public class Shapes{
                 180.0f, 90.0f, 0.0f, 270.0f
         };
 
-        if (SUPPORT_QUADS_DRAW_MODE){
-            if (rlCheckBufferLimit(16 * segments / 2 + 5 * 4)) rlglDraw();
+        if(SUPPORT_QUADS_DRAW_MODE){
+            if(rlCheckBufferLimit(16 * segments / 2 + 5 * 4)){
+                rlglDraw();
+            }
 
             rlEnableTexture(GetShapesTexture().getId());
 
             rlBegin(RL_QUADS);
             // Draw all of the 4 corners: [1] Upper Left Corner, [3] Upper Right Corner, [5] Lower Right Corner, [7] Lower Left Corner
-            for (int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
+            for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
             {
                 float angle = angles[k];
                 Vector2 center = centers[k];
                 // NOTE: Every QUAD actually represents two segments
-                for (int i = 0; i < segments / 2; i++){
+                for(int i = 0; i < segments / 2; i++){
                     rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                     rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(),
                             GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
@@ -977,7 +1009,7 @@ public class Shapes{
                     angle += (stepLength * 2);
                 }
                 // NOTE: In case number of segments is odd, we add one last piece to the cake
-                if (segments % 2 == 1){
+                if(segments % 2 == 1){
                     rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                     rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
                     rlVertex2f(center.getX(), center.getY());
@@ -1049,17 +1081,17 @@ public class Shapes{
             rlDisableTexture();
         }
         else{
-            if (rlCheckBufferLimit(12 * segments + 5 * 6)){
+            if(rlCheckBufferLimit(12 * segments + 5 * 6)){
                 rlglDraw(); // 4 corners with 3 vertices per segment + 5 rectangles with 6 vertices each
             }
 
             rlBegin(RL_TRIANGLES);
             // Draw all of the 4 corners: [1] Upper Left Corner, [3] Upper Right Corner, [5] Lower Right Corner, [7] Lower Left Corner
-            for (int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
+            for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
             {
                 float angle = angles[k];
                 Vector2 center = centers[k];
-                for (int i = 0; i < segments; i++){
+                for(int i = 0; i < segments; i++){
                     rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                     rlVertex2f(center.getX(), center.getY());
                     rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * radius,
@@ -1128,32 +1160,34 @@ public class Shapes{
      * @param color     color to draw rectangle
      */
     public void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, int lineThick, Color color){
-        if (lineThick < 0){
+        if(lineThick < 0){
             lineThick = 0;
         }
 
         // Not a rounded rectangle
-        if (roundness <= 0.0f){
+        if(roundness <= 0.0f){
             DrawRectangleLinesEx(new Rectangle(rec.getX() - lineThick, rec.getY() - lineThick, rec.getWidth() + 2 * lineThick, rec.getHeight() + 2 * lineThick), lineThick, color);
             return;
         }
 
-        if (roundness >= 1.0f){
+        if(roundness >= 1.0f){
             roundness = 1.0f;
         }
 
         // Calculate corner radius
         float radius = (rec.getWidth() > rec.getHeight()) ? (rec.getHeight() * roundness) / 2 : (rec.getWidth() * roundness) / 2;
-        if (radius <= 0.0f){
+        if(radius <= 0.0f){
             return;
         }
 
         // Calculate number of segments to use for the corners
-        if (segments < 4){
+        if(segments < 4){
             // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
             float th = (float) Math.acos(2 * Math.pow(1 - SMOOTH_CIRCLE_ERROR_RATE / radius, 2) - 1);
             segments = (int) (Math.ceil(2 * PI / th) / 2.0f);
-            if (segments <= 0) segments = 4;
+            if(segments <= 0){
+                segments = 4;
+            }
         }
 
         float stepLength = 90.0f / (float) segments;
@@ -1203,9 +1237,9 @@ public class Shapes{
 
         float[] angles = {180.0f, 90.0f, 0.0f, 270.0f};
 
-        if (lineThick > 1){
-            if (SUPPORT_QUADS_DRAW_MODE){
-                if (rlCheckBufferLimit(4 * 4 * segments + 4 * 4)){
+        if(lineThick > 1){
+            if(SUPPORT_QUADS_DRAW_MODE){
+                if(rlCheckBufferLimit(4 * 4 * segments + 4 * 4)){
                     rlglDraw(); // 4 corners with 4 vertices for each segment + 4 rectangles with 4 vertices each
                 }
 
@@ -1213,11 +1247,11 @@ public class Shapes{
 
                 rlBegin(RL_QUADS);
                 // Draw all of the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
-                for (int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
+                for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
                 {
                     float angle = angles[k];
                     Vector2 center = centers[k];
-                    for (int i = 0; i < segments; i++){
+                    for(int i = 0; i < segments; i++){
                         rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                         rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * innerRadius);
@@ -1280,19 +1314,19 @@ public class Shapes{
                 rlDisableTexture();
             }
             else{
-                if (rlCheckBufferLimit(4 * 6 * segments + 4 * 6)){
+                if(rlCheckBufferLimit(4 * 6 * segments + 4 * 6)){
                     rlglDraw(); // 4 corners with 6(2*3) vertices for each segment + 4 rectangles with 6 vertices each
                 }
 
                 rlBegin(RL_TRIANGLES);
 
                 // Draw all of the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
-                for (int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
+                for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
                 {
                     float angle = angles[k];
                     Vector2 center = centers[k];
 
-                    for (int i = 0; i < segments; i++){
+                    for(int i = 0; i < segments; i++){
                         rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * innerRadius);
@@ -1347,19 +1381,19 @@ public class Shapes{
         }
         else{
             // Use LINES to draw the outline
-            if (rlCheckBufferLimit(8 * segments + 4 * 2)){
+            if(rlCheckBufferLimit(8 * segments + 4 * 2)){
                 rlglDraw(); // 4 corners with 2 vertices for each segment + 4 rectangles with 2 vertices each
             }
 
             rlBegin(RL_LINES);
 
             // Draw all of the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
-            for (int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
+            for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
             {
                 float angle = angles[k];
                 Vector2 center = centers[k];
 
-                for (int i = 0; i < segments; i++){
+                for(int i = 0; i < segments; i++){
                     rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                     rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * outerRadius);
                     rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * outerRadius);
@@ -1368,7 +1402,7 @@ public class Shapes{
             }
 
             // And now the remaining 4 lines
-            for (int i = 0; i < 8; i += 2){
+            for(int i = 0; i < 8; i += 2){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                 rlVertex2f(point[i].getX(), point[i].getY());
                 rlVertex2f(point[i + 1].getX(), point[i + 1].getY());
@@ -1388,9 +1422,11 @@ public class Shapes{
      * @param color color to draw triangle
      */
     public void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color){
-        if (rlCheckBufferLimit(4)) rlglDraw();
+        if(rlCheckBufferLimit(4)){
+            rlglDraw();
+        }
 
-        if (SUPPORT_QUADS_DRAW_MODE){
+        if(SUPPORT_QUADS_DRAW_MODE){
             rlEnableTexture(GetShapesTexture().getId());
 
             rlBegin(RL_QUADS);
@@ -1431,7 +1467,9 @@ public class Shapes{
      * @param color color to draw triangle
      */
     public void DrawTriangleLines(Vector2 v1, Vector2 v2, Vector2 v3, Color color){
-        if (rlCheckBufferLimit(6)) rlglDraw();
+        if(rlCheckBufferLimit(6)){
+            rlglDraw();
+        }
 
         rlBegin(RL_LINES);
         rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
@@ -1456,14 +1494,16 @@ public class Shapes{
      * @param color       color to draw fan
      */
     public void DrawTriangleFan(Vector2[] points, int pointsCount, Color color){
-        if (pointsCount >= 3){
-            if (rlCheckBufferLimit((pointsCount - 2) * 4)) rlglDraw();
+        if(pointsCount >= 3){
+            if(rlCheckBufferLimit((pointsCount - 2) * 4)){
+                rlglDraw();
+            }
 
             rlEnableTexture(GetShapesTexture().getId());
             rlBegin(RL_QUADS);
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
-            for (int i = 1; i < pointsCount - 1; i++){
+            for(int i = 1; i < pointsCount - 1; i++){
                 rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
                 rlVertex2f(points[0].getX(), points[0].getY());
 
@@ -1490,14 +1530,16 @@ public class Shapes{
      * @param color       color to draw strip
      */
     public void DrawTriangleStrip(Vector2[] points, int pointsCount, Color color){
-        if (pointsCount >= 3){
-            if (rlCheckBufferLimit(3 * (pointsCount - 2))) rlglDraw();
+        if(pointsCount >= 3){
+            if(rlCheckBufferLimit(3 * (pointsCount - 2))){
+                rlglDraw();
+            }
 
             rlBegin(RL_TRIANGLES);
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
-            for (int i = 2; i < pointsCount; i++){
-                if ((i % 2) == 0){
+            for(int i = 2; i < pointsCount; i++){
+                if((i % 2) == 0){
                     rlVertex2f(points[i].getX(), points[i].getY());
                     rlVertex2f(points[i - 2].getX(), points[i - 2].getY());
                     rlVertex2f(points[i - 1].getX(), points[i - 1].getY());
@@ -1522,20 +1564,24 @@ public class Shapes{
      * @param color    Color to draw polygon
      */
     public void DrawPoly(Vector2 center, int sides, float radius, float rotation, Color color){
-        if (sides < 3) sides = 3;
+        if(sides < 3){
+            sides = 3;
+        }
         float centralAngle = 0.0f;
 
-        if (rlCheckBufferLimit(4 * (360 / sides))) rlglDraw();
+        if(rlCheckBufferLimit(4 * (360 / sides))){
+            rlglDraw();
+        }
 
         rlPushMatrix();
         rlTranslatef(center.getX(), center.getY(), 0.0f);
         rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
 
-        if (SUPPORT_QUADS_DRAW_MODE){
+        if(SUPPORT_QUADS_DRAW_MODE){
             rlEnableTexture(GetShapesTexture().getId());
 
             rlBegin(RL_QUADS);
-            for (int i = 0; i < sides; i++){
+            for(int i = 0; i < sides; i++){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
@@ -1556,7 +1602,7 @@ public class Shapes{
         }
         else{
             rlBegin(RL_TRIANGLES);
-            for (int i = 0; i < sides; i++){
+            for(int i = 0; i < sides; i++){
                 rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
                 rlVertex2f(0, 0);
@@ -1580,17 +1626,21 @@ public class Shapes{
      * @param color    Color to draw polygon
      */
     public void DrawPolyLines(Vector2 center, int sides, float radius, float rotation, Color color){
-        if (sides < 3) sides = 3;
+        if(sides < 3){
+            sides = 3;
+        }
         float centralAngle = 0.0f;
 
-        if (rlCheckBufferLimit(3 * (360 / sides))) rlglDraw();
+        if(rlCheckBufferLimit(3 * (360 / sides))){
+            rlglDraw();
+        }
 
         rlPushMatrix();
         rlTranslatef(center.getX(), center.getY(), 0.0f);
         rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
 
         rlBegin(RL_LINES);
-        for (int i = 0; i < sides; i++){
+        for(int i = 0; i < sides; i++){
             rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
             rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * radius, (float) Math.cos(DEG2RAD * centralAngle) * radius);
@@ -1611,7 +1661,7 @@ public class Shapes{
     public boolean CheckCollisionPointRec(Vector2 point, Rectangle rec){
         boolean collision = false;
 
-        if ((point.getX() >= rec.getX()) && (point.getX() <= (rec.getX() + rec.getWidth())) && (point.getY() >= rec.getY()) && (point.getY() <= (rec.getY() + rec.getHeight()))){
+        if((point.getX() >= rec.getX()) && (point.getX() <= (rec.getX() + rec.getWidth())) && (point.getY() >= rec.getY()) && (point.getY() <= (rec.getY() + rec.getHeight()))){
             collision = true;
         }
 
@@ -1650,7 +1700,7 @@ public class Shapes{
 
         float gamma = 1.0f - alpha - beta;
 
-        if ((alpha > 0) && (beta > 0) & (gamma > 0)){
+        if((alpha > 0) && (beta > 0) & (gamma > 0)){
             collision = true;
         }
 
@@ -1667,7 +1717,7 @@ public class Shapes{
     public boolean CheckCollisionRecs(Rectangle rec1, Rectangle rec2){
         boolean collision = false;
 
-        if ((rec1.getX() < (rec2.getX() + rec2.getWidth()) && (rec1.getX() + rec1.getWidth()) > rec2.getX()) &&
+        if((rec1.getX() < (rec2.getX() + rec2.getWidth()) && (rec1.getX() + rec1.getWidth()) > rec2.getX()) &&
                 (rec1.getY() < (rec2.getY() + rec2.getHeight()) && (rec1.getY() + rec1.getHeight()) > rec2.getY())){
             collision = true;
         }
@@ -1692,7 +1742,9 @@ public class Shapes{
 
         float distance = (float) Math.sqrt(dx * dx + dy * dy); // Distance between centers
 
-        if (distance <= (radius1 + radius2)) collision = true;
+        if(distance <= (radius1 + radius2)){
+            collision = true;
+        }
 
         return collision;
     }
@@ -1713,17 +1765,17 @@ public class Shapes{
         float dx = Math.abs(center.getX() - (float) recCenterX);
         float dy = Math.abs(center.getY() - (float) recCenterY);
 
-        if (dx > (rec.getWidth() / 2.0f + radius)){
+        if(dx > (rec.getWidth() / 2.0f + radius)){
             return false;
         }
-        if (dy > (rec.getHeight() / 2.0f + radius)){
+        if(dy > (rec.getHeight() / 2.0f + radius)){
             return false;
         }
 
-        if (dx <= (rec.getWidth() / 2.0f)){
+        if(dx <= (rec.getWidth() / 2.0f)){
             return true;
         }
-        if (dy <= (rec.getHeight() / 2.0f)){
+        if(dy <= (rec.getHeight() / 2.0f)){
             return true;
         }
 
@@ -1745,23 +1797,23 @@ public class Shapes{
     public boolean CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2){
         float div = (endPos2.getY() - startPos2.getY()) * (endPos1.getX() - startPos1.getX()) - (endPos2.getX() - startPos2.getX()) * (endPos1.getY() - startPos1.getY());
 
-        if (div == 0.0f){
+        if(div == 0.0f){
             return false;      // WARNING: This check could not work due to float precision rounding issues...
         }
 
         float xi = ((startPos2.getX() - endPos2.getX()) * (startPos1.getX() * endPos1.getY() - startPos1.getY() * endPos1.getX()) - (startPos1.getX() - endPos1.getX()) * (startPos2.getX() * endPos2.getY() - startPos2.getY() * endPos2.getX())) / div;
         float yi = ((startPos2.getY() - endPos2.getY()) * (startPos1.getX() * endPos1.getY() - startPos1.getY() * endPos1.getX()) - (startPos1.getY() - endPos1.getY()) * (startPos2.getX() * endPos2.getY() - startPos2.getY() * endPos2.getX())) / div;
 
-        if (xi < Math.min(startPos1.getX(), endPos1.getX()) || xi > Math.max(startPos1.getX(), endPos1.getX())){
+        if(xi < Math.min(startPos1.getX(), endPos1.getX()) || xi > Math.max(startPos1.getX(), endPos1.getX())){
             return false;
         }
-        if (xi < Math.min(startPos2.getX(), endPos2.getX()) || xi > Math.max(startPos2.getX(), endPos2.getX())){
+        if(xi < Math.min(startPos2.getX(), endPos2.getX()) || xi > Math.max(startPos2.getX(), endPos2.getX())){
             return false;
         }
-        if (yi < Math.min(startPos1.getY(), endPos1.getY()) || yi > Math.max(startPos1.getY(), endPos1.getY())){
+        if(yi < Math.min(startPos1.getY(), endPos1.getY()) || yi > Math.max(startPos1.getY(), endPos1.getY())){
             return false;
         }
-        if (yi < Math.min(startPos2.getY(), endPos2.getY()) || yi > Math.max(startPos2.getY(), endPos2.getY())){
+        if(yi < Math.min(startPos2.getY(), endPos2.getY()) || yi > Math.max(startPos2.getY(), endPos2.getY())){
             return false;
         }
 
@@ -1780,23 +1832,23 @@ public class Shapes{
     public Vector2 CheckCollisionLinesV(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2){
         float div = (endPos2.getY() - startPos2.getY()) * (endPos1.getX() - startPos1.getX()) - (endPos2.getX() - startPos2.getX()) * (endPos1.getY() - startPos1.getY());
 
-        if (div == 0.0f){
+        if(div == 0.0f){
             return null;      // WARNING: This check could not work due to float precision rounding issues...
         }
 
         float xi = ((startPos2.getX() - endPos2.getX()) * (startPos1.getX() * endPos1.getY() - startPos1.getY() * endPos1.getX()) - (startPos1.getX() - endPos1.getX()) * (startPos2.getX() * endPos2.getY() - startPos2.getY() * endPos2.getX())) / div;
         float yi = ((startPos2.getY() - endPos2.getY()) * (startPos1.getX() * endPos1.getY() - startPos1.getY() * endPos1.getX()) - (startPos1.getY() - endPos1.getY()) * (startPos2.getX() * endPos2.getY() - startPos2.getY() * endPos2.getX())) / div;
 
-        if (xi < Math.min(startPos1.getX(), endPos1.getX()) || xi > Math.max(startPos1.getX(), endPos1.getX())){
+        if(xi < Math.min(startPos1.getX(), endPos1.getX()) || xi > Math.max(startPos1.getX(), endPos1.getX())){
             return null;
         }
-        if (xi < Math.min(startPos2.getX(), endPos2.getX()) || xi > Math.max(startPos2.getX(), endPos2.getX())){
+        if(xi < Math.min(startPos2.getX(), endPos2.getX()) || xi > Math.max(startPos2.getX(), endPos2.getX())){
             return null;
         }
-        if (yi < Math.min(startPos1.getY(), endPos1.getY()) || yi > Math.max(startPos1.getY(), endPos1.getY())){
+        if(yi < Math.min(startPos1.getY(), endPos1.getY()) || yi > Math.max(startPos1.getY(), endPos1.getY())){
             return null;
         }
-        if (yi < Math.min(startPos2.getY(), endPos2.getY()) || yi > Math.max(startPos2.getY(), endPos2.getY())){
+        if(yi < Math.min(startPos2.getY(), endPos2.getY()) || yi > Math.max(startPos2.getY(), endPos2.getY())){
             return null;
         }
 
@@ -1807,12 +1859,12 @@ public class Shapes{
     public Rectangle GetCollisionRec(Rectangle rec1, Rectangle rec2){
         Rectangle rec = new Rectangle();
 
-        if (CheckCollisionRecs(rec1, rec2)){
+        if(CheckCollisionRecs(rec1, rec2)){
             float dxx = Math.abs(rec1.getX() - rec2.getX());
             float dyy = Math.abs(rec1.getY() - rec2.getY());
 
-            if (rec1.getX() <= rec2.getX()){
-                if (rec1.getY() <= rec2.getY()){
+            if(rec1.getX() <= rec2.getX()){
+                if(rec1.getY() <= rec2.getY()){
                     rec.setX(rec2.getX());
                     rec.setY(rec2.getY());
                     rec.setWidth(rec1.getWidth() - dxx);
@@ -1826,7 +1878,7 @@ public class Shapes{
                 }
             }
             else{
-                if (rec1.getY() <= rec2.getY()){
+                if(rec1.getY() <= rec2.getY()){
                     rec.setX(rec1.getX());
                     rec.setY(rec2.getY());
                     rec.setWidth(rec2.getWidth() - dxx);
@@ -1840,24 +1892,24 @@ public class Shapes{
                 }
             }
 
-            if (rec1.getWidth() > rec2.getWidth()){
-                if (rec.getWidth() >= rec2.getWidth()){
+            if(rec1.getWidth() > rec2.getWidth()){
+                if(rec.getWidth() >= rec2.getWidth()){
                     rec.setWidth(rec2.getWidth());
                 }
             }
             else{
-                if (rec.getWidth() >= rec1.getWidth()){
+                if(rec.getWidth() >= rec1.getWidth()){
                     rec.setWidth(rec1.getWidth());
                 }
             }
 
-            if (rec1.getHeight() > rec2.getHeight()){
-                if (rec.getHeight() >= rec2.getHeight()){
+            if(rec1.getHeight() > rec2.getHeight()){
+                if(rec.getHeight() >= rec2.getHeight()){
                     rec.setHeight(rec2.getHeight());
                 }
             }
             else{
-                if (rec.getHeight() >= rec1.getHeight()){
+                if(rec.getHeight() >= rec1.getHeight()){
                     rec.setHeight(rec1.getHeight());
                 }
             }

@@ -6,7 +6,6 @@ public class RayMath{
     public static float DEG2RAD = PI / 180.0f;
     public static float RAD2DEG = 180.0f / PI;
 
-    //Vector3ToFloat
 
     public float Clamp(float value, float min, float max){
         float res = Math.max(value, min);
