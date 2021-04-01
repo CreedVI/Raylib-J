@@ -678,7 +678,7 @@ public class Textures{
 
                         pixels[i].setR(((pixel & 0b1111100000000000) >> 11) * (255 / 31));
                         pixels[i].setG(((pixel & 0b0000011111100000) >> 5) * (255 / 63));
-                        pixels[i].setB(((pixel & 0b0000000000011111) * (255 / 31)));
+                        pixels[i].setB((pixel & 0b0000000000011111) * (255 / 31));
                         pixels[i].setA(255);
 
                     }
