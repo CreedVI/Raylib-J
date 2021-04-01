@@ -22,10 +22,10 @@ public class Color{
      * @param a Alpha (0-255)
      */
     public Color(int r, int g, int b, int a){
-        this.r = r > 0 ? Math.min(r, 255) : 0;
-        this.g = g > 0 ? Math.min(g, 255) : 0;
-        this.b = b > 0 ? Math.min(b, 255) : 0;
-        this.a = a > 0 ? Math.min(a, 255) : 0;
+        this.r = (r > 0 ? Math.min(r, 255) : 0);
+        this.g = (g > 0 ? Math.min(g, 255) : 0);
+        this.b = (b > 0 ? Math.min(b, 255) : 0);
+        this.a = (a > 0 ? Math.min(a, 255) : 0);
     }
 
     /**

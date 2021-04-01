@@ -344,6 +344,7 @@ public class RLGL{
         int ShaderLocationInt;
 
         ShaderLocationIndex(int i){
+            ShaderLocationInt = i;
         }
 
         public int getShaderLocationInt(){
@@ -2971,7 +2972,7 @@ public class RLGL{
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].vertices, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_POSITION.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_POSITION.getShaderLocationInt()],
-                    3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+                    3, GL_FLOAT, false, 0, 0);
 
             // Vertex texcoord buffer (shader-location = 1)
             batch.vertexBuffer[i].vboId[1] = glGenBuffers();
@@ -2979,7 +2980,7 @@ public class RLGL{
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].texcoords, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()],
-                    2, GL_FLOAT, false, 2 * Float.BYTES, 0);
+                    2, GL_FLOAT, false, 0, 0);
 
             // Vertex color buffer (shader-location = 3)
             batch.vertexBuffer[i].vboId[2] = glGenBuffers();
@@ -2987,7 +2988,7 @@ public class RLGL{
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].colors, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()],
-                    4, GL_INT, true, 4 * Integer.BYTES, 0);
+                    4, GL_UNSIGNED_INT, false, 0, 0);
 
 
             // Fill index buffer
@@ -3051,22 +3052,19 @@ public class RLGL{
 
             // Vertex positions buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vboId[0]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vCounter*3*Float.BYTES,
-                    batch.vertexBuffer[batch.getCurrentBuffer()].vertices);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertexBuffer[batch.getCurrentBuffer()].vertices);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*4*batch->vertexBuffer[batch->currentBuffer].elementsCount,
             // batch->vertexBuffer[batch->currentBuffer].vertices, GL_DYNAMIC_DRAW);  // Update all buffer
 
             // Texture coordinates buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vboId[1]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vCounter*2*Float.BYTES,
-                    batch.vertexBuffer[batch.getCurrentBuffer()].texcoords);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertexBuffer[batch.getCurrentBuffer()].texcoords);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*2*4*batch->vertexBuffer[batch->currentBuffer].elementsCount,
             // batch->vertexBuffer[batch->currentBuffer].texcoords, GL_DYNAMIC_DRAW); // Update all buffer
 
             // Colors buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vboId[2]);
-            glBufferSubData(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vCounter*4*Integer.BYTES,
-                    batch.vertexBuffer[batch.getCurrentBuffer()].colors);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertexBuffer[batch.getCurrentBuffer()].colors);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*4*4*batch->vertexBuffer[batch->currentBuffer].elementsCount,
             // batch->vertexBuffer[batch->currentBuffer].colors, GL_DYNAMIC_DRAW);    // Update all buffer
 
@@ -3123,19 +3121,19 @@ public class RLGL{
                     // Bind vertex attrib: position (shader-location = 0)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[0]);
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_POSITION.getShaderLocationInt()],
-                            3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+                            3, GL_FLOAT, false, 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_POSITION.getShaderLocationInt()]);
 
                     // Bind vertex attrib: texcoord (shader-location = 1)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[1]);
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()],
-                            2, GL_FLOAT, false, 2 * Float.BYTES, 0);
+                            2, GL_FLOAT, false, 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_TEXCOORD01.getShaderLocationInt()]);
 
                     // Bind vertex attrib: color (shader-location = 3)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[2]);
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()],
-                            4, GL_UNSIGNED_INT, true, 4 * Integer.BYTES, 0);
+                            4, GL_UNSIGNED_INT, false, 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()]);
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[3]);
@@ -3173,7 +3171,7 @@ public class RLGL{
                             // NOTE: The final parameter tells the GPU the offset in bytes from the
                             // start of the index buffer to the location of the first index to process
                             //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, (vertexOffset / 4 * 6L * (Integer.BYTES)));
-                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, 0);
+                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount, GL_UNSIGNED_INT, 0);
                             //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount, GL_UNSIGNED_INT, 0);
                         }
                         else if(GRAPHICS_API_OPENGL_ES2){
