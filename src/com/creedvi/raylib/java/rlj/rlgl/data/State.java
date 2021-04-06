@@ -5,7 +5,7 @@ import com.creedvi.raylib.java.rlj.rlgl.shader.Shader;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.textures.Texture2D;
 
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.MAX_MATRIX_STACK_SIZE;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 
 public  class State{            // Renderer state
     int currentMatrixMode;              // Current matrix mode
@@ -53,6 +53,13 @@ public  class State{            // Renderer state
 
     public void setCurrentMatrix(Matrix currentMatrix){
         this.currentMatrix = currentMatrix;
+
+        if(currentMatrixMode == RL_PROJECTION){
+            projection = currentMatrix;
+        }
+        else if(currentMatrixMode == RL_MODELVIEW){
+            modelview = currentMatrix;
+        }
     }
 
     public Matrix getModelview(){

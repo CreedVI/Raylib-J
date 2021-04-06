@@ -227,12 +227,18 @@ public class Core{
         return window.resizedLastFrame;
     }
 
-    // Check if one specific window flag is enabled
+    /**
+     * Check if one specific window flag is enabled
+     * @param flag Window flag to be checked
+     * @return <code>true</code> if flag is enabled
+     */
     public boolean IsWindowState(int flag){
         return ((window.flags & flag) > 0);
     }
 
-    // Toggle fullscreen mode (only PLATFORM_DESKTOP)
+    /**
+     * Toggle fullscreen mode (only PLATFORM_DESKTOP)
+     */
     public void ToggleFullscreen(){
         // NOTE: glfwSetWindowMonitor() doesn't work properly (bugs)
         if (!window.fullscreen){
@@ -275,7 +281,9 @@ public class Core{
 
     }
 
-    // Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
+    /**
+     * Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
+     */
     public void MaximizeWindow(){
         if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
             glfwMaximizeWindow(window.handle);
@@ -283,13 +291,17 @@ public class Core{
         }
     }
 
-    // Set window state: minimized (only PLATFORM_DESKTOP)
+    /**
+     * Set window state: minimized (only PLATFORM_DESKTOP)
+     */
     public void MinimizeWindow(){
         // NOTE: Following function launches callback that sets appropiate flag!
         glfwIconifyWindow(window.handle);
     }
 
-    // Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
+    /**
+     * Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
+     */
     public void RestoreWindow(){
         if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
             // Restores the specified window if it was previously iconified (minimized) or maximized
@@ -528,12 +540,18 @@ public class Core{
         glfwSetWindowSize(window.handle, width, height);
     }
 
-    // Get current screen width
+    /**
+     * Get current screen width
+     * @return Width of current window
+     */
     public static int GetScreenWidth(){
         return window.screen.getWidth();
     }
 
-    // Get current screen height
+    /**
+     * Get current screen height
+     * @return Height of current window
+     */
     public static int GetScreenHeight(){
         return window.screen.getHeight();
     }
@@ -753,11 +771,18 @@ public class Core{
         return input.mouse.isCursorOnScreen();
     }
 
+    /**
+     * Clear window background
+     * @param color Color to fill the background
+     */
     public void ClearBackground(Color color){
         rlClearColor(color.getR(), color.getG(), color.getB(), color.getA());   // Set clear color
         rlClearScreenBuffers();                             // Clear current framebuffers
     }
 
+    /**
+     * Setup canvas (framebuffer) to start drawing
+     */
     public void BeginDrawing(){
         time.setCurrent(GetTime());            // Number of elapsed seconds since InitTimer()
         time.setUpdate(time.getCurrent() - time.getPrevious());
@@ -770,7 +795,9 @@ public class Core{
         // NOTE: Not required with OpenGL 3.3+
     }
 
-    // End canvas drawing and swap buffers (double buffering)
+    /**
+     * End canvas drawing and swap buffers (double buffering)
+     */
     public void EndDrawing(){
 
         rlglDraw();                     // Draw Buffers (Only OpenGL 3+ and ES2)
@@ -993,7 +1020,11 @@ public class Core{
         return MatrixLookAt(camera.getPosition(), camera.getTarget(), camera.getUp());
     }
 
-    // Returns camera 2d transform matrix
+    /**
+     * Returns camera 2d transform matrix
+     * @param camera
+     * @return Transform matrix
+     */
     Matrix GetCameraMatrix2D(Camera2D camera){
         Matrix matTransform = new Matrix();
         // The camera in world-space is set by
@@ -1085,6 +1116,10 @@ public class Core{
         return new Vector2(transform.getX(), transform.getY());
     }
 
+    /**
+     * Set target FPS (maximum)
+     * @param fps FPS limit
+     */
     public void SetTargetFPS(int fps){
         if (fps < 1){
             time.setTarget(0.0f);
@@ -1096,8 +1131,13 @@ public class Core{
         Tracelog(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000 + " milliseconds");
     }
 
-    // Returns current FPS
-    // NOTE: We calculate an average framerate
+    //
+
+    /**
+     * Returns current FPS
+     * NOTE: We calculate an average framerate
+     * @return Current average framerate
+     */
     public static int GetFPS(){
 
         int FPS_CAPTURE_FRAMES_COUNT = 30;      // 30 captures
@@ -1122,10 +1162,20 @@ public class Core{
         return Math.round(1.0f / average);
     }
 
+    /**
+     * Returns time in seconds for last frame drawn
+     * @return Seconds taken for last frame
+     */
     public static float GetFrameTime(){
         return (float) time.getFrame();
     }
 
+    /**
+     * Get elapsed time measure in seconds since InitTimer()
+     * NOTE: On PLATFORM_DESKTOP InitTimer() is called on InitWindow()
+     * NOTE: On PLATFORM_DESKTOP, timer is initialized on glfwInit()
+     * @return Time program has been running in seconds
+     */
     static double GetTime(){
         return glfwGetTime();
     }
@@ -1142,7 +1192,12 @@ public class Core{
 
     //TakeScreenShot
 
-    // Returns a random value between min and max (both included)
+    /**
+     * Returns a random value between min and max (both included)
+     * @param min Minimum value of random number
+     * @param max Maximum value of random number
+     * @return Random value between the <code>min/code> and <code>max</code>
+     */
     public int GetRandomValue(int min, int max){
         if (min > max){
             int tmp = max;
@@ -1962,6 +2017,9 @@ public class Core{
         rlLoadIdentity();                   // Reset current matrix (modelview)
     }
 
+    // Compute framebuffer size relative to screen size and display size
+    // NOTE: Global variables CORE.Window.render.width/CORE.Window.render.height and
+    // CORE.Window.renderOffset.x/CORE.Window.renderOffset.y can be modified
     void SetupFramebuffer(int width, int height){
         // Calculate window.render.getWidth() and window.render.getHeight(), we have the display size (input params) and the desired screen size (global var)
         if ((window.screen.getWidth() > window.display.getWidth()) || (window.screen.getHeight() > window.display.getHeight())){
@@ -2034,10 +2092,17 @@ public class Core{
         }
     }
 
+    /**
+     * Initialize hi-resolution timer
+     */
     void InitTimer(){
         time.setPrevious(GetTime());       // Get time as double
     }
 
+    /**
+     * Wait for some milliseconds (stop program execution)
+     * @param ms Time to wait in milliseconds
+     */
     void Wait(float ms){
         if(SUPPORT_BUSY_WAIT_LOOP){
             double prevTime = GetTime();
@@ -2057,6 +2122,10 @@ public class Core{
         }
     }
 
+    /**
+     *
+     Poll (store) all input events
+     */
     void PollInputEvents(){
         // Reset keys/chars pressed registered
         input.keyboard.setKeyPressedQueueCount(0);
@@ -2164,7 +2233,9 @@ public class Core{
         }
     }
 
-    // Copy back buffer to front buffers
+    /**
+     * Copy back buffer to front buffers
+     */
     void SwapBuffers(){
         glfwSwapBuffers(window.handle);
     }

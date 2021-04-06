@@ -2,8 +2,8 @@ package com.creedvi.raylib.java.rlj.raymath;
 
 public class Size{
 
-    private int width;
-    private int height;
+    public int width;
+    public int height;
 
     public Size(){
         this.width = 0;

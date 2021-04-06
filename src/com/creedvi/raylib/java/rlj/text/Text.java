@@ -101,7 +101,7 @@ public class Text{
         // Re-construct image from defaultFontData and generate OpenGL texture
         //----------------------------------------------------------------------
         Image imFont = new Image();
-        imFont.setData(new int[128 * 128]);  // 2 bytes per pixel (gray + alpha)
+        imFont.setData(new int[(128 * 128) * 2]);  // 2 bytes per pixel (gray + alpha)
         imFont.setWidth(128);
         imFont.setHeight(128);
         imFont.setFormat(UNCOMPRESSED_GRAY_ALPHA.getPixForInt());

@@ -1,7 +1,7 @@
 package com.creedvi.raylib.java.rlj.raymath;
 
 public class Quaternion{
-    float x, y, z, w;
+    public float x, y, z, w;
 
     public Quaternion(){
         this.x = 0;

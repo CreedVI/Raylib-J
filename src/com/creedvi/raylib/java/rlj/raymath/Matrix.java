@@ -2,10 +2,10 @@ package com.creedvi.raylib.java.rlj.raymath;
 
 //OpenGL 4x4 - Right handed, Column Major
 public class Matrix{
-    float m0, m4, m8, m12;
-    float m1, m5, m9, m13;
-    float m2, m6, m10, m14;
-    float m3, m7, m11, m15;
+    public float m0, m4, m8, m12;
+    public float m1, m5, m9, m13;
+    public float m2, m6, m10, m14;
+    public float m3, m7, m11, m15;
 
     public Matrix(){
         this.m0 = 0;
@@ -26,10 +26,10 @@ public class Matrix{
         this.m15 = 0;
     }
 
-    public Matrix(float m0, float m1, float m2, float m3,
-                  float m4, float m5, float m6, float m7,
-                  float m8, float m9, float m10, float m11,
-                  float m12, float m13, float m14, float m15){
+    public Matrix(float m0, float m4, float m8, float m12,
+                  float m1, float m5, float m9, float m13,
+                  float m2, float m6, float m10, float m14,
+                  float m3, float m7, float m11, float m15){
         this.m0 = m0;
         this.m4 = m4;
         this.m8 = m8;
@@ -49,10 +49,10 @@ public class Matrix{
     }
 
     public Matrix(float[] mat){
-        this.m0  = mat[0];     this.m1  = mat[1];     this.m2  = mat[2];     this.m3  = mat[3];
-        this.m4  = mat[4];     this.m5  = mat[5];     this.m6  = mat[6];     this.m7  = mat[7];
-        this.m8  = mat[8];     this.m9  = mat[9];     this.m10 = mat[10];    this.m11 = mat[11];
-        this.m12 = mat[12];    this.m13 = mat[13];    this.m14 = mat[14];    this.m15 = mat[15];
+        this.m0  = mat[0];     this.m1  = mat[4];     this.m2  = mat[8];     this.m3  = mat[12];
+        this.m4  = mat[1];     this.m5  = mat[5];     this.m6  = mat[9];     this.m7  = mat[13];
+        this.m8  = mat[2];     this.m9  = mat[6];     this.m10 = mat[10];    this.m11 = mat[14];
+        this.m12 = mat[3];     this.m13 = mat[7];     this.m14 = mat[11];    this.m15 = mat[15];
     }
 
     public float getM0(){

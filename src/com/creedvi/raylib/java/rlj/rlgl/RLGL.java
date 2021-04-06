@@ -47,7 +47,7 @@ public class RLGL{
     private static boolean GRAPHICS_API_OPENGL_11 = false;
     private static boolean GRAPHICS_API_OPENGL_21 = false;
     private static boolean GRAPHICS_API_OPENGL_33 = true;
-    public static final boolean GRAPHICS_API_OPENGL_ES2 = false;
+    private static final boolean GRAPHICS_API_OPENGL_ES2 = false;
     private static final boolean SUPPORT_RENDER_TEXTURES_HINT = true;
 
     public static final int DEFAULT_BATCH_BUFFERS = 1;
@@ -373,6 +373,15 @@ public class RLGL{
         public int getShaderUniformDataInt(){
             return ShaderUniformDataInt;
         }
+
+        public static ShaderUniformDataType getByInt(int index){
+            for(ShaderUniformDataType dt : values()){
+                if(dt.getShaderUniformDataInt() == index){
+                    return dt;
+                }
+            }
+            return null;
+        }
     }
 
     // Material map type
@@ -409,6 +418,13 @@ public class RLGL{
     }
 
     public static void rlMatrixMode(int mode){
+
+        if(mode == RL_PROJECTION){
+            rlglData.getState().setCurrentMatrix(rlglData.getState().getProjection());
+        }
+        else if(mode == RL_MODELVIEW){
+            rlglData.getState().setCurrentMatrix(rlglData.getState().getModelview());
+        }
         if(GRAPHICS_API_OPENGL_33){
             GL_33.rlMatrixMode(mode);
         }
@@ -1341,7 +1357,7 @@ public class RLGL{
         id = glGenTextures();              // Generate texture id
 
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            glActiveTexture(GL_TEXTURE0);     // If not defined, using GL_TEXTURE0 by default (shader texture)
+           // glActiveTexture(GL_TEXTURE0);     // If not defined, using GL_TEXTURE0 by default (shader texture)
         }
 
         glBindTexture(GL_TEXTURE_2D, id);
@@ -2173,8 +2189,7 @@ public class RLGL{
     // Get texture to draw shapes (RAII)
     public static Texture2D GetShapesTexture(){
         if(GRAPHICS_API_OPENGL_11){
-            Texture2D texture = new Texture2D();
-            return texture;
+            return new Texture2D();
         }
         else{
             return rlglData.getState().getShapesTexture();
@@ -2184,8 +2199,7 @@ public class RLGL{
     // Get texture rectangle to draw shapes
     public static Rectangle GetShapesTextureRec(){
         if(GRAPHICS_API_OPENGL_11){
-            Rectangle rect = new Rectangle();
-            return rect;
+            return new Rectangle();
         }
         else{
             return rlglData.getState().getShapesTextureRec();
@@ -2383,9 +2397,8 @@ public class RLGL{
         return location;
     }
 
-    /* TODO
-     Set shader uniform value
-    void SetShaderValue(Shader shader, int uniformLoc, int[] value, int uniformType)
+    // Set shader uniform value
+    /*void SetShaderValue(Shader shader, int uniformLoc, int[] value, int uniformType)
     {
         SetShaderValueV(shader, uniformLoc, value, uniformType, 1);
     }
@@ -2395,7 +2408,9 @@ public class RLGL{
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glUseProgram(shader.getId());
 
-            switch (uniformType){
+            ShaderUniformDataType tmp = ShaderUniformDataType.getByInt(uniformType);
+
+            switch(tmp){
                 case UNIFORM_FLOAT:
                     glUniform1f(uniformLoc, count);
                     break;
@@ -2429,7 +2444,7 @@ public class RLGL{
 
             //glUseProgram(0);      // Avoid reseting current shader program, in case other uniforms are set
         }
-    }
+    }*/
 
     void SetShaderValueMatrix(Shader shader, int uniformLoc, Matrix mat){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2467,7 +2482,6 @@ public class RLGL{
             //glUseProgram(0);
         }
     }
-    */
 
     // Set a custom projection matrix (replaces internal projection matrix)
     static void SetMatrixProjection(Matrix projection){
@@ -2896,7 +2910,7 @@ public class RLGL{
             batch.vertexBuffer[i].setTexcoords(new float[bufferElements * 2 * Float.BYTES]);
             //batch.vertexBuffer[i].texcoords.flip();
             // 2 float by texcoord, 4 texcoord by quad
-            batch.vertexBuffer[i].setColors(new int[bufferElements * 4 * Integer.BYTES]);
+            batch.vertexBuffer[i].setColors(new float[bufferElements * 4 * Integer.BYTES]);
             //batch.vertexBuffer[i].colors.flip();
             // 4 float by color, 4 colors by quad
             if(GRAPHICS_API_OPENGL_33){
@@ -2988,7 +3002,7 @@ public class RLGL{
             glBufferData(GL_ARRAY_BUFFER, batch.vertexBuffer[i].colors, GL_DYNAMIC_DRAW);
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()],
-                    4, GL_UNSIGNED_INT, false, 0, 0);
+                    4, GL_FLOAT, false, 0, 0);
 
 
             // Fill index buffer
@@ -3003,6 +3017,8 @@ public class RLGL{
         }
 
         Tracelog(LOG_INFO, "RLGL: Render batch vertex buffers loaded successfully");
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Unbind the current VAO
         if(rlglData.getExtSupported().isVao()){
@@ -3095,6 +3111,9 @@ public class RLGL{
         Matrix matProjection = rlglData.getState().getProjection();
         Matrix matModelView = rlglData.getState().getModelview();
 
+        //System.out.println("\n" + Arrays.toString(MatrixToFloat(matProjection)));
+        //System.out.println(Arrays.toString(MatrixToFloat(matModelView)) + "\n");
+
         int eyesCount = (rlglData.getVr().isStereoRender()) ? 2 : 1;
 
 
@@ -3133,7 +3152,7 @@ public class RLGL{
                     // Bind vertex attrib: color (shader-location = 3)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[2]);
                     glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()],
-                            4, GL_UNSIGNED_INT, false, 0, 0);
+                            4, GL_FLOAT, false, 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()]);
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.vertexBuffer[batch.currentBuffer].vboId[3]);
@@ -3141,9 +3160,8 @@ public class RLGL{
 
                 // Setup some default shader values
                 glUniform4f(rlglData.getState().getCurrentShader().locs[LOC_COLOR_DIFFUSE.getShaderLocationInt()], 1.0f, 1.0f, 1.0f, 1.0f);
-                glUniform1i(rlglData.getState().getCurrentShader().locs[LOC_MAP_DIFFUSE.getShaderLocationInt()], 0);  // Active default
-                // sampler2D:
-                // texture0
+                glUniform1i(rlglData.getState().getCurrentShader().locs[LOC_MAP_DIFFUSE.getShaderLocationInt()], 0);
+                // Active default sampler2D: texture0
 
                 // Activate additional sampler textures
                 // Those additional textures will be common for all draw calls of the batch
@@ -3171,12 +3189,11 @@ public class RLGL{
                             // NOTE: The final parameter tells the GPU the offset in bytes from the
                             // start of the index buffer to the location of the first index to process
                             //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, (vertexOffset / 4 * 6L * (Integer.BYTES)));
-                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount, GL_UNSIGNED_INT, 0);
+                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, 0);
                             //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount, GL_UNSIGNED_INT, 0);
                         }
                         else if(GRAPHICS_API_OPENGL_ES2){
-                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT,
-                                    (vertexOffset / 4 * 6L * (Short.BYTES)));
+                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT, 0);
                         }
                     }
 
@@ -3317,6 +3334,80 @@ public class RLGL{
         glDeleteBuffers(quadVBO);
         glDeleteVertexArrays(quadVAO);
     }
+
+    public static void GenDrawQuadAlt() {
+        int quadVAO = 0;
+        int[] quadVBO = {0, 0, 0, 0};
+        Shader shaderProgram = rlglData.getState().getCurrentShader();
+
+        float vertices[] = {
+                -0.5f,  0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f,  0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
+        };
+
+        float[] texcoords = {
+                0.5f, -0.5f,
+                -0.5f, -0.5f,
+                0.5f,  0.5f,
+                0.5f, -0.5f
+        };
+
+        float[] colour = {
+                1, 0.4274509f, 0.6079216f, 1,
+                1, 0.4274509f, 0.6079216f, 1,
+                1, 0.4274509f, 0.6079216f, 1,
+                1, 0.4274509f, 0.6079216f, 1
+        };
+
+        int[] indices = {
+                0, 1, 2,
+                0, 2, 3
+        };
+
+        // Gen VAO to contain VBO
+        quadVAO = glGenVertexArrays();
+        glBindVertexArray(quadVAO);
+
+        // Gen and fill vertex buffer (VBO)
+        quadVBO[0] = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[0]);
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT,
+                false, 0,0); //Positions
+        glEnableVertexAttribArray(0);
+
+        quadVBO[1] = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[1]);
+        glBufferData(GL_ARRAY_BUFFER, texcoords, GL_STATIC_DRAW);
+        glVertexAttribPointer(1, 2, GL_FLOAT,
+                false, 0,0); //Texcoords
+        glEnableVertexAttribArray(1);
+
+        quadVBO[2] = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[2]);
+        glBufferData(GL_ARRAY_BUFFER, colour, GL_STATIC_DRAW);
+        glVertexAttribPointer(3, 4, GL_FLOAT,
+                false, 0, 0); //Colours
+        glEnableVertexAttribArray(3);
+
+        quadVBO[3] = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[3]);
+        glBufferData(GL_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+
+        // Draw quad
+        glUseProgram(shaderProgram.getId());
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertices.length/3);
+        glBindVertexArray(0);
+        glUseProgram(0);
+
+        // Delete buffers (VBO and VAO)
+        glDeleteBuffers(quadVBO);
+        glDeleteVertexArrays(quadVAO);
+    }
+
 
     // Renders a 1x1 3D cube in NDC
     public static void GenDrawCube() {

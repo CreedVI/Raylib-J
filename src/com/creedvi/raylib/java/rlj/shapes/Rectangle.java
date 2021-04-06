@@ -4,7 +4,7 @@ import com.creedvi.raylib.java.rlj.raymath.Vector2;
 
 public class Rectangle{
 
-    private float x, y, width, height;
+    public float x, y, width, height;
 
     public Rectangle(){
         this.x = 0;

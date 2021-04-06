@@ -1,7 +1,7 @@
 package com.creedvi.raylib.java.rlj.raymath;
 
 public class Vector3{
-    float x, y, z;
+    public float x, y, z;
 
     public Vector3(){
         this.x = 0;

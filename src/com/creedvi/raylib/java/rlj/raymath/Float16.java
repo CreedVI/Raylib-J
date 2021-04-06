@@ -1,7 +1,7 @@
 package com.creedvi.raylib.java.rlj.raymath;
 
 class Float16{
-    float v[] = new float[16];
+    public float v[] = new float[16];
 
     public Float16(){
         v[0] = 0;

@@ -252,25 +252,21 @@ public class RayMath{
         return result;
     }
 
-    public void Vector3OrthoNormalize(Vector3 v1, Vector3 v2){
-        //TODO
-        /*
-        *v1 = Vector3Normalize(*v1);
-        Vector3 vn = Vector3CrossProduct(*v1, *v2);
+    public Vector3[] Vector3OrthoNormalize(Vector3 v1, Vector3 v2){
+        v1 = Vector3Normalize(v1);
+        Vector3 vn = Vector3CrossProduct(v1, v2);
         vn = Vector3Normalize(vn);
-        *v2 = Vector3CrossProduct(vn, *v1);
-         */
+        v2 = Vector3CrossProduct(vn, v1);
+
+        return new Vector3[]{v1, v2};
     }
 
     public static Vector3 Vector3Transform(Vector3 v, Matrix m){
-        Vector3 result = new Vector3();
-        float x = v.x;
-        float y = v.y;
-        float z = v.z;
+        Vector3 result = new Vector3(v.x, v.y, v.z);
 
-        result.x = m.m0 * x + m.m4 * y + m.m8 * z + m.m12;
-        result.y = m.m1 * x + m.m5 * y + m.m9 * z + m.m13;
-        result.z = m.m2 * x + m.m6 * y + m.m10 * z + m.m14;
+        result.x = (m.m0 * result.x) + (m.m4 * result.y) + (m.m8 * result.z) + m.m12;
+        result.y = (m.m1 * result.x) + (m.m5 * result.y) + (m.m9 * result.z) + m.m13;
+        result.z = (m.m2 * result.x) + (m.m6 * result.y) + (m.m10 * result.z) + m.m14;
 
         return result;
     }

@@ -18,6 +18,7 @@ import static com.creedvi.raylib.java.rlj.core.Color.BLANK;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.*;
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
+import static com.creedvi.raylib.java.rlj.textures.NPatchInfo.NPatchType.*;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogS;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
@@ -54,7 +55,7 @@ public class Textures{
     Image GenImageColor(int width, int height, Color color){
         Color[] pixels = new Color[width * height];
 
-        for (int i = 0; i < width * height; i++){
+        for(int i = 0; i < width * height; i++){
             pixels[i] = color;
         }
 
@@ -88,18 +89,22 @@ public class Textures{
         int height = image.height;
         int size = 0;
 
-        for (int i = 0; i < image.mipmaps; i++){
+        for(int i = 0; i < image.mipmaps; i++){
             size += GetPixelDataSize(width, height, image.format);
 
             width /= 2;
             height /= 2;
 
             // Security check for NPOT textures
-            if (width < 1) width = 1;
-            if (height < 1) height = 1;
+            if(width < 1){
+                width = 1;
+            }
+            if(height < 1){
+                height = 1;
+            }
         }
 
-        if (newImage.data != null){
+        if(newImage.data != null){
             // NOTE: Size must be provided in bytes
             newImage.data = image.data;
 
@@ -131,12 +136,12 @@ public class Textures{
     // Convert image data to desired format
     void ImageFormat(Image image, int newFormat){
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)){
+        if((image.data == null) || (image.width == 0) || (image.height == 0)){
             return;
         }
 
-        if ((newFormat != 0) && (image.format != newFormat)){
-            if ((image.format < COMPRESSED_DXT1_RGB.getPixForInt()) && (newFormat < COMPRESSED_DXT1_RGB.getPixForInt())){
+        if((newFormat != 0) && (image.format != newFormat)){
+            if((image.format < COMPRESSED_DXT1_RGB.getPixForInt()) && (newFormat < COMPRESSED_DXT1_RGB.getPixForInt())){
                 Vector4[] pixels = LoadImageDataNormalized(image);     // Supports 8 to 32 bit per channel
 
                 // WARNING! We loose mipmaps data --> Regenerated at the end...
@@ -147,11 +152,11 @@ public class Textures{
 
                 PixelFormat tmppf = PixelFormat.getByInt(image.getFormat());
 
-                switch (tmppf){
+                switch(tmppf){
                     case UNCOMPRESSED_GRAYSCALE:{
                         image.data = new int[image.width * image.height * Character.SIZE];
 
-                        for (int i = 0; i < image.width * image.height; i++){
+                        for(int i = 0; i < image.width * image.height; i++){
                             image.data[i] =
                                     (int) ((pixels[i].getX() * 0.299f + pixels[i].getY() * 0.587f + pixels[i].getZ() * 0.114f) * 255.0f);
                         }
@@ -161,7 +166,7 @@ public class Textures{
                     case UNCOMPRESSED_GRAY_ALPHA:{
                         image.data = new int[image.width * image.height * 2 * Character.SIZE];
 
-                        for (int i = 0; i < image.width * image.height * 2; i += 2, k++){
+                        for(int i = 0; i < image.width * image.height * 2; i += 2, k++){
                             image.data[i] =
                                     (int) ((pixels[k].getX() * 0.299f + pixels[k].getY() * 0.587f + pixels[k].getZ() * 0.114f) * 255.0f);
                             image.data[i + 1] = (int) (pixels[k].getW() * 255.0f);
@@ -176,7 +181,7 @@ public class Textures{
                         char g;
                         char b;
 
-                        for (int i = 0; i < image.width * image.height; i++){
+                        for(int i = 0; i < image.width * image.height; i++){
                             r = (char) Math.round(pixels[i].getX() * 31.0f);
                             g = (char) Math.round(pixels[i].getY() * 63.0f);
                             b = (char) Math.round(pixels[i].getZ() * 31.0f);
@@ -189,7 +194,7 @@ public class Textures{
                     case UNCOMPRESSED_R8G8B8:{
                         image.data = new int[image.width * image.height * 3 * Character.SIZE];
                         k = 0;
-                        for (int i = 0; i < image.width * image.height * 3; i += 3, k++){
+                        for(int i = 0; i < image.width * image.height * 3; i += 3, k++){
                             image.data[i] = (int) (pixels[k].getX() * 255.0f);
                             image.data[i + 1] = (int) (pixels[k].getY() * 255.0f);
                             image.data[i + 2] = (int) (pixels[k].getZ() * 255.0f);
@@ -204,7 +209,7 @@ public class Textures{
                         char b;
                         char a;
 
-                        for (int i = 0; i < image.width * image.height; i++){
+                        for(int i = 0; i < image.width * image.height; i++){
                             r = (char) (Math.round(pixels[i].getX() * 31.0f));
                             g = (char) (Math.round(pixels[i].getY() * 31.0f));
                             b = (char) (Math.round(pixels[i].getZ() * 31.0f));
@@ -223,7 +228,7 @@ public class Textures{
                         char b;
                         char a;
 
-                        for (int i = 0; i < image.width * image.height; i++){
+                        for(int i = 0; i < image.width * image.height; i++){
                             r = (char) (Math.round(pixels[i].getX() * 15.0f));
                             g = (char) (Math.round(pixels[i].getY() * 15.0f));
                             b = (char) (Math.round(pixels[i].getZ() * 15.0f));
@@ -238,7 +243,7 @@ public class Textures{
                         image.data = new int[image.width * image.height * 4 * Character.SIZE];
 
                         k = 0;
-                        for (int i = 0; i < image.width * image.height * 4; i += 4, k++){
+                        for(int i = 0; i < image.width * image.height * 4; i += 4, k++){
                             image.data[i] = (int) (pixels[k].getX() * 255.0f);
                             image.data[i + 1] = (int) (pixels[k].getY() * 255.0f);
                             image.data[i + 2] = (int) (pixels[k].getZ() * 255.0f);
@@ -251,7 +256,7 @@ public class Textures{
 
                         image.data = new int[image.width * image.height * Float.SIZE];
 
-                        for (int i = 0; i < image.width * image.height; i++){
+                        for(int i = 0; i < image.width * image.height; i++){
                             image.data[i] = (int) (pixels[i].getX() * 0.299f + pixels[i].getY() * 0.587f + pixels[i].getZ() * 0.114f);
                         }
                     }
@@ -260,7 +265,7 @@ public class Textures{
                         image.data = new int[image.width * image.height * 3 * Float.SIZE];
 
                         k = 0;
-                        for (int i = 0; i < image.width * image.height * 3; i += 3, k++){
+                        for(int i = 0; i < image.width * image.height * 3; i += 3, k++){
                             image.data[i] = (int) pixels[k].getX();
                             image.data[i + 1] = (int) pixels[k].getY();
                             image.data[i + 2] = (int) pixels[k].getZ();
@@ -271,7 +276,7 @@ public class Textures{
                         image.data = new int[image.width * image.height * 4 * Float.SIZE];
 
                         k = 0;
-                        for (int i = 0; i < image.width * image.height * 4; i += 4, k++){
+                        for(int i = 0; i < image.width * image.height * 4; i += 4, k++){
                             image.data[i] = (int) pixels[k].getX();
                             image.data[i + 1] = (int) pixels[k].getY();
                             image.data[i + 2] = (int) pixels[k].getZ();
@@ -287,10 +292,10 @@ public class Textures{
 
                 // In case original image had mipmaps, generate mipmaps for formated image
                 // NOTE: Original mipmaps are replaced by new ones, if custom mipmaps were used, they are lost
-                if (image.mipmaps > 1){
+                if(image.mipmaps > 1){
                     image.mipmaps = 1;
-                    if (SUPPORT_IMAGE_MANIPULATION){
-                        if (image.data != null){
+                    if(SUPPORT_IMAGE_MANIPULATION){
+                        if(image.data != null){
                             ImageMipmaps(image);
                         }
                     }
@@ -308,7 +313,9 @@ public class Textures{
     // Create an image from text (default font)
     Image ImageText(String text, int fontSize, Color color){
         int defaultFontSize = 10;   // Default Font chars height in pixel
-        if (fontSize < defaultFontSize) fontSize = defaultFontSize;
+        if(fontSize < defaultFontSize){
+            fontSize = defaultFontSize;
+        }
         int spacing = fontSize / defaultFontSize;
 
         Image imText = ImageTextEx(GetFontDefault(), text, (float) fontSize, (float) spacing, color);
@@ -330,7 +337,7 @@ public class Textures{
         // Create image to store text
         Image imText = GenImageColor((int) imSize.getX(), (int) imSize.getY(), BLANK);
 
-        for (int i = 0; i < length; i++){
+        for(int i = 0; i < length; i++){
             // Get next codepoint from byte string and glyph index in font
             int codepointByteCount = 0;
             int codepoint = Text.GetNextCodepoint(text, codepointByteCount);
@@ -340,18 +347,18 @@ public class Textures{
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-            if (codepoint == 0x3f){
+            if(codepoint == 0x3f){
                 codepointByteCount = 1;
             }
 
-            if (codepoint == '\n'){
+            if(codepoint == '\n'){
                 // NOTE: Fixed line spacing of 1.5 line-height
                 // TODO: Support custom line spacing defined by user
                 textOffsetY += (font.getBaseSize() + font.getBaseSize() / 2);
                 textOffsetX = 0;
             }
             else{
-                if ((codepoint != ' ') && (codepoint != '\t')){
+                if((codepoint != ' ') && (codepoint != '\t')){
                     Rectangle rec = new Rectangle((float) (textOffsetX + font.getChars()[index].getOffsetX()),
                             (float) (textOffsetY + font.getChars()[index].getOffsetY()),
                             font.getRecs()[index].getWidth(), font.getRecs()[index].getHeight());
@@ -363,7 +370,7 @@ public class Textures{
                     */
                 }
 
-                if (font.getChars()[index].getAdvanceX() == 0){
+                if(font.getChars()[index].getAdvanceX() == 0){
                     textOffsetX += (int) (font.getRecs()[index].getWidth() + spacing);
                 }
                 else{
@@ -375,12 +382,12 @@ public class Textures{
         }
 
         // Scale image depending on text size
-        if (fontSize > imSize.getY()){
+        if(fontSize > imSize.getY()){
             float scaleFactor = fontSize / imSize.getY();
             Tracelog(LOG_INFO, "IMAGE: Text scaled by factor: " + scaleFactor);
 
             // Using nearest-neighbor scaling algorithm for default font
-            if (font.getTexture().getId() == Text.GetFontDefault().getTexture().getId()){
+            if(font.getTexture().getId() == Text.GetFontDefault().getTexture().getId()){
                 ImageResizeNN(imText, (int) (imSize.getX() * scaleFactor), (int) (imSize.getY() * scaleFactor));
             }
             else{
@@ -391,13 +398,201 @@ public class Textures{
         return imText;
     }
 
-    //ImageAlphaCrop
+    /* TODO: 4/2/2021
+    // Crop image depending on alpha value
+    // NOTE: Threshold is defined as a percentatge: 0.0f -> 1.0f
+    void ImageAlphaCrop(Image image, float threshold)
+    {
+        // Security check to avoid program crash
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return;
+        }
 
-    //ImageAlphaClear
+        Rectangle crop = GetImageAlphaBorder(image, threshold);
 
-    //ImageAlphaMask
+        // Crop if rectangle is valid
+        if (((int)crop.width != 0) && ((int)crop.height != 0)) {
+            ImageCrop(image, crop);
+        }
+    }
 
-    //ImageAlphaPreMultiply
+    // Clear alpha channel to desired color
+    // NOTE: Threshold defines the alpha limit, 0.0f to 1.0f
+    void ImageAlphaClear(Image *image, Color color, float threshold)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (image->mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image->format >= COMPRESSED_DXT1_RGB) TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+        else
+        {
+            switch (image->format)
+            {
+                case UNCOMPRESSED_GRAY_ALPHA:
+                {
+                    unsigned char thresholdValue = (unsigned char)(threshold*255.0f);
+                    for (int i = 1; i < image->width*image->height*2; i += 2)
+                    {
+                        if (((unsigned char *)image->data)[i] <= thresholdValue)
+                        {
+                            ((unsigned char *)image->data)[i - 1] = color.r;
+                            ((unsigned char *)image->data)[i] = color.a;
+                        }
+                    }
+                } break;
+                case UNCOMPRESSED_R5G5B5A1:
+                {
+                    unsigned char thresholdValue = ((threshold < 0.5f)? 0 : 1);
+
+                    unsigned char r = (unsigned char)(round((float)color.r*31.0f));
+                    unsigned char g = (unsigned char)(round((float)color.g*31.0f));
+                    unsigned char b = (unsigned char)(round((float)color.b*31.0f));
+                    unsigned char a = (color.a < 128)? 0 : 1;
+
+                    for (int i = 0; i < image->width*image->height; i++)
+                    {
+                        if ((((unsigned short *)image->data)[i] & 0b0000000000000001) <= thresholdValue)
+                        {
+                            ((unsigned short *)image->data)[i] = (unsigned short)r << 11 | (unsigned short)g << 6 | (unsigned short)b << 1 | (unsigned short)a;
+                        }
+                    }
+                } break;
+                case UNCOMPRESSED_R4G4B4A4:
+                {
+                    unsigned char thresholdValue = (unsigned char)(threshold*15.0f);
+
+                    unsigned char r = (unsigned char)(round((float)color.r*15.0f));
+                    unsigned char g = (unsigned char)(round((float)color.g*15.0f));
+                    unsigned char b = (unsigned char)(round((float)color.b*15.0f));
+                    unsigned char a = (unsigned char)(round((float)color.a*15.0f));
+
+                    for (int i = 0; i < image->width*image->height; i++)
+                    {
+                        if ((((unsigned short *)image->data)[i] & 0x000f) <= thresholdValue)
+                        {
+                            ((unsigned short *)image->data)[i] = (unsigned short)r << 12 | (unsigned short)g << 8 | (unsigned short)b << 4 | (unsigned short)a;
+                        }
+                    }
+                } break;
+                case UNCOMPRESSED_R8G8B8A8:
+                {
+                    unsigned char thresholdValue = (unsigned char)(threshold*255.0f);
+                    for (int i = 3; i < image->width*image->height*4; i += 4)
+                    {
+                        if (((unsigned char *)image->data)[i] <= thresholdValue)
+                        {
+                            ((unsigned char *)image->data)[i - 3] = color.r;
+                            ((unsigned char *)image->data)[i - 2] = color.g;
+                            ((unsigned char *)image->data)[i - 1] = color.b;
+                            ((unsigned char *)image->data)[i] = color.a;
+                        }
+                    }
+                } break;
+                case UNCOMPRESSED_R32G32B32A32:
+                {
+                    for (int i = 3; i < image->width*image->height*4; i += 4)
+                    {
+                        if (((float *)image->data)[i] <= threshold)
+                        {
+                            ((float *)image->data)[i - 3] = (float)color.r/255.0f;
+                            ((float *)image->data)[i - 2] = (float)color.g/255.0f;
+                            ((float *)image->data)[i - 1] = (float)color.b/255.0f;
+                            ((float *)image->data)[i] = (float)color.a/255.0f;
+                        }
+                    }
+                } break;
+                default: break;
+            }
+        }
+    }
+
+    // Apply alpha mask to image
+    // NOTE 1: Returned image is GRAY_ALPHA (16bit) or RGBA (32bit)
+    // NOTE 2: alphaMask should be same size as image
+    void ImageAlphaMask(Image *image, Image alphaMask)
+    {
+        if ((image->width != alphaMask.width) || (image->height != alphaMask.height))
+        {
+            TRACELOG(LOG_WARNING, "IMAGE: Alpha mask must be same size as image");
+        }
+        else if (image->format >= COMPRESSED_DXT1_RGB)
+        {
+            TRACELOG(LOG_WARNING, "IMAGE: Alpha mask can not be applied to compressed data formats");
+        }
+        else
+        {
+            // Force mask to be Grayscale
+            Image mask = ImageCopy(alphaMask);
+            if (mask.format != UNCOMPRESSED_GRAYSCALE) ImageFormat(&mask, UNCOMPRESSED_GRAYSCALE);
+
+            // In case image is only grayscale, we just add alpha channel
+            if (image->format == UNCOMPRESSED_GRAYSCALE)
+            {
+                unsigned char *data = (unsigned char *)RL_MALLOC(image->width*image->height*2);
+
+                // Apply alpha mask to alpha channel
+                for (int i = 0, k = 0; (i < mask.width*mask.height) || (i < image->width*image->height); i++, k += 2)
+                {
+                    data[k] = ((unsigned char *)image->data)[i];
+                    data[k + 1] = ((unsigned char *)mask.data)[i];
+                }
+
+                RL_FREE(image->data);
+                image->data = data;
+                image->format = UNCOMPRESSED_GRAY_ALPHA;
+            }
+            else
+            {
+                // Convert image to RGBA
+                if (image->format != UNCOMPRESSED_R8G8B8A8) ImageFormat(image, UNCOMPRESSED_R8G8B8A8);
+
+                // Apply alpha mask to alpha channel
+                for (int i = 0, k = 3; (i < mask.width*mask.height) || (i < image->width*image->height); i++, k += 4)
+                {
+                    ((unsigned char *)image->data)[k] = ((unsigned char *)mask.data)[i];
+                }
+            }
+
+            UnloadImage(mask);
+        }
+    }
+
+    // Premultiply alpha channel
+    void ImageAlphaPremultiply(Image *image)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        float alpha = 0.0f;
+        Color *pixels = LoadImageColors(*image);
+
+        for (int i = 0; i < image->width*image->height; i++)
+        {
+            if (pixels[i].a == 0)
+            {
+                pixels[i].r = 0;
+                pixels[i].g = 0;
+                pixels[i].b = 0;
+            }
+            else if (pixels[i].a < 255)
+            {
+                alpha = (float)pixels[i].a/255.0f;
+                pixels[i].r = (unsigned char)((float)pixels[i].r*alpha);
+                pixels[i].g = (unsigned char)((float)pixels[i].g*alpha);
+                pixels[i].b = (unsigned char)((float)pixels[i].b*alpha);
+            }
+        }
+
+        RL_FREE(image->data);
+
+        int format = image->format;
+        image->data = pixels;
+        image->format = UNCOMPRESSED_R8G8B8A8;
+
+        ImageFormat(image, format);
+    }
+    */
 
     // Resize and image to new size
     // NOTE: Uses stb default scaling filters (both bicubic):
@@ -405,29 +600,29 @@ public class Textures{
     // STBIR_DEFAULT_FILTER_DOWNSAMPLE  STBIR_FILTER_MITCHELL   (high-quality Catmull-Rom)
     void ImageResize(Image image, int newWidth, int newHeight){
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)){
+        if((image.data == null) || (image.width == 0) || (image.height == 0)){
             return;
         }
 
         boolean fastPath = false;
-        if ((image.format != UNCOMPRESSED_GRAYSCALE.getPixForInt()) && (image.format != UNCOMPRESSED_GRAY_ALPHA.getPixForInt())
+        if((image.format != UNCOMPRESSED_GRAYSCALE.getPixForInt()) && (image.format != UNCOMPRESSED_GRAY_ALPHA.getPixForInt())
                 && (image.format != UNCOMPRESSED_R8G8B8.getPixForInt()) && (image.format != UNCOMPRESSED_R8G8B8A8.getPixForInt())){
             fastPath = true;
         }
 
         ByteBuffer tmpb = MemoryUtil.memAlloc(image.data.length);
 
-        for (int i = 0; i < image.data.length; i++){
+        for(int i = 0; i < image.data.length; i++){
             tmpb.put(i, (byte) Math.min(image.data[i], 255));
         }
 
         int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
         ByteBuffer output = MemoryUtil.memAlloc(newWidth * newHeight * bytesPerPixel);
-        if (fastPath){
+        if(fastPath){
 
             PixelFormat tmppf = PixelFormat.getByInt(image.getFormat());
 
-            switch (tmppf){
+            switch(tmppf){
                 case UNCOMPRESSED_GRAYSCALE:
                     stbir_resize_uint8(tmpb, image.width, image.height, 0, output,
                             newWidth, newHeight, 0, 1);
@@ -450,7 +645,7 @@ public class Textures{
 
             int[] outputi = new int[output.capacity()];
 
-            for (int i = 0; i < outputi.length; i++){
+            for(int i = 0; i < outputi.length; i++){
                 outputi[i] = output.get(i);
             }
 
@@ -472,7 +667,7 @@ public class Textures{
 
             int[] outputi = new int[output.capacity()];
 
-            for (int i = 0; i < outputi.length; i++){
+            for(int i = 0; i < outputi.length; i++){
                 outputi[i] = output.get(i);
             }
 
@@ -488,7 +683,7 @@ public class Textures{
     // Resize and image to new size using Nearest-Neighbor scaling algorithm
     void ImageResizeNN(Image image, int newWidth, int newHeight){
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)){
+        if((image.data == null) || (image.width == 0) || (image.height == 0)){
             return;
         }
 
@@ -500,8 +695,8 @@ public class Textures{
         int yRatio = ((image.height << 16) / newHeight) + 1;
 
         int x2, y2;
-        for (int y = 0; y < newHeight; y++){
-            for (int x = 0; x < newWidth; x++){
+        for(int y = 0; y < newHeight; y++){
+            for(int x = 0; x < newWidth; x++){
                 x2 = ((x * xRatio) >> 16);
                 y2 = ((y * yRatio) >> 16);
 
@@ -532,7 +727,7 @@ public class Textures{
     // NOTE 3: Mipmaps format is the same as base image
     void ImageMipmaps(Image image){
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)){
+        if((image.data == null) || (image.width == 0) || (image.height == 0)){
             return;
         }
 
@@ -542,13 +737,21 @@ public class Textures{
         int mipSize = GetPixelDataSize(mipWidth, mipHeight, image.format);  // Image data size (in bytes)
 
         // Count mipmap levels required
-        while ((mipWidth != 1) || (mipHeight != 1)){
-            if (mipWidth != 1) mipWidth /= 2;
-            if (mipHeight != 1) mipHeight /= 2;
+        while((mipWidth != 1) || (mipHeight != 1)){
+            if(mipWidth != 1){
+                mipWidth /= 2;
+            }
+            if(mipHeight != 1){
+                mipHeight /= 2;
+            }
 
             // Security check for NPOT textures
-            if (mipWidth < 1) mipWidth = 1;
-            if (mipHeight < 1) mipHeight = 1;
+            if(mipWidth < 1){
+                mipWidth = 1;
+            }
+            if(mipHeight < 1){
+                mipHeight = 1;
+            }
 
             TracelogS("IMAGE: Next mipmap level: " + mipWidth + " x " + mipHeight + " - current size " + mipSize);
 
@@ -556,10 +759,10 @@ public class Textures{
             mipSize += GetPixelDataSize(mipWidth, mipHeight, image.format);       // Add mipmap size (in bytes)
         }
 
-        if (image.mipmaps < mipCount){
+        if(image.mipmaps < mipCount){
             int[] temp = image.data;
 
-            if (temp != null){
+            if(temp != null){
                 image.data = temp;      // Assign new pointer (new size) to store mipmaps data
             }
             else{
@@ -574,7 +777,7 @@ public class Textures{
             mipSize = GetPixelDataSize(mipWidth, mipHeight, image.format);
             Image imCopy = ImageCopy(image);
 
-            for (int i = 1; i < mipCount; i++){
+            for(int i = 1; i < mipCount; i++){
                 TracelogS("IMAGE: Generating mipmap level: " + i + " (" + mipWidth + " x " + mipHeight + ")" +
                         " - size: " + mipSize + " - offset: " + nextmip);
 
@@ -588,8 +791,12 @@ public class Textures{
                 mipHeight /= 2;
 
                 // Security check for NPOT textures
-                if (mipWidth < 1) mipWidth = 1;
-                if (mipHeight < 1) mipHeight = 1;
+                if(mipWidth < 1){
+                    mipWidth = 1;
+                }
+                if(mipHeight < 1){
+                    mipHeight = 1;
+                }
 
                 mipSize = GetPixelDataSize(mipWidth, mipHeight, image.format);
             }
@@ -601,33 +808,465 @@ public class Textures{
         }
     }
 
+    /* TODO: 4/2/2021
+    // Dither image data to 16bpp or lower (Floyd-Steinberg dithering)
+    // NOTE: In case selected bpp do not represent an known 16bit format,
+    // dithered data is stored in the LSB part of the unsigned short
+    void ImageDither(Image *image, int rBpp, int gBpp, int bBpp, int aBpp)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
 
-    //ImageDither
+        if (image->format >= COMPRESSED_DXT1_RGB)
+        {
+            TRACELOG(LOG_WARNING, "IMAGE: Compressed data formats can not be dithered");
+            return;
+        }
 
-    //ImageFlipVertical
+        if ((rBpp + gBpp + bBpp + aBpp) > 16)
+        {
+            TRACELOG(LOG_WARNING, "IMAGE: Unsupported dithering bpps (%ibpp), only 16bpp or lower modes supported", (rBpp+gBpp+bBpp+aBpp));
+        }
+        else
+        {
+            Color *pixels = LoadImageColors(*image);
 
-    //ImageFlipHorizontal
+            RL_FREE(image->data);      // free old image data
 
-    //ImageRotateCW
+            if ((image->format != UNCOMPRESSED_R8G8B8) && (image->format != UNCOMPRESSED_R8G8B8A8))
+            {
+                TRACELOG(LOG_WARNING, "IMAGE: Format is already 16bpp or lower, dithering could have no effect");
+            }
 
-    //ImageRotateCCW
+            // Define new image format, check if desired bpp match internal known format
+            if ((rBpp == 5) && (gBpp == 6) && (bBpp == 5) && (aBpp == 0)) image->format = UNCOMPRESSED_R5G6B5;
+            else if ((rBpp == 5) && (gBpp == 5) && (bBpp == 5) && (aBpp == 1)) image->format = UNCOMPRESSED_R5G5B5A1;
+            else if ((rBpp == 4) && (gBpp == 4) && (bBpp == 4) && (aBpp == 4)) image->format = UNCOMPRESSED_R4G4B4A4;
+            else
+            {
+                image->format = 0;
+                TRACELOG(LOG_WARNING, "IMAGE: Unsupported dithered OpenGL internal format: %ibpp (R%iG%iB%iA%i)", (rBpp+gBpp+bBpp+aBpp), rBpp, gBpp, bBpp, aBpp);
+            }
 
-    //ImageColourTint
+            // NOTE: We will store the dithered data as unsigned short (16bpp)
+            image->data = (unsigned short *)RL_MALLOC(image->width*image->height*sizeof(unsigned short));
 
-    //ImageColourInvert
+            Color oldPixel = WHITE;
+            Color newPixel = WHITE;
 
-    //ImageColourGreyscale
+            int rError, gError, bError;
+            unsigned short rPixel, gPixel, bPixel, aPixel;   // Used for 16bit pixel composition
 
-    //ImageColourContrast
+        #define MIN(a,b) (((a)<(b))?(a):(b))
 
-    //ImageColourBrightness
+            for (int y = 0; y < image->height; y++)
+            {
+                for (int x = 0; x < image->width; x++)
+                {
+                    oldPixel = pixels[y*image->width + x];
 
-    //ImageColourReplace
+                    // NOTE: New pixel obtained by bits truncate, it would be better to round values (check ImageFormat())
+                    newPixel.r = oldPixel.r >> (8 - rBpp);     // R bits
+                    newPixel.g = oldPixel.g >> (8 - gBpp);     // G bits
+                    newPixel.b = oldPixel.b >> (8 - bBpp);     // B bits
+                    newPixel.a = oldPixel.a >> (8 - aBpp);     // A bits (not used on dithering)
+
+                    // NOTE: Error must be computed between new and old pixel but using same number of bits!
+                    // We want to know how much color precision we have lost...
+                    rError = (int)oldPixel.r - (int)(newPixel.r << (8 - rBpp));
+                    gError = (int)oldPixel.g - (int)(newPixel.g << (8 - gBpp));
+                    bError = (int)oldPixel.b - (int)(newPixel.b << (8 - bBpp));
+
+                    pixels[y*image->width + x] = newPixel;
+
+                    // NOTE: Some cases are out of the array and should be ignored
+                    if (x < (image->width - 1))
+                    {
+                        pixels[y*image->width + x+1].r = MIN((int)pixels[y*image->width + x+1].r + (int)((float)rError*7.0f/16), 0xff);
+                        pixels[y*image->width + x+1].g = MIN((int)pixels[y*image->width + x+1].g + (int)((float)gError*7.0f/16), 0xff);
+                        pixels[y*image->width + x+1].b = MIN((int)pixels[y*image->width + x+1].b + (int)((float)bError*7.0f/16), 0xff);
+                    }
+
+                    if ((x > 0) && (y < (image->height - 1)))
+                    {
+                        pixels[(y+1)*image->width + x-1].r = MIN((int)pixels[(y+1)*image->width + x-1].r + (int)((float)rError*3.0f/16), 0xff);
+                        pixels[(y+1)*image->width + x-1].g = MIN((int)pixels[(y+1)*image->width + x-1].g + (int)((float)gError*3.0f/16), 0xff);
+                        pixels[(y+1)*image->width + x-1].b = MIN((int)pixels[(y+1)*image->width + x-1].b + (int)((float)bError*3.0f/16), 0xff);
+                    }
+
+                    if (y < (image->height - 1))
+                    {
+                        pixels[(y+1)*image->width + x].r = MIN((int)pixels[(y+1)*image->width + x].r + (int)((float)rError*5.0f/16), 0xff);
+                        pixels[(y+1)*image->width + x].g = MIN((int)pixels[(y+1)*image->width + x].g + (int)((float)gError*5.0f/16), 0xff);
+                        pixels[(y+1)*image->width + x].b = MIN((int)pixels[(y+1)*image->width + x].b + (int)((float)bError*5.0f/16), 0xff);
+                    }
+
+                    if ((x < (image->width - 1)) && (y < (image->height - 1)))
+                    {
+                        pixels[(y+1)*image->width + x+1].r = MIN((int)pixels[(y+1)*image->width + x+1].r + (int)((float)rError*1.0f/16), 0xff);
+                        pixels[(y+1)*image->width + x+1].g = MIN((int)pixels[(y+1)*image->width + x+1].g + (int)((float)gError*1.0f/16), 0xff);
+                        pixels[(y+1)*image->width + x+1].b = MIN((int)pixels[(y+1)*image->width + x+1].b + (int)((float)bError*1.0f/16), 0xff);
+                    }
+
+                    rPixel = (unsigned short)newPixel.r;
+                    gPixel = (unsigned short)newPixel.g;
+                    bPixel = (unsigned short)newPixel.b;
+                    aPixel = (unsigned short)newPixel.a;
+
+                    ((unsigned short *)image->data)[y*image->width + x] = (rPixel << (gBpp + bBpp + aBpp)) | (gPixel << (bBpp + aBpp)) | (bPixel << aBpp) | aPixel;
+                }
+            }
+
+            UnloadImageColors(pixels);
+        }
+    }
+
+    // Flip image vertically
+    void ImageFlipVertical(Image *image)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (image->mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image->format >= COMPRESSED_DXT1_RGB) TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+        else
+        {
+            int bytesPerPixel = GetPixelDataSize(1, 1, image->format);
+            unsigned char *flippedData = (unsigned char *)RL_MALLOC(image->width*image->height*bytesPerPixel);
+
+            for (int i = (image->height - 1), offsetSize = 0; i >= 0; i--)
+            {
+                memcpy(flippedData + offsetSize, ((unsigned char *)image->data) + i*image->width*bytesPerPixel, image->width*bytesPerPixel);
+                offsetSize += image->width*bytesPerPixel;
+            }
+
+            RL_FREE(image->data);
+            image->data = flippedData;
+        }
+    }
+
+    // Flip image horizontally
+    void ImageFlipHorizontal(Image *image)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (image->mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image->format >= COMPRESSED_DXT1_RGB) TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+        else
+        {
+            int bytesPerPixel = GetPixelDataSize(1, 1, image->format);
+            unsigned char *flippedData = (unsigned char *)RL_MALLOC(image->width*image->height*bytesPerPixel);
+
+            for (int y = 0; y < image->height; y++)
+            {
+                for (int x = 0; x < image->width; x++)
+                {
+                    // OPTION 1: Move pixels with memcopy()
+                    //memcpy(flippedData + (y*image->width + x)*bytesPerPixel, ((unsigned char *)image->data) + (y*image->width + (image->width - 1 - x))*bytesPerPixel, bytesPerPixel);
+
+                    // OPTION 2: Just copy data pixel by pixel
+                    for (int i = 0; i < bytesPerPixel; i++) flippedData[(y*image->width + x)*bytesPerPixel + i] = ((unsigned char *)image->data)[(y*image->width + (image->width - 1 - x))*bytesPerPixel + i];
+                }
+            }
+
+            RL_FREE(image->data);
+            image->data = flippedData;
+
+        /*
+        // OPTION 3: Faster implementation (specific for 32bit pixels)
+        // NOTE: It does not require additional allocations
+        uint32_t *ptr = (uint32_t *)image->data;
+        for (int y = 0; y < image->height; y++)
+        {
+            for (int x = 0; x < image->width/2; x++)
+            {
+                uint32_t backup = ptr[y*image->width + x];
+                ptr[y*image->width + x] = ptr[y*image->width + (image->width - 1 - x)];
+                ptr[y*image->width + (image->width - 1 - x)] = backup;
+            }
+        }
+        *
+        }
+    }
+
+    // Rotate image clockwise 90deg
+    void ImageRotateCW(Image *image)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (image->mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image->format >= COMPRESSED_DXT1_RGB) TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+        else
+        {
+            int bytesPerPixel = GetPixelDataSize(1, 1, image->format);
+            unsigned char *rotatedData = (unsigned char *)RL_MALLOC(image->width*image->height*bytesPerPixel);
+
+            for (int y = 0; y < image->height; y++)
+            {
+                for (int x = 0; x < image->width; x++)
+                {
+                    //memcpy(rotatedData + (x*image->height + (image->height - y - 1))*bytesPerPixel, ((unsigned char *)image->data) + (y*image->width + x)*bytesPerPixel, bytesPerPixel);
+                    for (int i = 0; i < bytesPerPixel; i++) rotatedData[(x*image->height + (image->height - y - 1))*bytesPerPixel + i] = ((unsigned char *)image->data)[(y*image->width + x)*bytesPerPixel + i];
+                }
+            }
+
+            RL_FREE(image->data);
+            image->data = rotatedData;
+            int width = image->width;
+            int height = image-> height;
+
+            image->width = height;
+            image->height = width;
+        }
+    }
+
+    // Rotate image counter-clockwise 90deg
+    void ImageRotateCCW(Image *image)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (image->mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image->format >= COMPRESSED_DXT1_RGB) TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+        else
+        {
+            int bytesPerPixel = GetPixelDataSize(1, 1, image->format);
+            unsigned char *rotatedData = (unsigned char *)RL_MALLOC(image->width*image->height*bytesPerPixel);
+
+            for (int y = 0; y < image->height; y++)
+            {
+                for (int x = 0; x < image->width; x++)
+                {
+                    //memcpy(rotatedData + (x*image->height + y))*bytesPerPixel, ((unsigned char *)image->data) + (y*image->width + (image->width - x - 1))*bytesPerPixel, bytesPerPixel);
+                    for (int i = 0; i < bytesPerPixel; i++) rotatedData[(x*image->height + y)*bytesPerPixel + i] = ((unsigned char *)image->data)[(y*image->width + (image->width - x - 1))*bytesPerPixel + i];
+                }
+            }
+
+            RL_FREE(image->data);
+            image->data = rotatedData;
+            int width = image->width;
+            int height = image-> height;
+
+            image->width = height;
+            image->height = width;
+        }
+    }
+
+    // Modify image color: tint
+    void ImageColorTint(Image *image, Color color)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        Color *pixels = LoadImageColors(*image);
+
+        float cR = (float)color.r/255;
+        float cG = (float)color.g/255;
+        float cB = (float)color.b/255;
+        float cA = (float)color.a/255;
+
+        for (int y = 0; y < image->height; y++)
+        {
+            for (int x = 0; x < image->width; x++)
+            {
+                int index = y * image->width + x;
+                unsigned char r = (unsigned char)(((float)pixels[index].r/255*cR)*255.0f);
+                unsigned char g = (unsigned char)(((float)pixels[index].g/255*cG)*255.0f);
+                unsigned char b = (unsigned char)(((float)pixels[index].b/255*cB)*255.0f);
+                unsigned char a = (unsigned char)(((float)pixels[index].a/255*cA)*255.0f);
+
+                pixels[y*image->width + x].r = r;
+                pixels[y*image->width + x].g = g;
+                pixels[y*image->width + x].b = b;
+                pixels[y*image->width + x].a = a;
+            }
+        }
+
+        int format = image->format;
+        RL_FREE(image->data);
+
+        image->data = pixels;
+        image->format = UNCOMPRESSED_R8G8B8A8;
+
+        ImageFormat(image, format);
+    }
+
+    // Modify image color: invert
+    void ImageColorInvert(Image *image)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        Color *pixels = LoadImageColors(*image);
+
+        for (int y = 0; y < image->height; y++)
+        {
+            for (int x = 0; x < image->width; x++)
+            {
+                pixels[y*image->width + x].r = 255 - pixels[y*image->width + x].r;
+                pixels[y*image->width + x].g = 255 - pixels[y*image->width + x].g;
+                pixels[y*image->width + x].b = 255 - pixels[y*image->width + x].b;
+            }
+        }
+
+        int format = image->format;
+        RL_FREE(image->data);
+
+        image->data = pixels;
+        image->format = UNCOMPRESSED_R8G8B8A8;
+
+        ImageFormat(image, format);
+    }
+
+    // Modify image color: grayscale
+    void ImageColorGrayscale(Image *image)
+    {
+        ImageFormat(image, UNCOMPRESSED_GRAYSCALE);
+    }
+
+    // Modify image color: contrast
+// NOTE: Contrast values between -100 and 100
+    void ImageColorContrast(Image *image, float contrast)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (contrast < -100) contrast = -100;
+        if (contrast > 100) contrast = 100;
+
+        contrast = (100.0f + contrast)/100.0f;
+        contrast *= contrast;
+
+        Color *pixels = LoadImageColors(*image);
+
+        for (int y = 0; y < image->height; y++)
+        {
+            for (int x = 0; x < image->width; x++)
+            {
+                float pR = (float)pixels[y*image->width + x].r/255.0f;
+                pR -= 0.5;
+                pR *= contrast;
+                pR += 0.5;
+                pR *= 255;
+                if (pR < 0) pR = 0;
+                if (pR > 255) pR = 255;
+
+                float pG = (float)pixels[y*image->width + x].g/255.0f;
+                pG -= 0.5;
+                pG *= contrast;
+                pG += 0.5;
+                pG *= 255;
+                if (pG < 0) pG = 0;
+                if (pG > 255) pG = 255;
+
+                float pB = (float)pixels[y*image->width + x].b/255.0f;
+                pB -= 0.5;
+                pB *= contrast;
+                pB += 0.5;
+                pB *= 255;
+                if (pB < 0) pB = 0;
+                if (pB > 255) pB = 255;
+
+                pixels[y*image->width + x].r = (unsigned char)pR;
+                pixels[y*image->width + x].g = (unsigned char)pG;
+                pixels[y*image->width + x].b = (unsigned char)pB;
+            }
+        }
+
+        int format = image->format;
+        RL_FREE(image->data);
+
+        image->data = pixels;
+        image->format = UNCOMPRESSED_R8G8B8A8;
+
+        ImageFormat(image, format);
+    }
+
+    // Modify image color: brightness
+// NOTE: Brightness values between -255 and 255
+    void ImageColorBrightness(Image *image, int brightness)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        if (brightness < -255) brightness = -255;
+        if (brightness > 255) brightness = 255;
+
+        Color *pixels = LoadImageColors(*image);
+
+        for (int y = 0; y < image->height; y++)
+        {
+            for (int x = 0; x < image->width; x++)
+            {
+                int cR = pixels[y*image->width + x].r + brightness;
+                int cG = pixels[y*image->width + x].g + brightness;
+                int cB = pixels[y*image->width + x].b + brightness;
+
+                if (cR < 0) cR = 1;
+                if (cR > 255) cR = 255;
+
+                if (cG < 0) cG = 1;
+                if (cG > 255) cG = 255;
+
+                if (cB < 0) cB = 1;
+                if (cB > 255) cB = 255;
+
+                pixels[y*image->width + x].r = (unsigned char)cR;
+                pixels[y*image->width + x].g = (unsigned char)cG;
+                pixels[y*image->width + x].b = (unsigned char)cB;
+            }
+        }
+
+        int format = image->format;
+        RL_FREE(image->data);
+
+        image->data = pixels;
+        image->format = UNCOMPRESSED_R8G8B8A8;
+
+        ImageFormat(image, format);
+    }
+
+    // Modify image color: replace color
+    void ImageColorReplace(Image *image, Color color, Color replace)
+    {
+        // Security check to avoid program crash
+        if ((image->data == NULL) || (image->width == 0) || (image->height == 0)) return;
+
+        Color *pixels = LoadImageColors(*image);
+
+        for (int y = 0; y < image->height; y++)
+        {
+            for (int x = 0; x < image->width; x++)
+            {
+                if ((pixels[y*image->width + x].r == color.r) &&
+                        (pixels[y*image->width + x].g == color.g) &&
+                        (pixels[y*image->width + x].b == color.b) &&
+                        (pixels[y*image->width + x].a == color.a))
+                {
+                    pixels[y*image->width + x].r = replace.r;
+                    pixels[y*image->width + x].g = replace.g;
+                    pixels[y*image->width + x].b = replace.b;
+                    pixels[y*image->width + x].a = replace.a;
+                }
+            }
+        }
+
+        int format = image->format;
+        RL_FREE(image->data);
+
+        image->data = pixels;
+        image->format = UNCOMPRESSED_R8G8B8A8;
+
+        ImageFormat(image, format);
+    }
+    */
 
     // Load color data from image as a Color array (RGBA - 32bit)
-// NOTE: Memory allocated should be freed using UnloadImageColors();
+    // NOTE: Memory allocated should be freed using UnloadImageColors();
     Color[] LoadImageColors(Image image){
-        if ((image.width == 0) || (image.height == 0)){
+        if((image.width == 0) || (image.height == 0)){
             return null;
         }
 
@@ -635,17 +1274,17 @@ public class Textures{
 
         PixelFormat tmpPixFmt = PixelFormat.getByInt(image.getFormat());
 
-        if (image.format >= COMPRESSED_DXT1_RGB.getPixForInt()){
+        if(image.format >= COMPRESSED_DXT1_RGB.getPixForInt()){
             Tracelog(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
-            if ((image.format == UNCOMPRESSED_R32.getPixForInt()) || (image.format == UNCOMPRESSED_R32G32B32.getPixForInt()) ||
+            if((image.format == UNCOMPRESSED_R32.getPixForInt()) || (image.format == UNCOMPRESSED_R32G32B32.getPixForInt()) ||
                     (image.format == UNCOMPRESSED_R32G32B32A32.getPixForInt())){
                 Tracelog(LOG_WARNING, "IMAGE: Pixel format converted from 32bit to 8bit per channel");
             }
 
-            for (int i = 0, k = 0; i < image.width * image.height; i++){
-                switch (tmpPixFmt){
+            for(int i = 0, k = 0; i < image.width * image.height; i++){
+                switch(tmpPixFmt){
                     case UNCOMPRESSED_GRAYSCALE:{
                         pixels[i].setR(image.data[i]);
                         pixels[i].setG(image.data[i]);
@@ -747,7 +1386,60 @@ public class Textures{
     }
 
 
-    //LoadImagePallette
+    // Load colors palette from image as a Color array (RGBA - 32bit)
+    // NOTE: Memory allocated should be freed using UnloadImagePalette()
+    Color[] LoadImagePalette(Image image, int maxPaletteSize, int colorsCount)
+    {
+
+        int palCount = 0;
+        Color[] palette = null;
+        Color[] pixels = LoadImageColors(image);
+
+        if (pixels != null)
+        {
+            palette = new Color[maxPaletteSize];
+
+            for (int i = 0; i < maxPaletteSize; i++) palette[i] = BLANK;   // Set all colors to BLANK
+
+            for (int i = 0; i < image.width*image.height; i++)
+            {
+                if (pixels[i].a > 0)
+                {
+                    boolean colorInPalette = false;
+
+                    // Check if the color is already on palette
+                    for (int j = 0; j < maxPaletteSize; j++)
+                    {
+                        if((pixels[i].r == palette[j].r)&&(pixels[i].g == palette[j].g)&&(pixels[i].b == palette[j].b)&&(pixels[i].a == palette[j].a))
+                        {
+                            colorInPalette = true;
+                            break;
+                        }
+                    }
+
+                    // Store color if not on the palette
+                    if (!colorInPalette)
+                    {
+                        palette[palCount] = pixels[i];      // Add pixels[i] to palette
+                        palCount++;
+
+                        // We reached the limit of colors supported by palette
+                        if (palCount >= maxPaletteSize)
+                        {
+                            i = image.width*image.height;   // Finish palette get
+                            Tracelog(LOG_WARNING, "IMAGE: Palette is greater than " + maxPaletteSize + " colors");
+                        }
+                    }
+                }
+            }
+
+            UnloadImageColors(pixels);
+        }
+
+        colorsCount = palCount;
+
+        return palette;
+    }
 
     Color[] UnloadImageColors(Color[] color){
         return null;
@@ -763,12 +1455,12 @@ public class Textures{
 
         PixelFormat tmpPixFmt = PixelFormat.getByInt(image.getFormat());
 
-        if (image.format >= COMPRESSED_DXT1_RGB.getPixForInt()){
+        if(image.format >= COMPRESSED_DXT1_RGB.getPixForInt()){
             Tracelog(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
-            for (int i = 0, k = 0; i < image.width * image.height; i++){
-                switch (tmpPixFmt){
+            for(int i = 0, k = 0; i < image.width * image.height; i++){
+                switch(tmpPixFmt){
                     case UNCOMPRESSED_GRAYSCALE:{
                         pixels[i].setX((float) image.data[i] / 255.0f);
                         pixels[i].setY((float) image.data[i] / 255.0f);
@@ -868,25 +1560,64 @@ public class Textures{
         return pixels;
     }
 
-    //GetImageAlphaBoarder
+    // Get image alpha border rectangle
+    // NOTE: Threshold is defined as a percentatge: 0.0f -> 1.0f
+    Rectangle GetImageAlphaBorder(Image image, float threshold)
+    {
+        Rectangle crop = new Rectangle();
+
+        Color[] pixels = LoadImageColors(image);
+
+        if (pixels != null)
+        {
+            int xMin = 65536;   // Define a big enough number
+            int xMax = 0;
+            int yMin = 65536;
+            int yMax = 0;
+
+            for (int y = 0; y < image.height; y++)
+            {
+                for (int x = 0; x < image.width; x++)
+                {
+                    if (pixels[y*image.width + x].a > (threshold*255.0f))
+                    {
+                        if (x < xMin) xMin = x;
+                        if (x > xMax) xMax = x;
+                        if (y < yMin) yMin = y;
+                        if (y > yMax) yMax = y;
+                    }
+                }
+            }
+
+            // Check for empty blank image
+            if ((xMin != 65536) && (xMax != 65536))
+            {
+                crop = new Rectangle((float)xMin, (float)yMin, (float)((xMax + 1) - xMin), (float)((yMax + 1) - yMin));
+            }
+
+            UnloadImageColors(pixels);
+        }
+
+        return crop;
+    }
 
     //IMAGE DRAWING FUNCTIONS
 
     void ImageClearBackground(Image dst, Color color){
-        for (int i = 0; i < dst.getWidth() * dst.getHeight(); ++i){
+        for(int i = 0; i < dst.getWidth() * dst.getHeight(); ++i){
             ImageDrawPixel(dst, i % dst.getWidth(), i / dst.getHeight(), color);
         }
     }
 
     void ImageDrawPixel(Image dst, int x, int y, Color color){
         // Security check to avoid program crash
-        if ((dst.data == null) || (x < 0) || (x >= dst.getWidth()) || (y < 0) || (y >= dst.getHeight())){
+        if((dst.data == null) || (x < 0) || (x >= dst.getWidth()) || (y < 0) || (y >= dst.getHeight())){
             return;
         }
 
         PixelFormat format = PixelFormat.getByInt(dst.getFormat());
 
-        switch (format){
+        switch(format){
             case UNCOMPRESSED_GRAYSCALE:{
                 // NOTE: Calculate grayscale equivalent color
                 Vector3 coln = new Vector3((float) color.getR() / 255.0f, (float) color.getG() / 255.0f,
@@ -1011,11 +1742,11 @@ public class Textures{
         int m = 2 * (endPosY - startPosY);
         int slopeError = m - (endPosX - startPosX);
 
-        for (int x = startPosX, y = startPosY; x <= endPosX; x++){
+        for(int x = startPosX, y = startPosY; x <= endPosX; x++){
             ImageDrawPixel(dst, x, y, color);
             slopeError += m;
 
-            if (slopeError >= 0){
+            if(slopeError >= 0){
                 y++;
                 slopeError -= 2 * (endPosX - startPosX);
             }
@@ -1032,7 +1763,7 @@ public class Textures{
         int x = 0, y = radius;
         int decesionParameter = 3 - 2 * radius;
 
-        while (y >= x){
+        while(y >= x){
             ImageDrawPixel(dst, centerX + x, centerY + y, color);
             ImageDrawPixel(dst, centerX - x, centerY + y, color);
             ImageDrawPixel(dst, centerX + x, centerY - y, color);
@@ -1043,7 +1774,7 @@ public class Textures{
             ImageDrawPixel(dst, centerX - y, centerY - x, color);
             x++;
 
-            if (decesionParameter > 0){
+            if(decesionParameter > 0){
                 y--;
                 decesionParameter = decesionParameter + 4 * (x - y) + 10;
             }
@@ -1071,7 +1802,7 @@ public class Textures{
     // Draw rectangle within an image
     void ImageDrawRectangleRec(Image dst, Rectangle rec, Color color){
         // Security check to avoid program crash
-        if ((dst.data == null) || (dst.getWidth() == 0) || (dst.getHeight() == 0)){
+        if((dst.data == null) || (dst.getWidth() == 0) || (dst.getHeight() == 0)){
             return;
         }
 
@@ -1081,8 +1812,8 @@ public class Textures{
         int sx = (int) rec.getX();
         int ex = sx + (int) rec.getWidth();
 
-        for (int y = sy; y < ey; y++){
-            for (int x = sx; x < ex; x++){
+        for(int y = sy; y < ey; y++){
+            for(int x = sx; x < ex; x++){
                 ImageDrawPixel(dst, x, y, color);
             }
         }
@@ -1260,12 +1991,11 @@ public class Textures{
         UnloadImage(imText);
     }
 
-    Texture2D LoadTexture(String fileName){
+    public static Texture2D LoadTexture(String fileName){
         Texture2D texture = new Texture2D();
-
         Image image = LoadImage(fileName);
 
-        if (image.data != null){
+        if(image.data != null){
             texture = LoadTextureFromImage(image);
             UnloadImage(image);
         }
@@ -1276,7 +2006,7 @@ public class Textures{
     public static Texture2D LoadTextureFromImage(Image image){
         Texture2D texture = new Texture2D();
 
-        if ((image.data != null) && (image.width != 0) && (image.height != 0)){
+        if((image.data != null) && (image.width != 0) && (image.height != 0)){
             texture.id = rlLoadTexture(image.data, image.width, image.height, image.format, image.mipmaps);
         }
         else{
@@ -1296,7 +2026,7 @@ public class Textures{
     //LoadRenderTexture
 
     public static void UnloadTexture(Texture2D texture){
-        if (texture.getId() > 0){
+        if(texture.getId() > 0){
             RLGL.rlUnloadTexture(texture.getId());
 
             Tracelog(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Unloaded texture data from VRAM (GPU)");
@@ -1305,7 +2035,7 @@ public class Textures{
 
     //Unload render texture from GPU memory (VRAM)
     void UnloadRenderTexture(RenderTexture target){
-        if (target.getId() > 0){
+        if(target.getId() > 0){
             // Color texture attached to FBO is deleted
             rlUnloadTexture(target.getTexture().getId());
 
@@ -1333,16 +2063,16 @@ public class Textures{
     Image GetTextureData(Texture2D texture){
         Image image = new Image();
 
-        if (texture.format < COMPRESSED_DXT1_RGB.getPixForInt()){
+        if(texture.format < COMPRESSED_DXT1_RGB.getPixForInt()){
             image.data = rlReadTexturePixels(texture);
 
-            if (image.data != null){
+            if(image.data != null){
                 image.width = texture.width;
                 image.height = texture.height;
                 image.format = texture.format;
                 image.mipmaps = 1;
 
-                if (GRAPHICS_API_OPENGL_ES2){
+                if(RLGL.rlGetVersion() == GlVersion.OPENGL_ES_20.getGlType()){
                     // NOTE: Data retrieved on OpenGL ES 2.0 should be RGBA,
                     // coming from FBO color buffer attachment, but it seems
                     // original texture format is retrieved on RPI...
@@ -1385,10 +2115,10 @@ public class Textures{
     }
 
     public static void SetTextureFilter(Texture2D texture, int filterMode){
-        switch (filterMode){
+        switch(filterMode){
 
             case 0:{
-                if (texture.mipmaps > 1){
+                if(texture.mipmaps > 1){
                     // RL_FILTER_MIP_NEAREST - tex filter: POINT, mipmaps filter: POINT (sharp switching between mipmaps)
                     rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_MIP_NEAREST);
 
@@ -1403,7 +2133,7 @@ public class Textures{
             }
             break;
             case 1:{
-                if (texture.mipmaps > 1){
+                if(texture.mipmaps > 1){
                     // RL_FILTER_LINEAR_MIP_NEAREST - tex filter: BILINEAR, mipmaps filter: POINT (sharp switching between mipmaps)
                     // Alternative: RL_FILTER_NEAREST_MIP_LINEAR - tex filter: POINT, mipmaps filter: BILINEAR (smooth transition between mipmaps)
                     rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR_MIP_NEAREST);
@@ -1419,7 +2149,7 @@ public class Textures{
             }
             break;
             case 2:{
-                if (texture.mipmaps > 1){
+                if(texture.mipmaps > 1){
                     // RL_FILTER_MIP_LINEAR - tex filter: BILINEAR, mipmaps filter: BILINEAR (smooth transition between mipmaps)
                     rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_MIP_LINEAR);
 
@@ -1452,7 +2182,7 @@ public class Textures{
 
     // Set texture wrapping mode
     void SetTextureWrap(Texture2D texture, int wrapMode){
-        switch (wrapMode){
+        switch(wrapMode){
             case RL_TEXTURE_WRAP_REPEAT:{
                 rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_REPEAT);
                 rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_REPEAT);
@@ -1528,17 +2258,17 @@ public class Textures{
     public static void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
                                       float rotation, Color tint){
         // Check if texture is valid
-        if (texture.id > 0){
+        if(texture.id > 0){
             float width = (float) texture.width;
             float height = (float) texture.height;
 
             boolean flipX = false;
 
-            if (source.getWidth() < 0){
+            if(source.getWidth() < 0){
                 flipX = true;
                 source.setWidth(source.getWidth() * -1);
             }
-            if (source.getHeight() < 0){
+            if(source.getHeight() < 0){
                 source.setY(source.getY() - source.getHeight());
             }
 
@@ -1554,7 +2284,7 @@ public class Textures{
             rlNormal3f(0.0f, 0.0f, 1.0f);                          // Normal vector pointing towards viewer
 
             // Bottom-left corner for texture and quad
-            if (flipX){
+            if(flipX){
                 rlTexCoord2f((source.getX() + source.getWidth()) / width, source.getY() / height);
             }
             else{
@@ -1563,7 +2293,7 @@ public class Textures{
             rlVertex2f(0.0f, 0.0f);
 
             // Bottom-right corner for texture and quad
-            if (!flipX){
+            if(!flipX){
                 rlTexCoord2f(source.getX() / width, (source.getY() + source.getHeight()) / height);
             }
             else{
@@ -1572,7 +2302,7 @@ public class Textures{
             rlVertex2f(0.0f, dest.getHeight());
 
             // Top-right corner for texture and quad
-            if (!flipX){
+            if(!flipX){
                 rlTexCoord2f((source.getX() + source.getWidth()) / width, (source.getY() + source.getHeight()) / height);
             }
             else{
@@ -1581,7 +2311,7 @@ public class Textures{
             rlVertex2f(dest.getWidth(), dest.getHeight());
 
             // Top-left corner for texture and quad
-            if (flipX){
+            if(flipX){
                 rlTexCoord2f(source.getX() / width, source.getY() / height);
             }
             else{
@@ -1595,9 +2325,262 @@ public class Textures{
         }
     }
 
-    //DrawTextureNPatch
+    // Draws a texture (or part of it) that stretches or shrinks nicely using n-patch info
+    void DrawTextureNPatch(Texture2D texture, NPatchInfo nPatchInfo, Rectangle dest, Vector2 origin, float rotation, Color tint){
+        if(texture.id > 0){
+            float width = (float) texture.width;
+            float height = (float) texture.height;
 
-    //Fade
+            float patchWidth = Math.max(dest.getWidth(), 0.0f);
+            float patchHeight = Math.max(dest.getHeight(), 0.0f);
+
+            if(nPatchInfo.source.getWidth() < 0){
+                nPatchInfo.source.x -= nPatchInfo.source.getWidth();
+            }
+            if(nPatchInfo.source.getHeight() < 0){
+                nPatchInfo.source.y -= nPatchInfo.source.getHeight();
+            }
+            if(nPatchInfo.getType() == NPT_3PATCH_HORIZONTAL.getPatchType()){
+                patchHeight = nPatchInfo.source.getHeight();
+            }
+            if(nPatchInfo.getType() == NPT_3PATCH_VERTICAL.getPatchType()){
+                patchWidth = nPatchInfo.source.getWidth();
+            }
+
+            boolean drawCenter = true;
+            boolean drawMiddle = true;
+            float leftBorder = (float) nPatchInfo.left;
+            float topBorder = (float) nPatchInfo.top;
+            float rightBorder = (float) nPatchInfo.right;
+            float bottomBorder = (float) nPatchInfo.bottom;
+
+            // adjust the lateral (left and right) border widths in case patchWidth < texture.width
+            if(patchWidth <= (leftBorder + rightBorder) && nPatchInfo.type != NPT_3PATCH_VERTICAL.getPatchType()){
+                drawCenter = false;
+                leftBorder = (leftBorder / (leftBorder + rightBorder)) * patchWidth;
+                rightBorder = patchWidth - leftBorder;
+            }
+            // adjust the lateral (top and bottom) border heights in case patchHeight < texture.height
+            if(patchHeight <= (topBorder + bottomBorder) && nPatchInfo.type != NPT_3PATCH_HORIZONTAL.getPatchType()){
+                drawMiddle = false;
+                topBorder = (topBorder / (topBorder + bottomBorder)) * patchHeight;
+                bottomBorder = patchHeight - topBorder;
+            }
+
+            Vector2 vertA, vertB, vertC, vertD;
+            vertA = new Vector2(0.0f, 0.0f); //outer left, outer top
+            vertB = new Vector2(leftBorder, topBorder); //inner loft, inner top
+            vertC = new Vector2(patchWidth - rightBorder, patchHeight - bottomBorder); //inner right, inner bottom
+            vertD = new Vector2(patchWidth, patchHeight); // outer right, outer bottom
+
+
+            Vector2 coordA, coordB, coordC, coordD;
+            coordA = new Vector2(nPatchInfo.source.x / width, nPatchInfo.source.y / height);
+            coordB = new Vector2((nPatchInfo.source.x + leftBorder) / width, (nPatchInfo.source.y + topBorder) / height);
+            coordC = new Vector2((nPatchInfo.source.x + nPatchInfo.source.width - rightBorder) / width, (nPatchInfo.source.y + nPatchInfo.source.height - bottomBorder) / height);
+            coordD = new Vector2((nPatchInfo.source.x + nPatchInfo.source.width) / width, (nPatchInfo.source.y + nPatchInfo.source.height) / height);
+
+            rlEnableTexture(texture.id);
+
+            rlPushMatrix();
+            rlTranslatef(dest.x, dest.y, 0.0f);
+            rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
+            rlTranslatef(-origin.x, -origin.y, 0.0f);
+
+            rlBegin(RL_QUADS);
+            rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+            rlNormal3f(0.0f, 0.0f, 1.0f);               // Normal vector pointing towards viewer
+
+            if(nPatchInfo.type == NPT_9PATCH.getPatchType()){
+                // ------------------------------------------------------------
+                // TOP-LEFT QUAD
+                rlTexCoord2f(coordA.x, coordB.y);
+                rlVertex2f(vertA.x, vertB.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordB.x, coordB.y);
+                rlVertex2f(vertB.x, vertB.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordB.x, coordA.y);
+                rlVertex2f(vertB.x, vertA.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordA.x, coordA.y);
+                rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
+                if(drawCenter){
+                    // TOP-CENTER QUAD
+                    rlTexCoord2f(coordB.x, coordB.y);
+                    rlVertex2f(vertB.x, vertB.y);  // Bottom-left corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordB.y);
+                    rlVertex2f(vertC.x, vertB.y);  // Bottom-right corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordA.y);
+                    rlVertex2f(vertC.x, vertA.y);  // Top-right corner for texture and quad
+                    rlTexCoord2f(coordB.x, coordA.y);
+                    rlVertex2f(vertB.x, vertA.y);  // Top-left corner for texture and quad
+                }
+                // TOP-RIGHT QUAD
+                rlTexCoord2f(coordC.x, coordB.y);
+                rlVertex2f(vertC.x, vertB.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordD.x, coordB.y);
+                rlVertex2f(vertD.x, vertB.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordD.x, coordA.y);
+                rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordC.x, coordA.y);
+                rlVertex2f(vertC.x, vertA.y);  // Top-left corner for texture and quad
+                if(drawMiddle){
+                    // ------------------------------------------------------------
+                    // MIDDLE-LEFT QUAD
+                    rlTexCoord2f(coordA.x, coordC.y);
+                    rlVertex2f(vertA.x, vertC.y);  // Bottom-left corner for texture and quad
+                    rlTexCoord2f(coordB.x, coordC.y);
+                    rlVertex2f(vertB.x, vertC.y);  // Bottom-right corner for texture and quad
+                    rlTexCoord2f(coordB.x, coordB.y);
+                    rlVertex2f(vertB.x, vertB.y);  // Top-right corner for texture and quad
+                    rlTexCoord2f(coordA.x, coordB.y);
+                    rlVertex2f(vertA.x, vertB.y);  // Top-left corner for texture and quad
+                    if(drawCenter){
+                        // MIDDLE-CENTER QUAD
+                        rlTexCoord2f(coordB.x, coordC.y);
+                        rlVertex2f(vertB.x, vertC.y);  // Bottom-left corner for texture and quad
+                        rlTexCoord2f(coordC.x, coordC.y);
+                        rlVertex2f(vertC.x, vertC.y);  // Bottom-right corner for texture and quad
+                        rlTexCoord2f(coordC.x, coordB.y);
+                        rlVertex2f(vertC.x, vertB.y);  // Top-right corner for texture and quad
+                        rlTexCoord2f(coordB.x, coordB.y);
+                        rlVertex2f(vertB.x, vertB.y);  // Top-left corner for texture and quad
+                    }
+
+                    // MIDDLE-RIGHT QUAD
+                    rlTexCoord2f(coordC.x, coordC.y);
+                    rlVertex2f(vertC.x, vertC.y);  // Bottom-left corner for texture and quad
+                    rlTexCoord2f(coordD.x, coordC.y);
+                    rlVertex2f(vertD.x, vertC.y);  // Bottom-right corner for texture and quad
+                    rlTexCoord2f(coordD.x, coordB.y);
+                    rlVertex2f(vertD.x, vertB.y);  // Top-right corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordB.y);
+                    rlVertex2f(vertC.x, vertB.y);  // Top-left corner for texture and quad
+                }
+
+                // ------------------------------------------------------------
+                // BOTTOM-LEFT QUAD
+                rlTexCoord2f(coordA.x, coordD.y);
+                rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordB.x, coordD.y);
+                rlVertex2f(vertB.x, vertD.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordB.x, coordC.y);
+                rlVertex2f(vertB.x, vertC.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordA.x, coordC.y);
+                rlVertex2f(vertA.x, vertC.y);  // Top-left corner for texture and quad
+                if(drawCenter){
+                    // BOTTOM-CENTER QUAD
+                    rlTexCoord2f(coordB.x, coordD.y);
+                    rlVertex2f(vertB.x, vertD.y);  // Bottom-left corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordD.y);
+                    rlVertex2f(vertC.x, vertD.y);  // Bottom-right corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordC.y);
+                    rlVertex2f(vertC.x, vertC.y);  // Top-right corner for texture and quad
+                    rlTexCoord2f(coordB.x, coordC.y);
+                    rlVertex2f(vertB.x, vertC.y);  // Top-left corner for texture and quad
+                }
+
+                // BOTTOM-RIGHT QUAD
+                rlTexCoord2f(coordC.x, coordD.y);
+                rlVertex2f(vertC.x, vertD.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordD.x, coordD.y);
+                rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordD.x, coordC.y);
+                rlVertex2f(vertD.x, vertC.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordC.x, coordC.y);
+                rlVertex2f(vertC.x, vertC.y);  // Top-left corner for texture and quad
+            }
+            else if(nPatchInfo.type == NPT_3PATCH_VERTICAL.getPatchType()){
+                // TOP QUAD
+                // -----------------------------------------------------------
+                // Texture coords                 Vertices
+                rlTexCoord2f(coordA.x, coordB.y);
+                rlVertex2f(vertA.x, vertB.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordD.x, coordB.y);
+                rlVertex2f(vertD.x, vertB.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordD.x, coordA.y);
+                rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordA.x, coordA.y);
+                rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
+                if(drawCenter){
+                    // MIDDLE QUAD
+                    // -----------------------------------------------------------
+                    // Texture coords                 Vertices
+                    rlTexCoord2f(coordA.x, coordC.y);
+                    rlVertex2f(vertA.x, vertC.y);  // Bottom-left corner for texture and quad
+                    rlTexCoord2f(coordD.x, coordC.y);
+                    rlVertex2f(vertD.x, vertC.y);  // Bottom-right corner for texture and quad
+                    rlTexCoord2f(coordD.x, coordB.y);
+                    rlVertex2f(vertD.x, vertB.y);  // Top-right corner for texture and quad
+                    rlTexCoord2f(coordA.x, coordB.y);
+                    rlVertex2f(vertA.x, vertB.y);  // Top-left corner for texture and quad
+                }
+                // BOTTOM QUAD
+                // -----------------------------------------------------------
+                // Texture coords                 Vertices
+                rlTexCoord2f(coordA.x, coordD.y);
+                rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordD.x, coordD.y);
+                rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordD.x, coordC.y);
+                rlVertex2f(vertD.x, vertC.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordA.x, coordC.y);
+                rlVertex2f(vertA.x, vertC.y);  // Top-left corner for texture and quad
+            }
+            else if(nPatchInfo.type == NPT_3PATCH_HORIZONTAL.getPatchType()){
+                // LEFT QUAD
+                // -----------------------------------------------------------
+                // Texture coords                 Vertices
+                rlTexCoord2f(coordA.x, coordD.y);
+                rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordB.x, coordD.y);
+                rlVertex2f(vertB.x, vertD.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordB.x, coordA.y);
+                rlVertex2f(vertB.x, vertA.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordA.x, coordA.y);
+                rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
+                if(drawCenter){
+                    // CENTER QUAD
+                    // -----------------------------------------------------------
+                    // Texture coords                 Vertices
+                    rlTexCoord2f(coordB.x, coordD.y);
+                    rlVertex2f(vertB.x, vertD.y);  // Bottom-left corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordD.y);
+                    rlVertex2f(vertC.x, vertD.y);  // Bottom-right corner for texture and quad
+                    rlTexCoord2f(coordC.x, coordA.y);
+                    rlVertex2f(vertC.x, vertA.y);  // Top-right corner for texture and quad
+                    rlTexCoord2f(coordB.x, coordA.y);
+                    rlVertex2f(vertB.x, vertA.y);  // Top-left corner for texture and quad
+                }
+                // RIGHT QUAD
+                // -----------------------------------------------------------
+                // Texture coords                 Vertices
+                rlTexCoord2f(coordC.x, coordD.y);
+                rlVertex2f(vertC.x, vertD.y);  // Bottom-left corner for texture and quad
+                rlTexCoord2f(coordD.x, coordD.y);
+                rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
+                rlTexCoord2f(coordD.x, coordA.y);
+                rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
+                rlTexCoord2f(coordC.x, coordA.y);
+                rlVertex2f(vertC.x, vertA.y);  // Top-left corner for texture and quad
+            }
+            rlEnd();
+            rlPopMatrix();
+
+            rlDisableTexture();
+        }
+    }
+
+
+    // Returns color with alpha applied, alpha goes from 0.0f to 1.0f
+    Color Fade(Color color, float alpha){
+        if(alpha < 0.0f){
+            alpha = 0.0f;
+        }
+        else if(alpha > 1.0f){
+            alpha = 1.0f;
+        }
+
+        return new Color(color.getR(), color.getG(), color.getB(), (int) (255.0f * alpha));
+    }
 
     // Returns hexadecimal value for a Color
     int ColorToInt(Color color){
@@ -1621,52 +2604,53 @@ public class Textures{
 
     // Returns color with alpha applied, alpha goes from 0.0f to 1.0f
     Color ColorAlpha(Color color, float alpha){
-        if (alpha < 0.0f){
+        if(alpha < 0.0f){
             alpha = 0.0f;
         }
-        else if (alpha > 1.0f) alpha = 1.0f;
+        else if(alpha > 1.0f){
+            alpha = 1.0f;
+        }
 
         return new Color(color.getR(), color.getG(), color.getB(), (int) (255.0f * alpha));
     }
 
     // Returns src alpha-blended into dst color with tint
-    Color ColorAlphaBlend(Color dst, Color src, Color tint)
-    {
+    Color ColorAlphaBlend(Color dst, Color src, Color tint){
         Color out = Color.WHITE;
 
         // Apply color tint to source color
-        src.setR((src.getR()*tint.getR()) >> 8);
-        src.setG((src.getG()*tint.getG()) >> 8);
-        src.setB((src.getB()*tint.getB()) >> 8);
-        src.setA((src.getA()*tint.getA()) >> 8);
+        src.setR((src.getR() * tint.getR()) >> 8);
+        src.setG((src.getG() * tint.getG()) >> 8);
+        src.setB((src.getB() * tint.getB()) >> 8);
+        src.setA((src.getA() * tint.getA()) >> 8);
 
         boolean COLORALPHABLEND_FLOAT = false;
         boolean COLORALPHABLEND_INTEGERS = true;
         if(COLORALPHABLEND_INTEGERS){
-            if (src.getA() == 0){
+            if(src.getA() == 0){
                 out = dst;
             }
-            else if (src.getA() == 255){
+            else if(src.getA() == 255){
                 out = src;
             }
             else{
                 int alpha = src.getA() + 1;
                 // We are shifting by 8 (dividing by 256), so we need to take that excess into account
 
-                out.setA((alpha * 256 + dst.getA() * (256 - alpha)) >>8);
+                out.setA((alpha * 256 + dst.getA() * (256 - alpha)) >> 8);
 
-                if (out.getA() > 0){
-                    out.setR(((src.getR() * alpha * 256 + dst.getR() * dst.getA() * (256 - alpha))/out.getA()) >>8);
-                    out.setG(((src.getG() * alpha * 256 + dst.getG() * dst.getA() * (256 - alpha))/out.getA()) >>8);
-                    out.setB(((src.getB() * alpha * 256 + dst.getB() * dst.getA() * (256 - alpha))/out.getA()) >>8);
+                if(out.getA() > 0){
+                    out.setR(((src.getR() * alpha * 256 + dst.getR() * dst.getA() * (256 - alpha)) / out.getA()) >> 8);
+                    out.setG(((src.getG() * alpha * 256 + dst.getG() * dst.getA() * (256 - alpha)) / out.getA()) >> 8);
+                    out.setB(((src.getB() * alpha * 256 + dst.getB() * dst.getA() * (256 - alpha)) / out.getA()) >> 8);
                 }
             }
         }
         if(COLORALPHABLEND_FLOAT){
-            if (src.getA() == 0){
+            if(src.getA() == 0){
                 out = dst;
             }
-            else if (src.getA() == 255){
+            else if(src.getA() == 255){
                 out = src;
             }
             else{
@@ -1677,7 +2661,7 @@ public class Textures{
 
                 fout.setW(fsrc.getW() + fdst.getW() * (1.0f - fsrc.getW()));
 
-                if (fout.getW() > 0.0f){
+                if(fout.getW() > 0.0f){
                     fout.setX(fsrc.getX() * fsrc.getW() + fdst.getX() * fdst.getW() * (1 - fsrc.getW()) / fout.getW());
                     fout.setY(fsrc.getY() * fsrc.getW() + fdst.getY() * fdst.getW() * (1 - fsrc.getW()) / fout.getW());
                     fout.setZ(fsrc.getZ() * fsrc.getW() + fdst.getZ() * fdst.getW() * (1 - fsrc.getW()) / fout.getW());
@@ -1707,7 +2691,7 @@ public class Textures{
 
         PixelFormat tmpPix = PixelFormat.getByInt(format);
 
-        switch (tmpPix){
+        switch(tmpPix){
             case UNCOMPRESSED_GRAYSCALE:
                 col = new Color(srcPtr[0], srcPtr[0], srcPtr[0], 255);
                 break;
@@ -1715,26 +2699,29 @@ public class Textures{
                 col = new Color(srcPtr[0], srcPtr[0], srcPtr[0], srcPtr[1]);
                 break;
             case UNCOMPRESSED_R5G6B5:{
-                col.setR((srcPtr[0] >>11)*255/31);
-                col.setG(((srcPtr[0] >>5) &0b0000000000111111)*255/63);
-                col.setB((srcPtr[0] &0b0000000000011111)*255/31);
+                col.setR((srcPtr[0] >> 11) * 255 / 31);
+                col.setG(((srcPtr[0] >> 5) & 0b0000000000111111) * 255 / 63);
+                col.setB((srcPtr[0] & 0b0000000000011111) * 255 / 31);
                 col.setA(255);
 
-            } break;
+            }
+            break;
             case UNCOMPRESSED_R5G5B5A1:{
-                col.setR((srcPtr[0] >>11)*255/31);
-                col.setG(((srcPtr[0] >>6) &0b0000000000011111)*255/31);
-                col.setB((srcPtr[0] &0b0000000000011111)*255/31);
+                col.setR((srcPtr[0] >> 11) * 255 / 31);
+                col.setG(((srcPtr[0] >> 6) & 0b0000000000011111) * 255 / 31);
+                col.setB((srcPtr[0] & 0b0000000000011111) * 255 / 31);
                 col.setA((srcPtr[0] & 0b0000000000000001) == 1 ? 255 : 0);
 
-            } break;
+            }
+            break;
             case UNCOMPRESSED_R4G4B4A4:{
-                col.setR((srcPtr[0] >>11)*255/15);
-                col.setG(((srcPtr[0] >>8) &0b0000000000001111)*255/15);
-                col.setB(((srcPtr[0] >>4) &0b0000000000001111)*255/15);
-                col.setA((srcPtr[0] &0b0000000000001111)*255/15);
+                col.setR((srcPtr[0] >> 11) * 255 / 15);
+                col.setG(((srcPtr[0] >> 8) & 0b0000000000001111) * 255 / 15);
+                col.setB(((srcPtr[0] >> 4) & 0b0000000000001111) * 255 / 15);
+                col.setA((srcPtr[0] & 0b0000000000001111) * 255 / 15);
 
-            } break;
+            }
+            break;
             case UNCOMPRESSED_R8G8B8A8:
                 col = new Color(srcPtr[0], srcPtr[1], srcPtr[2], srcPtr[3]);
                 break;
@@ -1835,7 +2822,7 @@ public class Textures{
         int bpp = 0;            // Bits per pixel
 
         PixelFormat tmpPix = PixelFormat.getByInt(format);
-        switch (tmpPix){
+        switch(tmpPix){
             case UNCOMPRESSED_GRAYSCALE:
                 bpp = 8;
                 break;
@@ -1885,11 +2872,11 @@ public class Textures{
 
         // Most compressed formats works on 4x4 blocks,
         // if texture is smaller, minimum dataSize is 8 or 16
-        if ((width < 4) && (height < 4)){
-            if ((format >= COMPRESSED_DXT1_RGB.getPixForInt()) && (format < COMPRESSED_DXT3_RGBA.getPixForInt())){
+        if((width < 4) && (height < 4)){
+            if((format >= COMPRESSED_DXT1_RGB.getPixForInt()) && (format < COMPRESSED_DXT3_RGBA.getPixForInt())){
                 dataSize = 8;
             }
-            else if ((format >= COMPRESSED_DXT3_RGBA.getPixForInt()) && (format < COMPRESSED_ASTC_8x8_RGBA.getPixForInt())){
+            else if((format >= COMPRESSED_DXT3_RGBA.getPixForInt()) && (format < COMPRESSED_ASTC_8x8_RGBA.getPixForInt())){
                 dataSize = 16;
             }
         }

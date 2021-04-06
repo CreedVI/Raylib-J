@@ -2,7 +2,7 @@ package com.creedvi.raylib.java.rlj.core;
 
 public class Color{
 
-    int r, g, b, a;
+    public int r, g, b, a;
 
     /**
      * Creates new color (Black)

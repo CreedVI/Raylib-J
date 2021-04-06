@@ -2,7 +2,7 @@ package com.creedvi.raylib.java.rlj.raymath;
 
 //Float3 / Float16?
 class Float3{
-    float v[] = new float[3];
+    public float v[] = new float[3];
 
     public Float3(){
         v[0] = 0;

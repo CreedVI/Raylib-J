@@ -2,7 +2,7 @@ package com.creedvi.raylib.java.rlj.raymath;
 
 public class Vector2{
 
-    float x, y;
+    public float x, y;
 
     public Vector2(){
         this.x = 0;

@@ -163,10 +163,8 @@ public class GL_33{
 
     // Multiply the current matrix by a rotation matrix
     static void rlRotatef(float angleDeg, float x, float y, float z){
-        Matrix matRotation;
-
         Vector3 axis = new Vector3(x, y, z);
-        matRotation = MatrixRotate(Vector3Normalize(axis), angleDeg * DEG2RAD);
+        Matrix matRotation = MatrixRotate(Vector3Normalize(axis), angleDeg * DEG2RAD);
 
         // NOTE: We transpose matrix with multiplication order
         RLGL.getRlglData().getState().setCurrentMatrix(MatrixMultiply(matRotation,
@@ -260,23 +258,23 @@ public class GL_33{
     }
 
     // Define one vertex (color)
-    static void rlColor4ub(int x, int y, int z, int w){
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter] = x;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 1] = y;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 2] = z;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 3] = w;
+    static void rlColor4ub(float x, float y, float z, float w){
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter] = x/255;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 1] = y/255;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 2] = z/255;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 3] = w/255;
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter++;
 
     }
 
     // Define one vertex (color)
     static void rlColor4f(float r, float g, float b, float a){
-        rlColor4ub((int) (r * 255), (int) (g * 255), (int) (b * 255), (int) (a * 255));
+        rlColor4ub( (r * 255),  (g * 255),  (b * 255),  (a * 255));
     }
 
     // Define one vertex (color)
     static void rlColor3f(float x, float y, float z){
-        rlColor4ub((int) (x * 255), (int) (y * 255), (int) (z * 255), (int) 255);
+        rlColor4ub( (x * 255),  (y * 255),  (z * 255),  255);
     }
 
 }
