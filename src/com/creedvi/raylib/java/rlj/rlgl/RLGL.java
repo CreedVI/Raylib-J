@@ -418,13 +418,6 @@ public class RLGL{
     }
 
     public static void rlMatrixMode(int mode){
-
-        if(mode == RL_PROJECTION){
-            rlglData.getState().setCurrentMatrix(rlglData.getState().getProjection());
-        }
-        else if(mode == RL_MODELVIEW){
-            rlglData.getState().setCurrentMatrix(rlglData.getState().getModelview());
-        }
         if(GRAPHICS_API_OPENGL_33){
             GL_33.rlMatrixMode(mode);
         }
@@ -1877,7 +1870,7 @@ public class RLGL{
 
     // Load a framebuffer to be used for rendering
     // NOTE: No textures attached
-    static int rlLoadFramebuffer(int width, int height){
+    public static int rlLoadFramebuffer(int width, int height){
         int fboId = 0;
 
         if((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
@@ -2398,13 +2391,13 @@ public class RLGL{
     }
 
     // Set shader uniform value
-    /*void SetShaderValue(Shader shader, int uniformLoc, int[] value, int uniformType)
+    void SetShaderValue(Shader shader, int uniformLoc, int[] value, int uniformType)
     {
-        SetShaderValueV(shader, uniformLoc, value, uniformType, 1);
+        SetShaderValueV(shader, uniformLoc, value, uniformType);
     }
 
     // Set shader uniform value vector
-    void SetShaderValueV(Shader shader, int uniformLoc, int[] value, int uniformType, int count){
+    void SetShaderValueV(Shader shader, int uniformLoc, int[] value, int uniformType){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glUseProgram(shader.getId());
 
@@ -2412,31 +2405,31 @@ public class RLGL{
 
             switch(tmp){
                 case UNIFORM_FLOAT:
-                    glUniform1f(uniformLoc, count);
+                    glUniform1f(uniformLoc, value[0]);
                     break;
                 case UNIFORM_VEC2:
-                    glUniform2f(uniformLoc, count);
+                    glUniform2f(uniformLoc, value[0], value[1]);
                     break;
                 case UNIFORM_VEC3:
-                    glUniform3f(uniformLoc, count);
+                    glUniform3f(uniformLoc, value[0], value[1], value[2]);
                     break;
                 case UNIFORM_VEC4:
-                    glUniform4f(uniformLoc, count);
+                    glUniform4f(uniformLoc, value[0], value[1], value[2], value[3]);
                     break;
                 case UNIFORM_INT:
-                    glUniform1i(uniformLoc, count);
+                    glUniform1i(uniformLoc, value[0]);
                     break;
                 case UNIFORM_IVEC2:
-                    glUniform2i(uniformLoc, count);
+                    glUniform2i(uniformLoc, value[0], value[1]);
                     break;
                 case UNIFORM_IVEC3:
-                    glUniform3i(uniformLoc, count);
+                    glUniform3i(uniformLoc, value[0],value[1],value[2]);
                     break;
                 case UNIFORM_IVEC4:
-                    glUniform4i(uniformLoc, count);
+                    glUniform4i(uniformLoc, value[0], value[1], value[2], value[3]);
                     break;
                 case UNIFORM_SAMPLER2D:
-                    glUniform1i(uniformLoc, count);
+                    glUniform1i(uniformLoc, value[0]);
                     break;
                 default:
                     Tracelog(LOG_WARNING, "SHADER: [ID " + shader.getId() + "] Failed to set uniform, data type not recognized");
@@ -2444,7 +2437,7 @@ public class RLGL{
 
             //glUseProgram(0);      // Avoid reseting current shader program, in case other uniforms are set
         }
-    }*/
+    }
 
     void SetShaderValueMatrix(Shader shader, int uniformLoc, Matrix mat){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2496,8 +2489,7 @@ public class RLGL{
             float[] mat = new float[16];
             glGetFloatv(GL_PROJECTION_MATRIX, mat);
 
-            Matrix m = new Matrix(mat);
-            return m;
+            return new Matrix(mat);
         }
         else{
             return rlglData.getState().getProjection();
@@ -3133,6 +3125,10 @@ public class RLGL{
                 glUniformMatrix4fv(rlglData.getState().getCurrentShader().locs[LOC_MATRIX_MVP.getShaderLocationInt()],
                         false, MatrixToFloat(matMVP));
 
+                System.out.println("\n" + Arrays.toString(MatrixToFloat(matProjection)));
+                System.out.println(Arrays.toString(MatrixToFloat(matModelView)));
+                System.out.println( Arrays.toString(MatrixToFloat(matMVP))+ "\n");
+
                 if(rlglData.getExtSupported().isVao()){
                     glBindVertexArray(batch.vertexBuffer[batch.currentBuffer].vaoId);
                 }
@@ -3336,11 +3332,11 @@ public class RLGL{
     }
 
     public static void GenDrawQuadAlt() {
-        int quadVAO = 0;
+        int quadVAO;
         int[] quadVBO = {0, 0, 0, 0};
         Shader shaderProgram = rlglData.getState().getCurrentShader();
 
-        float vertices[] = {
+        float[] vertices = {
                 -0.5f,  0.5f, 0.0f,
                 -0.5f, -0.5f, 0.0f,
                 0.5f,  0.5f, 0.0f,
@@ -3374,22 +3370,19 @@ public class RLGL{
         quadVBO[0] = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, quadVBO[0]);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT,
-                false, 0,0); //Positions
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0,0); //Positions
         glEnableVertexAttribArray(0);
 
         quadVBO[1] = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, quadVBO[1]);
         glBufferData(GL_ARRAY_BUFFER, texcoords, GL_STATIC_DRAW);
-        glVertexAttribPointer(1, 2, GL_FLOAT,
-                false, 0,0); //Texcoords
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 0,0); //Texcoords
         glEnableVertexAttribArray(1);
 
         quadVBO[2] = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, quadVBO[2]);
         glBufferData(GL_ARRAY_BUFFER, colour, GL_STATIC_DRAW);
-        glVertexAttribPointer(3, 4, GL_FLOAT,
-                false, 0, 0); //Colours
+        glVertexAttribPointer(3, 4, GL_FLOAT, false, 0, 0); //Colours
         glEnableVertexAttribArray(3);
 
         quadVBO[3] = glGenBuffers();

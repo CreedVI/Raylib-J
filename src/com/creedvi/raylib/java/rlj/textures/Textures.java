@@ -29,6 +29,27 @@ public class Textures{
 
     final int UNCOMPRESSED_R5G5B5A1_ALPHA_THRESHOLD = 50;
 
+    // Cubemap layouts
+    enum CubemapLayoutType {
+        CUBEMAP_AUTO_DETECT(0),        // Automatically detect layout type
+        CUBEMAP_LINE_VERTICAL(1),          // Layout is defined by a vertical line with faces
+        CUBEMAP_LINE_HORIZONTAL(2),        // Layout is defined by an horizontal line with faces
+        CUBEMAP_CROSS_THREE_BY_FOUR(3),    // Layout is defined by a 3x4 cross with cubemap faces
+        CUBEMAP_CROSS_FOUR_BY_THREE(4),    // Layout is defined by a 4x3 cross with cubemap faces
+        CUBEMAP_PANORAMA(5)                // Layout is defined by a panorama image (equirectangular map)
+        ;
+
+        private final int layoutInt;
+
+        CubemapLayoutType(int i){
+            layoutInt = i;
+        }
+
+        public int getLayoutInt(){
+            return layoutInt;
+        }
+    }
+
     public static Image LoadImage(String path){
         return null;
     }
@@ -2021,10 +2042,140 @@ public class Textures{
         return texture;
     }
 
-    //LoadTextureCubemap
+    // Load cubemap from image, multiple image cubemap layouts supported
+    /* TODO : MISSING METHODS
+    TextureCubemap LoadTextureCubemap(Image image, int layoutType)
+    {
+        TextureCubemap cubemap = new TextureCubemap();
 
-    //LoadRenderTexture
+        if (layoutType == CUBEMAP_AUTO_DETECT.getLayoutInt())      // Try to automatically guess layout type
+        {
+            // Check image width/height to determine the type of cubemap provided
+            if (image.width > image.height)
+            {
+                if ((image.width/6) == image.height) { layoutType = CUBEMAP_LINE_HORIZONTAL.getLayoutInt(); cubemap.width = image.width/6; }
+                else if ((image.width/4) == (image.height/3)) { layoutType = CUBEMAP_CROSS_FOUR_BY_THREE.getLayoutInt(); cubemap.width = image.width/4; }
+                else if (image.width >= (int)((float)image.height*1.85f)) { layoutType = CUBEMAP_PANORAMA.getLayoutInt(); cubemap.width = image.width/4; }
+            }
+            else if (image.height > image.width)
+            {
+                if ((image.height/6) == image.width) { layoutType = CUBEMAP_LINE_VERTICAL.getLayoutInt(); cubemap.width = image.height/6; }
+                else if ((image.width/3) == (image.height/4)) { layoutType = CUBEMAP_CROSS_THREE_BY_FOUR.getLayoutInt(); cubemap.width = image.width/3; }
+            }
 
+            cubemap.height = cubemap.width;
+        }
+
+        if (layoutType != CUBEMAP_AUTO_DETECT.getLayoutInt())
+        {
+            int size = cubemap.width;
+
+            Image faces = new Image();                // Vertical column image
+            Rectangle[] faceRecs = new Rectangle[6];      // Face source rectangles
+            for (int i = 0; i < 6; i++) faceRecs[i] = new Rectangle(0, 0, (float)size, (float)size);
+
+            if (layoutType == CUBEMAP_LINE_VERTICAL.getLayoutInt())
+            {
+                faces = image;
+                for (int i = 0; i < 6; i++) faceRecs[i].y = (float)size*i;
+            }
+            else if (layoutType == CUBEMAP_PANORAMA.getLayoutInt())
+            {
+                // TODO: Convert panorama image to square faces...
+                // Ref: https://github.com/denivip/panorama/blob/master/panorama.cpp
+            }
+            else
+            {
+                if (layoutType == CUBEMAP_LINE_HORIZONTAL.getLayoutInt()){
+                    for (int i = 0; i < 6; i++) faceRecs[i].x = (float)size*i;
+                }
+                else if (layoutType == CUBEMAP_CROSS_THREE_BY_FOUR.getLayoutInt())
+                {
+                    faceRecs[0].x = (float)size; faceRecs[0].y = (float)size;
+                    faceRecs[1].x = (float)size; faceRecs[1].y = (float)size*3;
+                    faceRecs[2].x = (float)size; faceRecs[2].y = 0;
+                    faceRecs[3].x = (float)size; faceRecs[3].y = (float)size*2;
+                    faceRecs[4].x = 0; faceRecs[4].y = (float)size;
+                    faceRecs[5].x = (float)size*2; faceRecs[5].y = (float)size;
+                }
+                else if (layoutType == CubemapLayoutType.CUBEMAP_CROSS_FOUR_BY_THREE.getLayoutInt())
+                {
+                    faceRecs[0].x = (float)size*2; faceRecs[0].y = (float)size;
+                    faceRecs[1].x = 0; faceRecs[1].y = (float)size;
+                    faceRecs[2].x = (float)size; faceRecs[2].y = 0;
+                    faceRecs[3].x = (float)size; faceRecs[3].y = (float)size*2;
+                    faceRecs[4].x = (float)size; faceRecs[4].y = (float)size;
+                    faceRecs[5].x = (float)size*3; faceRecs[5].y = (float)size;
+                }
+
+                // Convert image data to 6 faces in a vertical column, that's the optimum layout for loading
+                faces = GenImageColor(size, size*6, Color.MAGENTA);
+                ImageFormat(faces, image.format);
+
+                // TODO: Image formating does not work with compressed textures!
+            }
+
+            for (int i = 0; i < 6; i++){
+                ImageDraw(faces, image, faceRecs[i], new Rectangle(0, (float) size * i, (float) size, (float) size),
+                        Color.WHITE);
+            }
+
+            cubemap.id = rlLoadTextureCubemap(faces.data, size, faces.format);
+            if (cubemap.id == 0) {
+                Tracelog(LOG_WARNING, "IMAGE: Failed to load cubemap image");
+            }
+
+            UnloadImage(faces);
+        }
+        else {
+            Tracelog(LOG_WARNING, "IMAGE: Failed to detect cubemap image layout");
+        }
+
+        return cubemap;
+    }
+    // Load texture for rendering (framebuffer)
+    // NOTE: Render texture is loaded by default with RGBA color attachment and depth RenderBuffer
+    RenderTexture LoadRenderTexture(int width, int height)
+    {
+        RenderTexture target = new RenderTexture();
+
+        target.id = rlLoadFramebuffer(width, height);   // Load an empty framebuffer
+
+        if (target.id > 0)
+        {
+            rlEnableFramebuffer(target.id);
+
+            // Create color texture (default to RGBA)
+            target.texture.id = rlLoadTexture(null, width, height, UNCOMPRESSED_R8G8B8A8.getPixForInt(), 1);
+            target.texture.width = width;
+            target.texture.height = height;
+            target.texture.format = UNCOMPRESSED_R8G8B8A8.getPixForInt();
+            target.texture.mipmaps = 1;
+
+            // Create depth renderbuffer/texture
+            target.depth.id = rlLoadTextureDepth(width, height, true);
+            target.depth.width = width;
+            target.depth.height = height;
+            target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
+            target.depth.mipmaps = 1;
+
+            // Attach color texture and depth renderbuffer/texture to FBO
+            rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D);
+            rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER);
+
+            // Check if fbo is complete with attachments (valid)
+            if(rlFramebufferComplete(target.id)){
+                Tracelog(LOG_INFO, "FBO: [ID " + target.id + "] Framebuffer object created successfully");
+            }
+
+            rlDisableFramebuffer();
+        }
+        else {
+            Tracelog(LOG_WARNING, "FBO: Framebuffer object can not be created");
+        }
+
+        return target;
+    }*/
     public static void UnloadTexture(Texture2D texture){
         if(texture.getId() > 0){
             RLGL.rlUnloadTexture(texture.getId());
@@ -2598,9 +2749,93 @@ public class Textures{
         return new Color((int) normalized.getX() * 255, (int) normalized.getY() * 255, (int) normalized.getZ() * 255, (int) normalized.getZ() * 255);
     }
 
-    //ColourToHSV
+    // Returns HSV values for a Color
+    // NOTE: Hue is returned as degrees [0..360]
+    Vector3 ColorToHSV(Color color)
+    {
+        Vector3 hsv = new Vector3();
+        Vector3 rgb = new Vector3((float)color.r/255.0f, (float)color.g/255.0f, (float)color.b/255.0f);
+        float min, max, delta;
 
-    //ColourFromHSV
+        min = Math.min(rgb.x, rgb.y);
+        min = Math.min(min, rgb.z);
+
+        max = Math.max(rgb.x, rgb.y);
+        max = Math.max(max, rgb.z);
+
+        hsv.z = max;            // Value
+        delta = max - min;
+
+        if (delta < 0.00001f)
+        {
+            hsv.y = 0.0f;
+            hsv.x = 0.0f;       // Undefined, maybe NAN?
+            return hsv;
+        }
+
+        if (max > 0.0f)
+        {
+            // NOTE: If max is 0, this divide would cause a crash
+            hsv.y = (delta/max);    // Saturation
+        }
+        else
+        {
+            // NOTE: If max is 0, then r = g = b = 0, s = 0, h is undefined
+            hsv.y = 0.0f;
+            hsv.x = 0;        // Undefined
+            return hsv;
+        }
+
+        // NOTE: Comparing float values could not work properly
+        if (rgb.x >= max) hsv.x = (rgb.y - rgb.z)/delta;    // Between yellow & magenta
+        else
+        {
+            if (rgb.y >= max) hsv.x = 2.0f + (rgb.z - rgb.x)/delta;  // Between cyan & yellow
+            else hsv.x = 4.0f + (rgb.x - rgb.y)/delta;      // Between magenta & cyan
+        }
+
+        hsv.x *= 60.0f;     // Convert to degrees
+
+        if (hsv.x < 0.0f) hsv.x += 360.0f;
+
+        return hsv;
+    }
+
+    // Returns a Color from HSV values
+    // Implementation reference: https://en.wikipedia.org/wiki/HSL_and_HSV#Alternative_HSV_conversion
+    // NOTE: Color->HSV->Color conversion will not yield exactly the same color due to rounding errors
+    // Hue is provided in degrees: [0..360]
+    // Saturation/Value are provided normalized: [0.0f..1.0f]
+    Color ColorFromHSV(float hue, float saturation, float value)
+    {
+        Color color = new Color(0, 0, 0, 255);
+
+        // Red channel
+        float k = (5.0f + hue/60.0f)%6;
+        float t = 4.0f - k;
+        k = Math.min(t, k);
+        k = (k < 1)? k : 1;
+        k = (k > 0)? k : 0;
+        color.r = (int) ((value - value*saturation*k)*255.0f);
+
+        // Green channel
+        k = (3.0f + hue/60.0f)%6;
+        t = 4.0f - k;
+        k = Math.min(t, k);
+        k = (k < 1)? k : 1;
+        k = (k > 0)? k : 0;
+        color.g = (int)((value - value*saturation*k)*255.0f);
+
+        // Blue channel
+        k = (1.0f + hue/60.0f)%6;
+        t = 4.0f - k;
+        k = Math.min(t, k);
+        k = (k < 1)? k : 1;
+        k = (k > 0)? k : 0;
+        color.b = (int)((value - value*saturation*k)*255.0f);
+
+        return color;
+    }
 
     // Returns color with alpha applied, alpha goes from 0.0f to 1.0f
     Color ColorAlpha(Color color, float alpha){

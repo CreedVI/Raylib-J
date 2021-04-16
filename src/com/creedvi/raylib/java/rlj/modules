@@ -5,7 +5,7 @@ LAST UPDATED :: 17/03/21
 [o] textures
 [o] text
 [ ] models
-[ ] shaders
+[o] shaders
 [ ] audio
 [O] RLGL
 [X] raymath

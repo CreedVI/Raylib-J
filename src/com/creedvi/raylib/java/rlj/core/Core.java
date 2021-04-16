@@ -766,6 +766,9 @@ public class Core{
         input.mouse.setCursorHidden(true);
     }
 
+    /**
+     * @return <code>true</code> if cursor is within window bounds
+     */
     // Check if cursor is on the current screen.
     boolean IsCursorOnScreen(){
         return input.mouse.isCursorOnScreen();

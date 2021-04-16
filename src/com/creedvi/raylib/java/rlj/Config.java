@@ -183,7 +183,7 @@ public class Config{
      * Default font is loaded on window initialization to be available for the user to render simple text
      * NOTE: If enabled, uses external module functions to load default raylib font
      */
-    public static boolean SUPPORT_DEFAULT_FONT = true;
+    public static boolean SUPPORT_DEFAULT_FONT = false;
     /**
      * Selected .fnt to be supported for loading
      */

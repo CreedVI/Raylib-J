@@ -7,9 +7,8 @@ import com.creedvi.raylib.java.rlj.textures.Texture2D;
 
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 
-public  class State{            // Renderer state
+public  class State{                    // Renderer state
     int currentMatrixMode;              // Current matrix mode
-    Matrix currentMatrix;              // Current matrix pointer
     Matrix modelview;                   // Default modelview matrix
     Matrix projection;                  // Default projection matrix
     Matrix transform;                   // Transform matrix to be used with rlTranslate, rlRotate, rlScale
@@ -19,10 +18,10 @@ public  class State{            // Renderer state
 
     Texture2D shapesTexture;            // Texture used on shapes drawing (usually a white pixel)
     Rectangle shapesTextureRec;         // Texture source rectangle used on shapes drawing
-    int defaultTextureId;      // Default texture used on shapes/poly drawing (required by shader)
-    int[] activeTextureId;    // Active texture ids to be enabled on batch drawing (0 active by default)
-    int defaultVShaderId;      // Default vertex shader id (used by default shader program)
-    int defaultFShaderId;      // Default fragment shader Id (used by default shader program)
+    int defaultTextureId;               // Default texture used on shapes/poly drawing (required by shader)
+    int[] activeTextureId;              // Active texture ids to be enabled on batch drawing (0 active by default)
+    int defaultVShaderId;               // Default vertex shader id (used by default shader program)
+    int defaultFShaderId;               // Default fragment shader Id (used by default shader program)
     Shader defaultShader;               // Basic shader, support vertex color and diffuse texture
     Shader currentShader;               // Shader to be used on rendering (by default, defaultShader)
 
@@ -48,17 +47,23 @@ public  class State{            // Renderer state
     }
 
     public Matrix getCurrentMatrix(){
-        return currentMatrix;
+        if(currentMatrixMode == RL_PROJECTION){
+            return projection;
+        }
+        else {
+            return modelview;
+        }
     }
 
     public void setCurrentMatrix(Matrix currentMatrix){
-        this.currentMatrix = currentMatrix;
 
         if(currentMatrixMode == RL_PROJECTION){
             projection = currentMatrix;
+            //System.out.print("Projection: " + Arrays.toString(MatrixToFloat(projection)));
         }
         else if(currentMatrixMode == RL_MODELVIEW){
             modelview = currentMatrix;
+            //System.out.println("ModelView: " + Arrays.toString(MatrixToFloat(modelview)));
         }
     }
 
