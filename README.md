@@ -18,6 +18,17 @@ automatically!
 </div>
 <hr>
 
+## Message from the dev:
+<div>
+I am being deployed at this time. While pushes to the repo will be infrequent I will continue to work on this project 
+offline as I am able to find the time. Any pull requests made at this time may sit for a while as I may not have the ability
+to review them. 
+
+Until my return,<br>
+CreedVI
+</div>
+<hr>
+
 ## Development Status:
 <div>
 [O] core <br>
