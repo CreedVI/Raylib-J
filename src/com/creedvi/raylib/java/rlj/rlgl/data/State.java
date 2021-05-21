@@ -59,11 +59,19 @@ public  class State{                    // Renderer state
 
         if(currentMatrixMode == RL_PROJECTION){
             projection = currentMatrix;
-            //System.out.print("Projection: " + Arrays.toString(MatrixToFloat(projection)));
         }
         else if(currentMatrixMode == RL_MODELVIEW){
             modelview = currentMatrix;
-            //System.out.println("ModelView: " + Arrays.toString(MatrixToFloat(modelview)));
+        }
+    }
+
+    public void setCurrentMatrix(int mode, Matrix currentMatrix){
+
+        if(mode == RL_PROJECTION){
+            projection = currentMatrix;
+        }
+        else if(mode == RL_MODELVIEW){
+            modelview = currentMatrix;
         }
     }
 

@@ -753,26 +753,26 @@ public class Shapes{
         rlEnableTexture(GetShapesTexture().getId());
 
         rlPushMatrix();
-        rlTranslatef(rec.getX(), rec.getY(), 0.0f);
-        rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
-        rlTranslatef(-origin.getX(), -origin.getY(), 0.0f);
+            rlTranslatef(rec.x, rec.y, 0.0f);
+            rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
+            rlTranslatef(-origin.getX(), -origin.getY(), 0.0f);
 
-        rlBegin(RL_QUADS);
-        rlNormal3f(0.0f, 0.0f, 1.0f);
-        rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
+            rlBegin(RL_QUADS);
+                rlNormal3f(0.0f, 0.0f, 1.0f);
+                rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
-        rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
-        rlVertex2f(0.0f, 0.0f);
+                rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
+                rlVertex2f(0.0f, 0.0f);
 
-        rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), (GetShapesTextureRec().getY() + GetShapesTextureRec().getHeight()) / GetShapesTexture().getHeight());
-        rlVertex2f(0.0f, rec.getHeight());
+                rlTexCoord2f(GetShapesTextureRec().getX() / GetShapesTexture().getWidth(), (GetShapesTextureRec().getY() + GetShapesTextureRec().getHeight()) / GetShapesTexture().getHeight());
+                rlVertex2f(0.0f, rec.getHeight());
 
-        rlTexCoord2f((GetShapesTextureRec().getX() + GetShapesTextureRec().getWidth()) / GetShapesTexture().getWidth(), (GetShapesTextureRec().getY() + GetShapesTextureRec().getHeight()) / GetShapesTexture().getHeight());
-        rlVertex2f(rec.getWidth(), rec.getHeight());
+                rlTexCoord2f((GetShapesTextureRec().getX() + GetShapesTextureRec().getWidth()) / GetShapesTexture().getWidth(), (GetShapesTextureRec().getY() + GetShapesTextureRec().getHeight()) / GetShapesTexture().getHeight());
+                rlVertex2f(rec.getWidth(), rec.getHeight());
 
-        rlTexCoord2f((GetShapesTextureRec().getX() + GetShapesTextureRec().getWidth()) / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
-        rlVertex2f(rec.getWidth(), 0.0f);
-        rlEnd();
+                rlTexCoord2f((GetShapesTextureRec().getX() + GetShapesTextureRec().getWidth()) / GetShapesTexture().getWidth(), GetShapesTextureRec().getY() / GetShapesTexture().getHeight());
+                rlVertex2f(rec.getWidth(), 0.0f);
+            rlEnd();
         rlPopMatrix();
 
         rlDisableTexture();

@@ -55,6 +55,13 @@ public class Matrix{
         this.m12 = mat[3];     this.m13 = mat[7];     this.m14 = mat[11];    this.m15 = mat[15];
     }
 
+    public String toString() {
+        return this.m0 + ", " + this.m4 + ", " + this.m8 + ", " + this.m12 + "\n" +
+                this.m1 + ", " + this.m5 + ", " + this.m9 + ", " + this.m13 + "\n" +
+                this.m2 + ", " + this.m6 + ", " + this.m10 + ", " + this.m14 + "\n" +
+                this.m3 + ", " + this.m7 + ", " + this.m11 + ", " + this.m15;
+    }
+
     public float getM0(){
         return m0;
     }

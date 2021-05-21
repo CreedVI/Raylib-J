@@ -1842,7 +1842,7 @@ public class Core{
         }
 
         if (Config.MAX_GAMEPADS > 0){
-            //TODO
+            //TODO - GAMEPAD SUPPORT
             glfwSetJoystickCallback(null);
         }
 

@@ -110,12 +110,12 @@ public class GL_33{
     // Choose the current matrix to be transformed
     static void rlMatrixMode(int mode){
         if (mode == RL_PROJECTION){
-            RLGL.getRlglData().getState().setCurrentMatrix(RLGL.getRlglData().getState().getProjection());
+            RLGL.getRlglData().getState().setCurrentMatrix(mode, RLGL.getRlglData().getState().getProjection());
         }
         else if (mode == RL_MODELVIEW){
-            RLGL.getRlglData().getState().setCurrentMatrix(RLGL.getRlglData().getState().getModelview());
-            //else if (mode == RL_TEXTURE) // Not supported
+            RLGL.getRlglData().getState().setCurrentMatrix(mode, RLGL.getRlglData().getState().getModelview());
         }
+        //else if (mode == RL_TEXTURE) // Not supported
         RLGL.getRlglData().getState().setCurrentMatrixMode(mode);
     }
 
@@ -217,7 +217,7 @@ public class GL_33{
 
         // Transform provided vector if required
         if (RLGL.getRlglData().getState().isTransformRequired()){
-            vec = Vector3Transform(vec, RLGL.getRlglData().getState().getTransform());
+            vec = Vector3Transform(vec, RLGL.getRlglData().getState().getCurrentMatrix());
         }
 
         // Verify that current vertex buffer elements limit has not been reached
@@ -234,8 +234,7 @@ public class GL_33{
         }
     }
 
-    // Define one vertex (position)
-    // Define one vertex (position)
+        // Define one vertex (position)
     static void rlVertex2f(float x, float y){
         rlVertex3f(x, y, rlglData.getCurrentBatch().currentDepth);
     }
@@ -260,23 +259,24 @@ public class GL_33{
     }
 
     // Define one vertex (color)
-    static void rlColor4ub(float x, float y, float z, float w){
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter] = x;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 1] = y;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 2] = z;
-        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 3] = w;
+    static void rlColor4ub(int x, int y, int z, int w){
+        //System.out.println("Colour: "+x +", "+ y +", "+ z +", "+ w);
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter] = (float)x/255;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 1] = (float)y/255;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 2] = (float)z/255;
+        rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4 * rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter + 3] = (float)w/255;
         rlglData.getCurrentBatch().vertexBuffer[rlglData.getCurrentBatch().currentBuffer].cCounter++;
 
     }
 
     // Define one vertex (color)
     static void rlColor4f(float r, float g, float b, float a){
-        rlColor4ub( (r * 255),  (g * 255),  (b * 255),  (a * 255));
+        rlColor4ub((int)(r * 255),  (int)(g * 255),  (int)(b * 255),  (int)(a * 255));
     }
 
     // Define one vertex (color)
     static void rlColor3f(float x, float y, float z){
-        rlColor4ub( (x * 255),  (y * 255),  (z * 255),  255);
+        rlColor4ub((int)(x * 255),  (int)(y * 255),  (int)(z * 255),  255);
     }
 
 }

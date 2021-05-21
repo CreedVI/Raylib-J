@@ -856,8 +856,6 @@ public class RLGL{
             int depthIdU = depthId;
             if(depthType == GL_RENDERBUFFER){
                 glDeleteRenderbuffers(depthIdU);
-            }
-            else if(depthType == GL_RENDERBUFFER){
                 glDeleteTextures(depthIdU);
             }
 
@@ -2765,8 +2763,8 @@ public class RLGL{
         }
         else if(GRAPHICS_API_OPENGL_ES2){
             defaultFShaderStr.append("#version 100                       \n");
-            defaultFShaderStr.append("precision mediump float;           \n");     // precision required for OpenGL
-            // ES2 (WebGL)
+            defaultFShaderStr.append("precision mediump float;           \n");
+            // precision required for OpenGL ES2 (WebGL)
         }
         if(GRAPHICS_API_OPENGL_ES2 || GRAPHICS_API_OPENGL_21){
             defaultFShaderStr.append("varying vec2 fragTexCoord;         \n");
@@ -2783,13 +2781,14 @@ public class RLGL{
         defaultFShaderStr.append("void main()                        \n");
         defaultFShaderStr.append("{                                  \n");
         if(GRAPHICS_API_OPENGL_ES2 || GRAPHICS_API_OPENGL_21){
-            defaultFShaderStr.append("    vec4 texelColor = texture2D(texture0, fragTexCoord); \n"); // NOTE: texture2D() is deprecated on OpenGL 3
-            // .3 and ES 3.0
+            defaultFShaderStr.append("    vec4 texelColor = texture2D(texture0, fragTexCoord); \n");
+            // NOTE: texture2D() is deprecated on OpenGL 3.3 and ES 3.0
             defaultFShaderStr.append("    gl_FragColor = texelColor*colDiffuse*fragColor;      \n");
         }
         else if(GRAPHICS_API_OPENGL_33){
             defaultFShaderStr.append("    vec4 texelColor = texture(texture0, fragTexCoord);   \n");
-            defaultFShaderStr.append("    finalColor = texelColor*colDiffuse*fragColor;        \n");
+            //defaultFShaderStr.append("    finalColor = texelColor*colDiffuse*fragColor;        \n");
+            defaultFShaderStr.append("    finalColor = colDiffuse*fragColor;        \n");
         }
         defaultFShaderStr.append("}                                  \n");
 
@@ -2902,7 +2901,7 @@ public class RLGL{
             batch.vertexBuffer[i].setTexcoords(new float[bufferElements * 2 * Float.BYTES]);
             //batch.vertexBuffer[i].texcoords.flip();
             // 2 float by texcoord, 4 texcoord by quad
-            batch.vertexBuffer[i].setColors(new float[bufferElements * 4 * Integer.BYTES]);
+            batch.vertexBuffer[i].setColors(new float[bufferElements * 4 * Float.BYTES]);
             //batch.vertexBuffer[i].colors.flip();
             // 4 float by color, 4 colors by quad
             if(GRAPHICS_API_OPENGL_33){
@@ -2995,7 +2994,6 @@ public class RLGL{
             glEnableVertexAttribArray(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()]);
             glVertexAttribPointer(rlglData.getState().getCurrentShader().locs[LOC_VERTEX_COLOR.getShaderLocationInt()],
                     4, GL_FLOAT, false, 0, 0);
-
 
             // Fill index buffer
             batch.vertexBuffer[i].vboId[3] = glGenBuffers();
@@ -3103,11 +3101,7 @@ public class RLGL{
         Matrix matProjection = rlglData.getState().getProjection();
         Matrix matModelView = rlglData.getState().getModelview();
 
-        //System.out.println("\n" + Arrays.toString(MatrixToFloat(matProjection)));
-        //System.out.println(Arrays.toString(MatrixToFloat(matModelView)) + "\n");
-
         int eyesCount = (rlglData.getVr().isStereoRender()) ? 2 : 1;
-
 
         for(int eye = 0; eye < eyesCount; eye++){
             if(SUPPORT_VR_SIMULATOR){
@@ -3124,10 +3118,6 @@ public class RLGL{
                 Matrix matMVP = MatrixMultiply(rlglData.getState().getModelview(), rlglData.getState().getProjection());
                 glUniformMatrix4fv(rlglData.getState().getCurrentShader().locs[LOC_MATRIX_MVP.getShaderLocationInt()],
                         false, MatrixToFloat(matMVP));
-
-                System.out.println("\n" + Arrays.toString(MatrixToFloat(matProjection)));
-                System.out.println(Arrays.toString(MatrixToFloat(matModelView)));
-                System.out.println( Arrays.toString(MatrixToFloat(matMVP))+ "\n");
 
                 if(rlglData.getExtSupported().isVao()){
                     glBindVertexArray(batch.vertexBuffer[batch.currentBuffer].vaoId);
@@ -3322,7 +3312,6 @@ public class RLGL{
 
         // Draw quad
         glBindVertexArray(quadVAO);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glBindVertexArray(0);
 
