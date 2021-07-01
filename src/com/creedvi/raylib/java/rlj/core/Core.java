@@ -858,14 +858,14 @@ public class Core{
 
         float aspect = (float) window.currentFbo.getWidth() / (float) window.currentFbo.getHeight();
 
-        if (camera.getTypeI() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
             // Setup perspective projection
             double top = RL_CULL_DISTANCE_NEAR * Math.tan(camera.getFovy() * 0.5 * DEG2RAD);
             double right = top * aspect;
 
             rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getTypeI() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
             // Setup orthographic projection
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -974,12 +974,12 @@ public class Core{
 
         Matrix matProj = MatrixIdentity();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE){
+        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
             // Calculate projection matrix from perspective
             matProj = MatrixPerspective(camera.getFovy() * DEG2RAD,
                     ((double) GetScreenWidth() / (double) GetScreenHeight()), RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
             float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -1003,10 +1003,10 @@ public class Core{
         // Calculate normalized direction vector
         Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
 
-        if (camera.getType() == CAMERA_PERSPECTIVE){
+        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
             ray.position = camera.getPosition();
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
             ray.position = cameraPlanePointerPos;
         }
 
@@ -1063,12 +1063,12 @@ public class Core{
         // Calculate projection matrix (from perspective instead of frustum
         Matrix matProj = MatrixIdentity();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE){
+        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
             // Calculate projection matrix from perspective
             matProj = MatrixPerspective(camera.getFovy() * DEG2RAD, ((double) width / (double) height),
                     RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
             float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;

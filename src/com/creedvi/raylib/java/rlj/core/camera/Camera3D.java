@@ -8,7 +8,7 @@ public class Camera3D extends Camera{
 
     }
 
-    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, CameraProjection type){
+    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type){
         this.position = position;
         this.target = target;
         this.up = up;
@@ -20,12 +20,8 @@ public class Camera3D extends Camera{
         return fovy;
     }
 
-    public CameraProjection getType(){
+    public int getType(){
         return type;
-    }
-
-    public int getTypeI(){
-        return type.camType;
     }
 
     @Override
@@ -57,7 +53,7 @@ public class Camera3D extends Camera{
         this.position = position;
     }
 
-    public void setType(CameraProjection type){
+    public void setType(int type){
         this.type = type;
     }
 
