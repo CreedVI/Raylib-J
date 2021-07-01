@@ -1,11 +1,12 @@
-LAST UPDATED :: 17/03/21
+LAST UPDATED :: 28/05/21
 
+[ ] 3,7 migration
 [O] core
 [X] shapes
 [o] textures
 [o] text
 [ ] models
-[o] shaders
+[X] shaders
 [ ] audio
 [O] RLGL
 [X] raymath
@@ -15,4 +16,4 @@ LAST UPDATED :: 17/03/21
 [M] gestures - Will look into reimplementing later on (08/03/21)
 [ ] rlights
 [M] rmem - Module canceled as not needed for port (Thus far 08/03/21)
-[ ] rnet - Will wait until module is fully functional before supporting
+[M] rnet - Will wait until module is fully functional before supporting

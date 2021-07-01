@@ -29,6 +29,21 @@ public class Text{
         }
     }
 
+    //TODO Figure out why collum 63 of the buffer loads incorrectly
+
+    /**
+     * Check if the bth binary bit is 1 in an integer
+     * @param a the value to check
+     * @param b position of bit to examine
+     * @return <code>true</code> if bit at b is set to 1
+     */
+    private static boolean BitCheck(int a, int b){
+        if (b == 0){
+            //System.out.print("|"+((a) & (1 << (b))) +", "+(int)Math.pow(2,b)+"| ");
+        }
+        return ((a) & (1 << (b))) == (int)Math.pow(2,b);
+    }
+
     public static void LoadFontDefault(){
         // NOTE: Using UTF8 encoding table for Unicode U+0000..U+00FF Basic Latin + Latin-1 Supplement
         // Ref: http://www.utf8-chartable.de/unicode-utf8-table.pl
@@ -101,28 +116,36 @@ public class Text{
         // Re-construct image from defaultFontData and generate OpenGL texture
         //----------------------------------------------------------------------
         Image imFont = new Image();
-        imFont.setData(new int[(128 * 128) * 2]);  // 2 bytes per pixel (gray + alpha)
+        imFont.setData(new short[128 * 128]);  // 2 bytes per pixel (gray + alpha)
         imFont.setWidth(128);
         imFont.setHeight(128);
         imFont.setFormat(UNCOMPRESSED_GRAY_ALPHA.getPixForInt());
         imFont.setMipmaps(1);
 
-        // Fill image.data with defaultFontData (convert from bit to pixel!)
+        StringBuilder sb = new StringBuilder();
+
+        //Fill image.data with defaultFontData (convert from bit to pixel!)
         for (int i = 0, counter = 0; i < imFont.getWidth() * imFont.getHeight(); i += 32){
             for (int j = 31; j >= 0; j--){
-                if (((defaultFontData[counter]) & 1 << j) == 1){
+                if (BitCheck(defaultFontData[counter], j)){
                     // NOTE: We are unreferencing data as short, so,
                     // we must consider data as little-endian order (alpha + gray)
-                    imFont.getData()[i + j] = 0xffff;
+                    imFont.getData()[i + j] = (short) 0xffff;
+                    sb.append("1, 1 | ");
                 }
                 else{
-                    imFont.getData()[i + j] = 0x00ff;
-                }
-                if(counter < 511){
-                    counter++;
+                    imFont.getData()[i + j] = (short) 0x00ff;
+                    sb.append("1, 0 | ");
+
                 }
             }
+            counter++;
+            if (counter%4 == 0)
+                sb.append("\n");
         }
+
+        //System.out.println(sb.toString());
+
         defaultFont.texture = LoadTextureFromImage(imFont);
 
         // Reconstruct charSet using charsWidth[], charsHeight, charsDivisor, charsCount
@@ -175,7 +198,7 @@ public class Text{
             defaultFont.chars[j].image = ImageFromImage(imFont, defaultFont.recs[j]);
         }
 
-        imFont = UnloadImage(imFont);
+        UnloadImage(imFont);
 
         defaultFont.baseSize = (int) defaultFont.recs[0].getHeight();
 
@@ -303,7 +326,7 @@ public class Text{
     }
 
     // Measure string width for default font
-    int MeasureText(String text, int fontSize){
+    public int MeasureText(String text, int fontSize){
         Vector2 vec = new Vector2();
 
         // Check if default font has been loaded
@@ -333,6 +356,7 @@ public class Text{
         int letter;                 // Current character
         int index;                  // Index position in sprite font
 
+
         for (int i = 0; i < len; i++){
             lenCounter++;
 
@@ -343,7 +367,7 @@ public class Text{
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol so to not skip any we set next = 1
             if (letter == 0x3f) next = 1;
-            i += next - 1;
+            i += 1;
 
             if (letter != '\n'){
                 if (font.chars[index].advanceX != 0){
@@ -413,6 +437,15 @@ public class Text{
         return currentBuffer;
     }*/
 
+    // Get a piece of a text string
+    public String TextSubtext(String text, int position, int length){
+        if (length < text.length())
+            return text.substring(position, length);
+        else
+            return text.substring(position);
+    }
+
+
     // Returns next codepoint in a UTF8 encoded text, scanning until '\0' is found
     // When a invalid UTF8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
     // Total number of bytes processed are returned as a parameter
@@ -458,7 +491,7 @@ public class Text{
         else if ((octet & 0xf0) == 0xe0){
             // Three octets
             char octet1 = text.toCharArray()[1];
-            char octet2 = '\0';
+            char octet2;
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
                 bytesProcessed = 2;

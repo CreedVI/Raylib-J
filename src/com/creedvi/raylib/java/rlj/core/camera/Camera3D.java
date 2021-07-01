@@ -2,19 +2,13 @@ package com.creedvi.raylib.java.rlj.core.camera;
 
 import com.creedvi.raylib.java.rlj.raymath.Vector3;
 
-public class Camera3D{
-
-    Vector3 position;       // Camera position
-    Vector3 target;         // Camera target it looks-at
-    Vector3 up;             // Camera up vector (rotation over its axis)
-    float fovy;             // Camera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
-    int type;               // Camera type, defines projection type: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
+public class Camera3D extends Camera{
 
     public Camera3D(){
 
     }
 
-    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type){
+    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, CameraProjection type){
         this.position = position;
         this.target = target;
         this.up = up;
@@ -26,8 +20,17 @@ public class Camera3D{
         return fovy;
     }
 
-    public int getType(){
+    public CameraProjection getType(){
         return type;
+    }
+
+    public int getTypeI(){
+        return type.camType;
+    }
+
+    @Override
+    public void update(){
+
     }
 
     public Vector3 getPosition(){
@@ -54,7 +57,7 @@ public class Camera3D{
         this.position = position;
     }
 
-    public void setType(int type){
+    public void setType(CameraProjection type){
         this.type = type;
     }
 

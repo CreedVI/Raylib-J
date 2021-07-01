@@ -6,13 +6,27 @@ import com.creedvi.raylib.java.rlj.raymath.Vector2;
 
 public class BasicShapes{
 
+    /*******************************************************************************************
+     *
+     *   raylib-j [shapes] example - Basic Shapes
+     *
+     *   This example has been created using raylib-j (Version 0.1)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
+     *
+     ********************************************************************************************/
+
     final static int SCREEN_WIDTH = 800;
     final static int SCREEN_HEIGHT = 450;
 
     public static void main(String[] args){
         Raylib rlj = new Raylib();
 
-        rlj.core.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib [shapes] example - basic shapes drawing");
+        rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib [shapes] example - basic shapes drawing");
         rlj.core.SetTargetFPS(60);
 
         while(!rlj.core.WindowShouldClose()){

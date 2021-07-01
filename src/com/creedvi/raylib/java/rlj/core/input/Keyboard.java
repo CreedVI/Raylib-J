@@ -5,8 +5,8 @@ import static com.creedvi.raylib.java.rlj.Config.MAX_KEY_PRESSED_QUEUE;
 public class Keyboard{
 
     int exitKey;                    // Default exit key
-    char[] currentKeyState;      // Registers current frame key state
-    char[] previousKeyState;     // Registers previous frame key state
+    boolean[] currentKeyState;      // Registers current frame key state
+    boolean[] previousKeyState;     // Registers previous frame key state
 
     int[] keyPressedQueue;     // Input keys queue
     int keyPressedQueueCount;       // Input keys queue count
@@ -138,25 +138,25 @@ public class Keyboard{
     }
 
     public Keyboard(){
-        currentKeyState = new char[512];
-        previousKeyState = new char[512];
+        currentKeyState = new boolean[512];
+        previousKeyState = new boolean[512];
         keyPressedQueue = new int[MAX_KEY_PRESSED_QUEUE];
         charPressedQueue = new int[MAX_KEY_PRESSED_QUEUE];
     }
 
-    public char[] getCurrentKeyState(){
+    public boolean[] getCurrentKeyState(){
         return currentKeyState;
     }
 
-    public void setCurrentKeyState(char[] currentKeyState){
+    public void setCurrentKeyState(boolean[] currentKeyState){
         this.currentKeyState = currentKeyState;
     }
 
-    public char[] getPreviousKeyState(){
+    public boolean[] getPreviousKeyState(){
         return previousKeyState;
     }
 
-    public void setPreviousKeyState(char[] previousKeyState){
+    public void setPreviousKeyState(boolean[] previousKeyState){
         this.previousKeyState = previousKeyState;
     }
 

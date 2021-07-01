@@ -19,12 +19,19 @@ public class Mouse{
 
 
     // Mouse buttons
-    enum MouseButton {
+    public enum MouseButton {
         MOUSE_LEFT_BUTTON  (0),
         MOUSE_RIGHT_BUTTON (1),
         MOUSE_MIDDLE_BUTTON(2);
 
+        final int ButtonInt;
+
         MouseButton(int i){
+            ButtonInt = i;
+        }
+
+        public int getButtonInt(){
+            return ButtonInt;
         }
     }
 

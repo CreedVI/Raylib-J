@@ -92,10 +92,10 @@ public class Callbacks{
                 // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
                 // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
                 if (action == GLFW_RELEASE){
-                    Core.getInput().keyboard.getCurrentKeyState()[key] = 0;
+                    Core.getInput().keyboard.getCurrentKeyState()[key] = false;
                 }
                 else{
-                    Core.getInput().keyboard.getCurrentKeyState()[key] = 1;
+                    Core.getInput().keyboard.getCurrentKeyState()[key] = true;
                 }
 
                 // Check if there is space available in the key queue

@@ -4,7 +4,7 @@ import com.creedvi.raylib.java.rlj.core.Color;
 
 public class Image{
 
-    int[] data;             // Image raw data
+    short[] data;             // Image raw data
     int width;              // Image base width
     int height;             // Image base height
     int mipmaps;            // Mipmap levels, 1 by default
@@ -14,12 +14,12 @@ public class Image{
     }
 
     public Image(Color[] pixels, int width, int height, int pixForInt, int mipmaps){
-        data = new int[pixels.length*4];
+        data = new short[pixels.length*4];
         for(int i = 0; i < pixels.length; i += 4){
-            data[i] = pixels[i].getR();
-            data[i + 1] = pixels[i].getG();
-            data[i + 2] = pixels[i].getB();
-            data[i + 3] = pixels[i].getA();
+            data[i] = (short) pixels[i].getR();
+            data[i + 1] = (short) pixels[i].getG();
+            data[i + 2] = (short) pixels[i].getB();
+            data[i + 3] = (short) pixels[i].getA();
         }
         this.width = width;
         this.height = height;
@@ -27,11 +27,11 @@ public class Image{
         this.mipmaps = mipmaps;
     }
 
-    public int[] getData(){
+    public short[] getData(){
         return data;
     }
 
-    public void setData(int[] data){
+    public void setData(short[] data){
         this.data = data;
     }
 
@@ -66,5 +66,4 @@ public class Image{
     public void setFormat(int format){
         this.format = format;
     }
-
 }

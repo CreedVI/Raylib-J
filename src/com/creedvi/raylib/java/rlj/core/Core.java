@@ -5,6 +5,8 @@ import com.creedvi.raylib.java.rlj.core.camera.Camera2D;
 import com.creedvi.raylib.java.rlj.core.camera.Camera3D;
 import com.creedvi.raylib.java.rlj.core.input.Input;
 import com.creedvi.raylib.java.rlj.core.input.Keyboard;
+import com.creedvi.raylib.java.rlj.core.input.Mouse;
+import com.creedvi.raylib.java.rlj.core.ray.Ray;
 import com.creedvi.raylib.java.rlj.raymath.Matrix;
 import com.creedvi.raylib.java.rlj.raymath.Quaternion;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
@@ -18,18 +20,15 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-
 import java.io.File;
 import java.util.Arrays;
 
-import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.*;
 import static com.creedvi.raylib.java.rlj.Config.*;
+import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.*;
 import static com.creedvi.raylib.java.rlj.core.Color.RAYWHITE;
-import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraType.CAMERA_ORTHOGRAPHIC;
-import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraType.CAMERA_PERSPECTIVE;
+import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.*;
 import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_ESCAPE;
-import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
-import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
+import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.*;
 import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_R8G8B8A8;
@@ -38,7 +37,8 @@ import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BIL
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
 import static com.creedvi.raylib.java.rlj.textures.Textures.SetTextureFilter;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
-import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.*;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
@@ -97,7 +97,7 @@ public class Core{
      * @param height Window height in pixels
      * @param title Window title
      */
-    public void initWindow(int width, int height, String title){
+    public void InitWindow(int width, int height, String title){
         Tracelog(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
 
         if ((title != null) && (title.charAt(0) != 0)){
@@ -490,7 +490,7 @@ public class Core{
 
             icon[0].width(image.getWidth());
             icon[0].height(image.getHeight());
-            icon[0].pixels(image.getData()[0]);
+            icon[0].pixels(Math.toIntExact(image.getData()[0]));
 
             // NOTE 1: We only support one image icon
             // NOTE 2: The specified image data is copied before this function returns
@@ -755,13 +755,13 @@ public class Core{
     }
 
     // Enables cursor (unlock cursor)
-    void EnableCursor(){
+    public static void EnableCursor(){
         glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         input.mouse.setCursorHidden(false);
     }
 
     // Disables cursor (lock cursor)
-    void DisableCursor(){
+    public static void DisableCursor(){
         glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         input.mouse.setCursorHidden(true);
     }
@@ -828,7 +828,7 @@ public class Core{
     }
 
     // Initialize 2D mode with custom camera (2D)
-    void BeginMode2D(Camera2D camera){
+    public void BeginMode2D(Camera2D camera){
         rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlLoadIdentity();                   // Reset current matrix (modelview)
@@ -841,7 +841,7 @@ public class Core{
     }
 
     // Ends 2D mode with custom camera
-    void EndMode2D(){
+    public void EndMode2D(){
         rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlLoadIdentity();                   // Reset current matrix (modelview)
@@ -858,14 +858,14 @@ public class Core{
 
         float aspect = (float) window.currentFbo.getWidth() / (float) window.currentFbo.getHeight();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.getTypeI() == CAMERA_PERSPECTIVE.getCamType()){
             // Setup perspective projection
             double top = RL_CULL_DISTANCE_NEAR * Math.tan(camera.getFovy() * 0.5 * DEG2RAD);
             double right = top * aspect;
 
             rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.getTypeI() == CAMERA_ORTHOGRAPHIC.getCamType()){
             // Setup orthographic projection
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -956,10 +956,9 @@ public class Core{
         rlgl.rlDisableScissorTest();
     }
 
-    /* TODO: Rays - MODULE RAY
     // Returns a ray trace from mouse position
-    Ray GetMouseRay(Vector2 mouse, Camera3D camera){
-        Ray ray;
+    public Ray GetMouseRay(Vector2 mouse, Camera3D camera){
+        Ray ray = new Ray();
 
         // Calculate normalized device coordinates
         // NOTE: y value is negative
@@ -1016,7 +1015,6 @@ public class Core{
 
         return ray;
     }
-    */
 
     // Get transform matrix for camera
     Matrix GetCameraMatrix(Camera3D camera){
@@ -1056,9 +1054,8 @@ public class Core{
 
     // Returns the screen space position from a 3d world space position
     Vector2 GetWorldToScreen(Vector3 position, Camera3D camera){
-        Vector2 screenPosition = GetWorldToScreenEx(position, camera, GetScreenWidth(), GetScreenHeight());
 
-        return screenPosition;
+        return GetWorldToScreenEx(position, camera, GetScreenWidth(), GetScreenHeight());
     }
 
     // Returns size position for a 3d world space position (useful for texture drawing)
@@ -1134,8 +1131,6 @@ public class Core{
         Tracelog(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000 + " milliseconds");
     }
 
-    //
-
     /**
      * Returns current FPS
      * NOTE: We calculate an average framerate
@@ -1187,10 +1182,10 @@ public class Core{
     // NOTE: This function is expected to be called before window creation,
     // because it setups some flags for the window creation process.
     // To configure window states after creation, just use SetWindowState()
-    void SetConfigFlags(int flags){
+    public static void SetConfigFlags(ConfigFlag flags){
         // Selected flags are set but not evaluated at this point,
         // flag evaluation happens at InitWindow() or SetWindowState()
-        window.flags |= flags;
+        window.flags |= flags.getFlag();
     }
 
     //TakeScreenShot
@@ -1201,7 +1196,7 @@ public class Core{
      * @param max Maximum value of random number
      * @return Random value between the <code>min/code> and <code>max</code>
      */
-    public int GetRandomValue(int min, int max){
+    public static int GetRandomValue(int min, int max){
         if (min > max){
             int tmp = max;
             max = min;
@@ -1278,36 +1273,49 @@ public class Core{
     // Detect if a key has been pressed once
     public boolean IsKeyPressed(Keyboard.KeyboardKey key){
         int kkey = key.getKeyInt();
-        boolean pressed = false;
 
-        pressed = (input.keyboard.getPreviousKeyState()[kkey] == 0) && (input.keyboard.getCurrentKeyState()[kkey] == 1);
+        return ((!input.keyboard.getPreviousKeyState()[kkey]) && (input.keyboard.getCurrentKeyState()[kkey]));
 
-        return pressed;
+    }
+
+    public boolean IsKeyPressed(int key){
+        return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
+
     }
 
     // Detect if a key is being pressed (key held down)
-    public boolean IsKeyDown(Keyboard.KeyboardKey key){
-        return input.keyboard.getCurrentKeyState()[key.getKeyInt()] == 1;
+    public static boolean IsKeyDown(Keyboard.KeyboardKey key){
+        return input.keyboard.getCurrentKeyState()[key.getKeyInt()];
+    }
+
+    public static boolean IsKeyDown(int key){
+        return input.keyboard.getCurrentKeyState()[key];
     }
 
     // Detect if a key has been released once
-    boolean IsKeyReleased(Keyboard.KeyboardKey key){
+    public boolean IsKeyReleased(Keyboard.KeyboardKey key){
         int kkey = key.getKeyInt();
-        boolean released = false;
 
-        released =
-                (input.keyboard.getPreviousKeyState()[kkey] == 1) && (input.keyboard.getCurrentKeyState()[kkey] == 0);
+        return (input.keyboard.getPreviousKeyState()[kkey] && !input.keyboard.getCurrentKeyState()[kkey]);
+    }
 
-        return released;
+    // Detect if a key has been released once
+    public boolean IsKeyReleased(int key){
+        return (input.keyboard.getPreviousKeyState()[key] && !input.keyboard.getCurrentKeyState()[key]);
     }
 
     // Detect if a key is NOT being pressed (key not held down)
-    boolean IsKeyUp(Keyboard.KeyboardKey key){
-        return input.keyboard.getCurrentKeyState()[key.getKeyInt()] == 0;
+    public boolean IsKeyUp(Keyboard.KeyboardKey key){
+        return !input.keyboard.getCurrentKeyState()[key.getKeyInt()];
+    }
+
+    // Detect if a key is NOT being pressed (key not held down)
+    public boolean IsKeyUp(int key){
+        return !input.keyboard.getCurrentKeyState()[key];
     }
 
     // Get the last key pressed
-    int GetKeyPressed(){
+    public int GetKeyPressed(){
         int value = 0;
 
         if (input.keyboard.getKeyPressedQueueCount() > 0){
@@ -1328,7 +1336,7 @@ public class Core{
     }
 
     // Get the last char pressed
-    int GetCharPressed(){
+    public int GetCharPressed(){
         int value = 0;
 
         if (input.keyboard.getCharPressedQueueCount() > 0){
@@ -1350,7 +1358,7 @@ public class Core{
 
     // Set a custom key to exit program
     // NOTE: default exitKey is ESCAPE
-    void SetExitKey(Keyboard.KeyboardKey key){
+    public void SetExitKey(Keyboard.KeyboardKey key){
         input.keyboard.setExitKey(key.getKeyInt());
     }
 
@@ -1483,10 +1491,30 @@ public class Core{
      */
 
     // Detect if a mouse button has been pressed once
-    boolean IsMouseButtonPressed(int button){
+    public boolean IsMouseButtonPressed(Mouse.MouseButton button){
         boolean pressed = false;
 
-        if ((input.mouse.getCurrentButtonState()[button] == 1) && (input.mouse.getPreviousButtonState()[button] == 0)){
+        if ((input.mouse.getCurrentButtonState()[button.getButtonInt()] == 1) &&
+                (input.mouse.getPreviousButtonState()[button.getButtonInt()] == 0)){
+            pressed = true;
+        }
+
+        /* TODO: Touch support - MODULE GESTURES
+        // Map touches to mouse buttons checking
+        if ((input.touch.currentTouchState[button] == 1) && (input.touch.previousTouchState[button] == 0)){
+            pressed = true;
+        }
+        */
+
+        return pressed;
+    }
+
+    // Detect if a mouse button has been pressed once
+    public boolean IsMouseButtonPressed(int button){
+        boolean pressed = false;
+
+        if ((input.mouse.getCurrentButtonState()[button] == 1) &&
+                (input.mouse.getPreviousButtonState()[button] == 0)){
             pressed = true;
         }
 
@@ -1501,7 +1529,24 @@ public class Core{
     }
 
     // Detect if a mouse button is being pressed
-    boolean IsMouseButtonDown(int button){
+    public static boolean IsMouseButtonDown(Mouse.MouseButton button){
+        boolean down = false;
+
+        if (input.mouse.getCurrentButtonState()[button.getButtonInt()] == 1){
+            down = true;
+        }
+
+        /*
+        TODO: Touch support - MODULE GESTURES
+        Map touches to mouse buttons checking
+        if (input.Touch.currentTouchState[button] == 1) down = true;
+        */
+
+        return down;
+    }
+
+    // Detect if a mouse button is being pressed
+    public static boolean IsMouseButtonDown(int button){
         boolean down = false;
 
         if (input.mouse.getCurrentButtonState()[button] == 1){
@@ -1518,10 +1563,30 @@ public class Core{
     }
 
     // Detect if a mouse button has been released once
-    boolean IsMouseButtonReleased(int button){
+    public boolean IsMouseButtonReleased(Mouse.MouseButton button){
         boolean released = false;
 
-        if ((input.mouse.getCurrentButtonState()[button] == 0) && (input.mouse.getCurrentButtonState()[button] == 1)){
+        if ((input.mouse.getCurrentButtonState()[button.getButtonInt()] == 0) &&
+                (input.mouse.getCurrentButtonState()[button.getButtonInt()] == 1)){
+            released = true;
+        }
+
+        /*
+        TODO: Touch support - MODULE GESTURES
+        Map touches to mouse buttons checking
+        if ((input.Touch.currentTouchState[button] == 0) && (input.Touch.previousTouchState[button] == 1)){
+            released = true;
+        }
+         */
+        return released;
+    }
+
+    // Detect if a mouse button has been released once
+    public boolean IsMouseButtonReleased(int button){
+        boolean released = false;
+
+        if ((input.mouse.getCurrentButtonState()[button] == 0) &&
+                (input.mouse.getCurrentButtonState()[button] == 1)){
             released = true;
         }
 
@@ -1536,12 +1601,17 @@ public class Core{
     }
 
     // Detect if a mouse button is NOT being pressed
-    boolean IsMouseButtonUp(int button){
+    public boolean IsMouseButtonUp(Mouse.MouseButton button){
+        return !IsMouseButtonDown(button);
+    }
+
+    // Detect if a mouse button is NOT being pressed
+    public boolean IsMouseButtonUp(int button){
         return !IsMouseButtonDown(button);
     }
 
     // Returns mouse position X
-    int GetMouseX(){
+    public int GetMouseX(){
         /* TODO: Touch support - MODULE GESTURES
         #if defined(PLATFORM_ANDROID)
             return (int)input.Touch.position[0].x;
@@ -1552,7 +1622,7 @@ public class Core{
     }
 
     // Returns mouse position Y
-    int GetMouseY(){
+    public int GetMouseY(){
         /* TODO: Touch support - MODULE GESTURES
         #if defined(PLATFORM_ANDROID)
             return (int)input.Touch.position[0].y;
@@ -1563,7 +1633,7 @@ public class Core{
     }
 
     // Returns mouse position XY
-    Vector2 GetMousePosition(){
+    public static Vector2 GetMousePosition(){
         Vector2 position = new Vector2();
 
         /*
@@ -1580,7 +1650,7 @@ public class Core{
     }
 
     // Set mouse position XY
-    void SetMousePosition(int x, int y){
+    public void SetMousePosition(int x, int y){
         input.mouse.setPosition(new Vector2((float) x, (float) y));
         // NOTE: emscripten not implemented
         glfwSetCursorPos(window.handle, input.mouse.getPosition().getX(), input.mouse.getPosition().getY());
@@ -1588,29 +1658,29 @@ public class Core{
 
     // Set mouse offset
     // NOTE: Useful when rendering to different size targets
-    void SetMouseOffset(int offsetX, int offsetY){
+    public void SetMouseOffset(int offsetX, int offsetY){
         input.mouse.setOffset(new Vector2((float) offsetX, (float) offsetY));
     }
 
     // Set mouse scaling
     // NOTE: Useful when rendering to different size targets
-    void SetMouseScale(float scaleX, float scaleY){
+    public void SetMouseScale(float scaleX, float scaleY){
         input.mouse.setScale(new Vector2(scaleX, scaleY));
     }
 
     // Returns mouse wheel movement Y
-    float GetMouseWheelMove(){
+    public static float GetMouseWheelMove(){
         return input.mouse.getPreviousWheelMove();
     }
 
     // Returns mouse cursor
-    long GetMouseCursor(){
+    public long GetMouseCursor(){
         return input.mouse.getCursor();
     }
 
     // Set mouse cursor
     // NOTE: This is a no-op on platforms other than PLATFORM_DESKTOP
-    void SetMouseCursor(int cursor){
+    public void SetMouseCursor(int cursor){
         input.mouse.setCursor(cursor);
         if (cursor == MOUSE_CURSOR_DEFAULT.getMouseCursorInt()){
             glfwSetCursor(window.handle, 0);
@@ -2137,10 +2207,10 @@ public class Core{
         // Keyboard/Mouse input polling (automatically managed by GLFW3 through callback)
 
         // Register previous keys states
-        input.keyboard.setPreviousKeyState(input.keyboard.getCurrentKeyState());
+        for (int i = 0; i < 512; i++) input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
 
         // Register previous mouse states
-        input.mouse.setPreviousButtonState(input.mouse.getCurrentButtonState());
+        for (int i = 0; i < 3; i++) input.mouse.getPreviousButtonState()[i] = input.mouse.getCurrentButtonState()[i];
 
         // Register previous mouse wheel state
         input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());

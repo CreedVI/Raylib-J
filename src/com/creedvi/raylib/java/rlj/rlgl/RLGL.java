@@ -326,9 +326,9 @@ public class RLGL{
         LOC_COLOR_DIFFUSE(11),
         LOC_COLOR_SPECULAR(12),
         LOC_COLOR_AMBIENT(13),
-        LOC_MAP_ALBEDO(14),          // LOC_MAP_DIFFUSE
+        LOC_MAP_ALBEDO(14),
         LOC_MAP_DIFFUSE(14),
-        LOC_MAP_METALNESS(15),       // LOC_MAP_SPECULAR
+        LOC_MAP_METALNESS(15),
         LOC_MAP_SPECULAR(15),
         LOC_MAP_NORMAL(16),
         LOC_MAP_ROUGHNESS(17),
@@ -1112,7 +1112,7 @@ public class RLGL{
             // Initialize buffers, default shaders and default textures
             //----------------------------------------------------------
             // Init default white texture
-            int[] pixels = new int[]{255,255,255,255};
+            short[] pixels = new short[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
             rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, UNCOMPRESSED_R8G8B8A8.getPixForInt(), 1));
 
             if(rlglData.getState().getDefaultTextureId() != 0){
@@ -1298,7 +1298,7 @@ public class RLGL{
     }
 
     // Convert image data to OpenGL texture (returns OpenGL valid Id)
-    public static int rlLoadTexture(int[] data, int width, int height, int format, int mipmapCount){
+    public static int rlLoadTexture(short[] data, int width, int height, int format, int mipmapCount){
         glBindTexture(GL_TEXTURE_2D, 0);    // Free any old binding
 
         int id = 0;
@@ -1361,16 +1361,15 @@ public class RLGL{
         for(int i = 0; i < mipmapCount; i++){
             int mipSize = GetPixelDataSize(mipWidth, mipHeight, format);
 
-            int glInternalFormat = 0, glFormat = 0, glType = 0;
-            rlGetGlTextureFormats(format, glInternalFormat, glFormat, glType);
+            //using globals here to get around pointers
+            rlGetGlTextureFormats(format);
 
             TracelogS("TEXTURE: Load mipmap level " + i + " (" + mipWidth + " x " + mipHeight + "), size: " +
                     mipSize + ", offset: " + mipOffset);
 
             if(glInternalFormat != -1){
                 if(format < COMPRESSED_DXT1_RGB.pixForInt){
-                    glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                            data.length + mipOffset);
+                    glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, data);
                 }
                 else{
                     if(!GRAPHICS_API_OPENGL_11){
@@ -1389,12 +1388,12 @@ public class RLGL{
                         if(GRAPHICS_API_OPENGL_21){
                             swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ALPHA};
                         }
-                    }
-                    if(GRAPHICS_API_OPENGL_33){
-                        swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_GREEN};
+                        else if(GRAPHICS_API_OPENGL_33){
+                            swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_GREEN};
+                        }
+                        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
                     }
                 }
-                glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
             }
 
             mipWidth /= 2;
@@ -1529,10 +1528,7 @@ public class RLGL{
             id = glGenTextures();
             glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 
-            int glInternalFormat = 0;
-            int glFormat = 0;
-            int glType = 0;
-            rlGetGlTextureFormats(format, glInternalFormat, glFormat, glType);
+            rlGetGlTextureFormats(format);
 
             if(glInternalFormat != -1){
                 // Load cubemap faces
@@ -1617,8 +1613,7 @@ public class RLGL{
     public static void rlUpdateTexture(int id, int offsetX, int offsetY, int width, int height, int format, int[] data){
         glBindTexture(GL_TEXTURE_2D, id);
 
-        int glInternalFormat = 0, glFormat = 0, glType = 0;
-        rlGetGlTextureFormats(format, glInternalFormat, glFormat, glType);
+        rlGetGlTextureFormats(format);
 
         if((glInternalFormat != -1) && (format < COMPRESSED_DXT1_RGB.getPixForInt())){
             glTexSubImage2D(GL_TEXTURE_2D, 0, offsetX, offsetY, width, height, glFormat, glType, data);
@@ -1629,7 +1624,7 @@ public class RLGL{
     }
 
     // Get OpenGL internal formats and data type from raylib PixelFormat
-    static void rlGetGlTextureFormats(int format, int glInternalFormat, int glFormat, int glType){
+    static void rlGetGlTextureFormats(int format){
         glInternalFormat = -1;
         glFormat = -1;
         glType = -1;
@@ -1637,7 +1632,7 @@ public class RLGL{
         PixelFormat pixForm = PixelFormat.getByInt(format);
 
         switch(pixForm){
-            case UNCOMPRESSED_GRAYSCALE -> {
+            case UNCOMPRESSED_GRAYSCALE:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_LUMINANCE;
                     glFormat = GL_LUMINANCE;
@@ -1648,8 +1643,8 @@ public class RLGL{
                     glFormat = GL_RED;
                     glType = GL_UNSIGNED_BYTE;
                 }
-            }
-            case UNCOMPRESSED_GRAY_ALPHA -> {
+                break;
+            case UNCOMPRESSED_GRAY_ALPHA:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_LUMINANCE_ALPHA;
                     glFormat = GL_LUMINANCE_ALPHA;
@@ -1660,8 +1655,8 @@ public class RLGL{
                     glFormat = GL_RG;
                     glType = GL_UNSIGNED_BYTE;
                 }
-            }
-            case UNCOMPRESSED_R5G6B5 -> {
+                break;
+            case UNCOMPRESSED_R5G6B5:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGB;
                     glFormat = GL_RGB;
@@ -1672,8 +1667,8 @@ public class RLGL{
                     glFormat = GL_RGB;
                     glType = GL_UNSIGNED_SHORT_5_6_5;
                 }
-            }
-            case UNCOMPRESSED_R8G8B8 -> {
+                break;
+            case UNCOMPRESSED_R8G8B8:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGB;
                     glFormat = GL_RGB;
@@ -1684,8 +1679,8 @@ public class RLGL{
                     glFormat = GL_RGB;
                     glType = GL_UNSIGNED_BYTE;
                 }
-            }
-            case UNCOMPRESSED_R5G5B5A1 -> {
+                break;
+            case UNCOMPRESSED_R5G5B5A1:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGBA;
                     glFormat = GL_RGBA;
@@ -1696,8 +1691,8 @@ public class RLGL{
                     glFormat = GL_RGBA;
                     glType = GL_UNSIGNED_SHORT_5_5_5_1;
                 }
-            }
-            case UNCOMPRESSED_R4G4B4A4 -> {
+                break;
+            case UNCOMPRESSED_R4G4B4A4:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGBA;
                     glFormat = GL_RGBA;
@@ -1708,8 +1703,8 @@ public class RLGL{
                     glFormat = GL_RGBA;
                     glType = GL_UNSIGNED_SHORT_4_4_4_4;
                 }
-            }
-            case UNCOMPRESSED_R8G8B8A8 -> {
+                break;
+            case UNCOMPRESSED_R8G8B8A8:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGBA;
                     glFormat = GL_RGBA;
@@ -1720,8 +1715,8 @@ public class RLGL{
                     glFormat = GL_RGBA;
                     glType = GL_UNSIGNED_BYTE;
                 }
-            }
-            case UNCOMPRESSED_R32 -> {
+                break;
+            case UNCOMPRESSED_R32:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexFloat32()){
                         glInternalFormat = GL_LUMINANCE;
@@ -1736,8 +1731,8 @@ public class RLGL{
                         glType = GL_FLOAT;
                     }
                 } // NOTE: Requires extension OES_texture_float
-            }
-            case UNCOMPRESSED_R32G32B32 -> {
+                break;
+            case UNCOMPRESSED_R32G32B32:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexFloat32()){
                         glInternalFormat = GL_RGB;
@@ -1752,8 +1747,8 @@ public class RLGL{
                         glType = GL_FLOAT;
                     }
                 }    // NOTE: Requires extension OES_texture_float
-            }
-            case UNCOMPRESSED_R32G32B32A32 -> {
+                break;
+            case UNCOMPRESSED_R32G32B32A32:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexFloat32()){
                         glInternalFormat = GL_RGBA;
@@ -1768,98 +1763,93 @@ public class RLGL{
                     glFormat = GL_RGBA;
                     glType = GL_FLOAT;
                 } // NOTE: Requires extension OES_texture_float
-            }
-            case COMPRESSED_DXT1_RGB -> {
+                break;
+            case COMPRESSED_DXT1_RGB:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
                     }
                 }
-            }
-            case COMPRESSED_DXT1_RGBA -> {
+                break;
+            case COMPRESSED_DXT1_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
                     }
                 }
-            }
-            case COMPRESSED_DXT3_RGBA -> {
+                break;
+            case COMPRESSED_DXT3_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
                     }
                 }
-            }
-            case COMPRESSED_DXT5_RGBA -> {
+                break;
+            case COMPRESSED_DXT5_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
                     }
                 }
-            }
-            case COMPRESSED_ETC1_RGB -> {
+                break;
+            case COMPRESSED_ETC1_RGB:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompETC1()){
                         glInternalFormat = GL_ETC1_RGB8_OES;
                     }
                 }  // NOTE: Requires OpenGL ES 2.0 or OpenGL 4.3
-            }
-            case COMPRESSED_ETC2_RGB -> {
+                break;
+            case COMPRESSED_ETC2_RGB:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompETC2()){
                         glInternalFormat = GL_COMPRESSED_RGB8_ETC2;
                     }
                 }      // NOTE: Requires OpenGL ES 3.0 or OpenGL 4.3
-            }
-            case COMPRESSED_ETC2_EAC_RGBA -> {
+                break;
+            case COMPRESSED_ETC2_EAC_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompETC2()){
                         glInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
                     }
                 }    // NOTE: Requires OpenGL ES 3.0 or OpenGL 4.3
-            }
-            case COMPRESSED_PVRT_RGB -> {
+                break;
+            case COMPRESSED_PVRT_RGB:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompPVRT()){
                         glInternalFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
                     }
                 } // NOTE: Requires PowerVR GPU
-            }
-            case COMPRESSED_PVRT_RGBA -> {
+                break;
+            case COMPRESSED_PVRT_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompPVRT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
                     }
                 } // NOTE: Requires PowerVR GPU
-            }
-            case COMPRESSED_ASTC_4x4_RGBA -> {
+                break;
+            case COMPRESSED_ASTC_4x4_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompASTC()){
                         glInternalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
                     }
                 } // NOTE: Requires OpenGL ES 3.1 or OpenGL 4.3
-            }
-            case COMPRESSED_ASTC_8x8_RGBA -> {
+                break;
+            case COMPRESSED_ASTC_8x8_RGBA:
                 if(!GRAPHICS_API_OPENGL_11){
                     if(rlglData.getExtSupported().isTexCompASTC()){
                         glInternalFormat = GL_COMPRESSED_RGBA_ASTC_8x8_KHR;
                     }
                 }  // NOTE: Requires OpenGL ES 3.1 or OpenGL 4.3
-            }
-            default -> {
+                break;
+            default:
                 if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     throw new IllegalStateException("Unexpected value: " + format);
                 }
                 if(!GRAPHICS_API_OPENGL_11){
                     Tracelog(LOG_WARNING, "TEXTURE: Current format not supported (" + pixForm + ")");
                 }
-
-            }
+                break;
         }
-
-        RLGL.glInternalFormat = glInternalFormat;
-        RLGL.glFormat = glFormat;
-        RLGL.glType = glType;
     }
 
     public static void rlUnloadTexture(int id){
@@ -1992,7 +1982,7 @@ public class RLGL{
                 // WARNING: Manual mipmap generation only works for RGBA 32bit textures!
                 if(texture.getFormat() == UNCOMPRESSED_R8G8B8A8.pixForInt){
                     // Retrieve texture data from VRAM
-                    int[] texData = rlReadTexturePixels(texture);
+                    short[] texData = rlReadTexturePixels(texture);
 
                     // NOTE: Texture data size is reallocated to fit mipmaps data
                     // NOTE: CPU mipmap generation only supports RGBA 32bit data
@@ -2064,24 +2054,24 @@ public class RLGL{
 
     //rlUnloadMesh
 
-    public static int[] rlReadScreenPixels(int width, int height){
-        int[] screenData = new int[width * height * 4];
+    public static short[] rlReadScreenPixels(int width, int height){
+        short[] screenData = new short[width * height * 4];
 
         // NOTE 1: glReadPixels returns image flipped vertically -> (0,0) is the bottom left corner of the framebuffer
         // NOTE 2: We are getting alpha channel! Be careful, it can be transparent if not cleared properly!
         glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, screenData);
 
         // Flip image vertically!
-        int[] imgData = new int[width * height * 4];
+        short[] imgData = new short[width * height * 4];
 
         for(int y = height - 1; y >= 0; y--){
             for(int x = 0; x < (width * 4); x++){
-                imgData[((height - 1) - y) * width * 4 + x] = screenData[(y * width * 4) + x];  // Flip line
+                imgData[((height - 1) - y) * width * 4 + x] = (byte) screenData[(y * width * 4) + x];  // Flip line
 
                 // Set alpha component value to 255 (no trasparent image retrieval)
                 // NOTE: Alpha value has already been applied to RGB in framebuffer, we don't need it!
                 if(((x + 1) % 4) == 0){
-                    imgData[((height - 1) - y) * width * 4 + x] = 255;
+                    imgData[((height - 1) - y) * width * 4 + x] = (byte) 255;
                 }
             }
         }
@@ -2092,8 +2082,8 @@ public class RLGL{
     }
 
     // Read texture pixel data
-    public static int[] rlReadTexturePixels(Texture2D texture){
-        int[] pixels = null;
+    public static short[] rlReadTexturePixels(Texture2D texture){
+        short[] pixels = null;
 
         if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
             glBindTexture(GL_TEXTURE_2D, texture.getId());
@@ -2111,12 +2101,11 @@ public class RLGL{
             // GL_UNPACK_ALIGNMENT affects operations that write to OpenGL memory (glTexImage, etc.)
             glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
-            int glInternalFormat = 0, glFormat = 0, glType = 0;
-            rlGetGlTextureFormats(texture.getFormat(), glInternalFormat, glFormat, glType);
+            rlGetGlTextureFormats(texture.getFormat());
             int size = GetPixelDataSize(texture.getWidth(), texture.getHeight(), texture.getFormat());
 
             if((glInternalFormat != -1) && (texture.getFormat() < COMPRESSED_DXT1_RGB.getPixForInt())){
-                pixels = new int[size];
+                pixels = new short[size];
                 glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, pixels);
             }
             else{
@@ -2146,7 +2135,7 @@ public class RLGL{
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
 
             // We read data as RGBA because FBO texture is configured as RGBA, despite binding another texture format
-            pixels = new int[GetPixelDataSize(texture.getWidth(), texture.getHeight(),
+            pixels = new short[GetPixelDataSize(texture.getWidth(), texture.getHeight(),
                     UNCOMPRESSED_R8G8B8A8.getPixForInt())];
             glReadPixels(0, 0, texture.getWidth(), texture.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -2787,8 +2776,8 @@ public class RLGL{
         }
         else if(GRAPHICS_API_OPENGL_33){
             defaultFShaderStr.append("    vec4 texelColor = texture(texture0, fragTexCoord);   \n");
-            //defaultFShaderStr.append("    finalColor = texelColor*colDiffuse*fragColor;        \n");
-            defaultFShaderStr.append("    finalColor = colDiffuse*fragColor;        \n");
+            defaultFShaderStr.append("    finalColor = texelColor*colDiffuse*fragColor;        \n");
+            //defaultFShaderStr.append("    finalColor = colDiffuse*fragColor;        \n");
         }
         defaultFShaderStr.append("}                                  \n");
 
@@ -2834,7 +2823,7 @@ public class RLGL{
         // NOTE: Default shader attrib locations have been fixed before linking:
         //          vertex position location    = 0
         //          vertex texcoord location    = 1
-        //          vertex normal location      = 2
+        //          vertex normal location      = 2Float
         //          vertex color location       = 3
         //          vertex tangent location     = 4
         //          vertex texcoord2 location   = 5
@@ -2896,17 +2885,12 @@ public class RLGL{
             batch.vertexBuffer[i].elementsCount = bufferElements;
 
             batch.vertexBuffer[i].setVertices(new float[bufferElements * 3 * Float.BYTES]);
-            //batch.vertexBuffer[i].vertices.flip();
             // 3 float by vertex, 4 vertex by quad
             batch.vertexBuffer[i].setTexcoords(new float[bufferElements * 2 * Float.BYTES]);
-            //batch.vertexBuffer[i].texcoords.flip();
             // 2 float by texcoord, 4 texcoord by quad
             batch.vertexBuffer[i].setColors(new float[bufferElements * 4 * Float.BYTES]);
-            //batch.vertexBuffer[i].colors.flip();
             // 4 float by color, 4 colors by quad
             if(GRAPHICS_API_OPENGL_33){
-                //batch.vertexBuffer[i].setIndices_GL11() = (unsigned int *)RL_MALLOC(bufferElements * 6 * sizeof
-                // (unsigned int));
                 batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6 * Integer.BYTES]);
             }// 6 int by quad (indices)
             else if(GRAPHICS_API_OPENGL_ES2){
@@ -3019,7 +3003,6 @@ public class RLGL{
         //--------------------------------------------------------------------------------------------
         // Init draw calls tracking system
         //--------------------------------------------------------------------------------------------
-        //batch.draws = (DrawCall *)RL_MALLOC(DEFAULT_BATCH_DRAWCALLS*sizeof(DrawCall));
         batch.draws = new DrawCall[DEFAULT_BATCH_DRAWCALLS];
         for(int i = 0; i < batch.draws.length; i++){
             batch.draws[i] = new DrawCall();
@@ -3028,11 +3011,7 @@ public class RLGL{
             batch.draws[i].mode = RL_QUADS;
             batch.draws[i].vertexCount = 0;
             batch.draws[i].vertexAlignment = 0;
-            //batch.draws[i].vaoId = 0;
-            //batch.draws[i].shaderId = 0;
             batch.draws[i].textureId = rlglData.getState().getDefaultTextureId();
-            //batch.draws[i].rlgl.State.projection = MatrixIdentity();
-            //batch.draws[i].rlgl.State.modelview = MatrixIdentity();
         }
 
         batch.buffersCount = numBuffers;    // Record buffer count
@@ -3060,19 +3039,22 @@ public class RLGL{
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vboId[0]);
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertexBuffer[batch.getCurrentBuffer()].vertices);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*3*4*batch->vertexBuffer[batch->currentBuffer].elementsCount,
-            // batch->vertexBuffer[batch->currentBuffer].vertices, GL_DYNAMIC_DRAW);  // Update all buffer
+            // batch->vertexBuffer[batch->currentBuffer].vertices, GL_DYNAMIC_DRAW);
+            // Update all buffer
 
             // Texture coordinates buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vboId[1]);
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertexBuffer[batch.getCurrentBuffer()].texcoords);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*2*4*batch->vertexBuffer[batch->currentBuffer].elementsCount,
-            // batch->vertexBuffer[batch->currentBuffer].texcoords, GL_DYNAMIC_DRAW); // Update all buffer
+            // batch->vertexBuffer[batch->currentBuffer].texcoords, GL_DYNAMIC_DRAW);
+            // Update all buffer
 
             // Colors buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.vertexBuffer[batch.getCurrentBuffer()].vboId[2]);
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertexBuffer[batch.getCurrentBuffer()].colors);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*4*4*batch->vertexBuffer[batch->currentBuffer].elementsCount,
-            // batch->vertexBuffer[batch->currentBuffer].colors, GL_DYNAMIC_DRAW);    // Update all buffer
+            // batch->vertexBuffer[batch->currentBuffer].colors, GL_DYNAMIC_DRAW);
+            // Update all buffer
 
             // NOTE: glMapBuffer() causes sync issue.
             // If GPU is working with this buffer, glMapBuffer() will wait(stall) until GPU to finish its job.
@@ -3147,6 +3129,8 @@ public class RLGL{
                 // Setup some default shader values
                 glUniform4f(rlglData.getState().getCurrentShader().locs[LOC_COLOR_DIFFUSE.getShaderLocationInt()], 1.0f, 1.0f, 1.0f, 1.0f);
                 glUniform1i(rlglData.getState().getCurrentShader().locs[LOC_MAP_DIFFUSE.getShaderLocationInt()], 0);
+                //System.out.println("---------\n SHADER LOCS\n" + Arrays.toString(rlglData.getState()
+                // .getCurrentShader().getLocs()) + "\n-----------------");
                 // Active default sampler2D: texture0
 
                 // Activate additional sampler textures
@@ -3320,77 +3304,6 @@ public class RLGL{
         glDeleteVertexArrays(quadVAO);
     }
 
-    public static void GenDrawQuadAlt() {
-        int quadVAO;
-        int[] quadVBO = {0, 0, 0, 0};
-        Shader shaderProgram = rlglData.getState().getCurrentShader();
-
-        float[] vertices = {
-                -0.5f,  0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                0.5f,  0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f
-        };
-
-        float[] texcoords = {
-                0.5f, -0.5f,
-                -0.5f, -0.5f,
-                0.5f,  0.5f,
-                0.5f, -0.5f
-        };
-
-        float[] colour = {
-                1, 0.4274509f, 0.6079216f, 1,
-                1, 0.4274509f, 0.6079216f, 1,
-                1, 0.4274509f, 0.6079216f, 1,
-                1, 0.4274509f, 0.6079216f, 1
-        };
-
-        int[] indices = {
-                0, 1, 2,
-                0, 2, 3
-        };
-
-        // Gen VAO to contain VBO
-        quadVAO = glGenVertexArrays();
-        glBindVertexArray(quadVAO);
-
-        // Gen and fill vertex buffer (VBO)
-        quadVBO[0] = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[0]);
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0,0); //Positions
-        glEnableVertexAttribArray(0);
-
-        quadVBO[1] = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[1]);
-        glBufferData(GL_ARRAY_BUFFER, texcoords, GL_STATIC_DRAW);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, 0,0); //Texcoords
-        glEnableVertexAttribArray(1);
-
-        quadVBO[2] = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[2]);
-        glBufferData(GL_ARRAY_BUFFER, colour, GL_STATIC_DRAW);
-        glVertexAttribPointer(3, 4, GL_FLOAT, false, 0, 0); //Colours
-        glEnableVertexAttribArray(3);
-
-        quadVBO[3] = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO[3]);
-        glBufferData(GL_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
-
-        // Draw quad
-        glUseProgram(shaderProgram.getId());
-        glBindVertexArray(quadVAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertices.length/3);
-        glBindVertexArray(0);
-        glUseProgram(0);
-
-        // Delete buffers (VBO and VAO)
-        glDeleteBuffers(quadVBO);
-        glDeleteVertexArrays(quadVAO);
-    }
-
-
     // Renders a 1x1 3D cube in NDC
     public static void GenDrawCube() {
         int cubeVAO = 0;
@@ -3497,7 +3410,7 @@ public class RLGL{
 
     // Mipmaps data is generated after image data
     // NOTE: Only works with RGBA (4 bytes) data!
-    static int GenerateMipmaps(int[] data, int baseWidth, int baseHeight){
+    static int GenerateMipmaps(short[] data, int baseWidth, int baseHeight){
         int mipmapCount = 1;                // Required mipmap levels count (including base level)
         int width = baseWidth;
         int height = baseHeight;
@@ -3518,7 +3431,7 @@ public class RLGL{
         TracelogS("TEXTURE: Total mipmaps required: " + mipmapCount);
         TracelogS("TEXTURE: Total size of data required: " + size);
 
-        int[] temp = new int[data.length];
+        short[] temp = new short[data.length];
 
         if(temp != null){
             data = temp;
@@ -3534,15 +3447,15 @@ public class RLGL{
         // Generate mipmaps
         // NOTE: Every mipmap data is stored after data
         Color[] image = new Color[width * height];
-        Color[] mipmap = null;
+        Color[] mipmap;
         int offset = 0;
         int j = 0;
 
         for(int i = 0; i < size; i += 4){
-            image[j].setR((byte) data[i]);
-            image[j].setG((byte) data[i + 1]);
-            image[j].setB((byte) data[i + 2]);
-            image[j].setA((byte) data[i + 3]);
+            image[j].setR(data[i]);
+            image[j].setG(data[i + 1]);
+            image[j].setB(data[i + 2]);
+            image[j].setA(data[i + 3]);
 
             j++;
         }
@@ -3561,10 +3474,10 @@ public class RLGL{
 
             // Add mipmap to data
             for(int i = 0; i < size; i += 4){
-                data[offset + i] = mipmap[j].getR();
-                data[offset + i + 1] = mipmap[j].getG();
-                data[offset + i + 2] = mipmap[j].getB();
-                data[offset + i + 3] = mipmap[j].getA();
+                data[offset + i] = (byte) mipmap[j].getR();
+                data[offset + i + 1] = (byte) mipmap[j].getG();
+                data[offset + i + 2] = (byte) mipmap[j].getB();
+                data[offset + i + 3] = (byte) mipmap[j].getA();
                 j++;
             }
 

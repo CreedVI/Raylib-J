@@ -21,5 +21,20 @@ public class Raylib{
         shapes = new Shapes();
     }
 
+    /**
+     * Creates new Raylib instance and Initializes the window
+     * @param ScreenWidth width of the window in pixels
+     * @param ScreenHeight height of the window in pixels
+     * @param title title to display for the window
+     */
+    public Raylib(int ScreenWidth, int ScreenHeight, String title){
+        core = new Core();
+        config = new Config();
+        text = new Text();
+        shapes = new Shapes();
+
+        core.InitWindow(ScreenWidth, ScreenHeight, title);
+    }
+
 
 }

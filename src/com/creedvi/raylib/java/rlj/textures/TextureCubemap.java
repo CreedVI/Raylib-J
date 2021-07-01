@@ -1,7 +1,5 @@
 package com.creedvi.raylib.java.rlj.textures;
 
-import com.creedvi.raylib.java.rlj.rlgl.RLGL;
-
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_R8G8B8A8;
 import static com.creedvi.raylib.java.rlj.textures.Textures.LoadTexture;
 import static com.creedvi.raylib.java.rlj.textures.Textures.LoadTextureFromImage;
@@ -19,7 +17,6 @@ public class TextureCubemap{
         this.height = 1;
         this.mipmaps = 1;
         this.format = UNCOMPRESSED_R8G8B8A8.getPixForInt();
-        this.id = RLGL.rlLoadTexture(new int[]{1}, width, height, format, mipmaps);
     }
 
     public TextureCubemap(Image image){

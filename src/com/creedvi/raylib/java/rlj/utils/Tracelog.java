@@ -1,5 +1,7 @@
 package com.creedvi.raylib.java.rlj.utils;
 
+import java.lang.reflect.Method;
+
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_TRACELOG;
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_TRACELOG_DEBUG;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.*;
@@ -17,6 +19,7 @@ public class Tracelog{
 
     static int logTypeLevel = LOG_ALL.getTraceLogInt();                     // Minimum log type level
     static int logTypeExit = LOG_ERROR.getTraceLogInt();                     // Log type that exits
+    static Method logCallback;
 
     public enum TracelogType{
         LOG_ALL(0),        // Display all logs
@@ -108,5 +111,16 @@ public class Tracelog{
     public static void SetTraceLogLevel(TracelogType logType){
         logTypeLevel = logType.getTraceLogInt();
     }
+
+    // Set the exit threshold (minimum) log level
+    public static void SetTraceLogExit(int logType){
+        logTypeExit = logType;
+    }
+
+    // Set a trace log callback to enable custom logging
+    public static void SetTraceLogCallback(Method callback){
+        logCallback = callback;
+    }
+
 
 }
