@@ -974,12 +974,12 @@ public class Core{
 
         Matrix matProj = MatrixIdentity();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.getType() == CAMERA_PERSPECTIVE){
             // Calculate projection matrix from perspective
             matProj = MatrixPerspective(camera.getFovy() * DEG2RAD,
                     ((double) GetScreenWidth() / (double) GetScreenHeight()), RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC){
             float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -1003,10 +1003,10 @@ public class Core{
         // Calculate normalized direction vector
         Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.getType() == CAMERA_PERSPECTIVE){
             ray.position = camera.getPosition();
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC){
             ray.position = cameraPlanePointerPos;
         }
 
@@ -1063,12 +1063,12 @@ public class Core{
         // Calculate projection matrix (from perspective instead of frustum
         Matrix matProj = MatrixIdentity();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.getType() == CAMERA_PERSPECTIVE){
             // Calculate projection matrix from perspective
             matProj = MatrixPerspective(camera.getFovy() * DEG2RAD, ((double) width / (double) height),
                     RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.getType() == CAMERA_ORTHOGRAPHIC){
             float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
