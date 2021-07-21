@@ -5,16 +5,16 @@ A handmade version of Raylib for Java.
 
 <hr>
 <div>
-
-**Raylib-J is still in development and is not ready for use.**<br>
+  
+**Raylib-J is still in early development.**<br>
 Raylib-J is a handwritten binding of <a href="https://github.com/raysan5/raylib">Raylib</a> in Java using 
 <a href="https://www.lwjgl.org/">LWJGL3</a> to provide the OpenGL framework. 
 
 
-**Raylib-J is being built based on the 3.5.0 release of Raylib**<br>
+**Raylib-J is being built based on the 3.5.0 release of Raylib. 3.7 update comming soon!**<br>
 Raylib-J is meant to be a one-for-one rewrite of Raylib with some quality of life changes including, but not limited 
 to: JavaDoc comments, `DrawFPS(int posX, int posY, Color theColorYouWant)`, and `CloseWindow()` being handled 
-automatically!  
+automatically!
 </div>
 <hr>
 
