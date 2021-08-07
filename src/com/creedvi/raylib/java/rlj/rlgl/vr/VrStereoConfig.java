@@ -1,53 +1,90 @@
 package com.creedvi.raylib.java.rlj.rlgl.vr;
 
 import com.creedvi.raylib.java.rlj.raymath.Matrix;
-import com.creedvi.raylib.java.rlj.rlgl.shader.Shader;
 
 public class VrStereoConfig{
 
-    Shader distortionShader;        // VR stereo rendering distortion shader
-    Matrix eyesProjection[];       // VR stereo rendering eyes projection matrices
-    Matrix eyesViewOffset[];       // VR stereo rendering eyes view offset matrices
-    int eyeViewportRight[];        // VR stereo rendering right eye viewport [x, y, w, h]
-    int eyeViewportLeft[];         // VR stereo rendering left eye viewport [x, y, w, h]
+    public Matrix[] projection;           // VR projection matrices (per eye)
+    public Matrix[] viewOffset;           // VR view offset matrices (per eye)
+    public float[] leftLensCenter;        // VR left lens center
+    public float[] rightLensCenter;       // VR right lens center
+    public float[] leftScreenCenter;      // VR left screen center
+    public float[] rightScreenCenter;     // VR right screen center
+    public float[] scale;                 // VR distortion scale
+    public float[] scaleIn;               // VR distortion scale in
 
-    public Shader getDistortionShader(){
-        return distortionShader;
+    public VrStereoConfig(){
+        projection = new Matrix[2];
+        viewOffset = new Matrix[2];
+        leftLensCenter = new float[2];
+        rightLensCenter = new float[2];
+        leftScreenCenter = new float[2];
+        rightScreenCenter = new float[2];
+        scale = new float[2];
+        scaleIn = new float[2];
     }
 
-    public void setDistortionShader(Shader distortionShader){
-        this.distortionShader = distortionShader;
+    public Matrix[] getProjection(){
+        return projection;
     }
 
-    public Matrix[] getEyesProjection(){
-        return eyesProjection;
+    public void setProjection(Matrix[] projection){
+        this.projection = projection;
     }
 
-    public void setEyesProjection(Matrix[] eyesProjection){
-        this.eyesProjection = eyesProjection;
+    public Matrix[] getViewOffset(){
+        return viewOffset;
     }
 
-    public Matrix[] getEyesViewOffset(){
-        return eyesViewOffset;
+    public void setViewOffset(Matrix[] viewOffset){
+        this.viewOffset = viewOffset;
     }
 
-    public void setEyesViewOffset(Matrix[] eyesViewOffset){
-        this.eyesViewOffset = eyesViewOffset;
+    public float[] getLeftLensCenter(){
+        return leftLensCenter;
     }
 
-    public int[] getEyeViewportRight(){
-        return eyeViewportRight;
+    public void setLeftLensCenter(float[] leftLensCenter){
+        this.leftLensCenter = leftLensCenter;
     }
 
-    public void setEyeViewportRight(int[] eyeViewportRight){
-        this.eyeViewportRight = eyeViewportRight;
+    public float[] getRightLensCenter(){
+        return rightLensCenter;
     }
 
-    public int[] getEyeViewportLeft(){
-        return eyeViewportLeft;
+    public void setRightLensCenter(float[] rightLensCenter){
+        this.rightLensCenter = rightLensCenter;
     }
 
-    public void setEyeViewportLeft(int[] eyeViewportLeft){
-        this.eyeViewportLeft = eyeViewportLeft;
+    public float[] getLeftScreenCenter(){
+        return leftScreenCenter;
+    }
+
+    public void setLeftScreenCenter(float[] leftScreenCenter){
+        this.leftScreenCenter = leftScreenCenter;
+    }
+
+    public float[] getRightScreenCenter(){
+        return rightScreenCenter;
+    }
+
+    public void setRightScreenCenter(float[] rightScreenCenter){
+        this.rightScreenCenter = rightScreenCenter;
+    }
+
+    public float[] getScale(){
+        return scale;
+    }
+
+    public void setScale(float[] scale){
+        this.scale = scale;
+    }
+
+    public float[] getScaleIn(){
+        return scaleIn;
+    }
+
+    public void setScaleIn(float[] scaleIn){
+        this.scaleIn = scaleIn;
     }
 }

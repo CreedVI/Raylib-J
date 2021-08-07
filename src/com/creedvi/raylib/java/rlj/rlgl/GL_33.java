@@ -36,10 +36,7 @@ public class GL_33{
                     RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexAlignment = 0;
                 }
 
-                if (RLGL.rlCheckBufferLimit(RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexAlignment)){
-                    RLGL.DrawRenderBatch(RLGL.getRlglData().getCurrentBatch());
-                }
-                else{
+                if (!RLGL.rlCheckRenderBatchLimit(RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexAlignment)){
                     RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().getCurrentBuffer()].vCounter += RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexAlignment;
                     RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().getCurrentBuffer()].cCounter += RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexAlignment;
                     RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().getCurrentBuffer()].tcCounter += RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].vertexAlignment;
@@ -49,7 +46,7 @@ public class GL_33{
             }
 
             if (RLGL.getRlglData().getCurrentBatch().drawsCounter >= DEFAULT_BATCH_DRAWCALLS){
-                RLGL.DrawRenderBatch(RLGL.getRlglData().getCurrentBatch());
+                RLGL.rlDrawRenderBatch(RLGL.getRlglData().getCurrentBatch());
             }
 
             RLGL.getRlglData().getCurrentBatch().draws[RLGL.getRlglData().getCurrentBatch().drawsCounter - 1].mode = mode;
@@ -95,15 +92,14 @@ public class GL_33{
         RLGL.getRlglData().getCurrentBatch().currentDepth += (1.0f / 20000.0f);
 
         // Verify internal buffers limits
-        // NOTE: This check is combined with usage of rlCheckBufferLimit()
+        // NOTE: This check is combined with usage of rlCheckRenderBatchLimit()
         if ((RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].vCounter) >= (RLGL.getRlglData().getCurrentBatch().vertexBuffer[RLGL.getRlglData().getCurrentBatch().currentBuffer].elementsCount * 4 - 4)){
-            // WARNING: If we are between rlPushMatrix() and rlPopMatrix() and we need to force a DrawRenderBatch(),
+            // WARNING: If we are between rlPushMatrix() and rlPopMatrix() and we need to force a rlDrawRenderBatch(),
             // we need to call rlPopMatrix() before to recover *RLGL.getRlglData().getState().currentMatrix (RLGL.getRlglData().getState().modelview) for the next forced draw call!
             // If we have multiple matrix pushed, it will require "RLGL.getRlglData().getState().stackCounter" pops before launching the draw
             for (int i = RLGL.getRlglData().getState().getStackCounter(); i >= 0; i--){
-                rlPopMatrix();
+                rlDrawRenderBatch(RLGL.getRlglData().getCurrentBatch());
             }
-            DrawRenderBatch(RLGL.getRlglData().getCurrentBatch());
         }
     }
 
@@ -212,7 +208,7 @@ public class GL_33{
                 matOrtho));
     }
 
-    static void rlVertex3f(float x, float y, float z){
+    public static void rlVertex3f(float x, float y, float z){
         Vector3 vec = new Vector3(x, y, z);
 
         // Transform provided vector if required

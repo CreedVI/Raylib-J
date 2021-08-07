@@ -1,14 +1,14 @@
 package com.creedvi.raylib.java.rlj.textures;
 
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_R8G8B8A8;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.creedvi.raylib.java.rlj.textures.Textures.LoadTexture;
 import static com.creedvi.raylib.java.rlj.textures.Textures.LoadTextureFromImage;
 
 public class Texture2D{
 
     int id;                 // OpenGL texture id
-    int width;              // Texture base width
-    int height;             // Texture base height
+    public int width;              // Texture base width
+    public int height;             // Texture base height
     int mipmaps;            // Mipmap levels, 1 by default
     int format;             // Data format (PixelFormat type)
 
@@ -16,7 +16,7 @@ public class Texture2D{
         this.width = 1;
         this.height = 1;
         this.mipmaps = 1;
-        this.format = UNCOMPRESSED_R8G8B8A8.getPixForInt();
+        this.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     }
 
     public Texture2D(Image image){
@@ -28,11 +28,20 @@ public class Texture2D{
     }
 
     public Texture2D(String filepath){
-        this.id = LoadTexture(filepath).id;
-        this.width = LoadTexture(filepath).width;
-        this.height = LoadTexture(filepath).height;
-        this.mipmaps = LoadTexture(filepath).mipmaps;
-        this.format = LoadTexture(filepath).format;
+        Texture2D t = LoadTexture(filepath);
+        this.id = t.id;
+        this.width = t.width;
+        this.height = t.height;
+        this.mipmaps = t.mipmaps;
+        this.format = t.format;
+    }
+
+    public Texture2D(int id, int width, int height, int mipmaps, int format){
+        this.id = id;
+        this.width = width;
+        this.height = height;
+        this.mipmaps = mipmaps;
+        this.format = format;
     }
 
     public int getId(){

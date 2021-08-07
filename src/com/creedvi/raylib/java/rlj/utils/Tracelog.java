@@ -112,11 +112,6 @@ public class Tracelog{
         logTypeLevel = logType.getTraceLogInt();
     }
 
-    // Set the exit threshold (minimum) log level
-    public static void SetTraceLogExit(int logType){
-        logTypeExit = logType;
-    }
-
     // Set a trace log callback to enable custom logging
     public static void SetTraceLogCallback(Method callback){
         logCallback = callback;

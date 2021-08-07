@@ -36,7 +36,7 @@ public class RayMath{
         return new Vector2(1, 1);
     }
 
-    public Vector2 Vector2Add(Vector2 v1, Vector2 v2){
+    public static Vector2 Vector2Add(Vector2 v1, Vector2 v2){
         return new Vector2(v1.x + v2.x, v1.y + v2.y);
     }
 
@@ -44,7 +44,7 @@ public class RayMath{
         return new Vector2(v.x + add, v.y + add);
     }
 
-    public Vector2 Vector2Subtract(Vector2 v1, Vector2 v2){
+    public static Vector2 Vector2Subtract(Vector2 v1, Vector2 v2){
         return new Vector2(v1.x - v2.x, v1.y - v2.y);
     }
 
@@ -52,7 +52,7 @@ public class RayMath{
         return new Vector2(v.x - sub, v.y - sub);
     }
 
-    public float Vector2Length(Vector2 v){
+    public static float Vector2Length(Vector2 v){
         return (float) Math.sqrt((v.x * v.x) + (v.y + v.y));
     }
 
@@ -75,7 +75,7 @@ public class RayMath{
         return result;
     }
 
-    public Vector2 Vector2Scale(Vector2 v, float scale){
+    public static Vector2 Vector2Scale(Vector2 v, float scale){
         return new Vector2(v.x * scale, v.y * scale);
     }
 
@@ -659,9 +659,34 @@ public class RayMath{
     }
 
     public Matrix MatrixRotateZYX(Vector3 ang){
-        Matrix result = MatrixRotateZ(ang.z);
-        result = MatrixMultiply(result, MatrixRotateY(ang.y));
-        result = MatrixMultiply(result, MatrixRotateX(ang.x));
+        Matrix result = new Matrix();
+
+        float cz = (float) Math.cos(ang.z);
+        float sz = (float) Math.sin(ang.z);
+        float cy = (float) Math.cos(ang.y);
+        float sy = (float) Math.sin(ang.y);
+        float cx = (float) Math.cos(ang.x);
+        float sx = (float) Math.sin(ang.x);
+
+        result.m0 = cz*cy;
+        result.m1 = cz*sy*sx - cx*sz;
+        result.m2 = sz*sx + cz*cx*sy;
+        result.m3 = 0;
+
+        result.m4 = cy*sz;
+        result.m5 = cz*cx + sz*sy*sx;
+        result.m6 = cx*sz*sy - cz*sx;
+        result.m7 = 0;
+
+        result.m8 = -sy;
+        result.m9 = cy*sx;
+        result.m10 = cy*cx;
+        result.m11 = 0;
+
+        result.m12 = 0;
+        result.m13 = 0;
+        result.m14 = 0;
+        result.m15 = 1;
 
         return result;
     }
@@ -1059,12 +1084,12 @@ public class RayMath{
     public Quaternion QuaternionFromEuler(float roll, float pitch, float yaw){
         Quaternion q = new Quaternion();
 
-        float x0 = (float) Math.cos(roll*0.5f);
-        float x1 = (float) Math.sin(roll*0.5f);
-        float y0 = (float) Math.cos(pitch*0.5f);
-        float y1 = (float) Math.sin(pitch*0.5f);
-        float z0 = (float) Math.cos(yaw*0.5f);
-        float z1 = (float) Math.sin(yaw*0.5f);
+        float x0 = (float) Math.cos(pitch*0.5f);
+        float x1 = (float) Math.sin(pitch*0.5f);
+        float y0 = (float) Math.cos(yaw*0.5f);
+        float y1 = (float) Math.sin(yaw*0.5f);
+        float z0 = (float) Math.cos(roll*0.5f);
+        float z1 = (float) Math.sin(roll*0.5f);
 
         q.x = x1*y0*z0 - x0*y1*z1;
         q.y = x0*y1*z0 + x1*y0*z1;

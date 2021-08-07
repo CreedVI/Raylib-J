@@ -6,7 +6,7 @@ import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.utils.Easings;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_SPACE;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
 
 public class EasingsRectArray{
 

@@ -35,7 +35,7 @@ public class BasicShapes{
             rlj.core.ClearBackground(Color.RAYWHITE);
 
             rlj.text.DrawText("some basic shapes available on raylib", 20, 20, 20, Color.DARKGRAY);
-
+//---
             rlj.shapes.DrawCircle(SCREEN_WIDTH/4, 120, 35, Color.DARKBLUE);
 
             rlj.shapes.DrawRectangle(SCREEN_WIDTH/4*2 - 60, 100, 120, 60, Color.RED);
@@ -48,7 +48,7 @@ public class BasicShapes{
             rlj.shapes.DrawTriangle(new Vector2(SCREEN_WIDTH/4*3, 80), new Vector2(SCREEN_WIDTH/4*3 - 60, 150), new Vector2(SCREEN_WIDTH/4*3 + 60, 150), Color.VIOLET);
 
             rlj.shapes.DrawPoly(new Vector2(SCREEN_WIDTH/4*3, 320), 6, 80, 0, Color.BROWN);
-
+//---
             rlj.shapes.DrawCircleGradient(SCREEN_WIDTH/4, 220, 60, Color.GREEN, Color.SKYBLUE);
 
             // NOTE: We draw all LINES based shapes together to optimize internal drawing,

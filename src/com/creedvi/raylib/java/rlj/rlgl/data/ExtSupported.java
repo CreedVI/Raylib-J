@@ -1,21 +1,22 @@
 package com.creedvi.raylib.java.rlj.rlgl.data;
 
 public class ExtSupported{
-    boolean vao;                           // VAO support (OpenGL ES2 could not support VAO extension)
-    boolean texNPOT;                       // NPOT textures full support
-    boolean texDepth;                      // Depth textures supported
-    boolean texFloat32;                    // float textures support (32 bit per channel)
-    boolean texCompDXT;                    // DDS texture compression support
-    boolean texCompETC1;                   // ETC1 texture compression support
-    boolean texCompETC2;                   // ETC2/EAC texture compression support
-    boolean texCompPVRT;                   // PVR texture compression support
-    boolean texCompASTC;                   // ASTC texture compression support
-    boolean texMirrorClamp;                // Clamp mirror wrap mode supported
-    boolean texAnisoFilter;                // Anisotropic texture filtering support
-    boolean debugMarker;                   // Debug marker support
 
-    float maxAnisotropicLevel;          // Maximum anisotropy level supported (minimum is 2.0f)
-    int maxDepthBits;                   // Maximum bits for depth component
+    boolean vao;                           // VAO support (OpenGL ES2 could not support VAO extension) (GL_ARB_vertex_array_object)
+    boolean instancing;                    // Instancing supported (GL_ANGLE_instanced_arrays, GL_EXT_draw_instanced + GL_EXT_instanced_arrays)
+    boolean texNPOT;                       // NPOT textures full support (GL_ARB_texture_non_power_of_two, GL_OES_texture_npot)
+    boolean texDepth;                      // Depth textures supported (GL_ARB_depth_texture, GL_WEBGL_depth_texture, GL_OES_depth_texture)
+    boolean texFloat32;                    // float textures support (32 bit per channel) (GL_OES_texture_float)
+    boolean texCompDXT;                    // DDS texture compression support (GL_EXT_texture_compression_s3tc, GL_WEBGL_compressed_texture_s3tc, GL_WEBKIT_WEBGL_compressed_texture_s3tc)
+    boolean texCompETC1;                   // ETC1 texture compression support (GL_OES_compressed_ETC1_RGB8_texture, GL_WEBGL_compressed_texture_etc1)
+    boolean texCompETC2;                   // ETC2/EAC texture compression support (GL_ARB_ES3_compatibility)
+    boolean texCompPVRT;                   // PVR texture compression support (GL_IMG_texture_compression_pvrtc)
+    boolean texCompASTC;                   // ASTC texture compression support (GL_KHR_texture_compression_astc_hdr, GL_KHR_texture_compression_astc_ldr)
+    boolean texMirrorClamp;                // Clamp mirror wrap mode supported (GL_EXT_texture_mirror_clamp)
+    boolean texAnisoFilter;                // Anisotropic texture filtering support (GL_EXT_texture_filter_anisotropic)
+
+    float maxAnisotropyLevel;          // Maximum anisotropy level supported (minimum is 2.0f)
+    int maxDepthBits;
 
     public ExtSupported(){
 
@@ -27,6 +28,14 @@ public class ExtSupported{
 
     public void setVao(boolean vao){
         this.vao = vao;
+    }
+
+    public boolean isInstancing(){
+        return instancing;
+    }
+
+    public void setInstancing(boolean instancing){
+        this.instancing = instancing;
     }
 
     public boolean isTexNPOT(){
@@ -109,20 +118,12 @@ public class ExtSupported{
         this.texAnisoFilter = texAnisoFilter;
     }
 
-    public boolean isDebugMarker(){
-        return debugMarker;
+    public float getMaxAnisotropyLevel(){
+        return maxAnisotropyLevel;
     }
 
-    public void setDebugMarker(boolean debugMarker){
-        this.debugMarker = debugMarker;
-    }
-
-    public float getMaxAnisotropicLevel(){
-        return maxAnisotropicLevel;
-    }
-
-    public void setMaxAnisotropicLevel(float maxAnisotropicLevel){
-        this.maxAnisotropicLevel = maxAnisotropicLevel;
+    public void setMaxAnisotropyLevel(float maxAnisotropyLevel){
+        this.maxAnisotropyLevel = maxAnisotropyLevel;
     }
 
     public int getMaxDepthBits(){

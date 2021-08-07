@@ -19,45 +19,28 @@ public class Mouse{
 
 
     // Mouse buttons
-    public enum MouseButton {
-        MOUSE_LEFT_BUTTON  (0),
-        MOUSE_RIGHT_BUTTON (1),
-        MOUSE_MIDDLE_BUTTON(2);
+    public static class MouseButton {
+        public static int
+            MOUSE_LEFT_BUTTON = 0,
+            MOUSE_RIGHT_BUTTON = 1,
+            MOUSE_MIDDLE_BUTTON = 2;
 
-        final int ButtonInt;
-
-        MouseButton(int i){
-            ButtonInt = i;
-        }
-
-        public int getButtonInt(){
-            return ButtonInt;
-        }
     }
 
     // Mouse cursor types
-    public enum MouseCursor{
-        MOUSE_CURSOR_DEFAULT(0),
-        MOUSE_CURSOR_ARROW(1),
-        MOUSE_CURSOR_IBEAM(2),
-        MOUSE_CURSOR_CROSSHAIR(3),
-        MOUSE_CURSOR_POINTING_HAND(4),
-        MOUSE_CURSOR_RESIZE_EW(5),     // The horizontal resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_NS(6),     // The vertical resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_NWSE(7),     // The top-left to bottom-right diagonal resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_NESW(8),     // The top-right to bottom-left diagonal resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_ALL(9),     // The omni-directional resize/move cursor shape
-        MOUSE_CURSOR_NOT_ALLOWED(10);     // The operation-not-allowed shape
-
-        int mouseCursorInt;
-
-        MouseCursor(int i){
-            mouseCursorInt = i;
-        }
-
-        public int getMouseCursorInt(){
-            return mouseCursorInt;
-        }
+    public static class MouseCursor{
+        public static int
+            MOUSE_CURSOR_DEFAULT = 0,
+            MOUSE_CURSOR_ARROW = 1,
+            MOUSE_CURSOR_IBEAM = 2,
+            MOUSE_CURSOR_CROSSHAIR = 3,
+            MOUSE_CURSOR_POINTING_HAND = 4,
+            MOUSE_CURSOR_RESIZE_EW = 5,     // The horizontal resize/move arrow shape
+            MOUSE_CURSOR_RESIZE_NS = 6,     // The vertical resize/move arrow shape
+            MOUSE_CURSOR_RESIZE_NWSE = 7,     // The top-left to bottom-right diagonal resize/move arrow shape
+            MOUSE_CURSOR_RESIZE_NESW = 8,     // The top-right to bottom-left diagonal resize/move arrow shape
+            MOUSE_CURSOR_RESIZE_ALL = 9,     // The omni-directional resize/move cursor shape
+            MOUSE_CURSOR_NOT_ALLOWED = 10;     // The operation-not-allowed shape
     }
 
     public Mouse(){
@@ -147,9 +130,5 @@ public class Mouse{
 
     public void setPreviousWheelMove(float previousWheelMove){
         this.previousWheelMove = previousWheelMove;
-    }
-
-    public int getMouseCursor(MouseCursor mouseCursor){
-        return mouseCursor.getMouseCursorInt();
     }
 }

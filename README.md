@@ -11,7 +11,8 @@ Raylib-J is a handwritten binding of <a href="https://github.com/raysan5/raylib"
 <a href="https://www.lwjgl.org/">LWJGL3</a> to provide the OpenGL framework. 
 
 
-**Raylib-J is being built based on the 3.5.0 release of Raylib. 3.7 update comming soon!**<br>
+
+**Raylib-J is being built based on the 3.7 release of Raylib**<br>
 Raylib-J is meant to be a one-for-one rewrite of Raylib with some quality of life changes including, but not limited 
 to: JavaDoc comments, `DrawFPS(int posX, int posY, Color theColorYouWant)`, and `CloseWindow()` being handled 
 automatically!
@@ -31,14 +32,14 @@ CreedVI
 
 ## Development Status:
 <div>
-[O] core <br>
+[X] core <br>
 [X] shapes <br>
 [o] textures <br>
 [o] text <br>
 [ ] models <br>
 [ ] shaders <br>
 [ ] audio <br>
-[O] RLGL <br>
+[X] RLGL <br>
 [X] raymath <br>
 [ ] physac <br>
 [ ] raygui+ricons <br>
