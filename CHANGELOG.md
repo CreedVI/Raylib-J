@@ -1,5 +1,14 @@
 
-# Push: 188b803
+# Commit: b37cde0
+
+<hr>
+
+* fixed issue that was causing the default font to generate incorrectly
+    - Pesky binary positions
+
+<hr>
+
+# Commit: 188b803
 
 <hr>
 
