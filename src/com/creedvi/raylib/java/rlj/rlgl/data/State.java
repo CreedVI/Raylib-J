@@ -25,6 +25,10 @@ public  class State{                    // Renderer state
     Shader defaultShader;               // Basic shader, support vertex color and diffuse texture
     Shader currentShader;               // Shader to be used on rendering (by default, defaultShader)
 
+    boolean stereoRender;                  // Stereo rendering flag
+    Matrix[] projectionStereo;         // VR stereo rendering eyes projection matrices
+    Matrix[] viewOffsetStereo;         // VR stereo rendering eyes view offset matrices
+
     int currentBlendMode;               // Blending mode active
     int glBlendSrcFactor;               // Blending source factor
     int glBlendDstFactor;               // Blending destination factor
@@ -35,7 +39,10 @@ public  class State{                    // Renderer state
 
     public State(){
         stack = new Matrix[MAX_MATRIX_STACK_SIZE];
-        activeTextureId = new int[4];
+        defaultShader = new Shader();
+        activeTextureId = new int[MAX_BATCH_ACTIVE_TEXTURES];
+        projectionStereo = new Matrix[2];
+        viewOffsetStereo = new Matrix[2];
     }
 
     public int getCurrentMatrixMode(){
@@ -185,6 +192,30 @@ public  class State{                    // Renderer state
 
     public void setCurrentShader(Shader currentShader){
         this.currentShader = currentShader;
+    }
+
+    public boolean isStereoRender(){
+        return stereoRender;
+    }
+
+    public void setStereoRender(boolean stereoRender){
+        this.stereoRender = stereoRender;
+    }
+
+    public Matrix[] getProjectionStereo(){
+        return projectionStereo;
+    }
+
+    public void setProjectionStereo(Matrix[] projectionStereo){
+        this.projectionStereo = projectionStereo;
+    }
+
+    public Matrix[] getViewOffsetStereo(){
+        return viewOffsetStereo;
+    }
+
+    public void setViewOffsetStereo(Matrix[] viewOffsetStereo){
+        this.viewOffsetStereo = viewOffsetStereo;
     }
 
     public int getCurrentBlendMode(){

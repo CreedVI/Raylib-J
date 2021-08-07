@@ -4,7 +4,7 @@ import com.creedvi.raylib.java.rlj.Raylib;
 import com.creedvi.raylib.java.rlj.core.Color;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_SPACE;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_SPACE;
 
 public class BouncingBall{
 

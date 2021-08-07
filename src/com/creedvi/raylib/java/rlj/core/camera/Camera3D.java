@@ -4,16 +4,37 @@ import com.creedvi.raylib.java.rlj.raymath.Vector3;
 
 public class Camera3D extends Camera{
 
-    public Camera3D(){
 
+    public Vector3 position;                // Camera position
+    public Vector3 up;                      // Camera up vector (rotation over its axis)
+    public Vector3 target;
+    public float fovy;                      // Camera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
+    public int projection;                  // Camera type, defines projection type: CAMERA_PERSPECTIVE or
+                                            // CAMERA_ORTHOGRAPHIC
+    CameraData cameraData;
+
+    public Camera3D(){
+        position = new Vector3();
+        target = new Vector3();
+        up = new Vector3();
+        cameraData = new CameraData();
     }
 
-    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type){
+    public Camera3D(CameraData cameraData){
+        position = new Vector3();
+        target = new Vector3();
+        up = new Vector3();
+        this.cameraData = cameraData;
+    }
+
+    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type,
+                    CameraData cameraData){
         this.position = position;
         this.target = target;
         this.up = up;
         this.fovy = fovy;
-        this.type = type;
+        this.projection = type;
+        this.cameraData = cameraData;
     }
 
     public float getFovy(){
@@ -21,7 +42,7 @@ public class Camera3D extends Camera{
     }
 
     public int getType(){
-        return type;
+        return projection;
     }
 
     @Override
@@ -54,7 +75,7 @@ public class Camera3D extends Camera{
     }
 
     public void setType(int type){
-        this.type = type;
+        this.projection = type;
     }
 
     public void setUp(Vector3 up){

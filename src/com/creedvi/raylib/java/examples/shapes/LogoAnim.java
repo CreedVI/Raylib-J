@@ -4,7 +4,7 @@ import com.creedvi.raylib.java.rlj.Raylib;
 import com.creedvi.raylib.java.rlj.core.Color;
 import com.creedvi.raylib.java.rlj.textures.Textures;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_R;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_R;
 
 public class LogoAnim{
 

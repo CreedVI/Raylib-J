@@ -1,60 +1,39 @@
 package com.creedvi.raylib.java.rlj.core.camera;
 
-import com.creedvi.raylib.java.rlj.core.input.Keyboard;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.*;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
+import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseButton.MOUSE_MIDDLE_BUTTON;
 
 public class CameraData{
 
-    public enum CameraMove {
-        MOVE_FRONT(KEY_W.getKeyInt()),
-        MOVE_BACK(KEY_S.getKeyInt()),
-        MOVE_LEFT(KEY_A.getKeyInt()),
-        MOVE_RIGHT(KEY_D.getKeyInt()),
-        MOVE_UP(KEY_Q.getKeyInt()),
-        MOVE_DOWN(KEY_E.getKeyInt())
-        ;
+    public int
+            MoveFront = KEY_W,
+            MoveBack = KEY_A,
+            MoveLeft = KEY_A,
+            MoveRight = KEY_D,
+            MoveUp = KEY_Q,
+            MoveDown = KEY_E,
+            smoothZoomControl = KEY_LEFT_CONTROL,
+            altControl = KEY_LEFT_ALT,
+            panControl = MOUSE_MIDDLE_BUTTON;
 
-        int key;
-        CameraMove(int key){
-            this.key = key;
-        }
-
-        public int getKey(){
-            return key;
-        }
-        public void setKey(Keyboard.KeyboardKey key){
-            this.key = key.getKeyInt();
-        }
-        public void setKey(int key){
-            this.key = key;
-        }
-    }
-
-    int mode;              // Current camera mode
+    Camera.CameraMode mode;              // Current camera mode
     float targetDistance;           // Camera distance from position to target
     float playerEyesPosition;       // Player eyes position from ground (in meters)
     Vector2 angle;                  // Camera angle in plane XZ
 
     // Camera movement control keys
-    CameraMove[] moveControl;             // Move controls (CAMERA_FIRST_PERSON)
-    int smoothZoomControl;          // Smooth zoom control key
-    int altControl;                 // Alternative control key
-    int panControl;                 // Pan view control key
+    int[] moveControl;             // Move controls (CAMERA_FIRST_PERSON)
 
     public CameraData(){
-        mode = 0;
+        mode = Camera.CameraMode.CAMERA_CUSTOM;
         targetDistance = 0;
         playerEyesPosition = 1.85f;
         angle = new Vector2();
-        moveControl = new CameraMove[]{
-            CameraMove.MOVE_FRONT, CameraMove.MOVE_BACK, CameraMove.MOVE_LEFT, CameraMove.MOVE_RIGHT, CameraMove.MOVE_UP,
-            CameraMove.MOVE_DOWN
+        moveControl = new int[]{
+            MoveFront, MoveBack, MoveLeft, MoveRight, MoveUp, MoveDown
         };
-        smoothZoomControl = 341;       // raylib: KEY_LEFT_CONTROL
-        altControl = 342;              // raylib: KEY_LEFT_ALT
-        panControl = 2;                 // raylib: MOUSE_MIDDLE_BUTTON
     }
 
 }

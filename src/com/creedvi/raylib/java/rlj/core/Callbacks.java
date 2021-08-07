@@ -99,7 +99,7 @@ public class Callbacks{
                 }
 
                 // Check if there is space available in the key queue
-                if ((Core.getInput().keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_RELEASE)) {
+                if ((Core.getInput().keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)) {
                     // Add character to the queue
                     Core.getInput().keyboard.getKeyPressedQueue()[Core.getInput().keyboard.getKeyPressedQueueCount()] = key;
                     Core.getInput().keyboard.setKeyPressedQueueCount(Core.getInput().keyboard.getKeyPressedQueueCount() + 1);

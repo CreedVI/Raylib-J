@@ -6,4 +6,4 @@ logo/rlj_old.png
 out/
 tests/
 META-INF/
-/notes.txt
+*.txt

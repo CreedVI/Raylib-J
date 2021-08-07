@@ -4,38 +4,48 @@ import com.creedvi.raylib.java.rlj.Config;
 import com.creedvi.raylib.java.rlj.core.camera.Camera2D;
 import com.creedvi.raylib.java.rlj.core.camera.Camera3D;
 import com.creedvi.raylib.java.rlj.core.input.Input;
-import com.creedvi.raylib.java.rlj.core.input.Keyboard;
-import com.creedvi.raylib.java.rlj.core.input.Mouse;
 import com.creedvi.raylib.java.rlj.core.ray.Ray;
 import com.creedvi.raylib.java.rlj.raymath.Matrix;
 import com.creedvi.raylib.java.rlj.raymath.Quaternion;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.raymath.Vector3;
 import com.creedvi.raylib.java.rlj.rlgl.RLGL;
+import com.creedvi.raylib.java.rlj.rlgl.shader.Shader;
+import com.creedvi.raylib.java.rlj.rlgl.vr.VrDeviceInfo;
+import com.creedvi.raylib.java.rlj.rlgl.vr.VrStereoConfig;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
+import com.creedvi.raylib.java.rlj.shapes.Shapes;
 import com.creedvi.raylib.java.rlj.text.Text;
 import com.creedvi.raylib.java.rlj.textures.Image;
 import com.creedvi.raylib.java.rlj.textures.RenderTexture;
+import com.creedvi.raylib.java.rlj.textures.Texture2D;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import static com.creedvi.raylib.java.rlj.Config.*;
 import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.*;
 import static com.creedvi.raylib.java.rlj.core.Color.RAYWHITE;
-import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.*;
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_ESCAPE;
-import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.*;
+import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.CAMERA_ORTHOGRAPHIC;
+import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.CAMERA_PERSPECTIVE;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_ESCAPE;
+import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
+import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
 import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.UNCOMPRESSED_R8G8B8A8;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.BlendMode.BLEND_ALPHA;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.FILTER_BILINEAR;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.ShaderLocationIndex.*;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.TEXTURE_FILTER_BILINEAR;
 import static com.creedvi.raylib.java.rlj.text.Text.GetFontDefault;
 import static com.creedvi.raylib.java.rlj.textures.Textures.SetTextureFilter;
+import static com.creedvi.raylib.java.rlj.utils.FileIO.LoadFileText;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
@@ -93,9 +103,10 @@ public class Core{
     /**
      * Initialize window and OpenGL context.
      * NOTE: data parameter could be used to pass any kind of required data to the initialization
-     * @param width Window width in pixels
+     *
+     * @param width  Window width in pixels
      * @param height Window height in pixels
-     * @param title Window title
+     * @param title  Window title
      */
     public void InitWindow(int width, int height, String title){
         Tracelog(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
@@ -105,9 +116,9 @@ public class Core{
         }
 
         // Initialize required global values different than 0
-        input.keyboard.setExitKey(input.keyboard.getKeyboardKey(KEY_ESCAPE));
+        input.keyboard.setExitKey(KEY_ESCAPE);
         input.mouse.setScale(new Vector2(1.0f, 1.0f));
-        input.mouse.setCursor(input.mouse.getMouseCursor(MOUSE_CURSOR_ARROW));
+        input.mouse.setCursor(MOUSE_CURSOR_ARROW);
         input.gamepad.setLastButtonPressed(-1);
 
         // Init graphics device (display device and OpenGL context)
@@ -127,15 +138,18 @@ public class Core{
             Text.LoadFontDefault();
             Rectangle rec = GetFontDefault().getRecs()[95];
             // NOTE: We setup a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
-            RLGL.SetShapesTexture(GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
+            Shapes.SetShapesTexture(GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
                     rec.getWidth() - 2, rec.getHeight() - 2));
+        }
+        else {
+            Shapes.SetShapesTexture(rlgl.rlGetTextureDefault(), new Rectangle(0,0,1,1));
         }
 
         if ((window.getFlags() & FLAG_WINDOW_HIGHDPI.getFlag()) > 0){
             // Set default font texture filter for HighDPI (blurry)
-            SetTextureFilter(GetFontDefault().getTexture(), FILTER_BILINEAR.getTextureFilterInt());
+            SetTextureFilter(GetFontDefault().getTexture(), TEXTURE_FILTER_BILINEAR);
         }
-;
+        ;
         glfwShowWindow(window.handle);
     }
 
@@ -159,8 +173,9 @@ public class Core{
 
     /**
      * Check if KEY_ESCAPE pressed or close icon pressed
+     *
      * @return <code>true</code> if window is ready to close.
-     *      NOTE: Must be inverted for use in a while loop
+     * NOTE: Must be inverted for use in a while loop
      */
     public boolean WindowShouldClose(){
         if (window.isReady()){
@@ -185,6 +200,7 @@ public class Core{
 
     /**
      * Check if window has been initialized successfully
+     *
      * @return <code>true</code> if window was initialized successfully
      */
     public boolean IsWindowReady(){
@@ -193,6 +209,7 @@ public class Core{
 
     /**
      * Check if window is currently fullscreen
+     *
      * @return <code>true</code> if window is fullscreen
      */
     public static boolean IsWindowFullscreen(){
@@ -201,6 +218,7 @@ public class Core{
 
     /**
      * Check if window is currently hidden
+     *
      * @return <code>true</code> if window is hidden
      */
     public boolean IsWindowHidden(){
@@ -229,6 +247,7 @@ public class Core{
 
     /**
      * Check if one specific window flag is enabled
+     *
      * @param flag Window flag to be checked
      * @return <code>true</code> if flag is enabled
      */
@@ -243,42 +262,40 @@ public class Core{
         // NOTE: glfwSetWindowMonitor() doesn't work properly (bugs)
         if (!window.fullscreen){
             // Store previous window position (in case we exit fullscreen)
-            nglfwGetWindowPos(window.handle, (long) window.position.x, (long) window.position.y);
+            glfwGetWindowPos(window.handle, new int[]{(int) window.position.x}, new int[]{(int) window.position.y});
 
-            long monitor = glfwGetWindowMonitor(window.handle);
+            int monitorCount = 0;
+            PointerBuffer monitors = glfwGetMonitors();
+            int monitorIndex = GetCurrentMonitor();
+            long monitor = monitorIndex < monitorCount ? monitors.get(monitorIndex) : null;
+
             if (monitor <= 0){
                 Tracelog(LOG_WARNING, "GLFW: Failed to get monitor");
-                glfwSetWindowSizeCallback(window.handle, sizeCallback = new Callbacks.WindowSizeCallback());
-                glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.getWidth(),
-                        window.screen.getHeight(), GLFW_DONT_CARE);
-                glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback()); // NOTE: Resizing not allowed by default!);
+                window.setFullscreen(false);
+                window.flags &= ~FLAG_FULLSCREEN_MODE.getFlag();
+
+                glfwSetWindowMonitor(window.handle, GetCurrentMonitor(), 0 ,0, window.screen.getWidth(),
+                        window.screen.getHeight(), GLFW_DONT_CARE); // NOTE: Resizing not allowed by default!);
                 return;
             }
 
-            GLFWVidMode mode = glfwGetVideoMode(monitor);
-            glfwSetWindowSizeCallback(window.handle, sizeCallback = new Callbacks.WindowSizeCallback());
-            glfwSetWindowMonitor(window.handle, monitor, 0, 0, window.screen.getWidth(), window.screen.getHeight(),
-                    GLFW_DONT_CARE);
-            glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback()); // NOTE: Resizing not allowed by default!);
+            window.setFullscreen(true);
+            window.flags |= FLAG_FULLSCREEN_MODE.getFlag();
 
-            // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
-            // NOTE: V-Sync can be enabled by graphic driver configuration
-            if ((window.flags & FLAG_VSYNC_HINT.getFlag()) == 0){
-                glfwSwapInterval(1);
-            }
+            glfwSetWindowMonitor(window.handle, monitor, 0,0,window.screen.getWidth(), window.screen.getHeight(),
+                    GLFW_DONT_CARE);
         }
         else{
-            glfwSetWindowSizeCallback(window.handle, null);
-            glfwSetWindowMonitor(window.handle, 0, (int) window.position.getX(), (int) window.position.getY(),
-                    window.screen.getWidth(),
-                    window.screen.getHeight(), GLFW_DONT_CARE);
-            glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback());
-            // NOTE: Resizing not allowed by default!);
+           window.setFullscreen(false);
+           window.flags &= ~FLAG_FULLSCREEN_MODE.getFlag();
+
+           glfwSetWindowMonitor(window.handle, 0, (int)window.position.getX(),(int)window.position.getY(),
+                   window.screen.getWidth(), window.screen.getHeight(), GLFW_DONT_CARE);
         }
 
-        window.fullscreen = !window.fullscreen;          // Toggle fullscreen flag
-        window.flags ^= FLAG_FULLSCREEN_MODE.getFlag();
-
+        if ((window.flags & FLAG_VSYNC_HINT.getFlag()) == 1){
+            glfwSwapInterval(1);
+        }
     }
 
     /**
@@ -485,7 +502,7 @@ public class Core{
     // Set icon for window (only PLATFORM_DESKTOP)
     // NOTE: Image must be in RGBA format, 8bit per channel
     public void SetWindowIcon(Image image){
-        if (image.getFormat() == UNCOMPRESSED_R8G8B8A8.getPixForInt()){
+        if (image.getFormat() == PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
             GLFWImage[] icon = new GLFWImage[1];
 
             icon[0].width(image.getWidth());
@@ -542,27 +559,34 @@ public class Core{
 
     /**
      * Get current screen width
+     *
      * @return Width of current window
      */
     public static int GetScreenWidth(){
-        return window.screen.getWidth();
+        return window.currentFbo.getWidth();
     }
 
     /**
      * Get current screen height
+     *
      * @return Height of current window
      */
     public static int GetScreenHeight(){
-        return window.screen.getHeight();
+        return window.currentFbo.getHeight();
     }
 
     // Get native window handle
-    long GetWindowHandle(){
-        return glfwGetWin32Window(window.handle);
+    public long GetWindowHandle(){
+        if(__WINDOWS__){
+            return glfwGetWin32Window(window.handle);
+        }
+        else{
+            return 0;
+        }
     }
 
     // Get number of monitors
-    int GetMonitorCount(){
+    public int GetMonitorCount(){
         int monitorCount = 0;
         PointerBuffer pb = glfwGetMonitors();
         monitorCount = pb.sizeof();
@@ -570,7 +594,7 @@ public class Core{
     }
 
     // Get number of monitors
-    int GetCurrentMonitor(){
+    public int GetCurrentMonitor(){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
         monitorCount = monitors.sizeof();
@@ -630,7 +654,7 @@ public class Core{
 
     // Get selected monitor width (max available by monitor)
     int GetMonitorWidth(int monitor){
-        int monitorCount = 0;
+        int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
         monitorCount = monitors.sizeof();
 
@@ -776,6 +800,7 @@ public class Core{
 
     /**
      * Clear window background
+     *
      * @param color Color to fill the background
      */
     public void ClearBackground(Color color){
@@ -803,7 +828,7 @@ public class Core{
      */
     public void EndDrawing(){
 
-        rlglDraw();                     // Draw Buffers (Only OpenGL 3+ and ES2)
+        rlgl.rlDrawRenderBatchActive();                     // Draw Buffers (Only OpenGL 3+ and ES2)
         SwapBuffers();                  // Copy back buffer to front buffer
 
         // Frame time control system
@@ -815,7 +840,7 @@ public class Core{
 
         // Wait for some milliseconds...
         if (time.frame < time.target){
-            Wait((float) ((time.target - time.frame)*1000.0f));
+            Wait((float) ((time.target - time.frame) * 1000.0f));
 
             time.current = GetTime();
             double waitTime = time.current - time.previous;
@@ -829,7 +854,7 @@ public class Core{
 
     // Initialize 2D mode with custom camera (2D)
     public void BeginMode2D(Camera2D camera){
-        rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlLoadIdentity();                   // Reset current matrix (modelview)
 
@@ -842,15 +867,15 @@ public class Core{
 
     // Ends 2D mode with custom camera
     public void EndMode2D(){
-        rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlLoadIdentity();                   // Reset current matrix (modelview)
         rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
     }
 
     // Initializes 3D mode with custom camera (3D)
-    void BeginMode3D(Camera3D camera){
-        rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+    public void BeginMode3D(Camera3D camera){
+        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
         rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
@@ -858,14 +883,14 @@ public class Core{
 
         float aspect = (float) window.currentFbo.getWidth() / (float) window.currentFbo.getHeight();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.projection == CAMERA_PERSPECTIVE){
             // Setup perspective projection
             double top = RL_CULL_DISTANCE_NEAR * Math.tan(camera.getFovy() * 0.5 * DEG2RAD);
             double right = top * aspect;
 
             rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.projection == CAMERA_ORTHOGRAPHIC){
             // Setup orthographic projection
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -886,8 +911,8 @@ public class Core{
     }
 
     // Ends 3D mode and returns to default 2D orthographic mode
-    void EndMode3D(){
-        rlglDraw();                         // Process internal buffers (update + draw)
+    public void EndMode3D(){
+        rlgl.rlDrawRenderBatchActive();                         // Process internal buffers (update + draw)
 
         rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
         rlPopMatrix();                      // Restore previous matrix (projection) from matrix stack
@@ -902,7 +927,7 @@ public class Core{
 
     // Initializes render texture for drawing
     void BeginTextureMode(RenderTexture target){
-        rlglDraw();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlEnableFramebuffer(target.getId());     // Enable render target
 
@@ -929,7 +954,7 @@ public class Core{
 
     // Ends drawing to render texture
     void EndTextureMode(){
-        rlglDraw();                 // Draw Buffers (Only OpenGL 3+ and ES2)
+        rlgl.rlDrawRenderBatchActive();                 // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlDisableFramebuffer();     // Disable render target (fbo)
 
@@ -941,10 +966,35 @@ public class Core{
         window.currentFbo.setHeight(GetScreenHeight());
     }
 
+    // Begin custom shader mode
+    public void BeginShaderMode(Shader shader)
+    {
+        rlgl.rlSetShader(shader);
+    }
+
+    // End custom shader mode (returns to default shader)
+    public void EndShaderMode()
+    {
+        rlgl.rlSetShader(rlgl.rlGetShaderDefault());
+    }
+
+    // Begin blending mode (alpha, additive, multiplied)
+// NOTE: Only 3 blending modes supported, default blend mode is alpha
+    void BeginBlendMode(int mode)
+    {
+        rlgl.rlSetBlendMode(mode);
+    }
+
+    // End blending mode (reset to default: alpha blending)
+    void EndBlendMode()
+    {
+       rlgl.rlSetBlendMode(BLEND_ALPHA);
+    }
+
     // Begin scissor mode (define screen area for following drawing)
     // NOTE: Scissor rec refers to bottom-left corner, we change it to upper-left
     void BeginScissorMode(int x, int y, int width, int height){
-        rlglDraw(); // Force drawing elements
+        rlgl.rlDrawRenderBatchActive(); // Force drawing elements
 
         rlgl.rlEnableScissorTest();
         rlgl.rlScissor(x, window.currentFbo.getHeight() - (y + height), width, height);
@@ -952,8 +1002,273 @@ public class Core{
 
     // End scissor mode
     void EndScissorMode(){
-        rlglDraw(); // Force drawing elements
+        rlgl.rlDrawRenderBatchActive(); // Force drawing elements
         rlgl.rlDisableScissorTest();
+    }
+
+    // Begin VR drawing configuration
+    void BeginVrStereoMode(VrStereoConfig config){
+        rlgl.rlEnableStereoRenderer();
+
+        // Set stereo render matrices
+        rlSetMatrixProjectionStereo(config.projection[0], config.projection[1]);
+        rlSetMatrixViewOffsetStereo(config.viewOffset[0], config.viewOffset[1]);
+
+    }
+
+    // End VR drawing process (and desktop mirror)
+    void EndVrStereoMode(){
+        rlgl.rlDisableStereoRenderer();
+    }
+
+    // Load VR stereo config for VR simulator device parameters
+    VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device){
+        VrStereoConfig config = new VrStereoConfig();
+
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            // Compute aspect ratio
+            float aspect = ((float) device.gethResolution() * 0.5f) / (float) device.getvResolution();
+
+            // Compute lens parameters
+            float lensShift = (device.hScreenSize * 0.25f - device.lensSeparationDistance * 0.5f) / device.hScreenSize;
+            config.leftLensCenter[0] = 0.25f + lensShift;
+            config.leftLensCenter[1] = 0.5f;
+            config.rightLensCenter[0] = 0.75f - lensShift;
+            config.rightLensCenter[1] = 0.5f;
+            config.leftScreenCenter[0] = 0.25f;
+            config.leftScreenCenter[1] = 0.5f;
+            config.rightScreenCenter[0] = 0.75f;
+            config.rightScreenCenter[1] = 0.5f;
+
+            // Compute distortion scale parameters
+            // NOTE: To get lens max radius, lensShift must be normalized to [-1..1]
+            float lensRadius = Math.abs(-1.0f - 4.0f * lensShift);
+            float lensRadiusSq = lensRadius * lensRadius;
+            float distortionScale = device.lensDistortionValues[0] +
+                    device.lensDistortionValues[1] * lensRadiusSq +
+                    device.lensDistortionValues[2] * lensRadiusSq * lensRadiusSq +
+                    device.lensDistortionValues[3] * lensRadiusSq * lensRadiusSq * lensRadiusSq;
+
+            float normScreenWidth = 0.5f;
+            float normScreenHeight = 1.0f;
+            config.scaleIn[0] = 2.0f / normScreenWidth;
+            config.scaleIn[1] = 2.0f / normScreenHeight / aspect;
+            config.scale[0] = normScreenWidth * 0.5f / distortionScale;
+            config.scale[1] = normScreenHeight * 0.5f * aspect / distortionScale;
+
+            // Fovy is normally computed with: 2*atan2f(device.vScreenSize, 2*device.eyeToScreenDistance)
+            // ...but with lens distortion it is increased (see Oculus SDK Documentation)
+            //float fovy = 2.0f*atan2f(device.vScreenSize*0.5f*distortionScale, device.eyeToScreenDistance);     // Really need distortionScale?
+            float fovy = 2.0f * (float) Math.atan2(device.vScreenSize * 0.5f, device.eyeToScreenDistance);
+
+            // Compute camera projection matrices
+            float projOffset = 4.0f * lensShift;      // Scaled to projection space coordinates [-1..1]
+            Matrix proj = MatrixPerspective(fovy, aspect, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+
+            config.projection[0] = MatrixMultiply(proj, MatrixTranslate(projOffset, 0.0f, 0.0f));
+            config.projection[1] = MatrixMultiply(proj, MatrixTranslate(-projOffset, 0.0f, 0.0f));
+
+            // Compute camera transformation matrices
+            // NOTE: Camera movement might seem more natural if we model the head.
+            // Our axis of rotation is the base of our head, so we might want to add
+            // some y (base of head to eye level) and -z (center of head to eye protrusion) to the camera positions.
+            config.viewOffset[0] = MatrixTranslate(-device.interpupillaryDistance * 0.5f, 0.075f, 0.045f);
+            config.viewOffset[1] = MatrixTranslate(device.interpupillaryDistance * 0.5f, 0.075f, 0.045f);
+
+            // Compute eyes Viewports
+            /*
+            config.eyeViewportRight[0] = 0;
+            config.eyeViewportRight[1] = 0;
+            config.eyeViewportRight[2] = device.hResolution/2;
+            config.eyeViewportRight[3] = device.vResolution;
+
+            config.eyeViewportLeft[0] = device.hResolution/2;
+            config.eyeViewportLeft[1] = 0;
+            config.eyeViewportLeft[2] = device.hResolution/2;
+            config.eyeViewportLeft[3] = device.vResolution;
+            */
+        }
+        else{
+            Tracelog(LOG_WARNING, "RLGL: VR Simulator not supported on OpenGL 1.1");
+        }
+
+        return config;
+    }
+
+    // Unload VR stereo config properties
+    void UnloadVrStereoConfig(VrStereoConfig config){
+        //...
+    }
+
+    public Shader LoadShader(String vsFileName, String fsFileName){
+        Shader shader = new Shader();
+        shader.locs = new int[MAX_SHADER_LOCATIONS];
+
+        // NOTE: All locations must be reseted to -1 (no location)
+        for (int i = 0; i < MAX_SHADER_LOCATIONS; i++) shader.locs[i] = -1;
+
+        String vShaderStr = null;
+        String fShaderStr = null;
+
+        if (vsFileName != null){
+            try{
+                vShaderStr = LoadFileText(vsFileName);
+                fShaderStr = LoadFileText(fsFileName);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        shader.setId(rlgl.rlLoadShaderCode(vShaderStr, fShaderStr).getId());
+
+        // After shader loading, we TRY to set default location names
+        if (shader.getId() > 0)
+        {
+            // Default shader attrib locations have been fixed before linking:
+            //          vertex position location    = 0
+            //          vertex texcoord location    = 1
+            //          vertex normal location      = 2
+            //          vertex color location       = 3
+            //          vertex tangent location     = 4
+            //          vertex texcoord2 location   = 5
+
+            // NOTE: If any location is not found, loc point becomes -1
+
+            // Get handles to GLSL input attibute locations
+            shader.locs[SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_POSITION);
+            shader.locs[SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
+            shader.locs[SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
+            shader.locs[SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
+            shader.locs[SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
+            shader.locs[SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_COLOR);
+
+            // Get handles to GLSL uniform locations (vertex shader)
+            shader.locs[SHADER_LOC_MATRIX_MVP] = rlgl.rlGetLocationUniform(shader.getId(), "mvp");
+            shader.locs[SHADER_LOC_MATRIX_VIEW] = rlgl.rlGetLocationUniform(shader.getId(), "view");
+            shader.locs[SHADER_LOC_MATRIX_PROJECTION] = rlgl.rlGetLocationUniform(shader.getId(), "projection");
+            shader.locs[SHADER_LOC_MATRIX_NORMAL] = rlgl.rlGetLocationUniform(shader.getId(), "matNormal");
+
+            // Get handles to GLSL uniform locations (fragment shader)
+            shader.locs[SHADER_LOC_COLOR_DIFFUSE] = rlgl.rlGetLocationUniform(shader.getId(), "colDiffuse");
+            shader.locs[SHADER_LOC_MAP_DIFFUSE] = rlgl.rlGetLocationUniform(shader.getId(), "texture0");
+            shader.locs[SHADER_LOC_MAP_SPECULAR] = rlgl.rlGetLocationUniform(shader.getId(), "texture1");
+            shader.locs[SHADER_LOC_MAP_NORMAL] = rlgl.rlGetLocationUniform(shader.getId(), "texture2");
+        }
+
+        return shader;
+    }
+
+    // Load shader from code strings and bind default locations
+    public Shader LoadShaderFromMemory(String vsCode, String fsCode)
+    {
+        Shader shader = new Shader();
+        shader.locs = new int[MAX_SHADER_LOCATIONS];
+
+        shader.setId(rlgl.rlLoadShaderCode(vsCode, fsCode).getId());
+
+        // After shader loading, we TRY to set default location names
+        if (shader.getId() > 0)
+        {
+            // Default shader attrib locations have been fixed before linking:
+            //          vertex position location    = 0
+            //          vertex texcoord location    = 1
+            //          vertex normal location      = 2
+            //          vertex color location       = 3
+            //          vertex tangent location     = 4
+            //          vertex texcoord2 location   = 5
+
+            // NOTE: If any location is not found, loc point becomes -1
+
+            // Get handles to GLSL input attibute locations
+            shader.locs[SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_POSITION);
+            shader.locs[SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
+            shader.locs[SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
+            shader.locs[SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
+            shader.locs[SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
+            shader.locs[SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
+                    DEFAULT_SHADER_ATTRIB_NAME_COLOR);
+
+            // Get handles to GLSL uniform locations (vertex shader)
+            shader.locs[SHADER_LOC_MATRIX_MVP]  = rlgl.rlGetLocationUniform(shader.getId(), "mvp");
+            shader.locs[SHADER_LOC_MATRIX_PROJECTION]  = rlgl.rlGetLocationUniform(shader.getId(),
+                    "projection");
+            shader.locs[SHADER_LOC_MATRIX_VIEW]  = rlgl.rlGetLocationUniform(shader.getId(), "view");
+
+            // Get handles to GLSL uniform locations (fragment shader)
+            shader.locs[SHADER_LOC_COLOR_DIFFUSE] = rlgl.rlGetLocationUniform(shader.getId(),
+                    "colDiffuse");
+            shader.locs[SHADER_LOC_MAP_DIFFUSE] = rlgl.rlGetLocationUniform(shader.getId(),
+                    "texture0");
+            shader.locs[SHADER_LOC_MAP_SPECULAR] = rlgl.rlGetLocationUniform(shader.getId(),
+                    "texture1");
+            shader.locs[SHADER_LOC_MAP_NORMAL] = rlgl.rlGetLocationUniform(shader.getId(),
+                    "texture2");
+        }
+
+        return shader;
+    }
+
+    // Unload shader from GPU memory (VRAM)
+    public void UnloadShader(Shader shader)
+    {
+        if (shader.getId() != rlgl.rlGetShaderDefault().getId())
+        {
+            rlgl.rlUnloadShaderProgram(shader.getId());
+            shader.setLocs(null);
+        }
+    }
+
+    // Get shader uniform location
+    public int GetShaderLocation(Shader shader, String uniformName)
+    {
+        return rlgl.rlGetLocationUniform(shader.getId(), uniformName);
+    }
+
+    // Get shader attribute location
+    public int GetShaderLocationAttrib(Shader shader, String attribName)
+    {
+        return rlgl.rlGetLocationAttrib(shader, attribName);
+    }
+
+    // Set shader uniform value
+    public void SetShaderValue(Shader shader, int locIndex, float[] value, int uniformType)
+    {
+        SetShaderValueV(shader, locIndex, value, uniformType,1);
+    }
+
+    // Set shader uniform value vector
+    public void SetShaderValueV(Shader shader, int locIndex,  float[] value, int uniformType, int count)
+    {
+        rlgl.rlEnableShader(shader.getId());
+        rlgl.rlSetUniform(locIndex, value, uniformType, count);
+        //rlDisableShader();      // Avoid reseting current shader program, in case other uniforms are set
+    }
+
+    // Set shader uniform value (matrix 4x4)
+    public void SetShaderValueMatrix(Shader shader, int locIndex, Matrix mat)
+    {
+        rlgl.rlEnableShader(shader.getId());
+        rlgl.rlSetUniformMatrix(locIndex, mat);
+        //rlDisableShader();
+    }
+
+    // Set shader uniform value for texture
+    public void SetShaderValueTexture(Shader shader, int locIndex, Texture2D texture)
+    {
+        rlgl.rlEnableShader(shader.getId());
+        rlgl.rlSetUniformSampler(locIndex, texture.getId());
+        //rlDisableShader();
     }
 
     // Returns a ray trace from mouse position
@@ -974,12 +1289,12 @@ public class Core{
 
         Matrix matProj = MatrixIdentity();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.projection == CAMERA_PERSPECTIVE){
             // Calculate projection matrix from perspective
             matProj = MatrixPerspective(camera.getFovy() * DEG2RAD,
                     ((double) GetScreenWidth() / (double) GetScreenHeight()), RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.projection == CAMERA_ORTHOGRAPHIC){
             float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -1003,10 +1318,10 @@ public class Core{
         // Calculate normalized direction vector
         Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.projection == CAMERA_PERSPECTIVE){
             ray.position = camera.getPosition();
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.projection == CAMERA_ORTHOGRAPHIC){
             ray.position = cameraPlanePointerPos;
         }
 
@@ -1023,6 +1338,7 @@ public class Core{
 
     /**
      * Returns camera 2d transform matrix
+     *
      * @param camera
      * @return Transform matrix
      */
@@ -1063,12 +1379,12 @@ public class Core{
         // Calculate projection matrix (from perspective instead of frustum
         Matrix matProj = MatrixIdentity();
 
-        if (camera.getType() == CAMERA_PERSPECTIVE.getCamType()){
+        if (camera.projection == CAMERA_PERSPECTIVE){
             // Calculate projection matrix from perspective
             matProj = MatrixPerspective(camera.getFovy() * DEG2RAD, ((double) width / (double) height),
                     RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
-        else if (camera.getType() == CAMERA_ORTHOGRAPHIC.getCamType()){
+        else if (camera.projection == CAMERA_ORTHOGRAPHIC){
             float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
             double top = camera.getFovy() / 2.0;
             double right = top * aspect;
@@ -1101,7 +1417,7 @@ public class Core{
     }
 
     // Returns the screen space position for a 2d camera world space position
-    Vector2 GetWorldToScreen2D(Vector2 position, Camera2D camera){
+    public Vector2 GetWorldToScreen2D(Vector2 position, Camera2D camera){
         Matrix matCamera = GetCameraMatrix2D(camera);
         Vector3 transform = Vector3Transform(new Vector3(position.getX(), position.getY(), 0), matCamera);
 
@@ -1109,7 +1425,7 @@ public class Core{
     }
 
     // Returns the world space position for a 2d camera screen space position
-    Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera){
+    public Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera){
         Matrix invMatCamera = MatrixInvert(GetCameraMatrix2D(camera));
         Vector3 transform = Vector3Transform(new Vector3(position.getX(), position.getY(), 0), invMatCamera);
 
@@ -1118,6 +1434,7 @@ public class Core{
 
     /**
      * Set target FPS (maximum)
+     *
      * @param fps FPS limit
      */
     public void SetTargetFPS(int fps){
@@ -1134,6 +1451,7 @@ public class Core{
     /**
      * Returns current FPS
      * NOTE: We calculate an average framerate
+     *
      * @return Current average framerate
      */
     public static int GetFPS(){
@@ -1162,6 +1480,7 @@ public class Core{
 
     /**
      * Returns time in seconds for last frame drawn
+     *
      * @return Seconds taken for last frame
      */
     public static float GetFrameTime(){
@@ -1172,6 +1491,7 @@ public class Core{
      * Get elapsed time measure in seconds since InitTimer()
      * NOTE: On PLATFORM_DESKTOP InitTimer() is called on InitWindow()
      * NOTE: On PLATFORM_DESKTOP, timer is initialized on glfwInit()
+     *
      * @return Time program has been running in seconds
      */
     static double GetTime(){
@@ -1188,10 +1508,26 @@ public class Core{
         window.flags |= flags.getFlag();
     }
 
-    //TakeScreenShot
+    // Takes a screenshot of current screen (saved a .png)
+    // NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB
+    // have their own internal file-systems, to dowload image to user file-system some additional mechanism is required
+    /*TODO
+    void TakeScreenshot(String fileName) {
+        short[] imgData = rlReadScreenPixels(window.render.width, window.render.height);
+        Image image = new Image(imgData, window.render.width, window.render.height, 1,
+            PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
+        String path = "";
+
+        ExportImage(image, path);
+
+        // TODO: Verification required for log
+        Tracelog(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
+    }*/
 
     /**
      * Returns a random value between min and max (both included)
+     *
      * @param min Minimum value of random number
      * @param max Maximum value of random number
      * @return Random value between the <code>min/code> and <code>max</code>
@@ -1218,11 +1554,13 @@ public class Core{
 
     //DirectoryExists
 
-    //GetFileExtension
+    public static String GetFileExtension(String fileName){
+        return fileName.substring(fileName.lastIndexOf('.'));
+    }
 
     //StrPrBrk
 
-    //GetFileName
+    //GetDirectoryPath
 
     //GetFileNameWithoutExt
 
@@ -1271,42 +1609,18 @@ public class Core{
     // Module Functions Definition - Input (Keyboard, Mouse, Gamepad) Functions
     //----------------------------------------------------------------------------------
     // Detect if a key has been pressed once
-    public boolean IsKeyPressed(Keyboard.KeyboardKey key){
-        int kkey = key.getKeyInt();
-
-        return ((!input.keyboard.getPreviousKeyState()[kkey]) && (input.keyboard.getCurrentKeyState()[kkey]));
-
-    }
-
     public boolean IsKeyPressed(int key){
         return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
-
     }
 
     // Detect if a key is being pressed (key held down)
-    public static boolean IsKeyDown(Keyboard.KeyboardKey key){
-        return input.keyboard.getCurrentKeyState()[key.getKeyInt()];
-    }
-
     public static boolean IsKeyDown(int key){
         return input.keyboard.getCurrentKeyState()[key];
     }
 
     // Detect if a key has been released once
-    public boolean IsKeyReleased(Keyboard.KeyboardKey key){
-        int kkey = key.getKeyInt();
-
-        return (input.keyboard.getPreviousKeyState()[kkey] && !input.keyboard.getCurrentKeyState()[kkey]);
-    }
-
-    // Detect if a key has been released once
     public boolean IsKeyReleased(int key){
         return (input.keyboard.getPreviousKeyState()[key] && !input.keyboard.getCurrentKeyState()[key]);
-    }
-
-    // Detect if a key is NOT being pressed (key not held down)
-    public boolean IsKeyUp(Keyboard.KeyboardKey key){
-        return !input.keyboard.getCurrentKeyState()[key.getKeyInt()];
     }
 
     // Detect if a key is NOT being pressed (key not held down)
@@ -1358,8 +1672,8 @@ public class Core{
 
     // Set a custom key to exit program
     // NOTE: default exitKey is ESCAPE
-    public void SetExitKey(Keyboard.KeyboardKey key){
-        input.keyboard.setExitKey(key.getKeyInt());
+    public void SetExitKey(int key){
+        input.keyboard.setExitKey(key);
     }
 
     /*
@@ -1491,25 +1805,6 @@ public class Core{
      */
 
     // Detect if a mouse button has been pressed once
-    public boolean IsMouseButtonPressed(Mouse.MouseButton button){
-        boolean pressed = false;
-
-        if ((input.mouse.getCurrentButtonState()[button.getButtonInt()] == 1) &&
-                (input.mouse.getPreviousButtonState()[button.getButtonInt()] == 0)){
-            pressed = true;
-        }
-
-        /* TODO: Touch support - MODULE GESTURES
-        // Map touches to mouse buttons checking
-        if ((input.touch.currentTouchState[button] == 1) && (input.touch.previousTouchState[button] == 0)){
-            pressed = true;
-        }
-        */
-
-        return pressed;
-    }
-
-    // Detect if a mouse button has been pressed once
     public boolean IsMouseButtonPressed(int button){
         boolean pressed = false;
 
@@ -1526,23 +1821,6 @@ public class Core{
         */
 
         return pressed;
-    }
-
-    // Detect if a mouse button is being pressed
-    public static boolean IsMouseButtonDown(Mouse.MouseButton button){
-        boolean down = false;
-
-        if (input.mouse.getCurrentButtonState()[button.getButtonInt()] == 1){
-            down = true;
-        }
-
-        /*
-        TODO: Touch support - MODULE GESTURES
-        Map touches to mouse buttons checking
-        if (input.Touch.currentTouchState[button] == 1) down = true;
-        */
-
-        return down;
     }
 
     // Detect if a mouse button is being pressed
@@ -1563,25 +1841,6 @@ public class Core{
     }
 
     // Detect if a mouse button has been released once
-    public boolean IsMouseButtonReleased(Mouse.MouseButton button){
-        boolean released = false;
-
-        if ((input.mouse.getCurrentButtonState()[button.getButtonInt()] == 0) &&
-                (input.mouse.getCurrentButtonState()[button.getButtonInt()] == 1)){
-            released = true;
-        }
-
-        /*
-        TODO: Touch support - MODULE GESTURES
-        Map touches to mouse buttons checking
-        if ((input.Touch.currentTouchState[button] == 0) && (input.Touch.previousTouchState[button] == 1)){
-            released = true;
-        }
-         */
-        return released;
-    }
-
-    // Detect if a mouse button has been released once
     public boolean IsMouseButtonReleased(int button){
         boolean released = false;
 
@@ -1598,11 +1857,6 @@ public class Core{
         }
          */
         return released;
-    }
-
-    // Detect if a mouse button is NOT being pressed
-    public boolean IsMouseButtonUp(Mouse.MouseButton button){
-        return !IsMouseButtonDown(button);
     }
 
     // Detect if a mouse button is NOT being pressed
@@ -1673,16 +1927,11 @@ public class Core{
         return input.mouse.getPreviousWheelMove();
     }
 
-    // Returns mouse cursor
-    public long GetMouseCursor(){
-        return input.mouse.getCursor();
-    }
-
     // Set mouse cursor
     // NOTE: This is a no-op on platforms other than PLATFORM_DESKTOP
     public void SetMouseCursor(int cursor){
         input.mouse.setCursor(cursor);
-        if (cursor == MOUSE_CURSOR_DEFAULT.getMouseCursorInt()){
+        if (cursor == MOUSE_CURSOR_DEFAULT){
             glfwSetCursor(window.handle, 0);
         }
         else{
@@ -1883,15 +2132,15 @@ public class Core{
 
         // Check selection OpenGL version
 
-        if (RLGL.rlGetVersion() == OPENGL_21.getGlType()){
+        if (RLGL.rlGetVersion() == OPENGL_21){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);          // Choose OpenGL minor version (just hint)
         }
-        else if (RLGL.rlGetVersion() == OPENGL_33.getGlType()){
+        else if (RLGL.rlGetVersion() == OPENGL_33){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);          // Choose OpenGL minor version (just hint)
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Profiles Hint: Only 3.3 and above!
-            if(__APPLE__){
+            if (__APPLE__){
                 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
             }
             else{
@@ -1899,14 +2148,14 @@ public class Core{
             }
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
-        else if(RLGL.rlGetVersion() == OPENGL_ES_20.getGlType()){
+        else if (RLGL.rlGetVersion() == OPENGL_ES_20){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-            if(PLATFORM_DESKTOP){
+            if (PLATFORM_DESKTOP){
                 glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
             }
-            else {
+            else{
                 glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
             }
         }
@@ -1921,10 +2170,10 @@ public class Core{
             window.position.setX(window.display.getWidth() / 2 - window.screen.getWidth() / 2);
             window.position.setY(window.display.getHeight() / 2 - window.screen.getHeight() / 2);
 
-            if (window.position.getX() < 0) {
+            if (window.position.getX() < 0){
                 window.position.setX(0);
             }
-            if (window.position.getX() < 0) {
+            if (window.position.getX() < 0){
                 window.position.setY(0);
             }
 
@@ -2028,14 +2277,6 @@ public class Core{
         //TODO - rlLoadExtensions uses GLAD.
         //rlLoadExtensions(glfwGetProcAddress());
         rlLoadExtensions();
-
-        // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
-        // NOTE: V-Sync can be enabled by graphic driver configuration
-        if ((window.getFlags() & FLAG_VSYNC_HINT.getFlag()) > 0){
-            // WARNING: It seems to hits a critical render path in Intel HD Graphics
-            glfwSwapInterval(1);
-            Tracelog(LOG_INFO, "DISPLAY: Trying to enable VSYNC");
-        }
 
         // Initialize OpenGL context (states and resources)
         // NOTE: window.screen.getWidth() and window.screen.getHeight() not used, just stored as globals in rlgl
@@ -2174,30 +2415,30 @@ public class Core{
 
     /**
      * Wait for some milliseconds (stop program execution)
+     *
      * @param ms Time to wait in milliseconds
      */
     void Wait(float ms){
-        if(SUPPORT_BUSY_WAIT_LOOP){
+        if (SUPPORT_WINMM_HIGHRES_TIMER){
             double prevTime = GetTime();
             double nextTime = 0.0;
 
             // Busy wait loop
-            while ((nextTime - prevTime) < ms/1000.0f){
+            while ((nextTime - prevTime) < ms / 1000.0f){
                 nextTime = GetTime();
             }
         }
         else{
-            if(SUPPORT_HALFBUSY_WAIT_LOOP){
+            if (SUPPORT_HALFBUSY_WAIT_LOOP){
                 int MAX_HALFBUSY_WAIT_TIME = 4;
-                double destTime = GetTime() + ms/1000;
+                double destTime = GetTime() + ms / 1000;
                 if (ms > MAX_HALFBUSY_WAIT_TIME) ms -= MAX_HALFBUSY_WAIT_TIME;
             }
         }
     }
 
     /**
-     *
-     Poll (store) all input events
+     * Poll (store) all input events
      */
     void PollInputEvents(){
         // Reset keys/chars pressed registered

@@ -7,7 +7,7 @@ import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.textures.Textures;
 
 import static com.creedvi.raylib.java.rlj.core.Color.*;
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_SPACE;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_SPACE;
 
 public class ColourPalette{
 

@@ -7,7 +7,7 @@ public class Config{
      * This file defines all the configuration flags for the different raylib modules
      */
 
-    public static final String RAYLIB_VERSION = "3.5";
+    public static final String RAYLIB_VERSION = "3.7";
 
     //------------------------------------------------------------------------------------
     // Module: core - Configuration Flags
@@ -43,7 +43,7 @@ public class Config{
     /**
      * Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
      */
-    public static boolean SUPPORT_BUSY_WAIT_LOOP = false;
+    public static boolean SUPPORT_WINMM_HIGHRES_TIMER = false;
     /**
      * Use a half-busy wait loop, in this case frame sleeps for some time and runs a busy-wait-loop at the end
      */
@@ -69,7 +69,7 @@ public class Config{
      */
     static boolean SUPPORT_DATA_STORAGE = true;
     /**
-     * Support standard file IO functions in utils.Files.java
+     * Support standard file IO functions in utils.File.java
      */
     public static boolean SUPPORT_STANDARD_FILEIO = true;
 
@@ -98,7 +98,7 @@ public class Config{
 
     // rlgl: Configuration values
     //------------------------------------------------------------------------------------
-
+    public final static boolean SUPPORT_GL_DETAILS_INFO = false;
     public final static int DEFAULT_BATCH_BUFFER_ELEMENTS = 8192;    // Default internal render batch limits
     final static int ES2_DEFAULT_BATCH_BUFFER_ELEMENTS = 2048;    // Default internal render batch limits
 
@@ -149,12 +149,13 @@ public class Config{
     // Module: textures - Configuration Flags
     //------------------------------------------------------------------------------------
     // Selecte desired fileformats to be supported for image data loading
-    static boolean SUPPORT_FILEFORMAT_PNG = true;
-    //#static int SUPPORT_FILEFORMAT_BMP      1
-    //#define SUPPORT_FILEFORMAT_TGA      1
-    //#define SUPPORT_FILEFORMAT_JPG      1
-    static boolean SUPPORT_FILEFORMAT_GIF = true;
-    //#define SUPPORT_FILEFORMAT_PSD      1
+    public static boolean SUPPORT_FILEFORMAT_PNG = true;
+    public static boolean SUPPORT_FILEFORMAT_BMP = true;
+    public static boolean SUPPORT_FILEFORMAT_TGA = true;
+    public static boolean SUPPORT_FILEFORMAT_JPG = true;
+    public static boolean SUPPORT_FILEFORMAT_GIF = true;
+    public static boolean SUPPORT_FILEFORMAT_PIC = true;
+    public static boolean SUPPORT_FILEFORMAT_PSD = true;
     static boolean SUPPORT_FILEFORMAT_DDS = true;
     static boolean SUPPORT_FILEFORMAT_HDR = true;
     //#define SUPPORT_FILEFORMAT_KTX      1
@@ -187,11 +188,11 @@ public class Config{
     /**
      * Selected .fnt to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_FNT = true;
+    public static boolean SUPPORT_FILEFORMAT_FNT = true;
     /**
      * Selected .ttf to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_TTF = true;
+    public static boolean SUPPORT_FILEFORMAT_TTF = true;
 
     /**
      * Support text management functions
@@ -363,7 +364,7 @@ public class Config{
      * @param supportBusyWaitLoop flag for support
      */
     public void setSupportBusyWaitLoop(boolean supportBusyWaitLoop){
-        SUPPORT_BUSY_WAIT_LOOP = supportBusyWaitLoop;
+        SUPPORT_WINMM_HIGHRES_TIMER = supportBusyWaitLoop;
     }
 
     /**

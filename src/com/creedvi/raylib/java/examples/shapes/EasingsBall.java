@@ -5,8 +5,7 @@ import com.creedvi.raylib.java.rlj.core.Color;
 import com.creedvi.raylib.java.rlj.textures.Textures;
 import com.creedvi.raylib.java.rlj.utils.Easings;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_ENTER;
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KeyboardKey.KEY_R;
+import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
 
 public class EasingsBall{
 
