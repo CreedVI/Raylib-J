@@ -29,7 +29,7 @@ public class LogoRaylib{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - texture loading and drawing");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-        Texture2D texture = rlj.textures.LoadTexture("logo/raylib-j_128x128.png");        // Texture loading
+        Texture2D texture = rlj.textures.LoadTexture("logo/raylib-j_256x256.png");        // Texture loading
         //---------------------------------------------------------------------------------------
 
         // Main game loop

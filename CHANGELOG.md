@@ -1,9 +1,8 @@
 
-# Push: 
+# Push: 188b803
 
 <hr>
 
-* Second alpha build
 * Updated to Raylib 3.7
 * New Features:
     - Working 2D Camera system.

@@ -110,7 +110,7 @@ public class Textures{
                     fileExtLower.equals(".pic") || fileExtLower.equals(".psd")){
 
                 if (fileData != null){
-                    int comp = 4;
+                    int comp = 3;
                     //TODO: figure out setting the img properties
                     image.setData(fileData);
                     image.mipmaps = 1;
