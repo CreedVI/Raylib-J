@@ -49,12 +49,7 @@ public class Text{
      * @return <code>true</code> if bit at b is set to 1
      */
     private static boolean BitCheck(int a, int b){
-        /*if (a == 0x0002085e){
-            System.out.print(a +", "+ b);
-            System.out.print(" | "+((a) & (1 << (b))) +", "+(int)Math.pow(2,b)+" | ");
-            System.out.println(((a) & (1 << (b))) == (int)Math.pow(2,b));
-        }*/
-        return ((a) & (1 << (b))) == (int)Math.pow(2,b);
+        return ((a) & (1L << (b))) == (long)Math.pow(2,b);
     }
 
     public static void LoadFontDefault(){
@@ -135,31 +130,25 @@ public class Text{
         imFont.setMipmaps(1);
 
         short[] fontdata = new short[128 * 128];  // 2 bytes per pixel (gray + alpha)
-        StringBuilder sb = new StringBuilder();
 
         //Fill image.data with defaultFontData (convert from bit to pixel!)
         for (int i = 0, counter = 0; i < imFont.getWidth() * imFont.getHeight(); i += 32){
+            if(i !=0)
+                System.out.println(i);
             for (int j = 31; j >= 0; j--){
                 if (BitCheck(defaultFontData[counter], j)){
                     // NOTE: We are unreferencing data as short, so,
                     // we must consider data as little-endian order (alpha + gray)
                     fontdata[i + j] = (short) 0xffff;
-                    sb.append("1, 1 ").append(BitCheck(defaultFontData[counter], j)).append(defaultFontData[counter]).append(", ").append(j).append(" ").append(1 << j).append(" | ");
                 }
                 else{
                     fontdata[i + j] = (short) 0x00ff;
-                    sb.append("1, 0 ").append(BitCheck(defaultFontData[counter], j)).append(defaultFontData[counter]).append(", ").append(j).append(" ").append(1 << j).append(" | ");
-
                 }
             }
             counter++;
-            if (counter%4 == 0)
-                sb.append("\n");
         }
 
         imFont.setData(fontdata);
-
-        //System.out.println(sb.toString());
 
         defaultFont.texture = LoadTextureFromImage(imFont);
 
