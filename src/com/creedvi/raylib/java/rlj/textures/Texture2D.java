@@ -6,7 +6,7 @@ import static com.creedvi.raylib.java.rlj.textures.Textures.LoadTextureFromImage
 
 public class Texture2D{
 
-    int id;                 // OpenGL texture id
+    public int id;                 // OpenGL texture id
     public int width;              // Texture base width
     public int height;             // Texture base height
     int mipmaps;            // Mipmap levels, 1 by default

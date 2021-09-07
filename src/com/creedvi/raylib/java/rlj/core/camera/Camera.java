@@ -2,12 +2,12 @@ package com.creedvi.raylib.java.rlj.core.camera;
 
 import com.creedvi.raylib.java.rlj.core.Core;
 import com.creedvi.raylib.java.rlj.raymath.Matrix;
-import com.creedvi.raylib.java.rlj.raymath.RayMath;
+import com.creedvi.raylib.java.rlj.raymath.Raymath;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.raymath.Vector3;
 
 import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraMode.*;
-import static com.creedvi.raylib.java.rlj.raymath.RayMath.DEG2RAD;
+import static com.creedvi.raylib.java.rlj.raymath.Raymath.DEG2RAD;
 
 public abstract class Camera{
 
@@ -285,10 +285,10 @@ public abstract class Camera{
                 }
 
                 // Recalculate camera target considering translation and rotation
-                Matrix translation = RayMath.MatrixTranslate(0, 0, (CAMERA.targetDistance / CAMERA_FREE_PANNING_DIVIDER));
-                Matrix rotation = RayMath.MatrixRotateXYZ(new Vector3((float) Math.PI * 2 - CAMERA.angle.y,
+                Matrix translation = Raymath.MatrixTranslate(0, 0, (CAMERA.targetDistance / CAMERA_FREE_PANNING_DIVIDER));
+                Matrix rotation = Raymath.MatrixRotateXYZ(new Vector3((float) Math.PI * 2 - CAMERA.angle.y,
                         (float) Math.PI * 2 - CAMERA.angle.x, 0));
-                Matrix transform = RayMath.MatrixMultiply(translation, rotation);
+                Matrix transform = Raymath.MatrixMultiply(translation, rotation);
 
                 camera.target.x = camera.position.x - transform.m12;
                 camera.target.y = camera.position.y - transform.m13;

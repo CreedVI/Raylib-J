@@ -6,8 +6,8 @@ import com.creedvi.raylib.java.rlj.rlgl.RLGL;
 import com.creedvi.raylib.java.rlj.textures.Texture2D;
 
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_QUADS_DRAW_MODE;
-import static com.creedvi.raylib.java.rlj.raymath.RayMath.DEG2RAD;
-import static com.creedvi.raylib.java.rlj.raymath.RayMath.PI;
+import static com.creedvi.raylib.java.rlj.raymath.Raymath.DEG2RAD;
+import static com.creedvi.raylib.java.rlj.raymath.Raymath.PI;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.utils.Easings.EaseCubicInOut;
 

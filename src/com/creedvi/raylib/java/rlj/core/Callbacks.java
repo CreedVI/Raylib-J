@@ -45,10 +45,10 @@ public class Callbacks{
         public void invoke(long window, boolean iconified){
             Tracelog(LOG_DEBUG, "Iconify Callback Triggered");
             if (iconified){
-                Core.getWindow().flags |= FLAG_WINDOW_MINIMIZED.getFlag();  // The window was iconified
+                Core.getWindow().flags |= FLAG_WINDOW_MINIMIZED;  // The window was iconified
             }
             else{
-                Core.getWindow().flags &= ~FLAG_WINDOW_MINIMIZED.getFlag();           // The window was restored
+                Core.getWindow().flags &= ~FLAG_WINDOW_MINIMIZED;           // The window was restored
             }
         }
     }
@@ -57,10 +57,10 @@ public class Callbacks{
         @Override
         public void invoke(long window, boolean maximized){
             if (maximized){
-                Core.getWindow().flags |= FLAG_WINDOW_MAXIMIZED.getFlag();  // The window was maximized
+                Core.getWindow().flags |= FLAG_WINDOW_MAXIMIZED;  // The window was maximized
             }
             else{
-                Core.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED.getFlag();           // The window was restored
+                Core.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED;           // The window was restored
             }
         }
     }
@@ -70,10 +70,10 @@ public class Callbacks{
         public void invoke(long window, boolean focused){
             Tracelog(LOG_DEBUG, "Focus Callback Triggered");
             if (focused){
-                Core.getWindow().flags &= ~FLAG_WINDOW_UNFOCUSED.getFlag();   // The window was focused
+                Core.getWindow().flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
             }
             else{
-                Core.getWindow().flags |= FLAG_WINDOW_UNFOCUSED.getFlag();            // The window lost focus
+                Core.getWindow().flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
             }
         }
     }
@@ -123,7 +123,7 @@ public class Callbacks{
                 // Add character to the queue
                 Core.getInput().keyboard.getCharPressedQueue()[Core.getInput().keyboard.getCharPressedQueueCount()] =
                         codepoint;
-                Core.getInput().keyboard.setCharPressedQueueCount(Core.getInput().keyboard.getKeyPressedQueueCount() + 1);
+                Core.getInput().keyboard.setCharPressedQueueCount(Core.getInput().keyboard.getCharPressedQueueCount() + 1);
             }
         }
     }

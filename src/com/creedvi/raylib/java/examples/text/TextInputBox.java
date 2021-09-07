@@ -11,8 +11,6 @@ import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CUR
 
 public class TextInputBox{
 
-    //todo: fix
-
     final static int MAX_INPUT_CHARS = 9;
     static Raylib rlj;
 
@@ -87,6 +85,8 @@ public class TextInputBox{
             rlj.core.BeginDrawing();
 
             rlj.core.ClearBackground(Color.RAYWHITE);
+
+            rlj.text.DrawFPS(10, 10);
 
             rlj.text.DrawText("PLACE MOUSE OVER INPUT BOX!", 240, 140, 20, Color.GRAY);
 

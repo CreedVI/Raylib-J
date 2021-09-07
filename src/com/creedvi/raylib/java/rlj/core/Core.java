@@ -19,6 +19,7 @@ import com.creedvi.raylib.java.rlj.text.Text;
 import com.creedvi.raylib.java.rlj.textures.Image;
 import com.creedvi.raylib.java.rlj.textures.RenderTexture;
 import com.creedvi.raylib.java.rlj.textures.Texture2D;
+import com.creedvi.raylib.java.rlj.textures.Textures;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -27,6 +28,7 @@ import org.lwjgl.opengl.GL;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 import static com.creedvi.raylib.java.rlj.Config.*;
 import static com.creedvi.raylib.java.rlj.Config.ConfigFlag.*;
@@ -36,7 +38,7 @@ import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.CA
 import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_ESCAPE;
 import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
 import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
-import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
+import static com.creedvi.raylib.java.rlj.raymath.Raymath.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.BlendMode.BLEND_ALPHA;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
@@ -73,6 +75,11 @@ public class Core{
     private Callbacks.WindowFocusCallback focusCallback;
     private Callbacks.WindowDropCallback dropCallback;
     private Callbacks.ErrorCallback errorCallback;
+
+    //Gloabls required for FPS calculation
+    static int index = 0;
+    static float[] history = new float[30]; //FPS_CAPTURE_FRAMEs_COUNT
+    static float average = 0, last = 0;
 
     public Core(){
         window = new Window();
@@ -142,10 +149,10 @@ public class Core{
                     rec.getWidth() - 2, rec.getHeight() - 2));
         }
         else {
-            Shapes.SetShapesTexture(rlgl.rlGetTextureDefault(), new Rectangle(0,0,1,1));
+            Shapes.SetShapesTexture(rlGetTextureDefault(), new Rectangle(0,0,1,1));
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
             // Set default font texture filter for HighDPI (blurry)
             SetTextureFilter(GetFontDefault().getTexture(), TEXTURE_FILTER_BILINEAR);
         }
@@ -180,7 +187,7 @@ public class Core{
     public boolean WindowShouldClose(){
         if (window.isReady()){
             // While window minimized, stop loop execution
-            while (IsWindowState(FLAG_WINDOW_MINIMIZED.getFlag()) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN.getFlag())){
+            while (IsWindowState(FLAG_WINDOW_MINIMIZED) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN)){
                 glfwWaitEvents();
             }
 
@@ -222,22 +229,22 @@ public class Core{
      * @return <code>true</code> if window is hidden
      */
     public boolean IsWindowHidden(){
-        return ((window.flags & FLAG_WINDOW_HIDDEN.getFlag()) > 0);
+        return ((window.flags & FLAG_WINDOW_HIDDEN) > 0);
     }
 
     // Check if window has been minimized
     public boolean IsWindowMinimized(){
-        return ((window.flags & FLAG_WINDOW_MINIMIZED.getFlag()) > 0);
+        return ((window.flags & FLAG_WINDOW_MINIMIZED) > 0);
     }
 
     // Check if window has been maximized (only PLATFORM_DESKTOP)
     public boolean IsWindowMaximized(){
-        return ((window.flags & FLAG_WINDOW_MAXIMIZED.getFlag()) > 0);
+        return ((window.flags & FLAG_WINDOW_MAXIMIZED) > 0);
     }
 
     // Check if window has the focus
     public boolean IsWindowFocused(){
-        return ((window.flags & FLAG_WINDOW_UNFOCUSED.getFlag()) == 0);      // TODO!
+        return ((window.flags & FLAG_WINDOW_UNFOCUSED) == 0);      // TODO!
     }
 
     // Check if window has been resizedLastFrame
@@ -264,15 +271,16 @@ public class Core{
             // Store previous window position (in case we exit fullscreen)
             glfwGetWindowPos(window.handle, new int[]{(int) window.position.x}, new int[]{(int) window.position.y});
 
-            int monitorCount = 0;
+            int monitorCount;
             PointerBuffer monitors = glfwGetMonitors();
+            monitorCount = monitors.sizeof();
             int monitorIndex = GetCurrentMonitor();
-            long monitor = monitorIndex < monitorCount ? monitors.get(monitorIndex) : null;
+            long monitor = monitorIndex < monitorCount ? monitors.get(monitorIndex) : -1;
 
-            if (monitor <= 0){
+            if (monitor < 0){
                 Tracelog(LOG_WARNING, "GLFW: Failed to get monitor");
                 window.setFullscreen(false);
-                window.flags &= ~FLAG_FULLSCREEN_MODE.getFlag();
+                window.flags &= ~FLAG_FULLSCREEN_MODE;
 
                 glfwSetWindowMonitor(window.handle, GetCurrentMonitor(), 0 ,0, window.screen.getWidth(),
                         window.screen.getHeight(), GLFW_DONT_CARE); // NOTE: Resizing not allowed by default!);
@@ -280,20 +288,20 @@ public class Core{
             }
 
             window.setFullscreen(true);
-            window.flags |= FLAG_FULLSCREEN_MODE.getFlag();
+            window.flags |= FLAG_FULLSCREEN_MODE;
 
             glfwSetWindowMonitor(window.handle, monitor, 0,0,window.screen.getWidth(), window.screen.getHeight(),
                     GLFW_DONT_CARE);
         }
         else{
            window.setFullscreen(false);
-           window.flags &= ~FLAG_FULLSCREEN_MODE.getFlag();
+           window.flags &= ~FLAG_FULLSCREEN_MODE;
 
            glfwSetWindowMonitor(window.handle, 0, (int)window.position.getX(),(int)window.position.getY(),
                    window.screen.getWidth(), window.screen.getHeight(), GLFW_DONT_CARE);
         }
 
-        if ((window.flags & FLAG_VSYNC_HINT.getFlag()) == 1){
+        if ((window.flags & FLAG_VSYNC_HINT) == 1){
             glfwSwapInterval(1);
         }
     }
@@ -304,7 +312,7 @@ public class Core{
     public void MaximizeWindow(){
         if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
             glfwMaximizeWindow(window.handle);
-            window.flags |= FLAG_WINDOW_MAXIMIZED.getFlag();
+            window.flags |= FLAG_WINDOW_MAXIMIZED;
         }
     }
 
@@ -323,8 +331,8 @@ public class Core{
         if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
             // Restores the specified window if it was previously iconified (minimized) or maximized
             glfwRestoreWindow(window.handle);
-            window.flags &= ~FLAG_WINDOW_MINIMIZED.getFlag();
-            window.flags &= ~FLAG_WINDOW_MAXIMIZED.getFlag();
+            window.flags &= ~FLAG_WINDOW_MINIMIZED;
+            window.flags &= ~FLAG_WINDOW_MAXIMIZED;
         }
     }
 
@@ -334,83 +342,83 @@ public class Core{
         // NOTE: In most cases the functions already change the flags internally
 
         // State change: FLAG_VSYNC_HINT
-        if (((window.flags & FLAG_VSYNC_HINT.getFlag()) != (flags & FLAG_VSYNC_HINT.getFlag())) && ((flags & FLAG_VSYNC_HINT.getFlag()) > 0)){
+        if (((window.flags & FLAG_VSYNC_HINT) != (flags & FLAG_VSYNC_HINT)) && ((flags & FLAG_VSYNC_HINT) > 0)){
             glfwSwapInterval(1);
-            window.flags |= FLAG_VSYNC_HINT.getFlag();
+            window.flags |= FLAG_VSYNC_HINT;
         }
 
         // State change: FLAG_FULLSCREEN_MODE
-        if ((window.flags & FLAG_FULLSCREEN_MODE.getFlag()) != (flags & FLAG_FULLSCREEN_MODE.getFlag())){
+        if ((window.flags & FLAG_FULLSCREEN_MODE) != (flags & FLAG_FULLSCREEN_MODE)){
             ToggleFullscreen();     // NOTE: window state flag updated inside function
         }
 
         // State change: FLAG_WINDOW_RESIZABLE
-        if (((window.flags & FLAG_WINDOW_RESIZABLE.getFlag()) != (flags & FLAG_WINDOW_RESIZABLE.getFlag())) && ((flags & FLAG_WINDOW_RESIZABLE.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_RESIZABLE) != (flags & FLAG_WINDOW_RESIZABLE)) && ((flags & FLAG_WINDOW_RESIZABLE) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_RESIZABLE, GLFW_TRUE);
-            window.flags |= FLAG_WINDOW_RESIZABLE.getFlag();
+            window.flags |= FLAG_WINDOW_RESIZABLE;
         }
 
         // State change: FLAG_WINDOW_UNDECORATED
-        if (((window.flags & FLAG_WINDOW_UNDECORATED.getFlag()) != (flags & FLAG_WINDOW_UNDECORATED.getFlag())) && (flags & FLAG_WINDOW_UNDECORATED.getFlag()) > 0){
+        if (((window.flags & FLAG_WINDOW_UNDECORATED) != (flags & FLAG_WINDOW_UNDECORATED)) && (flags & FLAG_WINDOW_UNDECORATED) > 0){
             glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
-            window.flags |= FLAG_WINDOW_UNDECORATED.getFlag();
+            window.flags |= FLAG_WINDOW_UNDECORATED;
         }
 
         // State change: FLAG_WINDOW_HIDDEN
-        if (((window.flags & FLAG_WINDOW_HIDDEN.getFlag()) != (flags & FLAG_WINDOW_HIDDEN.getFlag())) && ((flags & FLAG_WINDOW_HIDDEN.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_HIDDEN) != (flags & FLAG_WINDOW_HIDDEN)) && ((flags & FLAG_WINDOW_HIDDEN) > 0)){
             glfwHideWindow(window.handle);
-            window.flags |= FLAG_WINDOW_HIDDEN.getFlag();
+            window.flags |= FLAG_WINDOW_HIDDEN;
         }
 
         // State change: FLAG_WINDOW_MINIMIZED
-        if (((window.flags & FLAG_WINDOW_MINIMIZED.getFlag()) != (flags & FLAG_WINDOW_MINIMIZED.getFlag())) && ((flags & FLAG_WINDOW_MINIMIZED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_MINIMIZED) != (flags & FLAG_WINDOW_MINIMIZED)) && ((flags & FLAG_WINDOW_MINIMIZED) > 0)){
             //GLFW_ICONIFIED
             MinimizeWindow();       // NOTE: window state flag updated inside function
         }
 
         // State change: FLAG_WINDOW_MAXIMIZED
-        if (((window.flags & FLAG_WINDOW_MAXIMIZED.getFlag()) != (flags & FLAG_WINDOW_MAXIMIZED.getFlag())) && ((flags & FLAG_WINDOW_MAXIMIZED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_MAXIMIZED) != (flags & FLAG_WINDOW_MAXIMIZED)) && ((flags & FLAG_WINDOW_MAXIMIZED) > 0)){
             //GLFW_MAXIMIZED
             MaximizeWindow();       // NOTE: window state flag updated inside function
         }
 
         // State change: FLAG_WINDOW_UNFOCUSED
-        if (((window.flags & FLAG_WINDOW_UNFOCUSED.getFlag()) != (flags & FLAG_WINDOW_UNFOCUSED.getFlag())) && ((flags & FLAG_WINDOW_UNFOCUSED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_UNFOCUSED) != (flags & FLAG_WINDOW_UNFOCUSED)) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
-            window.flags |= FLAG_WINDOW_UNFOCUSED.getFlag();
+            window.flags |= FLAG_WINDOW_UNFOCUSED;
         }
 
         // State change: FLAG_WINDOW_TOPMOST
-        if (((window.flags & FLAG_WINDOW_TOPMOST.getFlag()) != (flags & FLAG_WINDOW_TOPMOST.getFlag())) && ((flags & FLAG_WINDOW_TOPMOST.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_TOPMOST) != (flags & FLAG_WINDOW_TOPMOST)) && ((flags & FLAG_WINDOW_TOPMOST) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_TRUE);
-            window.flags |= FLAG_WINDOW_TOPMOST.getFlag();
+            window.flags |= FLAG_WINDOW_TOPMOST;
         }
 
         // State change: FLAG_WINDOW_ALWAYS_RUN
-        if (((window.flags & FLAG_WINDOW_ALWAYS_RUN.getFlag()) != (flags & FLAG_WINDOW_ALWAYS_RUN.getFlag())) && ((flags & FLAG_WINDOW_ALWAYS_RUN.getFlag()) > 0)){
-            window.flags |= FLAG_WINDOW_ALWAYS_RUN.getFlag();
+        if (((window.flags & FLAG_WINDOW_ALWAYS_RUN) != (flags & FLAG_WINDOW_ALWAYS_RUN)) && ((flags & FLAG_WINDOW_ALWAYS_RUN) > 0)){
+            window.flags |= FLAG_WINDOW_ALWAYS_RUN;
         }
 
         // The following states can not be changed after window creation
 
         // State change: FLAG_WINDOW_TRANSPARENT
-        if (((window.flags & FLAG_WINDOW_TRANSPARENT.getFlag()) != (flags & FLAG_WINDOW_TRANSPARENT.getFlag())) && ((flags & FLAG_WINDOW_TRANSPARENT.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_TRANSPARENT) != (flags & FLAG_WINDOW_TRANSPARENT)) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
             Tracelog(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window " +
                     "initialization");
         }
 
         // State change: FLAG_WINDOW_HIGHDPI
-        if (((window.flags & FLAG_WINDOW_HIGHDPI.getFlag()) != (flags & FLAG_WINDOW_HIGHDPI.getFlag())) && ((flags & FLAG_WINDOW_HIGHDPI.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_HIGHDPI) != (flags & FLAG_WINDOW_HIGHDPI)) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
             Tracelog(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
         }
 
         // State change: FLAG_MSAA_4X_HINT
-        if (((window.flags & FLAG_MSAA_4X_HINT.getFlag()) != (flags & FLAG_MSAA_4X_HINT.getFlag())) && ((flags & FLAG_MSAA_4X_HINT.getFlag()) > 0)){
+        if (((window.flags & FLAG_MSAA_4X_HINT) != (flags & FLAG_MSAA_4X_HINT)) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
             Tracelog(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
         }
 
         // State change: FLAG_INTERLACED_HINT
-        if (((window.flags & FLAG_INTERLACED_HINT.getFlag()) != (flags & FLAG_INTERLACED_HINT.getFlag())) && ((flags & FLAG_INTERLACED_HINT.getFlag()) > 0)){
+        if (((window.flags & FLAG_INTERLACED_HINT) != (flags & FLAG_INTERLACED_HINT)) && ((flags & FLAG_INTERLACED_HINT) > 0)){
             Tracelog(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
         }
     }
@@ -421,80 +429,80 @@ public class Core{
         // NOTE: In most cases the functions already change the flags internally
 
         // State change: FLAG_VSYNC_HINT
-        if (((window.flags & FLAG_VSYNC_HINT.getFlag()) > 0) && ((flags & FLAG_VSYNC_HINT.getFlag()) > 0)){
+        if (((window.flags & FLAG_VSYNC_HINT) > 0) && ((flags & FLAG_VSYNC_HINT) > 0)){
             glfwSwapInterval(0);
-            window.flags &= ~FLAG_VSYNC_HINT.getFlag();
+            window.flags &= ~FLAG_VSYNC_HINT;
         }
 
         // State change: FLAG_FULLSCREEN_MODE
-        if (((window.flags & FLAG_FULLSCREEN_MODE.getFlag()) > 0) && ((flags & FLAG_FULLSCREEN_MODE.getFlag()) > 0)){
+        if (((window.flags & FLAG_FULLSCREEN_MODE) > 0) && ((flags & FLAG_FULLSCREEN_MODE) > 0)){
             ToggleFullscreen();     // NOTE: window state flag updated inside function
         }
 
         // State change: FLAG_WINDOW_RESIZABLE
-        if (((window.flags & FLAG_WINDOW_RESIZABLE.getFlag()) > 0) && ((flags & FLAG_WINDOW_RESIZABLE.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_RESIZABLE) > 0) && ((flags & FLAG_WINDOW_RESIZABLE) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_RESIZABLE, GLFW_FALSE);
-            window.flags &= ~FLAG_WINDOW_RESIZABLE.getFlag();
+            window.flags &= ~FLAG_WINDOW_RESIZABLE;
         }
 
         // State change: FLAG_WINDOW_UNDECORATED
-        if (((window.flags & FLAG_WINDOW_UNDECORATED.getFlag()) > 0) && ((flags & FLAG_WINDOW_UNDECORATED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_UNDECORATED) > 0) && ((flags & FLAG_WINDOW_UNDECORATED) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
-            window.flags &= ~FLAG_WINDOW_UNDECORATED.getFlag();
+            window.flags &= ~FLAG_WINDOW_UNDECORATED;
         }
 
         // State change: FLAG_WINDOW_HIDDEN
-        if (((window.flags & FLAG_WINDOW_HIDDEN.getFlag()) > 0) && ((flags & FLAG_WINDOW_HIDDEN.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_HIDDEN) > 0) && ((flags & FLAG_WINDOW_HIDDEN) > 0)){
             glfwShowWindow(window.handle);
-            window.flags &= ~FLAG_WINDOW_HIDDEN.getFlag();
+            window.flags &= ~FLAG_WINDOW_HIDDEN;
         }
 
         // State change: FLAG_WINDOW_MINIMIZED
-        if (((window.flags & FLAG_WINDOW_MINIMIZED.getFlag()) > 0) && ((flags & FLAG_WINDOW_MINIMIZED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_MINIMIZED) > 0) && ((flags & FLAG_WINDOW_MINIMIZED) > 0)){
             RestoreWindow();       // NOTE: window state flag updated inside function
         }
 
         // State change: FLAG_WINDOW_MAXIMIZED
-        if (((window.flags & FLAG_WINDOW_MAXIMIZED.getFlag()) > 0) && ((flags & FLAG_WINDOW_MAXIMIZED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_MAXIMIZED) > 0) && ((flags & FLAG_WINDOW_MAXIMIZED) > 0)){
             RestoreWindow();       // NOTE: window state flag updated inside function
         }
 
         // State change: FLAG_WINDOW_UNFOCUSED
-        if (((window.flags & FLAG_WINDOW_UNFOCUSED.getFlag()) > 0) && ((flags & FLAG_WINDOW_UNFOCUSED.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_UNFOCUSED) > 0) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
-            window.flags &= ~FLAG_WINDOW_UNFOCUSED.getFlag();
+            window.flags &= ~FLAG_WINDOW_UNFOCUSED;
         }
 
         // State change: FLAG_WINDOW_TOPMOST
-        if (((window.flags & FLAG_WINDOW_TOPMOST.getFlag()) > 0) && ((flags & FLAG_WINDOW_TOPMOST.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_TOPMOST) > 0) && ((flags & FLAG_WINDOW_TOPMOST) > 0)){
             glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_FALSE);
-            window.flags &= ~FLAG_WINDOW_TOPMOST.getFlag();
+            window.flags &= ~FLAG_WINDOW_TOPMOST;
         }
 
         // State change: FLAG_WINDOW_ALWAYS_RUN
-        if (((window.flags & FLAG_WINDOW_ALWAYS_RUN.getFlag()) > 0) && ((flags & FLAG_WINDOW_ALWAYS_RUN.getFlag()) > 0)){
-            window.flags &= ~FLAG_WINDOW_ALWAYS_RUN.getFlag();
+        if (((window.flags & FLAG_WINDOW_ALWAYS_RUN) > 0) && ((flags & FLAG_WINDOW_ALWAYS_RUN) > 0)){
+            window.flags &= ~FLAG_WINDOW_ALWAYS_RUN;
         }
 
         // The following states can not be changed after window creation
 
         // State change: FLAG_WINDOW_TRANSPARENT
-        if (((window.flags & FLAG_WINDOW_TRANSPARENT.getFlag()) > 0) && ((flags & FLAG_WINDOW_TRANSPARENT.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_TRANSPARENT) > 0) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
             Tracelog(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_HIGHDPI
-        if (((window.flags & FLAG_WINDOW_HIGHDPI.getFlag()) > 0) && ((flags & FLAG_WINDOW_HIGHDPI.getFlag()) > 0)){
+        if (((window.flags & FLAG_WINDOW_HIGHDPI) > 0) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
             Tracelog(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
         }
 
         // State change: FLAG_MSAA_4X_HINT
-        if (((window.flags & FLAG_MSAA_4X_HINT.getFlag()) > 0) && ((flags & FLAG_MSAA_4X_HINT.getFlag()) > 0)){
+        if (((window.flags & FLAG_MSAA_4X_HINT) > 0) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
             Tracelog(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
         }
 
         // State change: FLAG_INTERLACED_HINT
-        if (((window.flags & FLAG_INTERLACED_HINT.getFlag()) > 0) && ((flags & FLAG_INTERLACED_HINT.getFlag()) > 0)){
+        if (((window.flags & FLAG_INTERLACED_HINT) > 0) && ((flags & FLAG_INTERLACED_HINT) > 0)){
             Tracelog(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
         }
     }
@@ -546,7 +554,7 @@ public class Core{
     }
 
     // Set window minimum dimensions (FLAG_WINDOW_RESIZABLE)
-    void SetWindowMinSize(int width, int height){
+    public void SetWindowMinSize(int width, int height){
         GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowSizeLimits(window.handle, width, height, mode.width(), mode.height());
     }
@@ -926,7 +934,7 @@ public class Core{
     }
 
     // Initializes render texture for drawing
-    void BeginTextureMode(RenderTexture target){
+    public void BeginTextureMode(RenderTexture target){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlEnableFramebuffer(target.getId());     // Enable render target
@@ -953,7 +961,7 @@ public class Core{
     }
 
     // Ends drawing to render texture
-    void EndTextureMode(){
+    public void EndTextureMode(){
         rlgl.rlDrawRenderBatchActive();                 // Draw Buffers (Only OpenGL 3+ and ES2)
 
         rlDisableFramebuffer();     // Disable render target (fbo)
@@ -980,20 +988,20 @@ public class Core{
 
     // Begin blending mode (alpha, additive, multiplied)
 // NOTE: Only 3 blending modes supported, default blend mode is alpha
-    void BeginBlendMode(int mode)
+    public void BeginBlendMode(int mode)
     {
         rlgl.rlSetBlendMode(mode);
     }
 
     // End blending mode (reset to default: alpha blending)
-    void EndBlendMode()
+    public void EndBlendMode()
     {
        rlgl.rlSetBlendMode(BLEND_ALPHA);
     }
 
     // Begin scissor mode (define screen area for following drawing)
     // NOTE: Scissor rec refers to bottom-left corner, we change it to upper-left
-    void BeginScissorMode(int x, int y, int width, int height){
+    public void BeginScissorMode(int x, int y, int width, int height){
         rlgl.rlDrawRenderBatchActive(); // Force drawing elements
 
         rlgl.rlEnableScissorTest();
@@ -1001,13 +1009,13 @@ public class Core{
     }
 
     // End scissor mode
-    void EndScissorMode(){
+    public void EndScissorMode(){
         rlgl.rlDrawRenderBatchActive(); // Force drawing elements
         rlgl.rlDisableScissorTest();
     }
 
     // Begin VR drawing configuration
-    void BeginVrStereoMode(VrStereoConfig config){
+    public void BeginVrStereoMode(VrStereoConfig config){
         rlgl.rlEnableStereoRenderer();
 
         // Set stereo render matrices
@@ -1017,12 +1025,12 @@ public class Core{
     }
 
     // End VR drawing process (and desktop mirror)
-    void EndVrStereoMode(){
+    public void EndVrStereoMode(){
         rlgl.rlDisableStereoRenderer();
     }
 
     // Load VR stereo config for VR simulator device parameters
-    VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device){
+    public VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device){
         VrStereoConfig config = new VrStereoConfig();
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -1096,7 +1104,7 @@ public class Core{
     }
 
     // Unload VR stereo config properties
-    void UnloadVrStereoConfig(VrStereoConfig config){
+    public void UnloadVrStereoConfig(VrStereoConfig config){
         //...
     }
 
@@ -1442,7 +1450,7 @@ public class Core{
             time.setTarget(0.0f);
         }
         else{
-            time.setTarget(1.0 / fps);
+            time.setTarget(1.0 /(double) fps);
         }
 
         Tracelog(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000 + " milliseconds");
@@ -1460,9 +1468,6 @@ public class Core{
         float FPS_AVERAGE_TIME_SECONDS = 0.5f;     // 500 millisecondes
         float FPS_STEP = (FPS_AVERAGE_TIME_SECONDS / FPS_CAPTURE_FRAMES_COUNT);
 
-        int index = 0;
-        float[] history = new float[FPS_CAPTURE_FRAMES_COUNT];
-        float average = 0, last = 0;
         float fpsFrame = GetFrameTime();
 
         if (fpsFrame == 0) return 0;
@@ -1502,28 +1507,29 @@ public class Core{
     // NOTE: This function is expected to be called before window creation,
     // because it setups some flags for the window creation process.
     // To configure window states after creation, just use SetWindowState()
-    public static void SetConfigFlags(ConfigFlag flags){
+    public static void SetConfigFlags(int flags){
         // Selected flags are set but not evaluated at this point,
         // flag evaluation happens at InitWindow() or SetWindowState()
-        window.flags |= flags.getFlag();
+        window.flags |= flags;
     }
 
     // Takes a screenshot of current screen (saved a .png)
     // NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB
     // have their own internal file-systems, to dowload image to user file-system some additional mechanism is required
-    /*TODO
     void TakeScreenshot(String fileName) {
         short[] imgData = rlReadScreenPixels(window.render.width, window.render.height);
-        Image image = new Image(imgData, window.render.width, window.render.height, 1,
+        byte[] dataB = new byte[imgData.length];
+        IntStream.range(0, dataB.length).forEach(i -> dataB[i] = (byte) imgData[i]);
+        Image image = new Image(dataB, window.render.width, window.render.height, 1,
             PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
         String path = "";
 
-        ExportImage(image, path);
+        Textures.ExportImage(image, path);
 
         // TODO: Verification required for log
         Tracelog(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
-    }*/
+    }
 
     /**
      * Returns a random value between min and max (both included)
@@ -1549,36 +1555,33 @@ public class Core{
         return file.exists();
     }
 
-    // TODO: 3/20/21
-    //IsFileExtension
+    // Check file extension
+    // NOTE: Extensions checking is not case-sensitive
+    public static boolean IsFileExtension(String fileName, String ext)
+    {
+        String fileExt = GetFileExtension(fileName);
+        return fileExt.equals(ext);
+    }
 
-    //DirectoryExists
+    //TODO: FILE Utils
+    // DirectoryExists
 
     public static String GetFileExtension(String fileName){
         return fileName.substring(fileName.lastIndexOf('.'));
     }
 
-    //StrPrBrk
-
-    //GetDirectoryPath
-
-    //GetFileNameWithoutExt
-
-    //GetDirectoryPath
-
-    //GetPrevDirectoryPath
-
-    //GetWorkingDirectory
-
-    //GetDirectoryFiles
-
-    //ClearDirectoryFiles
-
-    //ChangeDirectory
-
-    //IsFileDropped
-
-    //GetDroppedFiles
+    //TODO: FILE Utils
+    // StrPrBrk
+    // GetDirectoryPath
+    // GetFileNameWithoutExt
+    // GetDirectoryPath
+    // GetPrevDirectoryPath
+    // GetWorkingDirectory
+    // GetDirectoryFiles
+    // ClearDirectoryFiles
+    // ChangeDirectory
+    // IsFileDropped
+    // GetDroppedFiles
 
     static void ClearDroppedFiles(){
         if (window.getDropFilesCount() > 0){
@@ -1592,18 +1595,13 @@ public class Core{
         }
     }
 
-    // TODO: 3/20/21
-    //GetFileModTime
-
-    //CompressData
-
-    //DecompressData
-
-    //SaveStorageValue
-
-    //LoadStorageValue
-
-    //OpenURL
+    //TODO: 3/20/21
+    // GetFileModTime
+    // CompressData
+    // DecompressData
+    // SaveStorageValue
+    // LoadStorageValue
+    // OpenURL
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition - Input (Keyboard, Mouse, Gamepad) Functions
@@ -2054,25 +2052,25 @@ public class Core{
         //glfwWindowHint(GLFW_AUX_BUFFERS, 0);          // Number of auxiliar buffers
 
         // Check window creation flags
-        if ((window.getFlags() & FLAG_FULLSCREEN_MODE.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_FULLSCREEN_MODE) > 0){
             window.fullscreen = true;
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_HIDDEN.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_HIDDEN) > 0){
             glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // Visible window
         }
         else{
             glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);     // Window initially hidden
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_UNDECORATED.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_UNDECORATED) > 0){
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Border and buttons on Window
         }
         else{
             glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);   // Decorated window
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_RESIZABLE.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_RESIZABLE) > 0){
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // Resizable window
         }
         else{
@@ -2080,37 +2078,37 @@ public class Core{
         }
 
         // Disable FLAG_WINDOW_MINIMIZED, not supported on initialization
-        if ((window.getFlags() & FLAG_WINDOW_MINIMIZED.getFlag()) > 0){
-            window.flags &= ~FLAG_WINDOW_MINIMIZED.getFlag();
+        if ((window.getFlags() & FLAG_WINDOW_MINIMIZED) > 0){
+            window.flags &= ~FLAG_WINDOW_MINIMIZED;
         }
 
         // Disable FLAG_WINDOW_MAXIMIZED, not supported on initialization
-        if ((window.getFlags() & FLAG_WINDOW_MAXIMIZED.getFlag()) > 0){
-            window.flags &= ~FLAG_WINDOW_MAXIMIZED.getFlag();
+        if ((window.getFlags() & FLAG_WINDOW_MAXIMIZED) > 0){
+            window.flags &= ~FLAG_WINDOW_MAXIMIZED;
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_UNFOCUSED.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_UNFOCUSED) > 0){
             glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
         }
         else{
             glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_TOPMOST.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_TOPMOST) > 0){
             glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
         }
         else{
             glfwWindowHint(GLFW_FLOATING, GLFW_FALSE);
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_TRANSPARENT.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_TRANSPARENT) > 0){
             glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);     // Transparent framebuffer
         }
         else{
             glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);     // Transparent framebuffer
         }
 
-        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
             // Resize window content area based on the monitor content scale.
             // NOTE: This hint only has an effect on platforms where screen coordinates and pixels always map 1:1 such as Windows and X11.
             // On platforms like macOS the resolution of the framebuffer is changed independently of the window size.
@@ -2121,7 +2119,7 @@ public class Core{
             glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
         }
 
-        if ((window.getFlags() & FLAG_MSAA_4X_HINT.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_MSAA_4X_HINT) > 0){
             Tracelog(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
             glfwWindowHint(GLFW_SAMPLES, 4);   // Tries to enable multisampling x4 (MSAA), default is 0
         }
@@ -2285,7 +2283,7 @@ public class Core{
         int fbWidth = window.render.getWidth();
         int fbHeight = window.render.getHeight();
 
-        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
             glfwGetFramebufferSize(window.handle, new int[]{fbWidth}, new int[]{fbHeight});
 
             // Screen scaling matrix is required in case desired screen area is different than display area
@@ -2302,7 +2300,7 @@ public class Core{
 
         glfwShowWindow(window.handle);
 
-        if ((window.getFlags() & FLAG_WINDOW_MINIMIZED.getFlag()) > 0){
+        if ((window.getFlags() & FLAG_WINDOW_MINIMIZED) > 0){
             MinimizeWindow();
         }
 
@@ -2424,15 +2422,12 @@ public class Core{
             double nextTime = 0.0;
 
             // Busy wait loop
-            while ((nextTime - prevTime) < ms / 1000.0f){
-                nextTime = GetTime();
-            }
+            while ((nextTime - prevTime) < ms/1000.0f) nextTime = GetTime();
         }
         else{
             if (SUPPORT_HALFBUSY_WAIT_LOOP){
-                int MAX_HALFBUSY_WAIT_TIME = 4;
-                double destTime = GetTime() + ms / 1000;
-                if (ms > MAX_HALFBUSY_WAIT_TIME) ms -= MAX_HALFBUSY_WAIT_TIME;
+                double destTime = GetTime() + ms/1000;
+                while (GetTime() < destTime) { }
             }
         }
     }

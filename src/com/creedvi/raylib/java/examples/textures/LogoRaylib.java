@@ -6,8 +6,6 @@ import com.creedvi.raylib.java.rlj.textures.Texture2D;
 
 public class LogoRaylib{
 
-    //TODO: STBI ALT?
-
     /*******************************************************************************************
      *
      *   raylib [textures] example - Texture loading and drawing
@@ -29,12 +27,12 @@ public class LogoRaylib{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - texture loading and drawing");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-        Texture2D texture = rlj.textures.LoadTexture("logo/raylib-j_256x256.png");        // Texture loading
+        Texture2D texture = rlj.textures.LoadTexture("resources/raylib-j_logo.png");        // Texture loading
         //---------------------------------------------------------------------------------------
 
         // Main game loop
-        while (!rlj.core.WindowShouldClose())    // Detect window close button or ESC key
-        {
+        while (!rlj.core.WindowShouldClose()) {   // Detect window close button or ESC key
+
             // Update
             //----------------------------------------------------------------------------------
             // TODO: Update your variables here

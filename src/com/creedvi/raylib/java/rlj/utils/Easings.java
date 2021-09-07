@@ -1,6 +1,6 @@
 package com.creedvi.raylib.java.rlj.utils;
 
-import static com.creedvi.raylib.java.rlj.raymath.RayMath.PI;
+import static com.creedvi.raylib.java.rlj.raymath.Raymath.PI;
 
 public class Easings{
 

@@ -1,11 +1,11 @@
 package com.creedvi.raylib.java.rlj.utils;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import static com.creedvi.raylib.java.rlj.Config.SUPPORT_STANDARD_FILEIO;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
@@ -15,39 +15,80 @@ import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNIN
 public class FileIO{
 
     //TODO: FIGURE OUT THIS MESS
-    // Load data from file into a buffer
+    //Load data from file into a buffer
     public static byte[] LoadFileData(String fileName) throws IOException{
         byte[] data = null;
-        Path path = Paths.get(fileName);
 
-        if (path.toFile().exists()){
-            if (SUPPORT_STANDARD_FILEIO){
+        if (SUPPORT_STANDARD_FILEIO){
+
+            InputStream inputStream = getFileFromResourceAsStream(fileName);
+
+            if (inputStream != null){
                 try{
-                    data = Files.readAllBytes(path);
-                } catch (IOException exception){
-                    Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to open file");
-                    throw exception;
+                    BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream));
+                    String contents = breader.lines().collect(Collectors.joining());
+                    data = new byte[contents.length()];
+                    for (int i = 0; i < data.length; i++){
+                        data[i] = (byte) contents.charAt(i);
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
                 }
-
             }
             else{
-                Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+                Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid\n\t" + fileName);
             }
         }
+
         else{
-            Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid");
+            Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
         }
 
         return data;
     }
 
+    public static File LoadFileAsFile(String filePath){
+        File tmp = null;
+        if (SUPPORT_STANDARD_FILEIO){
+            InputStream inputStream = getFileFromResourceAsStream(filePath.replace('\\', '/'));
+            if (inputStream != null){
+                tmp = new File(inputStream.toString());
+            }
+            else{
+                Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid");
+            }
+        }
+        else{
+            Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+        }
+        return tmp;
+    }
+
+    public static InputStream LoadFileAsInputStream(String filePath){
+        if (SUPPORT_STANDARD_FILEIO){
+            InputStream inputStream = getFileFromResourceAsStream(filePath.replace('\\', '/'));
+            if (inputStream != null){
+                return inputStream;
+            }
+            else{
+                Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid");
+                return null;
+            }
+        }
+        else{
+            Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+        }
+        return null;
+    }
+
+
     // Unload file data allocated by LoadFileData()
-     Object UnloadFileData(){
+    Object UnloadFileData(){
         return null;
     }
 
     // Save data to file from buffer
-    boolean SaveFileData(String fileName, byte[] data, int bytesToWrite) throws IOException{
+    public static boolean SaveFileData(String fileName, byte[] data, int bytesToWrite) throws IOException{
         boolean success = false;
 
         if (fileName != null){
@@ -90,28 +131,28 @@ public class FileIO{
     /**
      * Load text data from file
      * NOTE: text chars array should be freed manually
+     *
      * @param fileName name and extension of file to be loaded
      */
     public static String LoadFileText(String fileName) throws IOException{
-        StringBuilder text = new StringBuilder();
-        Path path = Paths.get(fileName);
-        if(SUPPORT_STANDARD_FILEIO){
-            if (path.toFile().exists()){
-                byte[] bytes = Files.readAllBytes(path);
-                for (byte aByte: bytes){
-                    text.append((char) aByte);
+        if (fileName != null){
+            String text;
+            Path path = Paths.get(fileName);
+            if (SUPPORT_STANDARD_FILEIO){
+                if (path.toFile().exists()){
+                    text = Files.readAllLines(path).stream().collect(Collectors.joining(System.lineSeparator()));
+                    Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Text file loaded successfully");
+                    return text;
                 }
-                text = new StringBuilder(Arrays.toString(bytes));
-                Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Text file loaded successfully");
+                else{
+                    Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to open text file");
+                }
             }
             else{
-                Tracelog(LOG_WARNING, "FILEIO: [" + fileName + " Failed to open text file");
+                Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
             }
         }
-        else{
-            Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
-        }
-        return text.toString();
+        return null;
     }
 
     // Unload file text data allocated by LoadFileText()
@@ -159,5 +200,11 @@ public class FileIO{
         }
 
         return success;
+    }
+
+    private static InputStream getFileFromResourceAsStream(String fileName){
+        // The class loader that loaded the class
+        ClassLoader classLoader = FileIO.class.getClassLoader();
+        return classLoader.getResourceAsStream(fileName);
     }
 }

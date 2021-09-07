@@ -3,7 +3,7 @@ package com.creedvi.raylib.java.rlj.textures;
 public class RenderTexture{
 
     int id;
-    Texture2D texture;
+    public Texture2D texture;
     Texture2D depth;
 
     public RenderTexture(){

@@ -5,7 +5,7 @@ import com.creedvi.raylib.java.rlj.textures.Texture2D;
 
 public class Font{
 
-    int baseSize;           // Base size (default chars height)
+    public int baseSize;           // Base size (default chars height)
     int charsCount;         // Number of characters
     int charsPadding;       // Padding around the chars
     Texture2D texture;      // Characters texture atlas

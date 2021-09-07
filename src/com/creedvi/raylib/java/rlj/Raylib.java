@@ -1,6 +1,7 @@
 package com.creedvi.raylib.java.rlj;
 
 import com.creedvi.raylib.java.rlj.core.Core;
+import com.creedvi.raylib.java.rlj.models.Models;
 import com.creedvi.raylib.java.rlj.shapes.Shapes;
 import com.creedvi.raylib.java.rlj.text.Text;
 import com.creedvi.raylib.java.rlj.textures.Textures;
@@ -12,6 +13,7 @@ public class Raylib{
     public Text text;
     public Shapes shapes;
     public Textures textures;
+    public Models models;
 
     /**
      * Creates new Raylib instance.
@@ -22,10 +24,11 @@ public class Raylib{
         text = new Text();
         shapes = new Shapes();
         textures = new Textures();
+        models = new Models();
     }
 
     /**
-     * Creates new Raylib instance and Initializes the window
+     * Creates new Raylib instance and initializes the window
      * @param ScreenWidth width of the window in pixels
      * @param ScreenHeight height of the window in pixels
      * @param title title to display for the window
@@ -36,6 +39,7 @@ public class Raylib{
         text = new Text();
         shapes = new Shapes();
         textures = new Textures();
+        models = new Models();
 
         core.InitWindow(ScreenWidth, ScreenHeight, title);
     }

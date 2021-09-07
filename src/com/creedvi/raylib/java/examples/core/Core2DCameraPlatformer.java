@@ -4,7 +4,7 @@ import com.creedvi.raylib.java.rlj.Raylib;
 import com.creedvi.raylib.java.rlj.core.Color;
 import com.creedvi.raylib.java.rlj.core.Core;
 import com.creedvi.raylib.java.rlj.core.camera.Camera2D;
-import com.creedvi.raylib.java.rlj.raymath.RayMath;
+import com.creedvi.raylib.java.rlj.raymath.Raymath;
 import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 
@@ -263,13 +263,13 @@ public class Core2DCameraPlatformer{
         float fractionSpeed = 0.8f;
 
         camera.offset = new Vector2(width/2, height/2);
-        Vector2 diff = RayMath.Vector2Subtract(player.position, camera.target);
-        float length = RayMath.Vector2Length(diff);
+        Vector2 diff = Raymath.Vector2Subtract(player.position, camera.target);
+        float length = Raymath.Vector2Length(diff);
 
         if (length > minEffectLength)
         {
             float speed = Math.max(fractionSpeed*length, minSpeed);
-            camera.target = RayMath.Vector2Add(camera.target, RayMath.Vector2Scale(diff, speed*delta/length));
+            camera.target = Raymath.Vector2Add(camera.target, Raymath.Vector2Scale(diff, speed*delta/length));
         }
     }
 

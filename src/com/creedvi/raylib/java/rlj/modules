@@ -1,14 +1,14 @@
 LAST UPDATED :: 28/05/21
 
-[ ] 3,7 migration
+[X] 3,7 migration
 [O] core
 [X] shapes
-[o] textures
+[X] textures
 [o] text
-[ ] models
+[o] models
 [X] shaders
 [ ] audio
-[O] RLGL
+[X] RLGL
 [X] raymath
 [ ] physac
 [ ] raygui+ricons

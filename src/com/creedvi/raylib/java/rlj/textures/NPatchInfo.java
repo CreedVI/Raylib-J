@@ -11,21 +11,11 @@ public class NPatchInfo{
     int bottom;            // bottom border offset
     int type;              // layout of the n-patch: 3x3, 1x3 or 3x1
 
-    enum NPatchType{
-        NPT_9PATCH(0),         // Npatch defined by 3x3 tiles
-        NPT_3PATCH_VERTICAL(1),    // Npatch defined by 1x3 tiles
-        NPT_3PATCH_HORIZONTAL(2)   // Npatch defined by 3x1 tiles
-        ;
-
-        private final int patchType;
-
-        NPatchType(int i){
-            patchType = i;
-        }
-
-        public int getPatchType(){
-            return patchType;
-        }
+    public static class NPatchType{
+        public static final int
+                NPATCH_NINE_PATCH = 0,         // Npatch defined by 3x3 tiles
+                NPATCH_THREE_PATCH_VERTICAL = 1,    // Npatch defined by 1x3 tiles
+                NPATCH_THREE_PATCH_HORIZONTAL = 2;   // Npatch defined by 3x1 tiles
     }
 
     public NPatchInfo(){
@@ -34,6 +24,15 @@ public class NPatchInfo{
         right = 0;
         top = 0;
         bottom = 0;
+    }
+
+    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, int type){
+        this.source = source;
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+        this.type = type;
     }
 
     public Rectangle getSource(){
@@ -82,9 +81,5 @@ public class NPatchInfo{
 
     public void setType(int type){
         this.type = type;
-    }
-
-    public void setType(NPatchType type){
-        this.type = type.getPatchType();
     }
 }

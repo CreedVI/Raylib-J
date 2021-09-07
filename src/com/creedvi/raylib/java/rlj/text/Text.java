@@ -6,19 +6,37 @@ import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.shapes.Rectangle;
 import com.creedvi.raylib.java.rlj.textures.Image;
 import com.creedvi.raylib.java.rlj.textures.Textures;
+import com.creedvi.raylib.java.rlj.utils.FileIO;
+import org.lwjgl.stb.*;
 
-import static com.creedvi.raylib.java.rlj.Config.SUPPORT_DEFAULT_FONT;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
-import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
+import static com.creedvi.raylib.java.rlj.Config.*;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.*;
+import static com.creedvi.raylib.java.rlj.rlgl.RLGL.TextureFilterMode.TEXTURE_FILTER_POINT;
+import static com.creedvi.raylib.java.rlj.text.Text.FontType.FONT_BITMAP;
+import static com.creedvi.raylib.java.rlj.text.Text.FontType.FONT_SDF;
 import static com.creedvi.raylib.java.rlj.textures.Textures.*;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.Tracelog;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogS;
 import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_INFO;
+import static com.creedvi.raylib.java.rlj.utils.Tracelog.TracelogType.LOG_WARNING;
 
 public class Text{
 
 
+    static class FontType { // Font type, defines generation method
+
+        final static int FONT_DEFAULT = 0,       // Default font generation, anti-aliased
+                FONT_BITMAP = 1,                 // Bitmap font generation, no anti-aliasing
+                FONT_SDF = 2;                    // SDF font generation, requires external shader
+    }
+
     final static int MAX_TEXTFORMAT_BUFFERS = 4;        // Maximum number of static buffers for text formatting
     final static int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
+    private static int next;
 
     // Default values for ttf font generation
     final int FONT_TTF_DEFAULT_SIZE = 32;      // TTF font generation default char size (char-height)
@@ -38,18 +56,15 @@ public class Text{
         }
     }
 
-    //TODO Figure out why collum 31, 63, 95, 127 of the buffer loads incorrectly
-    //By all accounts it maths out.
-    //Maybe something to do with the negative?
-
     /**
      * Check if the bth binary bit is 1 in an integer
+     *
      * @param a the value to check
      * @param b position of bit to examine
      * @return <code>true</code> if bit at b is set to 1
      */
     private static boolean BitCheck(int a, int b){
-        return ((a) & (1L << (b))) == (long)Math.pow(2,b);
+        return ((a) & (1L << (b))) == (long) Math.pow(2, b);
     }
 
     public static void LoadFontDefault(){
@@ -133,8 +148,6 @@ public class Text{
 
         //Fill image.data with defaultFontData (convert from bit to pixel!)
         for (int i = 0, counter = 0; i < imFont.getWidth() * imFont.getHeight(); i += 32){
-            if(i !=0)
-                System.out.println(i);
             for (int j = 31; j >= 0; j--){
                 if (BitCheck(defaultFontData[counter], j)){
                     // NOTE: We are unreferencing data as short, so,
@@ -211,7 +224,7 @@ public class Text{
 
     public static void UnloadFontDefault(){
         for (int i = 0; i < defaultFont.charsCount; i++){
-           defaultFont.chars[i].image = UnloadImage(defaultFont.chars[i].image);
+            defaultFont.chars[i].image = UnloadImage(defaultFont.chars[i].image);
         }
         defaultFont.texture = null;
         defaultFont.chars = null;
@@ -227,24 +240,22 @@ public class Text{
         }
     }
 
-    /*
     // Load Font from file into GPU memory (VRAM)
-    public Font LoadFont(String fileName)
-    {
+    public Font LoadFont(String fileName){
         Font font = new Font();
 
-        if(SUPPORT_FILEFORMAT_TTF){
-            if (IsFileExtension(fileName, ".ttf;.otf")){
+        if (SUPPORT_FILEFORMAT_TTF){
+            if (Core.IsFileExtension(fileName, ".ttf;.otf")){
                 font = LoadFontEx(fileName, FONT_TTF_DEFAULT_SIZE, null, FONT_TTF_DEFAULT_NUMCHARS);
             }
         }
 
-        else if(SUPPORT_FILEFORMAT_FNT){
-            if (IsFileExtension(fileName, ".fnt")){
-                font = LoadBMFont(fileName);
+        else if (SUPPORT_FILEFORMAT_FNT){
+            if (Core.IsFileExtension(fileName, ".fnt")){
+                //font = LoadBMFont(fileName);
             }
         }
-        else {
+        else{
             Image image = LoadImage(fileName);
             if (image.getData() != null){
                 font = LoadFontFromImage(image, Color.MAGENTA, FONT_TTF_DEFAULT_FIRST_CHAR);
@@ -252,12 +263,13 @@ public class Text{
             UnloadImage(image);
         }
 
-        if (font.texture.getId() == 0)
-        {
+        if (font.texture.getId() == 0){
             Tracelog(LOG_WARNING, "FONT: [" + fileName + "] Failed to load font texture -> Using default font");
             font = GetFontDefault();
         }
-        else SetTextureFilter(font.texture, TEXTURE_FILTER_POINT.getTextureFilterInt());    // By default we set point filter (best
+        else{
+            SetTextureFilter(font.texture, TEXTURE_FILTER_POINT);    // By default we set point filter (best
+        }
         // performance)
 
         return font;
@@ -265,34 +277,37 @@ public class Text{
 
     // Load Font from TTF font file with generation parameters
     // NOTE: You can pass an array with desired characters, those characters should be available in the font
-    // if array is NULL, default char set is selected 32..126
-    Font LoadFontEx(String fileName, int fontSize, int[] fontChars, int charsCount)
-    {
+    // if array is null, default char set is selected 32..126
+    public Font LoadFontEx(String fileName, int fontSize, int[] fontChars, int charsCount){
         Font font = new Font();
 
         // Loading file to memory
         int fileSize = 0;
-        byte[] fileData = LoadFileData(fileName);
+        byte[] fileData = new byte[0];
+        try{
+            fileData = FileIO.LoadFileData(fileName);
+        } catch (IOException exception){
+            exception.printStackTrace();
+        }
 
-        if (fileData != null) {
+        if (fileData != null){
             // Loading font from memory data
-            font = LoadFontFromMemory(GetFileExtension(fileName), fileData, fileSize, fontSize, fontChars, charsCount);
+            font = LoadFontFromMemory(Core.GetFileExtension(fileName), fileData, fileSize, fontSize, fontChars, charsCount);
 
         }
-        else {
+        else{
             font = GetFontDefault();
         }
 
         return font;
     }
-    */
 
     boolean ColorEqual(Color col1, Color col2){
-        return ((col1.r == col2.r)&&(col1.g == col2.g)&&(col1.b == col2.b)&&(col1.a == col2.a));
+        return ((col1.r == col2.r) && (col1.g == col2.g) && (col1.b == col2.b) && (col1.a == col2.a));
     }
 
     // Load an Image font file (XNA style)
-    Font LoadFontFromImage(Image image, Color key, int firstChar) {
+    Font LoadFontFromImage(Image image, Color key, int firstChar){
 
         int charSpacing;
         int lineSpacing;
@@ -308,8 +323,8 @@ public class Text{
         Color[] pixels = Textures.LoadImageColors(image);
 
         // Parse image data to get charSpacing and lineSpacing
-        for (y = 0; y < image.getHeight(); y++) {
-            for (x = 0; x < image.getWidth(); x++) {
+        for (y = 0; y < image.getHeight(); y++){
+            for (x = 0; x < image.getWidth(); x++){
                 if (!ColorEqual(pixels != null ? pixels[y * image.getWidth() + x] : null, key)){
                     break;
                 }
@@ -326,7 +341,7 @@ public class Text{
         int charHeight;
         int j = 0;
 
-        while (!ColorEqual(pixels[(lineSpacing + j)*image.getWidth() + charSpacing], key)) j++;
+        while (!ColorEqual(pixels[(lineSpacing + j) * image.getWidth() + charSpacing], key)) j++;
 
         charHeight = j;
 
@@ -336,23 +351,22 @@ public class Text{
         int xPosToRead = charSpacing;
 
         // Parse image data to get rectangle sizes
-        while ((lineSpacing + lineToRead*(charHeight + lineSpacing)) < image.getHeight())
-        {
+        while ((lineSpacing + lineToRead * (charHeight + lineSpacing)) < image.getHeight()){
             while ((xPosToRead < image.getWidth()) &&
-                    !ColorEqual((pixels[(lineSpacing + (charHeight+lineSpacing)*lineToRead)*image.getWidth() + xPosToRead]),
-                            key))
-            {
+                    !ColorEqual((pixels[(lineSpacing + (charHeight + lineSpacing) * lineToRead) * image.getWidth() + xPosToRead]),
+                            key)){
                 tempCharValues[index] = firstChar + index;
 
-                tempCharRecs[index].x = (float)xPosToRead;
-                tempCharRecs[index].y = (float)(lineSpacing + lineToRead*(charHeight + lineSpacing));
-                tempCharRecs[index].height = (float)charHeight;
+                tempCharRecs[index].x = (float) xPosToRead;
+                tempCharRecs[index].y = (float) (lineSpacing + lineToRead * (charHeight + lineSpacing));
+                tempCharRecs[index].height = (float) charHeight;
 
                 int charWidth = 0;
 
-                while (!ColorEqual(pixels[(lineSpacing + (charHeight+lineSpacing)*lineToRead)*image.getWidth() + xPosToRead + charWidth], key)) charWidth++;
+                while (!ColorEqual(pixels[(lineSpacing + (charHeight + lineSpacing) * lineToRead) * image.getWidth() + xPosToRead + charWidth], key))
+                    charWidth++;
 
-                tempCharRecs[index].width = (float)charWidth;
+                tempCharRecs[index].width = (float) charWidth;
 
                 index++;
 
@@ -365,8 +379,12 @@ public class Text{
 
         // NOTE: We need to remove key color borders from image to avoid weird
         // artifacts on texture scaling when using TEXTURE_FILTER_BILINEAR or TEXTURE_FILTER_TRILINEAR
-        for (int i = 0; i < image.getHeight()*image.getWidth(); i++) if (ColorEqual(pixels[i], key)) pixels[i] =
-                Color.BLANK;
+        for (int i = 0; i < image.getHeight() * image.getWidth(); i++){
+            if (ColorEqual(pixels[i], key)){
+                pixels[i] =
+                        Color.BLANK;
+            }
+        }
 
         // Create a new image with the processed color data (key color replaced by BLANK)
         Image fontClear = new Image(pixels, image.getWidth(), image.getHeight(),
@@ -384,8 +402,7 @@ public class Text{
         font.chars = new CharInfo[font.charsCount];
         font.recs = new Rectangle[font.charsCount];
 
-        for (int i = 0; i < font.charsCount; i++)
-        {
+        for (int i = 0; i < font.charsCount; i++){
             font.chars[i].value = tempCharValues[i];
 
             // Get character rectangle in the font atlas texture
@@ -402,21 +419,19 @@ public class Text{
 
         UnloadImage(fontClear);     // Unload processed image once converted to texture
 
-        font.baseSize = (int)font.recs[0].height;
+        font.baseSize = (int) font.recs[0].height;
 
         return font;
     }
 
-    /*TODO
     // Load font from memory buffer, fileType refers to extension: i.e. ".ttf"
     Font LoadFontFromMemory(String fileType, byte[] fileData, int dataSize, int fontSize, int[] fontChars,
-                            int charsCount)
-    {
+                            int charsCount){
         Font font = new Font();
 
         String fileExtLower = fileType.toLowerCase();
 
-        if(SUPPORT_FILEFORMAT_TTF){
+        if (SUPPORT_FILEFORMAT_TTF){
             if (fileExtLower.equals(".ttf") || fileExtLower.equals(".otf")){
                 font.baseSize = fontSize;
                 font.charsCount = (charsCount > 0) ? charsCount : 95;
@@ -427,7 +442,7 @@ public class Text{
                     font.charsPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
 
                     Image atlas = GenImageFontAtlas(font.chars, font.recs, font.
-                    charsCount, font.baseSize, font.charsPadding, 0);
+                            charsCount, font.baseSize, font.charsPadding, 0);
                     font.texture = LoadTextureFromImage(atlas);
 
                     // Update chars[i].image to use alpha, required to be used on ImageDrawText()
@@ -438,7 +453,9 @@ public class Text{
 
                     UnloadImage(atlas);
                 }
-                else font = GetFontDefault();
+                else{
+                    font = GetFontDefault();
+                }
             }
         }
         else{
@@ -449,27 +466,38 @@ public class Text{
 
     // Load font data for further use
     // NOTE: Requires TTF font memory data and can generate SDF data
-    CharInfo[] LoadFontData(byte[] fileData, int dataSize, int fontSize, int[] fontChars, int charsCount, int type) {
+    CharInfo[] LoadFontData(byte[] fileData, int dataSize, int fontSize, int[] fontChars, int charsCount, int type){
         // NOTE: Using some SDF generation default values,
         // trades off precision with ability to handle *smaller* sizes
-            CharInfo[] chars = null;
+        CharInfo[] chars = null;
 
-        if(SUPPORT_FILEFORMAT_TTF){
+        final int FONT_SDF_CHAR_PADDING = 4;      // SDF font generation char padding
+        final byte FONT_SDF_ON_EDGE_VALUE = (byte) 128;      // SDF font generation on edge value
+        final float FONT_SDF_PIXEL_DIST_SCALE = 64.0f;     // SDF font generation pixel distance scale
+        final int FONT_BITMAP_ALPHA_THRESHOLD = 80;      // Bitmap (B&W) font generation alpha threshold
+
+        if (SUPPORT_FILEFORMAT_TTF){
             // Load font data (including pixel data) from TTF memory file
             // NOTE: Loaded information should be enough to generate font image atlas, using any packaging method
             if (fileData != null){
-                int genFontChars = 0;
-                stbtt_fontinfo fontInfo = {0};
+                boolean genFontChars = false;
+                ByteBuffer fontBuffer = ByteBuffer.allocateDirect(fileData.length);
+                fontBuffer.put(fileData).flip();
+                STBTTFontinfo fontInfo = new STBTTFontinfo(fontBuffer);
 
-                if (stbtt_InitFont( & fontInfo,(unsigned char *)fileData, 0))     // Init font for data reading
-                {
+                if (STBTruetype.stbtt_InitFont(fontInfo, fontBuffer, 0)){    // Init font for data reading
+
                     // Calculate font scale factor
-                    float scaleFactor = stbtt_ScaleForPixelHeight( & fontInfo, (float) fontSize);
+                    float scaleFactor = STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, (float) fontSize);
 
                     // Calculate font basic metrics
                     // NOTE: ascent is equivalent to font baseline
-                    int ascent, descent, lineGap;
-                    stbtt_GetFontVMetrics(&fontInfo, &ascent, &descent, &lineGap);
+                    IntBuffer ascent, descent, lineGap;
+                    ascent = IntBuffer.allocate(1);
+                    descent = IntBuffer.allocate(1);
+                    lineGap = IntBuffer.allocate(1);
+
+                    STBTruetype.stbtt_GetFontVMetrics(fontInfo, ascent, descent, lineGap);
 
                     // In case no chars count provided, default to 95
                     charsCount = (charsCount > 0) ? charsCount : 95;
@@ -478,16 +506,19 @@ public class Text{
                     // NOTE: By default we fill charsCount consecutevely, starting at 32 (Space)
 
                     if (fontChars == null){
-                        fontChars = ( int *)RL_MALLOC(charsCount * sizeof( int));
-                        for (int i = 0; i < charsCount; i++) fontChars[i] = i + 32;
+                        fontChars = new int[charsCount];
+                        for (int i = 0; i < charsCount; i++){
+                            fontChars[i] = i + 32;
+                        }
                         genFontChars = true;
                     }
 
-                    chars = (CharInfo *)RL_MALLOC(charsCount * sizeof(CharInfo));
+                    chars = new CharInfo[charsCount];
 
                     // NOTE: Using simple packaging, one char after another
                     for (int i = 0; i < charsCount; i++){
-                        int chw = 0, chh = 0;   // Character width and height (on generation)
+                        IntBuffer chw = IntBuffer.allocate(1),
+                                chh = IntBuffer.allocate(1);   // Character width and height (on generation)
                         int ch = fontChars[i];  // Character value to get info for
                         chars[i].value = ch;
 
@@ -496,59 +527,76 @@ public class Text{
                         //      stbtt_GetCodepointBitmapBox()        -- how big the bitmap must be
                         //      stbtt_MakeCodepointBitmap()          -- renders into bitmap you provide
 
-                        if (type != FONT_SDF)
-                            chars[i].image.data = stbtt_GetCodepointBitmap( & fontInfo, scaleFactor, scaleFactor, ch, &
-                        chw, &chh, &chars[i].offsetX, &chars[i].offsetY);
-                else if (ch != 32)
-                            chars[i].image.data = stbtt_GetCodepointSDF( & fontInfo, scaleFactor, ch, FONT_SDF_CHAR_PADDING, FONT_SDF_ON_EDGE_VALUE, FONT_SDF_PIXEL_DIST_SCALE, &
-                        chw, &chh, &chars[i].offsetX, &chars[i].offsetY);
-                else chars[i].image.data = NULL;
+                        if (type != FONT_SDF){
+                            chars[i].image.setData(STBTruetype.stbtt_GetCodepointBitmap(fontInfo, scaleFactor,
+                                    scaleFactor, ch, chw, chh, IntBuffer.allocate(chars[i].offsetX),
+                                    IntBuffer.allocate(chars[i].offsetY)).array());
+                        }
+                        else if (ch != 32){
+                            chars[i].image.setData(STBTruetype.stbtt_GetCodepointSDF(fontInfo, scaleFactor, ch,
+                                    FONT_SDF_CHAR_PADDING, FONT_SDF_ON_EDGE_VALUE, FONT_SDF_PIXEL_DIST_SCALE,
+                                    chw, chh, IntBuffer.allocate(chars[i].offsetX),
+                                    IntBuffer.allocate(chars[i].offsetY)).array());
+                        }
+                        else{
+                            chars[i].image.data = null;
+                        }
 
-                        stbtt_GetCodepointHMetrics(&fontInfo, ch, &chars[i].advanceX, NULL);
+                        //TODO:
+                        //  STBTruetype.stbtt_GetCodepointHMetrics(fontInfo, ch, chars[i].advanceX, );
                         chars[i].advanceX = (int) ((float) chars[i].advanceX * scaleFactor);
 
                         // Load characters images
-                        chars[i].image.width = chw;
-                        chars[i].image.height = chh;
+                        chars[i].image.width = chw.get();
+                        chars[i].image.height = chh.get();
                         chars[i].image.mipmaps = 1;
                         chars[i].image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 
-                        chars[i].offsetY += (int) ((float) ascent * scaleFactor);
+                        chars[i].offsetY += (int) ((float) ascent.get() * scaleFactor);
 
                         // NOTE: We create an empty image for space character, it could be further required for atlas packing
                         if (ch == 32){
-                            Image imSpace = {
-                                    .data = calloc(chars[i].advanceX * fontSize, 2),
-                        .width = chars[i].advanceX,
-                        .height = fontSize,
-                        .format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE,
-                        .mipmaps = 1
-                    };
+                            Color[] c = new Color[chars[i].advanceX * fontSize];
+                            for (int j = 0; j < c.length; j++){
+                                c[i] = new Color(0, 0, 0, 255);
+                            }
 
-                            chars[i].image = imSpace;
+                            chars[i].image = new Image(c, chars[i].advanceX, fontSize,
+                                    PIXELFORMAT_UNCOMPRESSED_GRAYSCALE, 1);
                         }
 
                         if (type == FONT_BITMAP){
                             // Aliased bitmap (black & white) font generation, avoiding anti-aliasing
                             // NOTE: For optimum results, bitmap font should be generated at base pixel size
-                            for (int p = 0; p < chw * chh; p++){
-                                if (((unsigned char *)chars[i].image.data)[p] <FONT_BITMAP_ALPHA_THRESHOLD)((unsigned
-                                char *)chars[i].image.data)[p] =0;
-                        else((unsigned char *)chars[i].image.data)[p] =255;
+                            for (int p = 0; p < chw.get() * chh.get(); p++){
+                                if (chars[i].image.getData()[p] < FONT_BITMAP_ALPHA_THRESHOLD){
+                                    chars[i].image.getData()[p] = 0;
+                                }
+                                else{
+                                    chars[i].image.getData()[p] = (byte) 255;
+                                }
                             }
                         }
 
                         // Get bounding box for character (may be offset to account for chars that dip above or below the line)
-
-                        int chX1, chY1, chX2, chY2;
-                        stbtt_GetCodepointBitmapBox(&fontInfo, ch, scaleFactor, scaleFactor, &chX1, &chY1, &chX2, &chY2);
-
-                        TRACELOGD("FONT: Character box measures: %i, %i, %i, %i", chX1, chY1, chX2 - chX1, chY2 - chY1);
-                        TRACELOGD("FONT: Character offsetY: %i", (int)((float)ascent*scaleFactor) + chY1);
+                        int chX1i, chX2i, chY1i, chY2i;
+                        IntBuffer chX1, chY1, chX2, chY2;
+                        chX1 = IntBuffer.allocate(1);
+                        chX2 = IntBuffer.allocate(1);
+                        chY1 = IntBuffer.allocate(1);
+                        chY2 = IntBuffer.allocate(1);
+                        STBTruetype.stbtt_GetCodepointBitmapBox(fontInfo, ch, scaleFactor, scaleFactor, chX1, chY1, chX2, chY2);
+                        chX1i = chX1.get();
+                        chX2i = chX2.get();
+                        chY1i = chY1.get();
+                        chY2i = chY2.get();
+                        TracelogS("FONT: Character box measures: " + chX1i + ", " + chY1i + ", " + (chX2i - chX1i) +
+                                ", " + (chY2i - chY1i));
+                        TracelogS("FONT: Character offsetY: " + (int) ((float) ascent.get() * scaleFactor) + chY1i);
 
                     }
                 }
-                 else {
+                else{
                     Tracelog(LOG_WARNING, "FONT: Failed to process TTF font data");
                 }
 
@@ -557,7 +605,6 @@ public class Text{
 
         return chars;
     }
-    */
 
     public static int getCPBC(){
         return codepointByteCount;
@@ -567,7 +614,9 @@ public class Text{
         Color color = Color.LIME; // good fps
         int fps = Core.GetFPS();
 
-        if (fps < 30 && fps >= 15) color = Color.ORANGE;  // warning FPS
+        if (fps < 30 && fps >= 15){
+            color = Color.ORANGE;  // warning FPS
+        }
         else if (fps < 15) color = Color.RED;    // bad FPS
 
         DrawText(fps + " + FPS", posX, posY, 20, color);
@@ -596,7 +645,7 @@ public class Text{
 
     // Draw text using Font
     // NOTE: chars spacing is NOT proportional to fontSize
-    void DrawTextEx(Font font, String text, Vector2 position, float fontSize, float spacing, Color tint){
+    public void DrawTextEx(Font font, String text, Vector2 position, float fontSize, float spacing, Color tint){
         int length = TextLength(text);      // Total length in bytes of the text, scanned by codepoints in loop
 
         int textOffsetY = 0;            // Offset between lines (on line break '\n')
@@ -673,7 +722,9 @@ public class Text{
         // Check if default font has been loaded
         if (GetFontDefault().texture.getId() != 0){
             int defaultFontSize = 10;   // Default Font chars height in pixel
-            if (fontSize < defaultFontSize) fontSize = defaultFontSize;
+            if (fontSize < defaultFontSize){
+                fontSize = defaultFontSize;
+            }
             int spacing = fontSize / defaultFontSize;
 
             vec = MeasureTextEx(GetFontDefault(), text, (float) fontSize, (float) spacing);
@@ -701,14 +752,16 @@ public class Text{
         for (int i = 0; i < len; i++){
             lenCounter++;
 
-            int next = 0;
+            next = 0;
             letter = GetNextCodepoint(String.valueOf(text.charAt(i)), next);
             index = GetGlyphIndex(font, letter);
 
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol so to not skip any we set next = 1
-            if (letter == 0x3f) next = 1;
-            i += 1;
+            if (letter == 0x3f){
+                next = 1;
+            }
+            i += next - 1;
 
             if (letter != '\n'){
                 if (font.chars[index].advanceX != 0){
@@ -780,10 +833,12 @@ public class Text{
 
     // Get a piece of a text string
     public String TextSubtext(String text, int position, int length){
-        if (length < text.length())
+        if (length < text.length()){
             return text.substring(position, length);
-        else
+        }
+        else{
             return text.substring(position);
+        }
     }
 
 
@@ -808,7 +863,7 @@ public class Text{
 
         int code = 0x3f;   // Codepoint (defaults to '?')
         int octet = (text.toCharArray()[0]); // The first UTF8 octet
-        bytesProcessed = 1;
+        next = 1;
 
         if (octet <= 0x7f){
             // Only one octet (ASCII range x00-7F)
@@ -820,13 +875,13 @@ public class Text{
             char octet1 = text.toCharArray()[1];
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                bytesProcessed = 2;
+                next = 2;
                 return code;
             } // Unexpected sequence
 
             if ((octet >= 0xc2) && (octet <= 0xdf)){
                 code = ((octet & 0x1f) << 6) | (octet1 & 0x3f);
-                bytesProcessed = 2;
+                next = 2;
             }
         }
         else if ((octet & 0xf0) == 0xe0){
@@ -835,14 +890,14 @@ public class Text{
             char octet2;
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                bytesProcessed = 2;
+                next = 2;
                 return code;
             } // Unexpected sequence
 
             octet2 = text.toCharArray()[2];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
-                bytesProcessed = 3;
+                next = 3;
                 return code;
             } // Unexpected sequence
 
@@ -855,13 +910,13 @@ public class Text{
 
             if (((octet == 0xe0) && !((octet1 >= 0xa0) && (octet1 <= 0xbf))) ||
                     ((octet == 0xed) && !((octet1 >= 0x80) && (octet1 <= 0x9f)))){
-                bytesProcessed = 2;
+                next = 2;
                 return code;
             }
 
             if ((octet >= 0xe0) && (0 <= 0xef)){
                 code = ((octet & 0xf) << 12) | ((octet1 & 0x3f) << 6) | (octet2 & 0x3f);
-                bytesProcessed = 3;
+                next = 3;
             }
         }
         else if ((octet & 0xf8) == 0xf0){
@@ -875,21 +930,21 @@ public class Text{
             char octet3 = '\0';
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                bytesProcessed = 2;
+                next = 2;
                 return code;
             }  // Unexpected sequence
 
             octet2 = text.toCharArray()[2];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
-                bytesProcessed = 3;
+                next = 3;
                 return code;
             }  // Unexpected sequence
 
             octet3 = text.toCharArray()[3];
 
             if ((octet3 == '\0') || ((octet3 >> 6) != 2)){
-                bytesProcessed = 4;
+                next = 4;
                 return code;
             }  // Unexpected sequence
 
@@ -901,13 +956,13 @@ public class Text{
 
             if (((octet == 0xf0) && !((octet1 >= 0x90) && (octet1 <= 0xbf))) ||
                     ((octet == 0xf4) && !((octet1 >= 0x80) && (octet1 <= 0x8f)))){
-                bytesProcessed = 2;
+                next = 2;
                 return code;
             } // Unexpected sequence
 
             if (octet >= 0xf0){
                 code = ((octet & 0x7) << 18) | ((octet1 & 0x3f) << 12) | ((octet2 & 0x3f) << 6) | (octet3 & 0x3f);
-                bytesProcessed = 4;
+                next = 4;
             }
         }
 
@@ -915,12 +970,12 @@ public class Text{
             code = 0x3f;     // Codepoints after U+10ffff are invalid
         }
 
-        codepointByteCount = bytesProcessed;
+        codepointByteCount = next;
 
         return code;
     }
 
-    /*
+
     // Generate image font atlas using chars info
     // NOTE: Packing method: 0-Default, 1-Skyline
     Image GenImageFontAtlas(CharInfo[] chars, Rectangle[] charRecs, int charsCount, int fontSize, int padding,
@@ -999,36 +1054,43 @@ public class Text{
             }
             else if (packMethod == 1)  // Use Skyline rect packing algorythm (stb_pack_rect)
             {
-                stbrp_context * context = (stbrp_context *)RL_MALLOC(sizeof( * context));
-                stbrp_node * nodes = (stbrp_node *)RL_MALLOC(charsCount * sizeof( * nodes));
+                ByteBuffer rectBuffer = ByteBuffer.allocateDirect(charsCount);
+                ByteBuffer nBB = ByteBuffer.allocateDirect(charsCount);
+                ByteBuffer cBB = ByteBuffer.allocateDirect(64);
+                STBRPContext context = new STBRPContext(cBB);
+                STBRPNode nodes = new STBRPNode(nBB);
+                STBRPNode.Buffer nodeBuf = new STBRPNode.Buffer(nBB);
+                STBRPRect.Buffer rectBuf = new STBRPRect.Buffer(rectBuffer);
 
-                stbrp_init_target(context, atlas.width, atlas.height, nodes, charsCount);
-                stbrp_rect * rects = (stbrp_rect *)RL_MALLOC(charsCount * sizeof(stbrp_rect));
+                STBRectPack.stbrp_init_target(context, atlas.width, atlas.height, nodeBuf);
+                STBRPRect[] rects = new STBRPRect[charsCount];
+                for (int i = 0; i < rects.length; i++){
+                    rects[i] = new STBRPRect(rectBuffer);
+                }
 
                 // Fill rectangles for packaging
                 for (int i = 0; i < charsCount; i++){
-                    rects[i].id = i;
-                    rects[i].w = chars[i].image.width + 2 * padding;
-                    rects[i].h = chars[i].image.height + 2 * padding;
+                    rects[i].id(i);
+                    rects[i].w((short) (chars[i].image.width + 2 * padding));
+                    rects[i].h((short) (chars[i].image.height + 2 * padding));
                 }
 
                 // Package rectangles into atlas
-                stbrp_pack_rects(context, rects, charsCount);
+                STBRectPack.stbrp_pack_rects(context, rectBuf);
 
                 for (int i = 0; i < charsCount; i++){
                     // It return char rectangles in atlas
-                    recs[i].x = rects[i].x + (float) padding;
-                    recs[i].y = rects[i].y + (float) padding;
+                    recs[i].x = rects[i].x() + (float) padding;
+                    recs[i].y = rects[i].y() + (float) padding;
                     recs[i].width = (float) chars[i].image.width;
                     recs[i].height = (float) chars[i].image.height;
 
-                    if (rects[i].was_packed){
+                    if (rects[i].was_packed()){
                         // Copy pixel data from fc.data to atlas
                         for (int y = 0; y < chars[i].image.height; y++){
                             for (int x = 0; x < chars[i].image.width; x++){
-                                ((unsigned char *)atlas.data)[(rects[i].y + padding + y)*
-                                atlas.width + (rects[i].x + padding + x)] =((unsigned char *)chars[i].image.data)[
-                                y * chars[i].image.width + x];
+                                atlas.getData()[(rects[i].y() + padding + y)* atlas.width + (rects[i].x() + padding + x)] =
+                                        chars[i].image.getData()[y * chars[i].image.width + x];
                             }
                         }
                     }
@@ -1039,12 +1101,11 @@ public class Text{
             // TODO: Crop image if required for smaller size
 
             // Convert image data from GRAYSCALE to GRAY_ALPHA
-            unsigned char *dataGrayAlpha = (unsigned char *)RL_MALLOC(atlas.width * atlas.height * sizeof(unsigned char)*
-            2); // Two channels
+            byte[] dataGrayAlpha = new byte[atlas.width * atlas.height * 2]; // Two channels
 
             for (int i = 0, k = 0; i < atlas.width * atlas.height; i++, k += 2){
-                dataGrayAlpha[k] = 255;
-                dataGrayAlpha[k + 1] = ((unsigned char *)atlas.data)[i];
+                dataGrayAlpha[k] = (byte) 255;
+                dataGrayAlpha[k + 1] = atlas.getData()[i];
             }
 
             atlas.setData(dataGrayAlpha);
@@ -1055,10 +1116,178 @@ public class Text{
 
         return atlas;
     }
-    */
+
 
     public static void UnloadFont(Font f){
         f = null;
     }
 
+    /*TODO
+    // Read a line from memory
+    // NOTE: Returns the number of bytes read
+    static int GetLine(char[] origin, String buffer, int maxLength)
+    {
+        int count = 0;
+        for (; count < maxLength; count++){
+            if (origin[count] == '\n'){
+                break;
+            }
+        }
+        memcpy(buffer, origin, count);
+        return count;
+    }
+
+    // Load a BMFont file (AngelCode font file)
+    static Font LoadBMFont(String fileName)
+    {
+        final int MAX_BUFFER_SIZE = 256;
+
+        Font font = new Font();
+
+        char[] buffer = new char[MAX_BUFFER_SIZE];
+        char searchPoint;
+
+        int fontSize = 0;
+        int charsCount = 0;
+
+        int imWidth = 0;
+        int imHeight = 0;
+        char[] imFileName = new char[129];
+
+        int base = 0;   // Useless data
+
+        String fileText = null;
+        try{
+            fileText = FileIO.LoadFileText(fileName);
+        } catch (IOException exception){
+            exception.printStackTrace();
+        }
+
+        if (fileText == null){
+            return font;
+        }
+
+        String fileTextPtr = fileText;
+
+        // NOTE: We skip first line, it contains no useful information
+        int lineBytes = GetLine(fileTextPtr, buffer, MAX_BUFFER_SIZE);
+        fileTextPtr += (lineBytes + 1);
+
+        // Read line data
+        lineBytes = GetLine(fileTextPtr, buffer, MAX_BUFFER_SIZE);
+        searchPoint = strstr(buffer, "lineHeight");
+        sscanf(searchPoint, "lineHeight=%i base=%i scaleW=%i scaleH=%i", &fontSize, &base, &imWidth, &imHeight);
+        fileTextPtr += (lineBytes + 1);
+
+        TracelogS("FONT: [" + fileName + "] Loaded font info:");
+        TracelogS("    > Base size: " + fontSize);
+        TracelogS("    > Texture scale: " + imWidth + "x" + imHeight);
+
+        lineBytes = GetLine(fileTextPtr, buffer, MAX_BUFFER_SIZE);
+        searchPoint = strstr(buffer, "file");
+        sscanf(searchPoint, "file=\"%128[^\"]\"", imFileName);
+        fileTextPtr += (lineBytes + 1);
+
+        TracelogS("    > Texture filename: " + Arrays.toString(imFileName));
+
+        lineBytes = GetLine(fileTextPtr, buffer, MAX_BUFFER_SIZE);
+        searchPoint = strstr(buffer, "count");
+        sscanf(searchPoint, "count=%i", &charsCount);
+        fileTextPtr += (lineBytes + 1);
+
+        TracelogS("    > Chars count: " + charsCount);
+
+        // Compose correct path using route of .fnt file (fileName) and imFileName
+        char *imPath = null;
+        char *lastSlash = null;
+
+        lastSlash = strrchr(fileName, '/');
+        if (lastSlash == null){
+            lastSlash = strrchr(fileName, '\\');
+        }
+
+        if (lastSlash != null)
+        {
+            // NOTE: We need some extra space to avoid memory corruption on next allocations!
+            imPath = RL_CALLOC(TextLength(fileName) - TextLength(lastSlash) + TextLength(imFileName) + 4, 1);
+            memcpy(imPath, fileName, TextLength(fileName) - TextLength(lastSlash) + 1);
+            memcpy(imPath + TextLength(fileName) - TextLength(lastSlash) + 1, imFileName, TextLength(imFileName));
+        }
+        else{
+            imPath = imFileName;
+        }
+
+        TracelogS("    > Image loading path: " + imPath);
+
+        Image imFont = LoadImage(imPath);
+
+        if (imFont.format == PIXELFORMAT_UNCOMPRESSED_GRAYSCALE)
+        {
+            // Convert image to GRAYSCALE + ALPHA, using the mask as the alpha channel
+            Image imFontAlpha = new Image();
+            imFontAlpha.setData(new byte[imFont.width*imFont.height*2]);
+            imFontAlpha.width = imFont.width;
+            imFontAlpha.height = imFont.height;
+            imFontAlpha.format = PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
+            imFontAlpha.mipmaps = 1;
+
+            for (int p = 0, i = 0; p < (imFont.width*imFont.height*2); p += 2, i++)
+            {
+                imFontAlpha.getData()[p] = (byte) 0xff;
+                imFontAlpha.getData()[p + 1] = imFont.getData()[i];
+            }
+
+            UnloadImage(imFont);
+            imFont = imFontAlpha;
+        }
+
+        font.texture = LoadTextureFromImage(imFont);
+
+        if (lastSlash != null){
+            imPath = null;
+        }
+
+        // Fill font characters info data
+        font.baseSize = fontSize;
+        font.charsCount = charsCount;
+        font.charsPadding = 0;
+        font.chars = new CharInfo[charsCount];
+        font.recs = new Rectangle[charsCount];
+
+        int charId, charX, charY, charWidth, charHeight, charOffsetX, charOffsetY, charAdvanceX;
+
+        for (int i = 0; i < charsCount; i++)
+        {
+            lineBytes = GetLine(fileTextPtr, buffer, MAX_BUFFER_SIZE);
+            sscanf(buffer, "char id=%i x=%i y=%i width=%i height=%i xoffset=%i yoffset=%i xadvance=%i",
+                       &charId, &charX, &charY, &charWidth, &charHeight, &charOffsetX, &charOffsetY, &charAdvanceX);
+            fileTextPtr += (lineBytes + 1);
+
+            // Get character rectangle in the font atlas texture
+            font.recs[i] = new Rectangle((float)charX, (float)charY, (float)charWidth, (float)charHeight);
+
+            // Save data properly in sprite font
+            font.chars[i].value = charId;
+            font.chars[i].offsetX = charOffsetX;
+            font.chars[i].offsetY = charOffsetY;
+            font.chars[i].advanceX = charAdvanceX;
+
+            // Fill character image data from imFont data
+            font.chars[i].image = ImageFromImage(imFont, font.recs[i]);
+        }
+
+        UnloadImage(imFont);
+        fileText = null;
+
+        if (font.texture.getId() == 0)
+        {
+            UnloadFont(font);
+            font = GetFontDefault();
+            Tracelog(LOG_WARNING, "FONT: [" + fileName + "] Failed to load texture, reverted to default font");
+        }
+        else Tracelog(LOG_INFO, "FONT: [" + fileName + "] Font loaded successfully");
+
+        return font;
+    }
+    */
 }

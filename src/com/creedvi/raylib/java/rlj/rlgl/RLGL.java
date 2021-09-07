@@ -12,11 +12,9 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferShort;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.Arrays;
 
 import static com.creedvi.raylib.java.rlj.Config.*;
-import static com.creedvi.raylib.java.rlj.raymath.RayMath.*;
+import static com.creedvi.raylib.java.rlj.raymath.Raymath.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.FramebufferTexType.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.GlVersion.*;
 import static com.creedvi.raylib.java.rlj.rlgl.RLGL.PixelFormat.*;
@@ -1633,12 +1631,12 @@ public class RLGL{
                             // We need to define the number of indices to be processed: quadsCount*6
                             // NOTE: The final parameter tells the GPU the offset in bytes from the
                             // start of the index buffer to the location of the first index to process
-                            //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, (vertexOffset / 4 * 6L * (Integer.BYTES)));
-                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, 0);
-                            //glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount, GL_UNSIGNED_INT, 0);
+                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT,
+                                    (vertexOffset/4*6*Integer.BYTES));
                         }
                         else if (GRAPHICS_API_OPENGL_ES2){
-                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT, 0);
+                            glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT,
+                                    (vertexOffset/4*6*Short.BYTES));
                         }
                     }
 
@@ -1807,8 +1805,12 @@ public class RLGL{
 
             if (glInternalFormat != -1){
                 if (format < PIXELFORMAT_COMPRESSED_DXT1_RGB){
-
-                    switch(data.getDataType()){
+                    if(data == null){
+                        glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat,
+                                glType, (ByteBuffer) null);
+                    }
+                    else{
+                        switch (data.getDataType()){
                         /*
                          0 = byte
                          1 = uShort
@@ -1817,38 +1819,40 @@ public class RLGL{
                          4 = float
                          5 = double
                          */
-                        case 0: {
-                            byte[] dataB = new byte[data.getSize()];
-                            for(int s = 0;s < dataB.length; s++){
-                                dataB[s] = (byte) data.getElem(s);
+                            case 0:{
+                                ByteBuffer buffer = ByteBuffer.allocateDirect(data.getSize());
+                                for (int s = 0; s < data.getSize(); s++){
+                                    buffer.put((byte) data.getElem(s));
+                                }
+                                buffer.flip();
+                                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat,
+                                        glType, buffer);
+                                break;
                             }
-                            glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                                    ByteBuffer.wrap(dataB));
-                            break;
-                        }
-                        case 1:
-                        case 2: {
-                            short[] dataS = new short[data.getSize()];
-                            for(int s = 0;s < dataS.length; s++){
-                                dataS[s] = (short) data.getElem(s);
+                            case 1:
+                            case 2:{
+                                short[] dataS = new short[data.getSize()];
+                                for (int s = 0; s < dataS.length; s++){
+                                    dataS[s] = (short) data.getElem(s);
+                                }
+                                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
+                                        dataS);
+                                break;
                             }
-                            glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                                    dataS);
-                            break;
-                        }
-                        case 4:
-                        case 5:
-                        case 6:
-                        default: {
-                            int[] dataI = new int[data.getSize()];
-                            for(int s = 0;s < dataI.length; s++){
-                                dataI[s] = data.getElem(s);
+                            case 4:
+                            case 5:
+                            case 6:
+                            default:{
+                                int[] dataI = new int[data.getSize()];
+                                for (int s = 0; s < dataI.length; s++){
+                                    dataI[s] = data.getElem(s);
+                                }
+                                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
+                                        dataI);
+                                break;
                             }
-                            glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                                    dataI);
-                            break;
-                        }
 
+                        }
                     }
 
                 }
@@ -1942,7 +1946,7 @@ public class RLGL{
 
     // Load depth texture/renderbuffer (to be attached to fbo)
     // WARNING: OpenGL ES 2.0 requires GL_OES_depth_texture/WEBGL_depth_texture extensions
-    public int rlLoadTextureDepth(int width, int height, boolean useRenderBuffer){
+    public static int rlLoadTextureDepth(int width, int height, boolean useRenderBuffer){
         int id = 0;
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2000,7 +2004,7 @@ public class RLGL{
     // Load texture cubemap
     // NOTE: Cubemap data is expected to be 6 images in a single data array (one after the other),
     // expected the following convention: +X, -X, +Y, -Y, +Z, -Z
-    public int rlLoadTextureCubemap(int[] data, int size, int format){
+    public static int rlLoadTextureCubemap(byte[] data, int size, int format){
         int id = 0;
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2523,7 +2527,7 @@ public class RLGL{
 
     // Attach color buffer texture to an fbo (unloads previous attachment)
     // NOTE: Attach type: 0-Color, 1-Depth renderbuffer, 2-Depth texture
-    void rlFramebufferAttach(int fboId, int texId, int attachType, int texType){
+    public static void rlFramebufferAttach(int fboId, int texId, int attachType, int texType){
         if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
             glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 
@@ -2577,7 +2581,7 @@ public class RLGL{
     }
 
     // Verify render texture is complete
-    boolean rlFramebufferComplete(int id){
+    public static boolean rlFramebufferComplete(int id){
         boolean result = false;
 
         if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && SUPPORT_RENDER_TEXTURES_HINT){
@@ -2897,21 +2901,19 @@ public class RLGL{
             // NOTE: This information is useful for debug...
             int uniformCount = glGetProgrami(shader.getId(), GL_ACTIVE_UNIFORMS);
 
-            for (int i = 0; i < uniformCount; i++){
-                int namelen = -1;
-                int num = -1;
-                char[] name = new char[256]; // Assume no variable names longer than 256
-                int type = GL_ZERO;
+            //TODO glGetActiveUniform produces IllegalArgumentException
+            /*for (int i = 0; i < uniformCount; i++){
+                try(MemoryStack stack = MemoryStack.stackPush()){
+                    IntBuffer nameLen = stack.mallocInt(256);
+                    IntBuffer type = stack.mallocInt(GL_ZERO);
 
-                // Get the name of the uniforms
-                String sName = glGetActiveUniform(shader.getId(), i, name.length - 1, IntBuffer.allocate(namelen),
-                        IntBuffer.allocate(type));
+                    // Get the name of the uniforms
+                    String sName = glGetActiveUniform(shader.getId(), i, 255, nameLen, type);
 
-                name[namelen] = 0;
-
-                TracelogS("SHADER: [ID " + shader.getId() + "] Active uniform (" + Arrays.toString(name) + ") set at location: " +
-                        glGetUniformLocation(shader.getId(), Arrays.toString(name)));
-            }
+                    TracelogS("SHADER: [ID " + shader.getId() + "] Active uniform (" + sName + ") set at location: " +
+                            glGetUniformLocation(shader.getId(), sName));
+                }
+            }*/
         }
 
         return shader;
@@ -2922,9 +2924,8 @@ public class RLGL{
         int shader = glCreateShader(type);
         glShaderSource(shader, shaderStr);
 
-        int success;
         glCompileShader(shader);
-        success = glGetShaderi(shader, GL_COMPILE_STATUS);
+        int success = glGetShaderi(shader, GL_COMPILE_STATUS);
 
         if (success == GL_FALSE){
             Tracelog(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile shader code");
@@ -2965,7 +2966,7 @@ public class RLGL{
             glBindAttribLocation(program, 4, DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
             glBindAttribLocation(program, 5, DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
 
-            // NOTE: If some attrib name is no found on the shader, it locations becomes -1
+            // NOTE: If some attrib name is not found on the shader, it locations becomes -1
 
             glLinkProgram(program);
 
@@ -3040,8 +3041,7 @@ public class RLGL{
     }
 
     // Set shader value uniform
-    public void rlSetUniform(int locIndex, float[] value, int uniformType, int count)
-    {
+    public void rlSetUniform(int locIndex, float[] value, int uniformType, int count) {
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
 
             switch (uniformType){
