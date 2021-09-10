@@ -1,13 +1,14 @@
 plugins {
     // id 'raylib.java-application-conventions'
+    id 'application'
 }
 
 dependencies {
-    // plementation 'org.apache.commons:commons-text'
-   //lementation project(':utilities')
+    implementation 'org.apache.commons:commons-text'
+    implementation project(':lib')
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'raylib.App'
+    mainClass = 'com.raylib.App'
 }

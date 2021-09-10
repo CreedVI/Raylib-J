@@ -1,7 +1,7 @@
-package com.creedvi.raylib.java.examples.shapes;
+package com.raylib.examples.shapes;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
 
 public class RaylibLogo{
 

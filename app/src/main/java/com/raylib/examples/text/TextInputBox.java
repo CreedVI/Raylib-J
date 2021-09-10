@@ -1,13 +1,13 @@
-package com.creedvi.raylib.java.examples.text;
+package com.raylib.examples.text;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
-import com.creedvi.raylib.java.rlj.core.Core;
-import com.creedvi.raylib.java.rlj.shapes.Rectangle;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
+import com.raylib.core.Core;
+import com.raylib.shapes.Rectangle;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
-import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
-import static com.creedvi.raylib.java.rlj.core.input.Mouse.MouseCursor.MOUSE_CURSOR_IBEAM;
+import static com.raylib.core.input.Keyboard.*;
+import static com.raylib.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
+import static com.raylib.core.input.Mouse.MouseCursor.MOUSE_CURSOR_IBEAM;
 
 public class TextInputBox{
 

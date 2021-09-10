@@ -1,15 +1,15 @@
-package com.creedvi.raylib.java.examples.core;
+package com.raylib.examples.core;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
-import com.creedvi.raylib.java.rlj.core.Core;
-import com.creedvi.raylib.java.rlj.core.camera.Camera;
-import com.creedvi.raylib.java.rlj.core.camera.Camera3D;
-import com.creedvi.raylib.java.rlj.raymath.Vector3;
-import com.creedvi.raylib.java.rlj.textures.Textures;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
+import com.raylib.core.Core;
+import com.raylib.core.camera.Camera;
+import com.raylib.core.camera.Camera3D;
+import com.raylib.raymath.Vector3;
+import com.raylib.textures.Textures;
 
-import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraMode.CAMERA_FIRST_PERSON;
-import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.CAMERA_PERSPECTIVE;
+import static com.raylib.core.camera.Camera.CameraMode.CAMERA_FIRST_PERSON;
+import static com.raylib.core.camera.Camera.CameraProjection.CAMERA_PERSPECTIVE;
 
 public class Core3dCameraFirstPerson{
 

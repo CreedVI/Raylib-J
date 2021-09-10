@@ -1,7 +1,7 @@
-package com.creedvi.raylib.java.examples.core;
+package com.raylib.examples.core;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
 
 /*******************************************************************************************
  *

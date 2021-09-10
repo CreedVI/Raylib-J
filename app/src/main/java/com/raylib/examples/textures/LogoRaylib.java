@@ -1,8 +1,8 @@
-package com.creedvi.raylib.java.examples.textures;
+package com.raylib.examples.textures;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
-import com.creedvi.raylib.java.rlj.textures.Texture2D;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
+import com.raylib.textures.Texture2D;
 
 public class LogoRaylib{
 

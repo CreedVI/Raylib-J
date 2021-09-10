@@ -1,12 +1,12 @@
-package com.creedvi.raylib.java.examples.shapes;
+package com.raylib.examples.shapes;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
-import com.creedvi.raylib.java.rlj.raymath.Vector2;
-import com.creedvi.raylib.java.rlj.shapes.Rectangle;
-import com.creedvi.raylib.java.rlj.utils.Easings;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
+import com.raylib.raymath.Vector2;
+import com.raylib.shapes.Rectangle;
+import com.raylib.utils.Easings;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
+import static com.raylib.core.input.Keyboard.*;
 
 public class EasingsRectArray{
 

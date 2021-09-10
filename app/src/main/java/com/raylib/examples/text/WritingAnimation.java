@@ -1,9 +1,9 @@
-package com.creedvi.raylib.java.examples.text;
+package com.raylib.examples.text;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
+import static com.raylib.core.input.Keyboard.*;
 
 public class WritingAnimation{
 

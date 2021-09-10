@@ -1,10 +1,10 @@
-package com.creedvi.raylib.java.examples.shapes;
+package com.raylib.examples.shapes;
 
-import com.creedvi.raylib.java.rlj.Raylib;
-import com.creedvi.raylib.java.rlj.core.Color;
-import com.creedvi.raylib.java.rlj.raymath.Vector2;
+import com.raylib.Raylib;
+import com.raylib.core.Color;
+import com.raylib.raymath.Vector2;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_SPACE;
+import static com.raylib.core.input.Keyboard.KEY_SPACE;
 
 public class BouncingBall{
 
