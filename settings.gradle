@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'raylib'
-include('lib')
+include('app', 'lib')

@@ -2,13 +2,13 @@ package com.raylib.examples.core;
 
 import com.raylib.Raylib;
 import com.raylib.core.Color;
-import com.raylib.java.rlj.core.Core;
-import com.creedvi.raylib.java.rlj.core.camera.Camera2D;
-import com.creedvi.raylib.java.rlj.raymath.Vector2;
-import com.creedvi.raylib.java.rlj.shapes.Rectangle;
-import com.creedvi.raylib.java.rlj.textures.Textures;
+import com.raylib.core.Core;
+import com.raylib.core.camera.Camera2D;
+import com.raylib.raymath.Vector2;
+import com.raylib.shapes.Rectangle;
+import com.raylib.textures.Textures;
 
-import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
+import static com.raylib.core.input.Keyboard.*;
 
 /*******************************************************************************************
  *
