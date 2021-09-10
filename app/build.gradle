@@ -2,9 +2,11 @@ plugins {
     // id 'raylib.java-application-conventions'
     id 'application'
 }
-
+repositories {
+	mavenCentral()
+}
 dependencies {
-    implementation 'org.apache.commons:commons-text'
+    // implementation 'org.apache.commons:commons-text'
     implementation project(':lib')
 }
 
