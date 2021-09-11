@@ -34,10 +34,11 @@ public class Rectangle {
         return x;
     }
 
-    public void setX(float x){
+    public void setX(float x) {
         this.x = x;
     }
 
+    
     public float getY(){
         return y;
     }

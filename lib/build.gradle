@@ -23,7 +23,7 @@ switch (OperatingSystem.current()) {
 			: "natives-linux"
 		break
 	case OperatingSystem.MAC_OS:
-		project.ext.lwjglNatives = natives-macos
+		project.ext.lwjglNatives = "natives-macos"
 		break
 	case OperatingSystem.WINDOWS:
 		def osArch = System.getProperty("os.arch")
@@ -72,10 +72,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
     // This dependency is exported to consumers, that is to say found on their compile classpath.
-    // api 'org.apache.commons:commons-math3:3.6.1'
+    api 'org.apache.commons:commons-math3:3.6.1'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    // implementation 'com.google.guava:guava:30.0-jre'
+    implementation 'com.google.guava:guava:30.0-jre'
 
 }
 

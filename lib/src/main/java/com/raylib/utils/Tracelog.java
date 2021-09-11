@@ -6,7 +6,7 @@ import static com.raylib.Config.SUPPORT_TRACELOG;
 import static com.raylib.Config.SUPPORT_TRACELOG_DEBUG;
 import static com.raylib.utils.Tracelog.TracelogType.*;
 
-public class Tracelog{
+public class Tracelog {
 
     /**
      * Raylib-j Tracelog
