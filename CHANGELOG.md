@@ -7,7 +7,7 @@
     - Check out the examples! They're pretty neat.
 * Fixed an issue that was causing the `MeasureText()` method to return inaccurately.
 * Fixed `ToggleFullscreen()` crashing due to a null pointer exception
-
+* Gamepad Support
 
 <hr>
 

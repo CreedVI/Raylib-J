@@ -1,0 +1,30 @@
+[X] Texture loading/rendering
+
+[O] Texture examples
+    - ImageGeneration
+        - Height attrib incorrect, cellular doesn't work
+    - MousePainting
+        - Does not draw to the render texture
+    - ImageProcessing
+        - Does not draw to the render texture
+
+[X] Textures module
+
+[ ] Font generation
+    - STBTT
+[ ] Text module
+    - STBTT
+[ ] Font Examples
+    - Prior two items needed
+
+[ ] Finish out all outstanding Core examples
+    - [] 3D camera examples
+        - [o] Requires Meshes module (required items finished)
+    - [X] Input gamepad
+        - [X] gamepad support
+    - [] InputGestures, MultiTouch
+        - [] Gesture support
+    - [] DropFiles, StorageValues
+        - [] missing Core methods
+    - [] Custom logging, LoadingThread
+        - [] ?

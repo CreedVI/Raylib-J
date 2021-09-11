@@ -80,8 +80,8 @@ public class Config{
     // Maximum length for filepaths (Linux PATH_MAX default value)
     public final static int MAX_FILEPATH_LENGTH = 512;        // Maximum length supported for filepaths
     public final static int MAX_GAMEPADS = 4;        // Max number of gamepads supported
-    final static int MAX_GAMEPAD_AXIS = 8;        // Max number of axis supported (per gamepad)
-    final static int MAX_GAMEPAD_BUTTONS = 32;        // Max bumber of buttons supported (per gamepad)
+    public final static int MAX_GAMEPAD_AXIS = 8;        // Max number of axis supported (per gamepad)
+    public final static int MAX_GAMEPAD_BUTTONS = 32;        // Max bumber of buttons supported (per gamepad)
     public final static int MAX_TOUCH_POINTS = 10;        // Maximum number of touch points supported
     public final static int MAX_KEY_PRESSED_QUEUE = 16;        // Max number of characters in the key input queue
     final static String STORAGE_DATA_FILE = "storage.data";       // Automatic storage filename
