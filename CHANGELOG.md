@@ -1,4 +1,4 @@
-# Commit: tbd
+# Release: Raylib-J v0.2-alpha
 
 <hr>
 
