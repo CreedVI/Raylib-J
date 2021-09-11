@@ -5,13 +5,14 @@ import com.creedvi.raylib.java.rlj.core.Color;
 import com.creedvi.raylib.java.rlj.core.Core;
 import com.creedvi.raylib.java.rlj.core.camera.Camera;
 import com.creedvi.raylib.java.rlj.core.camera.Camera3D;
+import com.creedvi.raylib.java.rlj.raymath.Vector2;
 import com.creedvi.raylib.java.rlj.raymath.Vector3;
 import com.creedvi.raylib.java.rlj.textures.Textures;
 
 import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraMode.CAMERA_FIRST_PERSON;
 import static com.creedvi.raylib.java.rlj.core.camera.Camera.CameraProjection.CAMERA_PERSPECTIVE;
 
-public class Core3dCameraFirstPerson{
+public class Core3DCameraFirstPerson{
 
     /*******************************************************************************************
      *
@@ -79,19 +80,20 @@ public class Core3dCameraFirstPerson{
 
             rlj.core.BeginMode3D(camera);
 
-            /*TODO - MESHES
-            Models.DrawPlane(new Vector3(0.0f, 0.0f, 0.0f), new Vector2(32.0f, 32.0f), Color.LIGHTGRAY); // Draw ground
-            DrawCube((Vector3){ -16.0f, 2.5f, 0.0f }, 1.0f, 5.0f, 32.0f, BLUE);     // Draw a blue wall
-            DrawCube((Vector3){ 16.0f, 2.5f, 0.0f }, 1.0f, 5.0f, 32.0f, LIME);      // Draw a green wall
-            DrawCube((Vector3){ 0.0f, 2.5f, 16.0f }, 32.0f, 5.0f, 1.0f, GOLD);      // Draw a yellow wall
+            rlj.models.DrawPlane(new Vector3(0.0f, 0.0f, 0.0f), new Vector2(32.0f, 32.0f), Color.LIGHTGRAY); // Draw
+            // ground
+            rlj.models.DrawCube(new Vector3(-16.0f, 2.5f, 0.0f), 1.0f, 5.0f, 32.0f, Color.BLUE);     // Draw a blue wall
+            rlj.models.DrawCube(new Vector3(16.0f, 2.5f, 0.0f), 1.0f, 5.0f, 32.0f, Color.LIME);      // Draw a green
+            // wall
+            rlj.models.DrawCube(new Vector3(0.0f, 2.5f, 16.0f), 32.0f, 5.0f, 1.0f, Color.GOLD);      // Draw a yellow
+            // wall
 
             // Draw some cubes around
             for (int i = 0; i < MAX_COLUMNS; i++)
             {
-                DrawCube(positions[i], 2.0f, heights[i], 2.0f, colors[i]);
-                DrawCubeWires(positions[i], 2.0f, heights[i], 2.0f, MAROON);
+                rlj.models.DrawCube(positions[i], 2.0f, heights[i], 2.0f, colors[i]);
+                rlj.models.DrawCubeWires(positions[i], 2.0f, heights[i], 2.0f, Color.MAROON);
             }
-            */
 
             rlj.core.EndMode3D();
 
