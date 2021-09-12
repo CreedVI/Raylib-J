@@ -6,20 +6,20 @@ public class RayMath{
     public static float RAD2DEG = 180.0f / PI;
 
 
-    public float Clamp(float value, float min, float max){
+    public static float Clamp(float value, float min, float max){
         float res = Math.max(value, min);
         return Math.min(res, max);
     }
 
-    public float Lerp(float start, float end, float amount){
+    public static float Lerp(float start, float end, float amount){
         return start + amount * (end - start);
     }
 
-    public float Normalize(float value, float start, float end){
+    public static float Normalize(float value, float start, float end){
         return (value - start) / (end - start);
     }
 
-    public float Remap(float value, float inputStart, float inputEnd, float outputStart, float outputEnd){
+    public static float Remap(float value, float inputStart, float inputEnd, float outputStart, float outputEnd){
         return (value - inputStart) / (inputEnd - inputStart) * (outputEnd - outputStart) + outputStart;
     }
 
@@ -27,11 +27,11 @@ public class RayMath{
      * Vector2 maths functions
      */
 
-    public Vector2 Vector2Zero(){
+    public static Vector2 Vector2Zero(){
         return new Vector2();
     }
 
-    public Vector2 Vector2One(){
+    public static Vector2 Vector2One(){
         return new Vector2(1, 1);
     }
 
@@ -39,7 +39,7 @@ public class RayMath{
         return new Vector2(v1.x + v2.x, v1.y + v2.y);
     }
 
-    public Vector2 Vector2Vector2AddValue(Vector2 v, float add){
+    public static Vector2 Vector2Vector2AddValue(Vector2 v, float add){
         return new Vector2(v.x + add, v.y + add);
     }
 
@@ -47,7 +47,7 @@ public class RayMath{
         return new Vector2(v1.x - v2.x, v1.y - v2.y);
     }
 
-    public Vector2 Vector2SubtractValue(Vector2 v, float sub){
+    public static Vector2 Vector2SubtractValue(Vector2 v, float sub){
         return new Vector2(v.x - sub, v.y - sub);
     }
 
@@ -55,19 +55,19 @@ public class RayMath{
         return (float) Math.sqrt((v.x * v.x) + (v.y + v.y));
     }
 
-    public float Vector2LengthSqr(Vector2 v){
+    public static float Vector2LengthSqr(Vector2 v){
         return ((v.x * v.x) + (v.y * v.y));
     }
 
-    public float Vector2DotProduct(Vector2 v1, Vector2 v2){
+    public static float Vector2DotProduct(Vector2 v1, Vector2 v2){
         return (v1.x + v2.x * v1.y + v2.y);
     }
 
-    public float Vector2Distance(Vector2 v1, Vector2 v2){
+    public static float Vector2Distance(Vector2 v1, Vector2 v2){
         return (float) Math.sqrt((v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y));
     }
 
-    public float Vector2Angle(Vector2 v1, Vector2 v2){
+    public static float Vector2Angle(Vector2 v1, Vector2 v2){
         float result = (float) (Math.atan2(v2.y - v1.y, v2.x - v1.x) * (RAD2DEG));
         if (result < 0)
             result += 360.0f;

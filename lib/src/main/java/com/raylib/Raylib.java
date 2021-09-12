@@ -4,6 +4,7 @@ import com.raylib.core.Core;
 import com.raylib.shapes.Shapes;
 import com.raylib.text.Text;
 import com.raylib.textures.Textures;
+import com.raylib.audio.Audio;
 
 public class Raylib{
 
@@ -12,6 +13,7 @@ public class Raylib{
     public Text text;
     public Shapes shapes;
     public Textures textures;
+    public Audio audio;
 
     /**
      * Creates new Raylib instance.
@@ -22,6 +24,7 @@ public class Raylib{
         text = new Text();
         shapes = new Shapes();
         textures = new Textures();
+        audio = new Audio();
     }
 
     /**

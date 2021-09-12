@@ -2,22 +2,27 @@ package com.raylib.audio;
 
 import java.io.File;
 
-class Audio {
+public class Audio {
+    public static final AudioDevice audioDevice = AudioDevice.getInstance();
+    public Audio() {
 
+    }
     // Audio device management
     static void InitAudioDevice() {
+        AudioDevice audioDevice = AudioDevice.getInstance();
     }
 
     static void CloseAudioDevice() {
-
+        AudioDevice audioDevice = AudioDevice.getInstance();
+        audioDevice.destruct();
     }
 
     static boolean isAudioDeviceReady() {
-        return false;
+        return audioDevice.ready();
     }
 
     static void SetMasterVolume(float volume) {
-
+        audioDevice.setMasterVolume(volume);
     }
 
     // Wave/Sound loading/unloading functions
