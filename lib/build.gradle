@@ -13,6 +13,8 @@ plugins {
 
 import org.gradle.internal.os.OperatingSystem
 
+sourceCompatibility = 1.8
+
 project.ext.lwjglVersion = "3.2.3"
 
 switch (OperatingSystem.current()) {
