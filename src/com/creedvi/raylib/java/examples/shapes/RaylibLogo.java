@@ -7,7 +7,7 @@ public class RaylibLogo{
 
     /*******************************************************************************************
      *
-     *   raylib [shapes] example - Draw raylib logo using basic shapes
+     *   raylib-j [shapes] example - Draw raylib logo using basic shapes
      *
      *   This example has been created using raylib-j (Version 0.1)
      *   Ported by CreedVI
@@ -24,7 +24,7 @@ public class RaylibLogo{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - raylib logo using shapes");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - raylib logo using shapes");
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------

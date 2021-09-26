@@ -10,7 +10,7 @@ public class SrcRec_DestRec{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Texture source and destination rectangles
+     *   raylib-j [textures] example - Texture source and destination rectangles
      *
      *   This example has been created using raylib 1.3 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -26,7 +26,7 @@ public class SrcRec_DestRec{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] examples - texture source and destination " +
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] examples - texture source and destination " +
                 "rectangles");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)

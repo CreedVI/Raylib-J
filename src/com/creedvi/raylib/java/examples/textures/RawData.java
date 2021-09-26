@@ -18,7 +18,7 @@ public class RawData{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - texture from raw data");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - texture from raw data");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 

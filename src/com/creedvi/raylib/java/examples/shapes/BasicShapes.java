@@ -26,7 +26,7 @@ public class BasicShapes{
     public static void main(String[] args){
         Raylib rlj = new Raylib();
 
-        rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib [shapes] example - basic shapes drawing");
+        rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib-j [shapes] example - basic shapes drawing");
         rlj.core.SetTargetFPS(60);
 
         while(!rlj.core.WindowShouldClose()){

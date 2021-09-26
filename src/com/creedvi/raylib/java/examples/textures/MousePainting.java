@@ -17,7 +17,7 @@ public class MousePainting{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Mouse painting
+     *   raylib-j [textures] example - Mouse painting
      *
      *   This example has been created using raylib 2.5 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -37,7 +37,7 @@ public class MousePainting{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - mouse painting");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - mouse painting");
 
         // Colours to choose from
         Color colors[] = new Color[]{

@@ -28,7 +28,7 @@ public class EasingsBall{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - easings ball anim");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - easings ball anim");
 
         // Ball variable value to be animated with easings
         int ballPositionX = -100;

@@ -8,13 +8,29 @@ import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_S;
 
 public class ScissorTest{
 
+    /*******************************************************************************************
+     *
+     *   raylib-j [module] example - Example Name
+     *
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example contributed by Chris Dill (@MysteriousSpace) and reviewed by Ramon Santamaria (@raysan5)
+     *   Copyright (c) 2019 Chris Dill (@MysteriousSpace)
+     *
+     *   https://github.com/raysan5
+     *
+     ********************************************************************************************/
+
     public static void main(String[] args){
         // Initialization
         //--------------------------------------------------------------------------------------
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - scissor test");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - scissor test");
 
         Rectangle scissorArea = new Rectangle(0, 0, 300, 300);
         boolean scissorMode = true;

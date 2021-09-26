@@ -12,12 +12,15 @@ public class WindowFlags{
 
     /*******************************************************************************************
      *
-     *   raylib [core] example - window flags
+     *   raylib-j [core] example - Window Flags
      *
-     *   This example has been created using raylib 3.5 (www.raylib.com)
-     *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
      *
-     *   Copyright (c) 2020 Ramon Santamaria (@raysan5)
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
      *
      ********************************************************************************************/
 
@@ -47,7 +50,7 @@ public class WindowFlags{
 
         // Set configuration flags for window creation
         //SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - window flags");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - window flags");
 
         Vector2 ballPosition = new Vector2(rlj.core.GetScreenWidth() / 2.0f, rlj.core.GetScreenHeight() / 2.0f);
         Vector2 ballSpeed = new Vector2(5.0f, 4.0f);

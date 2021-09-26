@@ -21,12 +21,15 @@ public class VRSimulator{
 
     /*******************************************************************************************
      *
-     *   raylib [core] example - VR Simulator (Oculus Rift CV1 parameters)
+     *   raylib-j [core] example - VR Simulator (Oculus Rift CV1 parameters)
      *
-     *   This example has been created using raylib 3.7 (www.raylib.com)
-     *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
      *
-     *   Copyright (c) 2017-2021 Ramon Santamaria (@raysan5)
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
      *
      ********************************************************************************************/
 
@@ -38,7 +41,7 @@ public class VRSimulator{
         int screenHeight = 450;
 
         // NOTE: screenWidth/screenHeight should match VR device aspect ratio
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - vr simulator");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - vr simulator");
 
         // VR device parameters definition
         VrDeviceInfo device = new VrDeviceInfo();
@@ -126,10 +129,9 @@ public class VRSimulator{
             rlj.core.BeginVrStereoMode(config);
             rlj.core.BeginMode3D(camera);
 
-            //TODO: Module MODELS
-            // rlj.models.DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, Color.RED);
-            // rlj.models.DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, Color.MAROON);
-            // rlj.models.DrawGrid(40, 1.0f);
+            rlj.models.DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, Color.RED);
+            rlj.models.DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, Color.MAROON);
+            rlj.models.DrawGrid(40, 1.0f);
 
             rlj.core.EndMode3D();
             rlj.core.EndVrStereoMode();

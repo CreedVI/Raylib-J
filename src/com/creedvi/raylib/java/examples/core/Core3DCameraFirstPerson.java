@@ -16,7 +16,7 @@ public class Core3DCameraFirstPerson{
 
     /*******************************************************************************************
      *
-     *   raylib [core] example - 3d camera first person
+     *   raylib-j [core] example - 3d camera first person
      *
      *   This example has been created using raylib 1.3 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -36,7 +36,7 @@ public class Core3DCameraFirstPerson{
         final int screenWidth = 800;
         final int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - 3d camera first person");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - 3d camera first person");
 
         // Define the camera to look into our 3d world (position, target, up vector)
         Camera3D camera = new Camera3D();

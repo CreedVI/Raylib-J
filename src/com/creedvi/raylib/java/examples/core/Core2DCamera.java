@@ -10,22 +10,23 @@ import com.creedvi.raylib.java.rlj.textures.Textures;
 
 import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
 
-/*******************************************************************************************
- *
- *   raylib-j [core] example - 2d camera
- *
- *   This example has been created using raylib-j (Version 0.1)
- *   Ported by CreedVI
- *   https://github.com/creedvi/raylib-j
- *
- *   raylib is licensed under an unmodified zlib/libpng license
- *   Original example written and copyright by Ramon Santamaria (@raysan5)
- *   https://github.com/raysan5
- *
- *
- ********************************************************************************************/
-
 public class Core2DCamera{
+
+    /*******************************************************************************************
+     *
+     *   raylib-j [core] example - 2d camera
+     *
+     *   This example has been created using raylib-j (Version 0.1)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
+     *
+     *
+     ********************************************************************************************/
+
 
     public static void main(String[] args){
         // Initialization
@@ -35,7 +36,7 @@ public class Core2DCamera{
         final int screenHeight = 450;
         Raylib rlj = new Raylib();
 
-        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [core] example - 2d camera");
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib-j [core] example - 2d camera");
 
         Rectangle player = new Rectangle(400, 280, 40, 40);
         Rectangle[] buildings = new Rectangle[MAX_BUILDINGS];

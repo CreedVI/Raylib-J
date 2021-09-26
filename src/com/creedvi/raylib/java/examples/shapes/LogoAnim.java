@@ -28,7 +28,7 @@ public class LogoAnim{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - raylib logo animation");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - raylib logo animation");
 
         int logoPositionX = screenWidth/2 - 128;
         int logoPositionY = screenHeight/2 - 128;

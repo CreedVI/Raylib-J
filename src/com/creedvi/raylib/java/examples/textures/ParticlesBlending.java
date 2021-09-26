@@ -32,7 +32,7 @@ public class ParticlesBlending{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - particles blending");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - particles blending");
 
         // Particles pool, reuse them!
         Particle[] mouseTail = new Particle[MAX_PARTICLES];

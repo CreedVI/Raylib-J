@@ -12,7 +12,7 @@ public class ImageGeneration{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Procedural images generation
+     *   raylib-j [textures] example - Procedural images generation
      *
      *   This example has been created using raylib 1.8 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -31,7 +31,7 @@ public class ImageGeneration{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - procedural images generation");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - procedural images generation");
 
         Image verticalGradient = rlj.textures.GenImageGradientV(screenWidth, screenHeight, Color.RED, Color.BLUE);
         Image horizontalGradient = rlj.textures.GenImageGradientH(screenWidth, screenHeight, Color.RED, Color.BLUE);

@@ -35,7 +35,7 @@ public class EasingsRectArray{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - easings rectangle array");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - easings rectangle array");
 
         Rectangle[] recs = new Rectangle[(int) (MAX_RECS_X * MAX_RECS_Y)];
 

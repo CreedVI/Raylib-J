@@ -34,10 +34,10 @@ CreedVI
 <div>
 [X] core <br>
 [X] shapes <br>
-[o] textures <br>
+[O] textures <br>
 [o] text <br>
-[ ] models <br>
-[ ] shaders <br>
+[o] models <br>
+[O] shaders <br>
 [ ] audio <br>
 [X] RLGL <br>
 [X] raymath <br>

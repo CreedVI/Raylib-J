@@ -29,7 +29,7 @@ public class BouncingBall{
         final int screenHeight = 450;
         Raylib rlj = new Raylib();
 
-        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [shapes] example - bouncing ball");
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib-j [shapes] example - bouncing ball");
 
         Vector2 ballPosition = new Vector2((float) rlj.core.GetScreenWidth() / 2,
                 (float) rlj.core.GetScreenHeight() / 2);

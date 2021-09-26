@@ -18,7 +18,7 @@ public class Core3DCameraFree{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - 3d camera free");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - 3d camera free");
 
         // Define the camera to look into our 3d world
         Camera3D camera = new Camera3D();

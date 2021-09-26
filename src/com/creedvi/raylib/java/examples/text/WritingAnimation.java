@@ -14,7 +14,7 @@ public class WritingAnimation{
         final int screenWidth = 800;
         final int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [text] example - text writing anim");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [text] example - text writing anim");
 
         String message = "This sample illustrates a text writing\nanimation effect! Check it out! ;)";
 

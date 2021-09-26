@@ -32,7 +32,7 @@ public class RectangleScaling{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - rectangle scaling mouse");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - rectangle scaling mouse");
         Rectangle rec = new Rectangle(100, 100, 200, 80);
         Vector2 mousePosition;
         boolean mouseScaleReady, mouseScaleMode = false;

@@ -9,7 +9,7 @@ public class ImageLoading{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Image loading and texture creation
+     *   raylib-j [textures] example - Image loading and texture creation
      *
      *   NOTE: Images are loaded in CPU memory (RAM); textures are loaded in GPU memory (VRAM)
      *
@@ -28,7 +28,7 @@ public class ImageLoading{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - image loading");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - image loading");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 

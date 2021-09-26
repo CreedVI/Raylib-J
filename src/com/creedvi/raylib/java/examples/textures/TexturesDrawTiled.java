@@ -16,7 +16,7 @@ public class TexturesDrawTiled{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Draw part of the texture tiled
+     *   raylib-j [textures] example - Draw part of the texture tiled
      *
      *   This example has been created using raylib 3.0 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -38,7 +38,7 @@ public class TexturesDrawTiled{
 
         Raylib rlj = new Raylib();
         rlj.core.SetConfigFlags(Config.ConfigFlag.FLAG_WINDOW_RESIZABLE); // Make the window resizable
-        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [textures] example - Draw part of a texture tiled");
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib-j [textures] example - Draw part of a texture tiled");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Texture2D texPattern = rlj.textures.LoadTexture("resources/patterns.png");

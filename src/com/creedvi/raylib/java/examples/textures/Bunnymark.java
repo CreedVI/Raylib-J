@@ -12,7 +12,7 @@ public class Bunnymark{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Bunnymark
+     *   raylib-j [textures] example - Bunnymark
      *
      *   This example has been created using raylib 1.6 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -47,7 +47,7 @@ public class Bunnymark{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - bunnymark");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - bunnymark");
 
         // Load bunny texture
         Texture2D texBunny = rlj.textures.LoadTexture("resources/wabbit_alpha.png");

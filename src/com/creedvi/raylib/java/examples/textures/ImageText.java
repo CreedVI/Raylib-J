@@ -10,7 +10,7 @@ public class ImageText{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        InitWindow(screenWidth, screenHeight, "raylib [texture] example - image text drawing");
+        InitWindow(screenWidth, screenHeight, "raylib-j [texture] example - image text drawing");
 
         Image parrots = LoadImage("resources/parrots.png"); // Load image in CPU memory (RAM)
 

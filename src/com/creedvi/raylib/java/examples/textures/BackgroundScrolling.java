@@ -9,7 +9,7 @@ public class BackgroundScrolling{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Background scrolling
+     *   raylib-j [textures] example - Background scrolling
      *
      *   This example has been created using raylib 2.0 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -26,7 +26,7 @@ public class BackgroundScrolling{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - background scrolling");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - background scrolling");
 
         // NOTE: Be careful, background width must be equal or bigger than screen width
         // if not, texture should be draw more than two times for scrolling effect

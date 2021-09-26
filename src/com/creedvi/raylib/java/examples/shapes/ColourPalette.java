@@ -35,7 +35,7 @@ public class ColourPalette{
         final int screenHeight = 450;
         Raylib rlj = new Raylib();
 
-        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [shapes] example - colors palette");
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib-j [shapes] example - colors palette");
 
         Color[] colors = {
             DARKGRAY, MAROON, ORANGE, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,

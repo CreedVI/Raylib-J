@@ -9,7 +9,7 @@ public class TextureToImage{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Retrieve image data from texture: GetTextureData()
+     *   raylib-j [textures] example - Retrieve image data from texture: GetTextureData()
      *
      *   NOTE: Images are loaded in CPU memory (RAM); textures are loaded in GPU memory (VRAM)
      *
@@ -27,7 +27,7 @@ public class TextureToImage{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - texture to image");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - texture to image");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 

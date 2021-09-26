@@ -11,7 +11,7 @@ public class TextureRectangle{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Texture loading and drawing a part defined by a rectangle
+     *   raylib-j [textures] example - Texture loading and drawing a part defined by a rectangle
      *
      *   This example has been created using raylib 1.3 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -31,7 +31,7 @@ public class TextureRectangle{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [texture] example - texture rectangle");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [texture] example - texture rectangle");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Texture2D scarfy = rlj.textures.LoadTexture("resources/scarfy.png");        // Texture loading

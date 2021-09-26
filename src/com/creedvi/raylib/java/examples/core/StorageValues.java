@@ -10,6 +10,22 @@ import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_SPACE;
 
 public class StorageValues{
 
+    //TODO: Core.SaveStorageValue, Core.LoadStorageValue
+
+    /*******************************************************************************************
+     *
+     *   raylib-j [core] example - Storage Values
+     *
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
+     *
+     ********************************************************************************************/
+
     static class StorageData{
         final static int
             STORAGE_POSITION_SCORE = 0,
@@ -22,7 +38,7 @@ public class StorageValues{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - storage save/load values");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - storage save/load values");
 
         int score = 0;
         int hiscore = 0;

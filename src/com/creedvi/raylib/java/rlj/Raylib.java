@@ -8,6 +8,7 @@ import com.creedvi.raylib.java.rlj.textures.Textures;
 
 public class Raylib{
 
+    //public Audio audio;
     public Core core;
     public Config config;
     public Text text;
@@ -19,6 +20,7 @@ public class Raylib{
      * Creates new Raylib instance.
      */
     public Raylib(){
+        //audio = new Audio();
         core = new Core();
         config = new Config();
         text = new Text();
@@ -34,6 +36,7 @@ public class Raylib{
      * @param title title to display for the window
      */
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
+        //audio = new Audio();
         core = new Core();
         config = new Config();
         text = new Text();

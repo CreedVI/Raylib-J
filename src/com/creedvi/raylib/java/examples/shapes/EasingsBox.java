@@ -31,7 +31,7 @@ public static void main(String[] args){
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - easings box anim");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - easings box anim");
 
         // Box variables to be animated with easings
         Rectangle rec = new Rectangle((float)Core.GetScreenWidth()/2, -100, 100, 100);

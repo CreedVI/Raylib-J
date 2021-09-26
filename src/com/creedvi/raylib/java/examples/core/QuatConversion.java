@@ -14,13 +14,32 @@ import static com.creedvi.raylib.java.rlj.raymath.Raymath.DEG2RAD;
 
 public class QuatConversion{
 
+    /*******************************************************************************************
+     *
+     *   raylib-j [core] example - quaternion conversions
+     *
+     *   Generally you should really stick to eulers OR quats...
+     *   This tests that various conversions are equivalent.
+     *
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+     *   Original Example contributed by Chris Camacho (@chriscamacho) and reviewed by Ramon Santamaria (@raysan5)
+     *
+     *   Copyright (c) 2020 Chris Camacho (@chriscamacho) and Ramon Santamaria (@raysan5)
+     *
+     ********************************************************************************************/
+
+
     public static void main(String[] args){
         // Initialization
         //--------------------------------------------------------------------------------------
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - quat conversions");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - quat conversions");
 
         Camera3D camera = new Camera3D();
         camera.position = new Vector3(0.0f, 10.0f, 10.0f);  // Camera position

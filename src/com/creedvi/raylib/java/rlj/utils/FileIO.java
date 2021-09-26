@@ -203,8 +203,6 @@ public class FileIO{
     }
 
     private static InputStream getFileFromResourceAsStream(String fileName){
-        // The class loader that loaded the class
-        ClassLoader classLoader = FileIO.class.getClassLoader();
-        return classLoader.getResourceAsStream(fileName);
+        return FileIO.class.getResourceAsStream("/" + fileName.replace('\\', '/'));
     }
 }

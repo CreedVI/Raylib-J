@@ -27,7 +27,7 @@ public class DrawCircleSector{
         //-------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - draw circle sector");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - draw circle sector");
 
         Vector2 center = new Vector2((Core.GetScreenWidth() - 300)/2, Core.GetScreenHeight()/2);
 

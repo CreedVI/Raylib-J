@@ -40,7 +40,7 @@ public class TexturesPoly{
             points[i] = new Vector2((texcoords[i].x - 0.5f)*256.0f, (texcoords[i].y - 0.5f)*256.0f);
         }
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - textured polygon");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - textured polygon");
 
         Texture2D texture = rlj.textures.LoadTexture("resources/cat.png");
 

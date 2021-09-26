@@ -5,13 +5,28 @@ import com.creedvi.raylib.java.rlj.core.Color;
 
 public class InputMouseWheel{
 
+    /*******************************************************************************************
+     *
+     *   raylib-j [module] example - Example Name
+     *
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
+     *
+     ********************************************************************************************/
+
+
     public static void main(String[] args){
         // Initialization
         //--------------------------------------------------------------------------------------
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - input mouse wheel");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - input mouse wheel");
 
         int boxPositionY = screenHeight/2 - 40;
         int scrollSpeed = 4;            // Scrolling speed in pixels

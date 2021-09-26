@@ -12,7 +12,7 @@ public class NPatchDrawing{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - N-patch drawing
+     *   raylib-j [textures] example - N-patch drawing
      *
      *   NOTE: Images are loaded in CPU memory (RAM); textures are loaded in GPU memory (VRAM)
      *
@@ -32,7 +32,7 @@ public class NPatchDrawing{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - N-patch drawing");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - N-patch drawing");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Texture2D nPatchTexture = rlj.textures.LoadTexture("resources/ninepatch_button.png");

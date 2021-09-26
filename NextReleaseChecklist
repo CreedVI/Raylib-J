@@ -10,6 +10,10 @@
 
 [X] Textures module
 
+[ ] Fix example header comments
+
+[ ] FileIO working
+
 [ ] Font generation
     - STBTT
 [ ] Text module
@@ -19,7 +23,7 @@
 
 [ ] Finish out all outstanding Core examples
     - [] 3D camera examples
-        - [o] Requires Meshes module (required items finished)
+        - [o] Requires Models module (required items finished)
     - [X] Input gamepad
         - [X] gamepad support
     - [] InputGestures, MultiTouch

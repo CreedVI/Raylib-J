@@ -13,19 +13,22 @@ import static com.creedvi.raylib.java.rlj.core.input.Keyboard.KEY_SPACE;
 
 public class WindowLetterbox{
 
+
     /*******************************************************************************************
      *
-     *   raylib [core] example - window scale letterbox (and virtual mouse)
+     *   raylib-j [core] example - Window Scale Letterbox
      *
-     *   This example has been created using raylib 2.5 (www.raylib.com)
-     *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
      *
-     *   Example contributed by Anata (@anatagawa) and reviewed by Ramon Santamaria (@raysan5)
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Example originally contributed by Anata (@anatagawa) and reviewed by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
      *
      *   Copyright (c) 2019 Anata (@anatagawa) and Ramon Santamaria (@raysan5)
      *
      ********************************************************************************************/
-
 
     // Clamp Vector2 value with min and max and return a new vector2
     // NOTE: Required for virtual mouse, to clamp inside virtual game size
@@ -47,7 +50,7 @@ public class WindowLetterbox{
         Raylib rlj = new Raylib();
         // Enable config flags for resizable window and vertical synchro
         rlj.core.SetConfigFlags(Config.ConfigFlag.FLAG_WINDOW_RESIZABLE | Config.ConfigFlag.FLAG_VSYNC_HINT);
-        rlj.core.InitWindow(windowWidth, windowHeight, "raylib [core] example - window scale letterbox");
+        rlj.core.InitWindow(windowWidth, windowHeight, "raylib-j [core] example - window scale letterbox");
         rlj.core.SetWindowMinSize(320, 240);
 
         int gameScreenWidth = 640;

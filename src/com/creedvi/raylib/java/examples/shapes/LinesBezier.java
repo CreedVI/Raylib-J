@@ -13,7 +13,7 @@ public class LinesBezier{
 
     /*******************************************************************************************
      *
-     *   raylib [shapes] example - Cubic-bezier lines
+     *   raylib-j [shapes] example - Cubic-bezier lines
      *
      *   This example has been created using raylib 1.7 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -28,7 +28,7 @@ public class LinesBezier{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - cubic-bezier lines");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [shapes] example - cubic-bezier lines");
         Core.SetConfigFlags(Config.ConfigFlag.FLAG_MSAA_4X_HINT);
 
         Vector2 start = new Vector2();

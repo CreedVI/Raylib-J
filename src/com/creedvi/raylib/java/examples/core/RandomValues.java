@@ -8,12 +8,15 @@ public class RandomValues{
 
     /*******************************************************************************************
      *
-     *   raylib [core] example - Generate random values
+     *   raylib-j [core] example - Generate random values
      *
-     *   This example has been created using raylib 1.1 (www.raylib.com)
-     *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
      *
-     *   Copyright (c) 2014 Ramon Santamaria (@raysan5)
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
      *
      ********************************************************************************************/
 
@@ -24,7 +27,7 @@ public class RandomValues{
         final int screenWidth = 800;
         final int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - generate random values");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - generate random values");
 
         int framesCounter = 0;          // Variable used to count frames
 

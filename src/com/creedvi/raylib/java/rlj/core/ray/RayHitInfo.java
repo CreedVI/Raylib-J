@@ -4,7 +4,7 @@ import com.creedvi.raylib.java.rlj.raymath.Vector3;
 
 public class RayHitInfo{
 
-    public boolean hit;               // Did the ray hit something?
+    public boolean hit;            // Did the ray hit something?
     public float distance;         // Distance to nearest hit
     public Vector3 position;       // Position of nearest hit
     public Vector3 normal;         // Surface normal of hit

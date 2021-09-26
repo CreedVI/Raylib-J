@@ -21,7 +21,7 @@ public class TextInputBox{
         final int screenWidth = 800;
         final int screenHeight = 450;
 
-        rlj = new Raylib(screenWidth, screenHeight, "raylib [text] example - input box");
+        rlj = new Raylib(screenWidth, screenHeight, "raylib-j [text] example - input box");
 
         StringBuilder name = new StringBuilder();
         int letterCount = 0;

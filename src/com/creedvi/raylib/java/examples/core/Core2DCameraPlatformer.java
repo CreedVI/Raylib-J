@@ -14,12 +14,14 @@ public class Core2DCameraPlatformer{
 
     /*******************************************************************************************
      *
-     *   raylib [core] example - 2d camera platformer
+     *   raylib-j [core] example - 2d camera platformer
      *
-     *   This example has been created using raylib 2.5 (www.raylib.com)
-     *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+     *   This example has been created using raylib-j (Version 0.2)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
      *
-     *   Example contributed by arvyy (@arvyy) and reviewed by Ramon Santamaria (@raysan5)
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example contributed by arvyy (@arvyy) and reviewed by Ramon Santamaria (@raysan5)
      *
      *   Copyright (c) 2019 arvyy (@arvyy)
      *
@@ -76,7 +78,7 @@ public class Core2DCameraPlatformer{
         //--------------------------------------------------------------------------------------
         final int screenWidth = 800;
         final int screenHeight = 450;
-        rlj = new Raylib(screenWidth, screenHeight, "raylib [core] example - 2d camera");
+        rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - 2d camera");
 
         Player player = new Player();
         player.position = new Vector2(400, 280);

@@ -29,7 +29,7 @@ public class CollisionArea{
         //---------------------------------------------------------
         int screenWidth = 800;
         int screenHeight = 450;
-        Raylib rlj = new Raylib(800, 450, "raylib [shapes] example - collision area");
+        Raylib rlj = new Raylib(800, 450, "raylib-j [shapes] example - collision area");
 
         // Box A: Moving box
         Rectangle boxA = new Rectangle(10, GetScreenHeight()/2 - 50, 200, 100);

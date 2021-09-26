@@ -283,7 +283,7 @@ public class Text{
 
         // Loading file to memory
         int fileSize = 0;
-        byte[] fileData = new byte[0];
+        byte[] fileData = null;
         try{
             fileData = FileIO.LoadFileData(fileName);
         } catch (IOException exception){
@@ -542,9 +542,10 @@ public class Text{
                             chars[i].image.data = null;
                         }
 
-                        //TODO:
-                        //  STBTruetype.stbtt_GetCodepointHMetrics(fontInfo, ch, chars[i].advanceX, );
-                        chars[i].advanceX = (int) ((float) chars[i].advanceX * scaleFactor);
+                        IntBuffer adX = IntBuffer.allocate(1);
+
+                        STBTruetype.stbtt_GetCodepointHMetrics(fontInfo, ch, adX, null);
+                        chars[i].advanceX = (int) ((float) adX.get() * scaleFactor);
 
                         // Load characters images
                         chars[i].image.width = chw.get();
@@ -872,7 +873,7 @@ public class Text{
         else if ((octet & 0xe0) == 0xc0){
             // Two octets
             // [0]xC2-DF    [1]UTF8-tail(x80-BF)
-            char octet1 = text.toCharArray()[1];
+            char octet1 = text.charAt(0);
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
                 next = 2;
@@ -886,7 +887,7 @@ public class Text{
         }
         else if ((octet & 0xf0) == 0xe0){
             // Three octets
-            char octet1 = text.toCharArray()[1];
+            char octet1 = text.charAt(0);
             char octet2;
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
@@ -925,7 +926,7 @@ public class Text{
                 return code;
             }
 
-            char octet1 = text.toCharArray()[1];
+            char octet1 = text.charAt(0);
             char octet2 = '\0';
             char octet3 = '\0';
 

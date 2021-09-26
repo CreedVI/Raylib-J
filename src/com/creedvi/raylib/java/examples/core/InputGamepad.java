@@ -11,6 +11,26 @@ import static com.creedvi.raylib.java.rlj.core.input.Gamepad.GamepadButton.*;
 
 public class InputGamepad{
 
+    /*******************************************************************************************
+     *
+     *   raylib-j [core] example - Keyboard input
+     *
+     *   NOTE: This example requires a Gamepad connected to the system
+     *   raylib-j is configured to work with the following gamepads:
+     *       - Xbox Controller (Xbox 360, Xbox One)
+     *       - PLAYSTATION(R)3 Controller
+     *       - PLAYSTATION(R)4 Controller
+     *
+     *   This example has been created using raylib-j (Version 0.1)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
+     *
+     ********************************************************************************************/
+
     static String XBOX360_LEGACY_NAME_ID = "Xbox Controller";
     static String XBOX360_NAME_ID = "Xbox 360 Controller";
     static String XBOX1S_NAME_ID = "Microsoft X-Box One S pad";
@@ -27,7 +47,7 @@ public class InputGamepad{
 
         rlj.core.SetConfigFlags(FLAG_MSAA_4X_HINT);  // Set MSAA 4X hint before windows creation
 
-        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [core] example - gamepad input");
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib-j [core] example - gamepad input");
 
         Texture2D texPs3Pad = rlj.textures.LoadTexture("resources/ps3.png");
         Texture2D texXboxPad = rlj.textures.LoadTexture("resources/xbox.png");

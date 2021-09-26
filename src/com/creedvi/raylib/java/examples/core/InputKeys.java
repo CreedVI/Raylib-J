@@ -6,21 +6,21 @@ import com.creedvi.raylib.java.rlj.raymath.Vector2;
 
 import static com.creedvi.raylib.java.rlj.core.input.Keyboard.*;
 
-/*******************************************************************************************
- *
- *   raylib-j [core] example - Keyboard input
- *
- *   This example has been created using raylib-j (Version 0.1)
- *   Ported by CreedVI
- *   https://github.com/creedvi/raylib-j
- *
- *   raylib is licensed under an unmodified zlib/libpng license
- *   Original example written and copyright by Ramon Santamaria (@raysan5)
- *   https://github.com/raysan5
- *
- ********************************************************************************************/
-
 public class InputKeys{
+
+    /*******************************************************************************************
+     *
+     *   raylib-j [core] example - Keyboard input
+     *
+     *   This example has been created using raylib-j (Version 0.1)
+     *   Ported by CreedVI
+     *   https://github.com/creedvi/raylib-j
+     *
+     *   raylib is licensed under an unmodified zlib/libpng license
+     *   Original example written and copyright by Ramon Santamaria (@raysan5)
+     *   https://github.com/raysan5
+     *
+     ********************************************************************************************/
 
     public static void main(String[] args){
 
@@ -30,7 +30,7 @@ public class InputKeys{
         int screenHeight = 450;
         Raylib rlj = new Raylib();
 
-        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [core] example - keyboard input");
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib-j [core] example - keyboard input");
 
         Vector2 ballPosition = new Vector2((float) screenWidth / 2, (float) screenHeight / 2);
 

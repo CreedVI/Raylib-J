@@ -12,7 +12,7 @@ public class BlendModes{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - blend modes
+     *   raylib-j [textures] example - blend modes
      *
      *   NOTE: Images are loaded in CPU memory (RAM); textures are loaded in GPU memory (VRAM)
      *
@@ -32,7 +32,7 @@ public class BlendModes{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - blend modes");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - blend modes");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Image bgImage = rlj.textures.LoadImage("resources/cyberpunk_street_background.png"); // Loaded in CPU

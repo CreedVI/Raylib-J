@@ -8,7 +8,7 @@ public class LogoRaylib{
 
     /*******************************************************************************************
      *
-     *   raylib [textures] example - Texture loading and drawing
+     *   raylib-j [textures] example - Texture loading and drawing
      *
      *   This example has been created using raylib 1.0 (www.raylib.com)
      *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
@@ -24,7 +24,7 @@ public class LogoRaylib{
         final int screenWidth = 800;
         final int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [textures] example - texture loading and drawing");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - texture loading and drawing");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Texture2D texture = rlj.textures.LoadTexture("resources/raylib-j_logo.png");        // Texture loading
