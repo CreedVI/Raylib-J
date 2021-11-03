@@ -800,9 +800,6 @@ public class Text{
 
                 dataGrayAlpha[k] = (byte) 255;
                 dataGrayAlpha[k + 1] = atlasData[i];
-                if(i==256*4+7){
-                    System.out.println();
-                }
             }
 
             atlas.setData(dataGrayAlpha);
