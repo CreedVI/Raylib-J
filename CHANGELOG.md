@@ -1,3 +1,26 @@
+# Release: Raylib-J v0.3
+
+<hr>
+
+* Simplified the `src` directory
+* Removed the `Examples` directory
+  * All exaples will be hosted in the `Raylib-J Examples` repo.
+* Fixed up Textues module
+  * Image Generation generates whole images
+  * Cellular Generation now works
+  * Fixed up `ImageFormat`
+  * Fixed `ExportImage`
+    * Exporting to PNG is working as expected
+* Text module up and running
+  * Support loading from `.fnt`, `.ttf`, and `.png` files
+  * All module methods populated and ready for use
+* Added `rLights` to the `utils` package
+* `FileIO` fixes
+  * Loading files from an external directory is now working
+* 
+
+<hr>
+
 # Release: Raylib-J v0.2-alpha
 
 <hr>
@@ -32,7 +55,7 @@
     - Switched from Enums to static integers defined in an internal class.
         - I felt this increases code intelligibility. Feedback on this change is welcome.
     - Utils.Files is now Utils.FileIO
-        - I think I got that mess figured out.
+        - I think I got that mess figured out. (I did not.)
 <hr>
 
 # Release: Raylib-J 0.1-alpha

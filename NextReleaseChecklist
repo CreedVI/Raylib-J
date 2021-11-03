@@ -1,34 +1,39 @@
+0.2 - the visual update
+===========================================================
 [X] Texture loading/rendering
-
-[O] Texture examples
-    - ImageGeneration
-        - Height attrib incorrect, cellular doesn't work
-    - MousePainting
-        - Does not draw to the render texture
-    - ImageProcessing
-        - Does not draw to the render texture
 
 [X] Textures module
 
-[ ] Fix example header comments
+[X] Gamepad support
 
-[ ] FileIO working
+[X] Fix font generation bug
 
-[ ] Font generation
+0.3 - enhanced visual update
+===========================================================
+[X] - Refactor directories
+    [X] - shorten package
+    [X] - move examples to separate repo
+
+[X] FileIO working
+    - Running from IDE works, running from JAR does not
+        * Java file IO kinda sucks.
+
+[O] Font generation
+    - Need to figure out why SDF font ends up funky.
+    - Need to figure out why || is drawn in the space char
+
+[X] Text module
     - STBTT
-[ ] Text module
-    - STBTT
-[ ] Font Examples
-    - Prior two items needed
 
-[ ] Finish out all outstanding Core examples
-    - [] 3D camera examples
-        - [o] Requires Models module (required items finished)
-    - [X] Input gamepad
-        - [X] gamepad support
-    - [] InputGestures, MultiTouch
-        - [] Gesture support
-    - [] DropFiles, StorageValues
-        - [] missing Core methods
-    - [] Custom logging, LoadingThread
-        - [] ?
+[X] rLights
+    - Just chuck it in the utils package w/ easings I guess
+
+0.4 - the aural update
+============================================================
+
+0.5 - Raylib-J, The Next Dimension
+============================================================
+
+1.0 - Raylib-J
+============================================================
+[ ] JavaDoc comments
