@@ -876,7 +876,7 @@ public class Text{
         for (int i = 0; i < length; ){
             // Get next codepoint from byte string and glyph index in font
             codepointByteCount = 0;
-            int codepoint = GetNextCodepoint(String.valueOf(text.charAt(i)));
+            int codepoint = GetNextCodepoint(text.toCharArray(), i);
             int index = GetGlyphIndex(font, codepoint);
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -934,8 +934,8 @@ public class Text{
 
         for (int i = 0, k = 0; i < length; i++, k++){
             // Get next codepoint from byte string and glyph index in font
-            int codepointByteCount = 0;
-            int codepoint = GetNextCodepoint(String.valueOf(text.charAt(i)));
+            codepointByteCount = 0;
+            int codepoint = GetNextCodepoint(text.toCharArray(), i);
             int index = GetGlyphIndex(font, codepoint);
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -1098,7 +1098,7 @@ public class Text{
             lenCounter++;
 
             next = 0;
-            letter = GetNextCodepoint(String.valueOf(text.charAt(i)));
+            letter = GetNextCodepoint(text.toCharArray(), i);
             index = GetGlyphIndex(font, letter);
 
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -1155,9 +1155,7 @@ public class Text{
     // Formatting of text with variables to 'embed'
     // Note: Calls String.format()
     public String TextFormat(String text, Object args){
-
         return String.format(text, args);
-
     }
 
     // Get integer value from text
@@ -1212,7 +1210,7 @@ public class Text{
     }
 
     // Split string into multiple strings
-    public String[] TextSplit(String text, char delimiter, int count){
+    public String[] TextSplit(String text, char delimiter){
         String[] result = new String[MAX_TEXTSPLIT_COUNT];
 
         for (int i = 0, j = 0; i < text.length(); i++){
@@ -1276,11 +1274,11 @@ public class Text{
     public String TextToUtf8(int[] codepoints, int length){
         // We allocate enough memory fo fit all possible codepoints
         // NOTE: 5 bytes for every codepoint should be enough
-        StringBuilder text = null;
-        String utf8 = null;
+        StringBuilder text = new StringBuilder();
+        String utf8;
         int size = 0;
 
-        for (int i = 0, bytes = 0; i < length; i++){
+        for (int i = 0, bytes; i < length; i++){
             utf8 = CodepointToUtf8(codepoints[i]);
             bytes = utf8.length();
             text.append(utf8);
@@ -1292,7 +1290,7 @@ public class Text{
 
     // Encode codepoint into utf8 text (char array length returned as parameter)
     public String CodepointToUtf8(int codepoint){
-        char utf8[] = new char[6];
+        char[] utf8 = new char[6];
         int length = 0;
 
         if (codepoint <= 0x7f){
@@ -1331,7 +1329,7 @@ public class Text{
         int codepointsCount = 0;
 
         for (int i = 0; i < textLength; codepointsCount++){
-            codepoints[codepointsCount] = GetNextCodepoint(text + i);
+            codepoints[codepointsCount] = GetNextCodepoint(text.toCharArray(), i);
             i += bytesProcessed;
         }
 
@@ -1344,9 +1342,9 @@ public class Text{
         int len = 0;
         int ptr = 0;
 
-        while (text.charAt(ptr) != '\0'){
-            int next = 0;
-            int letter = GetNextCodepoint(String.valueOf(text.charAt(ptr)));
+        while (ptr < text.length() && text.charAt(ptr) != '\0'){
+            next = 0;
+            int letter = GetNextCodepoint(text.toCharArray(), ptr);
 
             if (letter == 0x3f){
                 ptr += 1;
@@ -1367,7 +1365,7 @@ public class Text{
     // NOTE: the standard says U+FFFD should be returned in case of errors
     // but that character is not supported by the default font in raylib
     // TODO: optimize this code for speed!!
-    public static int GetNextCodepoint(String text){
+    public static int GetNextCodepoint(char[] text, int bytesProcessed){
         /*
             UTF8 specs from https://www.ietf.org/rfc/rfc3629.txt
             Char. number range  |        UTF-8 octet sequence
@@ -1381,17 +1379,17 @@ public class Text{
         // NOTE: on decode errors we return as soon as possible
 
         int code = 0x3f;   // Codepoint (defaults to '?')
-        int octet = (text.toCharArray()[0]); // The first UTF8 octet
+        int octet = (text[bytesProcessed]); // The first UTF8 octet
         next = 1;
 
         if (octet <= 0x7f){
             // Only one octet (ASCII range x00-7F)
-            code = text.toCharArray()[0];
+            code = text[bytesProcessed];
         }
         else if ((octet & 0xe0) == 0xc0){
             // Two octets
             // [0]xC2-DF    [1]UTF8-tail(x80-BF)
-            char octet1 = text.charAt(0);
+            char octet1 = text[bytesProcessed + 1];
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
                 next = 2;
@@ -1405,7 +1403,7 @@ public class Text{
         }
         else if ((octet & 0xf0) == 0xe0){
             // Three octets
-            char octet1 = text.charAt(0);
+            char octet1 = text[bytesProcessed + 1];
             char octet2;
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
@@ -1413,7 +1411,7 @@ public class Text{
                 return code;
             } // Unexpected sequence
 
-            octet2 = text.toCharArray()[2];
+            octet2 = text[bytesProcessed + 2];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
                 next = 3;
@@ -1444,7 +1442,7 @@ public class Text{
                 return code;
             }
 
-            char octet1 = text.charAt(0);
+            char octet1 = text[bytesProcessed + 1];
             char octet2 = '\0';
             char octet3 = '\0';
 
@@ -1453,14 +1451,14 @@ public class Text{
                 return code;
             }  // Unexpected sequence
 
-            octet2 = text.toCharArray()[2];
+            octet2 = text[bytesProcessed + 2];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
                 next = 3;
                 return code;
             }  // Unexpected sequence
 
-            octet3 = text.toCharArray()[3];
+            octet3 = text[bytesProcessed + 3];
 
             if ((octet3 == '\0') || ((octet3 >> 6) != 2)){
                 next = 4;
@@ -1587,7 +1585,6 @@ public class Text{
         int charId, charX, charY, charWidth, charHeight, charOffsetX, charOffsetY, charAdvanceX;
 
         for (int i = 0; ; i++){
-            //TODO: populate char info by iterating through lines and shit
             String tmp = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("id=") + 3,
                                                           fileLines[lineTracker].indexOf("x="));
             charId = Integer.parseInt(tmp.substring(0, tmp.indexOf(" ")));

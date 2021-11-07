@@ -1,11 +1,13 @@
 # Release: Raylib-J v0.3
+## The Enhanced Visual Update
 
 <hr>
 
 * Simplified the `src` directory
-* Removed the `Examples` directory
-  * All exaples will be hosted in the `Raylib-J Examples` repo.
-* Fixed up Textues module
+  * Reduced import lengths  
+  * Removed the `Examples` directory
+    * All examples will be hosted in the `Raylib-J Examples` repo.
+* Fixed up Textures module
   * Image Generation generates whole images
   * Cellular Generation now works
   * Fixed up `ImageFormat`
@@ -22,7 +24,7 @@
 <hr>
 
 # Release: Raylib-J v0.2-alpha
-
+## The Visual Update
 <hr>
 
 * Texture loading and rendering up and running
@@ -34,9 +36,7 @@
 
 <hr>
 
-
 # Commit: b37cde0
-
 <hr>
 
 * fixed issue that was causing the default font to generate incorrectly
@@ -45,7 +45,6 @@
 <hr>
 
 # Commit: 188b803
-
 <hr>
 
 * Updated to Raylib 3.7
@@ -69,4 +68,4 @@
     - RayMath: Complete adaptation.
     - Shapes: Complete adaptation.
     - Text: Basic adaptation. Able to draw text using the default font.
-    - Textures: Basic adaptation. No use outside of native necessities.
+    - Textures: Basic adaptation. No use outside native necessities.

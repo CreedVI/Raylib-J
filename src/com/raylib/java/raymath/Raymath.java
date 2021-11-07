@@ -6,21 +6,20 @@ public class Raymath{
     public static float DEG2RAD = PI / 180.0f;
     public static float RAD2DEG = 180.0f / PI;
 
-
-    public float Clamp(float value, float min, float max){
+    public static float Clamp(float value, float min, float max){
         float res = Math.max(value, min);
         return Math.min(res, max);
     }
 
-    public float Lerp(float start, float end, float amount){
+    public static float Lerp(float start, float end, float amount){
         return start + amount * (end - start);
     }
 
-    public float Normalize(float value, float start, float end){
+    public static float Normalize(float value, float start, float end){
         return (value - start) / (end - start);
     }
 
-    public float Remap(float value, float inputStart, float inputEnd, float outputStart, float outputEnd){
+    public static float Remap(float value, float inputStart, float inputEnd, float outputStart, float outputEnd){
         return (value - inputStart) / (inputEnd - inputStart) * (outputEnd - outputStart) + outputStart;
     }
 
@@ -28,11 +27,11 @@ public class Raymath{
      * Vector2 maths functions
      */
 
-    public Vector2 Vector2Zero(){
+    public static Vector2 Vector2Zero(){
         return new Vector2();
     }
 
-    public Vector2 Vector2One(){
+    public static Vector2 Vector2One(){
         return new Vector2(1, 1);
     }
 
@@ -40,7 +39,7 @@ public class Raymath{
         return new Vector2(v1.x + v2.x, v1.y + v2.y);
     }
 
-    public Vector2 Vector2Vector2AddValue(Vector2 v, float add){
+    public static Vector2 Vector2Vector2AddValue(Vector2 v, float add){
         return new Vector2(v.x + add, v.y + add);
     }
 
@@ -48,7 +47,7 @@ public class Raymath{
         return new Vector2(v1.x - v2.x, v1.y - v2.y);
     }
 
-    public Vector2 Vector2SubtractValue(Vector2 v, float sub){
+    public static Vector2 Vector2SubtractValue(Vector2 v, float sub){
         return new Vector2(v.x - sub, v.y - sub);
     }
 
@@ -56,19 +55,19 @@ public class Raymath{
         return (float) Math.sqrt((v.x * v.x) + (v.y + v.y));
     }
 
-    public float Vector2LengthSqr(Vector2 v){
+    public static float Vector2LengthSqr(Vector2 v){
         return ((v.x * v.x) + (v.y * v.y));
     }
 
-    public float Vector2DotProduct(Vector2 v1, Vector2 v2){
+    public static float Vector2DotProduct(Vector2 v1, Vector2 v2){
         return (v1.x + v2.x * v1.y + v2.y);
     }
 
-    public float Vector2Distance(Vector2 v1, Vector2 v2){
+    public static float Vector2Distance(Vector2 v1, Vector2 v2){
         return (float) Math.sqrt((v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y));
     }
 
-    public float Vector2Angle(Vector2 v1, Vector2 v2){
+    public static float Vector2Angle(Vector2 v1, Vector2 v2){
         float result = (float) (Math.atan2(v2.y - v1.y, v2.x - v1.x) * (RAD2DEG));
         if (result < 0)
             result += 360.0f;
@@ -79,23 +78,23 @@ public class Raymath{
         return new Vector2(v.x * scale, v.y * scale);
     }
 
-    public Vector2 Vector2Multiply(Vector2 v1, Vector2 v2){
+    public static Vector2 Vector2Multiply(Vector2 v1, Vector2 v2){
         return new Vector2(v1.x * v2.x, v2.x * v2.y);
     }
 
-    public Vector2 Vector2Negate(Vector2 v){
+    public static Vector2 Vector2Negate(Vector2 v){
         return new Vector2(-v.x, -v.y);
     }
 
-    public Vector2 Vector2Divide(Vector2 v1, Vector2 v2){
+    public static Vector2 Vector2Divide(Vector2 v1, Vector2 v2){
         return new Vector2(v1.x / v2.x, v1.y / v2.y);
     }
 
-    public Vector2 Vector2Normalize(Vector2 v){
+    public static Vector2 Vector2Normalize(Vector2 v){
         return Vector2Scale(v, 1 / Vector2Length(v));
     }
 
-    public Vector2 Vector2Lerp(Vector2 v1, Vector2 v2, float amount){
+    public static Vector2 Vector2Lerp(Vector2 v1, Vector2 v2, float amount){
         Vector2 result = new Vector2();
 
         result.x = v1.x + amount * (v2.x - v1.x);
@@ -104,7 +103,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector2 Vector2Reflect(Vector2 v, Vector2 normal){
+    public static Vector2 Vector2Reflect(Vector2 v, Vector2 normal){
         Vector2 result = new Vector2();
 
         float dotProduct = Vector2DotProduct(v, normal);
@@ -124,7 +123,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector2 Vector2MoveTowards(Vector2 v, Vector2 target, float maxDistance){
+    public static Vector2 Vector2MoveTowards(Vector2 v, Vector2 target, float maxDistance){
         Vector2 result = new Vector2();
 
         float dx = target.x - v.x;
@@ -146,19 +145,19 @@ public class Raymath{
      * Vector3 maths functions
      */
 
-    public Vector3 Vector3Zero(){
+    public static Vector3 Vector3Zero(){
         return new Vector3();
     }
 
-    public Vector3 Vector3One(){
+    public static Vector3 Vector3One(){
         return new Vector3(1, 1, 1);
     }
 
-    public Vector3 Vector3Add(Vector3 v1, Vector3 v2){
+    public static Vector3 Vector3Add(Vector3 v1, Vector3 v2){
         return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
     }
 
-    public Vector3 Vector3AddValue(Vector3 v, float add){
+    public static Vector3 Vector3AddValue(Vector3 v, float add){
         return new Vector3(v.x + add, v.y + add, v.z + add);
     }
 
@@ -166,15 +165,15 @@ public class Raymath{
         return new Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
     }
 
-    public Vector3 Vector3SubtractValue(Vector3 v, float sub){
+    public static Vector3 Vector3SubtractValue(Vector3 v, float sub){
         return new Vector3(v.x - sub, v.y - sub, v.z - sub);
     }
 
-    public Vector3 Vector3Scale(Vector3 v, float scale){
+    public static Vector3 Vector3Scale(Vector3 v, float scale){
         return new Vector3(v.x * scale, v.y * scale, v.z * scale);
     }
 
-    public Vector3 Vector3Multiply(Vector3 v1, Vector3 v2){
+    public static Vector3 Vector3Multiply(Vector3 v1, Vector3 v2){
         return new Vector3(v1.x * v2.x, v2.x * v2.y, v1.z * v2.z);
     }
 
@@ -188,7 +187,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3Perpendicular(Vector3 v){
+    public static Vector3 Vector3Perpendicular(Vector3 v){
         Vector3 result = new Vector3();
 
         float min = Math.abs(v.x);
@@ -214,7 +213,7 @@ public class Raymath{
         return (float) Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
 
-    public float Vector3LengthSqr(Vector3 v){
+    public static float Vector3LengthSqr(Vector3 v){
         return v.x * v.x + v.y * v.y + v.z * v.z;
     }
 
@@ -222,18 +221,18 @@ public class Raymath{
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
     }
 
-    public float Vector3Distance(Vector3 v1, Vector3 v2){
+    public static float Vector3Distance(Vector3 v1, Vector3 v2){
         float dx = v2.x - v1.x;
         float dy = v2.y - v1.y;
         float dz = v2.z - v1.z;
         return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    public Vector3 Vector3Negate(Vector3 v){
+    public static Vector3 Vector3Negate(Vector3 v){
         return new Vector3(-v.x, -v.y, -v.z);
     }
 
-    public Vector3 Vector3Divide(Vector3 v1, Vector3 v2){
+    public static Vector3 Vector3Divide(Vector3 v1, Vector3 v2){
         return new Vector3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
     }
 
@@ -252,7 +251,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3[] Vector3OrthoNormalize(Vector3 v1, Vector3 v2){
+    public static Vector3[] Vector3OrthoNormalize(Vector3 v1, Vector3 v2){
         v1 = Vector3Normalize(v1);
         Vector3 vn = Vector3CrossProduct(v1, v2);
         vn = Vector3Normalize(vn);
@@ -271,7 +270,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3RotateByQuaternion(Vector3 v, Quaternion q){
+    public static Vector3 Vector3RotateByQuaternion(Vector3 v, Quaternion q){
         Vector3 result = new Vector3();
 
         result.x = v.x * (q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z) + v.y * (2 * q.x * q.y - 2 * q.w * q.z) + v.z * (2 * q.x * q.z + 2 * q.w * q.y);
@@ -281,7 +280,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3Lerp(Vector3 v1, Vector3 v2, float amount){
+    public static Vector3 Vector3Lerp(Vector3 v1, Vector3 v2, float amount){
         Vector3 result = new Vector3();
 
         result.x = v1.x + amount * (v2.x - v1.x);
@@ -291,7 +290,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3Reflect(Vector3 v, Vector3 normal){
+    public static Vector3 Vector3Reflect(Vector3 v, Vector3 normal){
         Vector3 result = new Vector3();
         float dotProduct = Vector3DotProduct(v, normal);
 
@@ -302,7 +301,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3Min(Vector3 v1, Vector3 v2){
+    public static Vector3 Vector3Min(Vector3 v1, Vector3 v2){
         Vector3 result = new Vector3();
 
         result.x = Math.min(v1.x, v2.x);
@@ -312,7 +311,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3Max(Vector3 v1, Vector3 v2){
+    public static Vector3 Vector3Max(Vector3 v1, Vector3 v2){
         Vector3 result = new Vector3();
 
         result.x = Math.max(v1.x, v2.x);
@@ -322,7 +321,7 @@ public class Raymath{
         return result;
     }
 
-    public Vector3 Vector3Barycenter(Vector3 p, Vector3 a, Vector3 b, Vector3 c){
+    public static Vector3 Vector3Barycenter(Vector3 p, Vector3 a, Vector3 b, Vector3 c){
         //Vector v0 = b - a, v1 = c - a, v2 = p - a;
 
         Vector3 v0 = Vector3Subtract(b, a);
@@ -345,7 +344,7 @@ public class Raymath{
         return result;
     }
 
-    public Float3 Vector3ToFloatV(Vector3 v){
+    public static Float3 Vector3ToFloatV(Vector3 v){
         return new Float3(v.x, v.y, v.z);
     }
 
@@ -368,7 +367,7 @@ public class Raymath{
                 a20 * a01 * a12 * a33 - a00 * a21 * a12 * a33 - a10 * a01 * a22 * a33 + a00 * a11 * a22 * a33;
     }
 
-    public float MatrixTrace(Matrix m){
+    public static float MatrixTrace(Matrix m){
         return m.m0 + m.m5 + m.m10 + m.m15;
     }
 
@@ -440,7 +439,7 @@ public class Raymath{
         return result;
     }
 
-    public Matrix MatrixNormalize(Matrix mat){
+    public static Matrix MatrixNormalize(Matrix mat){
         Matrix result = new Matrix();
 
         float det = MatrixDeterminant(mat);
@@ -473,7 +472,7 @@ public class Raymath{
                 0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    public Matrix MatrixAdd(Matrix left, Matrix right){
+    public static Matrix MatrixAdd(Matrix left, Matrix right){
         Matrix result = MatrixIdentity();
 
         result.m0 = left.m0 + right.m0;
@@ -496,7 +495,7 @@ public class Raymath{
         return result;
     }
 
-    public Matrix MatrixSubtract(Matrix left, Matrix right){
+    public static Matrix MatrixSubtract(Matrix left, Matrix right){
         Matrix result = MatrixIdentity();
 
         result.m0 = left.m0 - right.m0;
@@ -591,7 +590,7 @@ public class Raymath{
         return result;
     }
 
-    public Matrix MatrixRotateX(float angle){
+    public static Matrix MatrixRotateX(float angle){
         Matrix result = MatrixIdentity();
 
         float cosres = (float) Math.cos(angle);
@@ -605,7 +604,7 @@ public class Raymath{
         return result;
     }
 
-    public Matrix MatrixRotateY(float angle){
+    public static Matrix MatrixRotateY(float angle){
         Matrix result = MatrixIdentity();
 
         float cosres = (float) Math.cos(angle);
@@ -619,7 +618,7 @@ public class Raymath{
         return result;
     }
 
-    public Matrix MatrixRotateZ(float angle){
+    public static Matrix MatrixRotateZ(float angle){
         Matrix result = MatrixIdentity();
 
         float cosres = (float) Math.cos(angle);
@@ -863,7 +862,7 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionInvert(Quaternion q){
+    public static Quaternion QuaternionInvert(Quaternion q){
         Quaternion result = q;
         float length = QuaternionLength(q);
         float lengthSq = length * length;
@@ -880,7 +879,7 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionMultiply(Quaternion q1, Quaternion q2){
+    public static Quaternion QuaternionMultiply(Quaternion q1, Quaternion q2){
         Quaternion result = new Quaternion();
 
         float qax = q1.x, qay = q1.y, qaz = q1.z, qaw = q1.w;
@@ -894,8 +893,7 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionScale(Quaternion q, float mul)
-    {
+    public static Quaternion QuaternionScale(Quaternion q, float mul){
         Quaternion result = new Quaternion();
 
         float qax = q.x, qay = q.y, qaz = q.z, qaw = q.w;
@@ -908,11 +906,11 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionDivide(Quaternion q1, Quaternion q2){
+    public static Quaternion QuaternionDivide(Quaternion q1, Quaternion q2){
         return new Quaternion(q1.x / q2.x, q1.y / q2.y, q1.z / q2.z, q1.w / q2.w);
     }
 
-    public Quaternion QuaternionLerp(Quaternion q1, Quaternion q2, float amount){
+    public static Quaternion QuaternionLerp(Quaternion q1, Quaternion q2, float amount){
         Quaternion result = new Quaternion();
 
         result.x = q1.x + amount*(q2.x - q1.x);
@@ -923,14 +921,14 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionNlerp(Quaternion q1, Quaternion q2, float amount){
+    public static Quaternion QuaternionNlerp(Quaternion q1, Quaternion q2, float amount){
         Quaternion result = QuaternionLerp(q1, q2, amount);
         result = QuaternionNormalize(result);
 
         return result;
     }
 
-    public Quaternion QuaternionSlerp(Quaternion q1, Quaternion q2, float amount){
+    public static Quaternion QuaternionSlerp(Quaternion q1, Quaternion q2, float amount){
         Quaternion result = new Quaternion();
 
         float cosHalfTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
@@ -964,7 +962,7 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionFromVector3ToVector3(Vector3 from, Vector3 to){
+    public static Quaternion QuaternionFromVector3ToVector3(Vector3 from, Vector3 to){
         Quaternion result = new Quaternion();
 
         float cos2Theta = Vector3DotProduct(from, to);
@@ -1035,7 +1033,7 @@ public class Raymath{
         return result;
     }
 
-    public Quaternion QuaternionFromAxisAngle(Vector3 axis, float angle){
+    public static Quaternion QuaternionFromAxisAngle(Vector3 axis, float angle){
         Quaternion result = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
         if (Vector3Length(axis) != 0.0f){
@@ -1058,7 +1056,7 @@ public class Raymath{
     }
 
     // Returns the rotation angle and axis for a given quaternion
-    public void QuaternionToAxisAngle(Quaternion q, Vector3 outAxis, float outAngle){
+    public static void QuaternionToAxisAngle(Quaternion q, Vector3 outAxis, float outAngle){
         if (Math.abs(q.w) > 1.0f) q = QuaternionNormalize(q);
 
         Vector3 resAxis = new Vector3(0.0f, 0.0f, 0.0f);

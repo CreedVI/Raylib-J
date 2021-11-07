@@ -867,7 +867,7 @@ public class Textures{
     }
 
     // Convert image to POT (power-of-two)
-// NOTE: It could be useful on OpenGL ES 2.0 (RPI, HTML5)
+    // NOTE: It could be useful on OpenGL ES 2.0 (RPI, HTML5)
     public void ImageToPOT(Image image, Color fill){
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)){
@@ -914,7 +914,7 @@ public class Textures{
         for (int i = 0; i < length; i++){
             // Get next codepoint from byte string and glyph index in font
             int codepointByteCount = 0;
-            int codepoint = Text.GetNextCodepoint(text);
+            int codepoint = Text.GetNextCodepoint(text.toCharArray(), i);
             int index = Text.GetGlyphIndex(font, codepoint);
 
             codepointByteCount = Text.getCPBC();

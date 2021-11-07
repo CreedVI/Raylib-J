@@ -4,7 +4,7 @@ public class Config{
 
     /**
      * Raylib configuration flags
-     * This file defines all the configuration flags for the different raylib modules
+     * This file defines all the configuration flags for the different raylib modules.txt
      */
 
     public static final String RAYLIB_VERSION = "3.7";

@@ -7,12 +7,14 @@ import com.raylib.java.rlgl.shader.Shader;
 import com.raylib.java.shapes.Rectangle;
 import com.raylib.java.textures.Texture2D;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferShort;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.raymath.Raymath.*;
@@ -2911,11 +2913,10 @@ public class RLGL{
             // NOTE: This information is useful for debug...
             int uniformCount = glGetProgrami(shader.getId(), GL_ACTIVE_UNIFORMS);
 
-            //TODO glGetActiveUniform produces IllegalArgumentException
-            /*for (int i = 0; i < uniformCount; i++){
+            for (int i = 0; i < uniformCount; i++){
                 try(MemoryStack stack = MemoryStack.stackPush()){
                     IntBuffer nameLen = stack.mallocInt(256);
-                    IntBuffer type = stack.mallocInt(GL_ZERO);
+                    IntBuffer type = stack.mallocInt(64);
 
                     // Get the name of the uniforms
                     String sName = glGetActiveUniform(shader.getId(), i, 255, nameLen, type);
@@ -2923,7 +2924,7 @@ public class RLGL{
                     TracelogS("SHADER: [ID " + shader.getId() + "] Active uniform (" + sName + ") set at location: " +
                             glGetUniformLocation(shader.getId(), sName));
                 }
-            }*/
+            }
         }
 
         return shader;
