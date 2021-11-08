@@ -34,10 +34,10 @@ CreedVI
 <div>
 [X] core <br>
 [X] shapes <br>
-[O] textures <br>
-[o] text <br>
+[X] textures <br>
+[X] text <br>
 [o] models <br>
-[O] shaders <br>
+[X] shaders <br>
 [ ] audio <br>
 [X] RLGL <br>
 [X] raymath <br>
@@ -45,7 +45,7 @@ CreedVI
 [ ] raygui+ricons <br>
 [X] easings <br>
 [p] gestures - Will look into reimplementing later on (08/03/21) <br>
-[ ] rlights <br>
+[X] rlights <br>
 [p] rmem - Module canceled as not needed for port (Thus far 08/03/21) <br>
 [p] rnet - Will wait until module is fully functional before supporting <br>
 <br>
