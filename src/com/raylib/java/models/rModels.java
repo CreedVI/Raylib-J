@@ -9,7 +9,7 @@ import com.raylib.java.rlgl.GL_33;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.textures.Texture2D;
 
-public class Models{
+public class rModels{
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition

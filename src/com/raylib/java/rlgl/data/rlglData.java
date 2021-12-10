@@ -1,37 +1,37 @@
 package com.raylib.java.rlgl.data;
 
-import com.raylib.java.rlgl.RenderBatch;
+import com.raylib.java.rlgl.rlRenderBatch;
 import com.raylib.java.rlgl.vr.VR;
 
 public class rlglData {
 
-    RenderBatch currentBatch;              // Current render batch
-    RenderBatch defaultBatch;               // Default internal render batch
+    rlRenderBatch currentBatch;              // Current render batch
+    rlRenderBatch defaultBatch;               // Default internal render batch
     ExtSupported extSupported;
     State state;
     VR vr;
 
     public rlglData(){
-        currentBatch = new RenderBatch();
-        defaultBatch = new RenderBatch();
+        currentBatch = new rlRenderBatch();
+        defaultBatch = new rlRenderBatch();
         extSupported = new ExtSupported();
         state = new State();
         vr = new VR();
     }
 
-    public void setCurrentBatch(RenderBatch currentBatch){
+    public void setCurrentBatch(rlRenderBatch currentBatch){
         this.currentBatch = currentBatch;
     }
 
-    public void setDefaultBatch(RenderBatch defaultBatch){
+    public void setDefaultBatch(rlRenderBatch defaultBatch){
         this.defaultBatch = defaultBatch;
     }
 
-    public RenderBatch getCurrentBatch(){
+    public rlRenderBatch getCurrentBatch(){
         return currentBatch;
     }
 
-    public RenderBatch getDefaultBatch(){
+    public rlRenderBatch getDefaultBatch(){
         return defaultBatch;
     }
 

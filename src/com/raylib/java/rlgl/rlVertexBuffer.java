@@ -1,11 +1,8 @@
 package com.raylib.java.rlgl;
 
-public class VertexBuffer{
+public class rlVertexBuffer{
 
-    int elementsCount;          // Number of elements in the buffer (QUADS)
-    int vCounter;               // Vertex position counter to process (and draw) from full buffer
-    int tcCounter;              // Vertex texcoord counter to process (and draw) from full buffer
-    int cCounter;               // Vertex color counter to process (and draw) from full buffer
+    int elementCount;          // Number of elements in the buffer (QUADS)
     float[] vertices;            // Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
     float[] texcoords;           // Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
     float[] colors;              // Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
@@ -14,7 +11,7 @@ public class VertexBuffer{
     int vaoId;         // OpenGL Vertex Array Object id
     int[] vboId;      // OpenGL Vertex Buffer Objects id (4 types of vertex data)
 
-    public VertexBuffer(){
+    public rlVertexBuffer(){
         vertices = new float[3];
         texcoords = new float[2];
         colors = new float[64];
@@ -23,36 +20,12 @@ public class VertexBuffer{
         vboId = new int[4];
     }
 
-    public int getElementsCount(){
-        return elementsCount;
+    public int getElementCount(){
+        return elementCount;
     }
 
-    public void setElementsCount(int elementsCount){
-        this.elementsCount = elementsCount;
-    }
-
-    public int getvCounter(){
-        return vCounter;
-    }
-
-    public void setvCounter(int vCounter){
-        this.vCounter = vCounter;
-    }
-
-    public int getTcCounter(){
-        return tcCounter;
-    }
-
-    public void setTcCounter(int tcCounter){
-        this.tcCounter = tcCounter;
-    }
-
-    public int getcCounter(){
-        return cCounter;
-    }
-
-    public void setcCounter(int cCounter){
-        this.cCounter = cCounter;
+    public void setElementCount(int elementCount){
+        this.elementCount = elementCount;
     }
 
     public float[] getVertices(){

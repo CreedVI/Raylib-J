@@ -82,6 +82,20 @@ public class Raymath{
         return new Vector2(v1.x * v2.x, v2.x * v2.y);
     }
 
+    // Calculate angle between two vectors in XY and XZ
+    public static Vector2 Vector3Angle(Vector3 v1, Vector3 v2){
+        Vector2 result = new Vector2();
+
+        float dx = v2.x - v1.x;
+        float dy = v2.y - v1.y;
+        float dz = v2.z - v1.z;
+
+        result.x = (float) Math.atan2(dx, dz);                      // Angle in XZ
+        result.y = (float) Math.atan2(dy, Math.sqrt(dx*dx + dz*dz));    // Angle in XY
+
+        return result;
+    }
+
     public static Vector2 Vector2Negate(Vector2 v){
         return new Vector2(-v.x, -v.y);
     }
@@ -1010,47 +1024,76 @@ public class Raymath{
         return result;
     }
 
+    // Get a matrix for a given quaternion
     public static Matrix QuaternionToMatrix(Quaternion q){
         Matrix result = MatrixIdentity();
 
-        float a2 = 2*(q.x*q.x), b2=2*(q.y*q.y), c2=2*(q.z*q.z); //, d2=2*(q.w*q.w);
+        float a2 = q.x*q.x;
+        float b2 = q.y*q.y;
+        float c2 = q.z*q.z;
+        float ac = q.x*q.z;
+        float ab = q.x*q.y;
+        float bc = q.y*q.z;
+        float ad = q.w*q.x;
+        float bd = q.w*q.y;
+        float cd = q.w*q.z;
 
-        float ab = 2*(q.x*q.y), ac=2*(q.x*q.z), bc=2*(q.y*q.z);
-        float ad = 2*(q.x*q.w), bd=2*(q.y*q.w), cd=2*(q.z*q.w);
+        result.m0 = 1 - 2*(b2 + c2);
+        result.m1 = 2*(ab + cd);
+        result.m2 = 2*(ac - bd);
 
-        result.m0 = 1 - b2 - c2;
-        result.m1 = ab - cd;
-        result.m2 = ac + bd;
+        result.m4 = 2*(ab - cd);
+        result.m5 = 1 - 2*(a2 + c2);
+        result.m6 = 2*(bc + ad);
 
-        result.m4 = ab + cd;
-        result.m5 = 1 - a2 - c2;
-        result.m6 = bc - ad;
-
-        result.m8 = ac - bd;
-        result.m9 = bc + ad;
-        result.m10 = 1 - a2 - b2;
+        result.m8 = 2*(ac + bd);
+        result.m9 = 2*(bc - ad);
+        result.m10 = 1 - 2*(a2 + b2);
 
         return result;
     }
 
+    // Get rotation quaternion for an angle and axis
+    // NOTE: angle must be provided in radians
     public static Quaternion QuaternionFromAxisAngle(Vector3 axis, float angle){
         Quaternion result = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
-        if (Vector3Length(axis) != 0.0f){
+        float axisLength = (float) Math.sqrt(axis.x*axis.x + axis.y*axis.y + axis.z*axis.z);
+
+        if (axisLength != 0.0f)
+        {
             angle *= 0.5f;
+
+            float length = 0.0f;
+            float ilength = 0.0f;
+
+            // Vector3Normalize(axis)
+            Vector3 v = axis;
+            length = (float) Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+            if (length == 0.0f) length = 1.0f;
+            ilength = 1.0f/length;
+            axis.x *= ilength;
+            axis.y *= ilength;
+            axis.z *= ilength;
+
+            float sinres = (float) Math.sin(angle);
+            float cosres = (float) Math.cos(angle);
+
+            result.x = axis.x*sinres;
+            result.y = axis.y*sinres;
+            result.z = axis.z*sinres;
+            result.w = cosres;
+
+            // QuaternionNormalize(q);
+            Quaternion q = result;
+            length = (float) Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+            if (length == 0.0f) length = 1.0f;
+            ilength = 1.0f/length;
+            result.x = q.x*ilength;
+            result.y = q.y*ilength;
+            result.z = q.z*ilength;
+            result.w = q.w*ilength;
         }
-
-        axis = Vector3Normalize(axis);
-
-        float sinres = (float) Math.sin(angle);
-        float cosres = (float) Math.cos(angle);
-
-        result.x = axis.x*sinres;
-        result.y = axis.y*sinres;
-        result.z = axis.z*sinres;
-        result.w = cosres;
-
-        result = QuaternionNormalize(result);
 
         return result;
     }

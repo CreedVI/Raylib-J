@@ -2,7 +2,7 @@ package com.raylib.java.text;
 
 import com.raylib.java.textures.Image;
 
-public class CharInfo{
+public class GlyphInfo{
 
     public int value;              // Character value (Unicode)
     public int offsetX;            // Character offset X when drawing
@@ -10,7 +10,7 @@ public class CharInfo{
     public int advanceX;           // Character advance position X
     public Image image;            // Character image data
 
-    public CharInfo(){
+    public GlyphInfo(){
         value = 0;
         offsetX = 0;
         offsetY = 0;

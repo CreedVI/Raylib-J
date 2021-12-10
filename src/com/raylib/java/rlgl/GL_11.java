@@ -70,8 +70,8 @@ public class GL_11{
         glTranslatef(x, y, z);
     }
 
-    static void rlRotatef(float angleDeg, float x, float y, float z){
-        glRotatef(angleDeg, x, y, z);
+    static void rlRotatef(float angle, float x, float y, float z){
+        glRotatef(angle, x, y, z);
     }
 
     static void rlScalef(float x, float y, float z){

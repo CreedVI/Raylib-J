@@ -15,42 +15,33 @@ public class Tracelog{
      */
 
     final int MAX_TRACELOG_MSG_LENGTH = 128;     // Max length of one trace-log message
-    final int MAX_UWP_MESSAGES = 512;           // Max UWP messages to process
 
-    static int logTypeLevel = LOG_ALL.getTraceLogInt();                     // Minimum log type level
-    static int logTypeExit = LOG_ERROR.getTraceLogInt();                     // Log type that exits
+    static int logTypeLevel = LOG_ALL;                     // Minimum log type level
+    static int logTypeExit = LOG_ERROR;                     // Log type that exits
+    static int EXIT_FAILURE = 255;
     static Method logCallback;
 
-    public enum TracelogType{
-        LOG_ALL(0),        // Display all logs
-        LOG_TRACE(1),
-        LOG_DEBUG(2),
-        LOG_INFO(3),
-        LOG_WARNING(4),
-        LOG_ERROR(5),
-        LOG_FATAL(6),
-        LOG_NONE(7);           // Disable logging
-
-        private final int TraceLogInt;
-
-        TracelogType(int TraceLogInt){
-            this.TraceLogInt = TraceLogInt;
-        }
-
-        public int getTraceLogInt(){
-            return TraceLogInt;
-        }
+    public static class TracelogType{
+        public static final int
+        LOG_ALL = 0,        // Display all logs
+        LOG_TRACE = 1,
+        LOG_DEBUG = 2,
+        LOG_INFO = 3,
+        LOG_WARNING = 4,
+        LOG_ERROR = 5,
+        LOG_FATAL = 6,
+        LOG_NONE = 7;           // Disable logging
     }
 
     /**
      * Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
      * @param logType TracelogType enum type that specifies what kind of trace log is to be called.
-     * @param text Text to be printed.
+     * @param text rText to be printed.
      */
-    public static void Tracelog(TracelogType logType, String text){
+    public static void Tracelog(int logType, String text){
         if(SUPPORT_TRACELOG){
             // Message has level below current threshold, don't emit
-            if (logType.getTraceLogInt() < logTypeLevel){
+            if (logType < logTypeLevel){
                 return;
             }
 
@@ -88,18 +79,19 @@ public class Tracelog{
                 System.out.print(buffer.toString());
             }
 
-            if (logType.getTraceLogInt() >= logTypeExit){
-                System.exit(1); // If exit message, exit program
+            if (logType == LOG_FATAL){
+                System.exit(EXIT_FAILURE);  // If fatal logging, exit program
             }
+
         }
     }
 
     /**
      * Prints trace log without a log type
-     * @param text Text to be printed
+     * @param text rText to be printed
      */
-    public static void TracelogS(String text){
-        if(SUPPORT_TRACELOG && logTypeLevel <= LOG_DEBUG.TraceLogInt){
+    public static void Tracelog(String text){
+        if(SUPPORT_TRACELOG && logTypeLevel <= LOG_DEBUG){
             System.out.println(text);
         }
     }
@@ -108,8 +100,8 @@ public class Tracelog{
      * Set the current threshold (minimum) log level
      * @param logType Minimum log type to be shown
      */
-    public static void SetTraceLogLevel(TracelogType logType){
-        logTypeLevel = logType.getTraceLogInt();
+    public static void SetTraceLogLevel(int logType){
+        logTypeLevel = logType;
     }
 
     // Set a trace log callback to enable custom logging

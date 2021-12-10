@@ -14,12 +14,11 @@ import com.raylib.java.rlgl.shader.Shader;
 import com.raylib.java.rlgl.vr.VrDeviceInfo;
 import com.raylib.java.rlgl.vr.VrStereoConfig;
 import com.raylib.java.shapes.Rectangle;
-import com.raylib.java.shapes.Shapes;
-import com.raylib.java.text.Text;
+import com.raylib.java.text.rText;
 import com.raylib.java.textures.Image;
 import com.raylib.java.textures.RenderTexture;
 import com.raylib.java.textures.Texture2D;
-import com.raylib.java.textures.Textures;
+import com.raylib.java.textures.rTextures;
 import com.raylib.java.utils.FileIO;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
@@ -31,14 +30,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
+import static com.raylib.java.Config.RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD;
+import static com.raylib.java.core.AutomationEvent.AutomationEventType.*;
 import static com.raylib.java.core.Color.RAYWHITE;
-import static com.raylib.java.core.camera.Camera.CameraProjection.CAMERA_ORTHOGRAPHIC;
-import static com.raylib.java.core.camera.Camera.CameraProjection.CAMERA_PERSPECTIVE;
+import static com.raylib.java.core.camera.rCamera.CameraProjection.CAMERA_ORTHOGRAPHIC;
+import static com.raylib.java.core.camera.rCamera.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_LEFT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadButton.*;
@@ -47,6 +49,8 @@ import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
 import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import static com.raylib.java.shapes.rShapes.SetShapesTexture;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
@@ -55,7 +59,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class Core{
+public class rCore{
 
     public RLGL rlgl;
 
@@ -63,16 +67,51 @@ public class Core{
     static Input input;
     static Time time;
 
+    public static int screenshotCounter;
+
+    static ArrayList<AutomationEvent> events;
+    static int eventCount = 0;                 // Events count
+    static boolean eventsPlaying = false;      // Play events
+    static boolean eventsRecording = false;    // Record events
+    static String autoEventTypeName[] = {
+            "EVENT_NONE",
+            "INPUT_KEY_UP",
+            "INPUT_KEY_DOWN",
+            "INPUT_KEY_PRESSED",
+            "INPUT_KEY_RELEASED",
+            "INPUT_MOUSE_BUTTON_UP",
+            "INPUT_MOUSE_BUTTON_DOWN",
+            "INPUT_MOUSE_POSITION",
+            "INPUT_MOUSE_WHEEL_MOTION",
+            "INPUT_GAMEPAD_CONNECT",
+            "INPUT_GAMEPAD_DISCONNECT",
+            "INPUT_GAMEPAD_BUTTON_UP",
+            "INPUT_GAMEPAD_BUTTON_DOWN",
+            "INPUT_GAMEPAD_AXIS_MOTION",
+            "INPUT_TOUCH_UP",
+            "INPUT_TOUCH_DOWN",
+            "INPUT_TOUCH_POSITION",
+            "INPUT_GESTURE",
+            "WINDOW_CLOSE",
+            "WINDOW_MAXIMIZE",
+            "WINDOW_MINIMIZE",
+            "WINDOW_RESIZE",
+            "ACTION_TAKE_SCREENSHOT",
+            "ACTION_SETTARGETFPS"
+    };
+
     //Gloabls required for FPS calculation
     static int index = 0;
-    static float[] history = new float[30]; //FPS_CAPTURE_FRAMEs_COUNT
+    static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     static float average = 0, last = 0;
 
-    public Core(){
+    public rCore(){
         window = new Window();
         input = new Input();
         time = new Time();
         rlgl = new RLGL();
+
+        events = new ArrayList<>();
     }
 
     static Window getWindow(){
@@ -100,14 +139,16 @@ public class Core{
      *
      * @param width  Window width in pixels
      * @param height Window height in pixels
-     * @param title  Window title
+     * @param title  Window title - passing null will use a default title
      */
     public void InitWindow(int width, int height, String title){
         Tracelog(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
 
-        if ((title != null) && (title.charAt(0) != 0)){
-            window.setTitle(title);
+        if(title == null || title.equals("")){
+            title = "Raylib-J Application";
         }
+
+        window.setTitle(title);
 
         // Initialize required global values different than 0
         input.keyboard.setExitKey(KEY_ESCAPE);
@@ -129,19 +170,22 @@ public class Core{
         if (SUPPORT_DEFAULT_FONT){
             // Load default font
             // NOTE: External function (defined in module: text)
-            Text.LoadFontDefault();
-            Rectangle rec = Text.GetFontDefault().getRecs()[95];
+            rText.LoadFontDefault();
+            Rectangle rec = rText.GetFontDefault().getRecs()[95];
             // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
-            Shapes.SetShapesTexture(Text.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
-                                                                                      rec.getWidth() - 2, rec.getHeight() - 2));
+            SetShapesTexture(rText.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
+                                                                                        rec.getWidth() - 2, rec.getHeight() - 2));
         }
         else{
-            Shapes.SetShapesTexture(RLGL.rlGetTextureDefault(), new Rectangle(0, 0, 1, 1));
+            // Set default texture and rectangle to be used for shapes drawing
+            // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
+            Texture2D texture = new Texture2D(rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            SetShapesTexture(texture, new Rectangle(0.0f, 0.0f, 1.0f, 1.0f));
         }
 
         if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
             // Set default font texture filter for HighDPI (blurry)
-            Textures.SetTextureFilter(Text.GetFontDefault().getTexture(), TextureFilterMode.TEXTURE_FILTER_BILINEAR);
+            rTextures.SetTextureFilter(rText.GetFontDefault().getTexture(), rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR);
         }
 
         glfwShowWindow(window.handle);
@@ -152,7 +196,7 @@ public class Core{
      */
     public void CloseWindow(){
         if (SUPPORT_DEFAULT_FONT){
-            Text.UnloadFontDefault();
+            rText.UnloadFontDefault();
         }
 
         RLGL.rlglClose();                // De-init rlgl
@@ -497,7 +541,7 @@ public class Core{
     // Set icon for window (only PLATFORM_DESKTOP)
     // NOTE: Image must be in RGBA format, 8bit per channel
     public void SetWindowIcon(Image image){
-        if (image.getFormat() == PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
+        if (image.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
             GLFWImage[] icon = new GLFWImage[1];
 
             icon[0].width(image.getWidth());
@@ -827,7 +871,7 @@ public class Core{
     public void EndDrawing(){
 
         rlgl.rlDrawRenderBatchActive();                     // Draw Buffers (Only OpenGL 3+ and ES2)
-        SwapBuffers();                  // Copy back buffer to front buffer
+        SwapScreenBuffers();                  // Copy back buffer to front buffer
 
         // Frame time control system
         time.setCurrent(GetTime());
@@ -838,7 +882,7 @@ public class Core{
 
         // Wait for some milliseconds...
         if (time.frame < time.target){
-            Wait((float) ((time.target - time.frame) * 1000.0f));
+            WaitTime((float) ((time.target - time.frame) * 1000.0f));
 
             time.current = GetTime();
             double waitTime = time.current - time.previous;
@@ -901,7 +945,7 @@ public class Core{
         RLGL.rlMatrixMode(RLGL.RL_MODELVIEW);         // Switch back to modelview matrix
         RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
 
-        // Setup Camera view
+        // Setup rCamera view
         Matrix matView = MatrixLookAt(camera.getPosition(), camera.getTarget(), camera.getUp());
         RLGL.rlMultMatrixf(MatrixToFloat(matView));      // Multiply modelview matrix by view matrix (camera)
 
@@ -966,12 +1010,12 @@ public class Core{
 
     // Begin custom shader mode
     public void BeginShaderMode(Shader shader){
-        rlgl.rlSetShader(shader);
+        rlgl.rlSetShader(shader.getId(), shader.getLocs());
     }
 
     // End custom shader mode (returns to default shader)
     public void EndShaderMode(){
-        rlgl.rlSetShader(rlgl.rlGetShaderDefault());
+        rlgl.rlSetShader(rlgl.rlGetShaderIdDefault(), rlgl.rlGetShaderLocsDefault());
     }
 
     // Begin blending mode (alpha, additive, multiplied)
@@ -982,7 +1026,7 @@ public class Core{
 
     // End blending mode (reset to default: alpha blending)
     public void EndBlendMode(){
-        rlgl.rlSetBlendMode(BlendMode.BLEND_ALPHA);
+        rlgl.rlSetBlendMode(rlBlendMode.RL_BLEND_ALPHA);
     }
 
     // Begin scissor mode (define screen area for following drawing)
@@ -1063,7 +1107,7 @@ public class Core{
             config.projection[1] = MatrixMultiply(proj, MatrixTranslate(-projOffset, 0.0f, 0.0f));
 
             // Compute camera transformation matrices
-            // NOTE: Camera movement might seem more natural if we model the head.
+            // NOTE: rCamera movement might seem more natural if we model the head.
             // Our axis of rotation is the base of our head, so we might want to add
             // some y (base of head to eye level) and -z (center of head to eye protrusion) to the camera positions.
             config.viewOffset[0] = MatrixTranslate(-device.interpupillaryDistance * 0.5f, 0.075f, 0.045f);
@@ -1120,7 +1164,7 @@ public class Core{
             }
         }
 
-        shader.setId(rlgl.rlLoadShaderCode(vShaderStr, fShaderStr).getId());
+        shader.setId(rlgl.rlLoadShaderCode(vShaderStr, fShaderStr));
 
         // After shader loading, we TRY to set default location names
         if (shader.getId() > 0){
@@ -1135,30 +1179,30 @@ public class Core{
             // NOTE: If any location is not found, loc point becomes -1
 
             // Get handles to GLSL input attibute locations
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                   DEFAULT_SHADER_ATTRIB_NAME_POSITION);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                     DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                     DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                 DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                  DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                DEFAULT_SHADER_ATTRIB_NAME_COLOR);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                        RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                      RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                       RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                     RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
 
             // Get handles to GLSL uniform locations (vertex shader)
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.getId(), "mvp");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.getId(), "view");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.getId(), "projection");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_NORMAL] = rlGetLocationUniform(shader.getId(), "matNormal");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.getId(), "mvp");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.getId(), "view");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.getId(), "projection");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_NORMAL] = rlGetLocationUniform(shader.getId(), "matNormal");
 
             // Get handles to GLSL uniform locations (fragment shader)
-            shader.locs[ShaderLocationIndex.SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.getId(), "colDiffuse");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.getId(), "texture0");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.getId(), "texture1");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.getId(), "texture2");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.getId(), "colDiffuse");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.getId(), "texture0");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.getId(), "texture1");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.getId(), "texture2");
         }
 
         return shader;
@@ -1169,7 +1213,7 @@ public class Core{
         Shader shader = new Shader();
         shader.locs = new int[RLGL.MAX_SHADER_LOCATIONS];
 
-        shader.setId(rlgl.rlLoadShaderCode(vsCode, fsCode).getId());
+        shader.setId(rlgl.rlLoadShaderCode(vsCode, fsCode));
 
         // After shader loading, we TRY to set default location names
         if (shader.getId() > 0){
@@ -1184,34 +1228,34 @@ public class Core{
             // NOTE: If any location is not found, loc point becomes -1
 
             // Get handles to GLSL input attibute locations
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                   DEFAULT_SHADER_ATTRIB_NAME_POSITION);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                     DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                     DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                 DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                  DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
-            shader.locs[ShaderLocationIndex.SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                DEFAULT_SHADER_ATTRIB_NAME_COLOR);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                        RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                      RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                       RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
+                                                                                                     RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
 
             // Get handles to GLSL uniform locations (vertex shader)
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.getId(), "mvp");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.getId(),
-                                                                                                 "projection");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.getId(), "view");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.getId(), "mvp");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.getId(),
+                                                                                                      "projection");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.getId(), "view");
 
             // Get handles to GLSL uniform locations (fragment shader)
-            shader.locs[ShaderLocationIndex.SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.getId(),
-                                                                                             "colDiffuse");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.getId(),
-                                                                                           "texture0");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.getId(),
-                                                                                            "texture1");
-            shader.locs[ShaderLocationIndex.SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.getId(),
-                                                                                          "texture2");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.getId(),
+                                                                                                  "colDiffuse");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.getId(),
+                                                                                             "texture0");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.getId(),
+                                                                                              "texture1");
+            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.getId(),
+                                                                                               "texture2");
         }
 
         return shader;
@@ -1219,7 +1263,7 @@ public class Core{
 
     // Unload shader from GPU memory (VRAM)
     public void UnloadShader(Shader shader){
-        if (shader.getId() != rlgl.rlGetShaderDefault().getId()){
+        if (shader.getId() != rlgl.rlGetShaderIdDefault()){
             rlgl.rlUnloadShaderProgram(shader.getId());
             shader.setLocs(null);
         }
@@ -1498,16 +1542,16 @@ public class Core{
     // Takes a screenshot of current screen (saved a .png)
     // NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB
     // have their own internal file-systems, to dowload image to user file-system some additional mechanism is required
-    public void TakeScreenshot(String fileName){
+    public static void TakeScreenshot(String fileName){
         short[] imgData = RLGL.rlReadScreenPixels(window.render.width, window.render.height);
         byte[] dataB = new byte[imgData.length];
         IntStream.range(0, dataB.length).forEach(i -> dataB[i] = (byte) imgData[i]);
         Image image = new Image(dataB, window.render.width, window.render.height, 1,
-                                PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+                                RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
         String path = "";
 
-        Textures.ExportImage(image, path);
+        rTextures.ExportImage(image, path);
 
         // TODO: Verification required for log
         Tracelog(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
@@ -1528,6 +1572,10 @@ public class Core{
         }
 
         return (int) (Math.random() * (max - min + 1) + min);
+    }
+
+    public void SetRandomSeed(int seed){
+        //TODO
     }
 
     // Check if the file exists
@@ -1620,6 +1668,104 @@ public class Core{
     //TODO: 3/20/21
     // CompressData
     // DecompressData
+
+
+    // Encode data to Base64 string
+    byte[] EncodeDataBase64(byte[] data, int dataLength, int outputLength)
+    {
+        char base64encodeTable[] = {
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+            'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+            'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+        };
+
+        int modTable[] = { 0, 2, 1 };
+
+        outputLength = 4*((dataLength + 2)/3);
+
+        byte[] encodedData = new byte[outputLength];
+
+        if (encodedData == null){
+            return null;
+        }
+
+        for (int i = 0, j = 0; i < dataLength;)
+        {
+            int octetA = (i < dataLength)? data[i++] : 0;
+            int octetB = (i < dataLength)? data[i++] : 0;
+            int octetC = (i < dataLength)? data[i++] : 0;
+
+            int triple = (octetA << 0x10) + (octetB << 0x08) + octetC;
+
+            encodedData[j++] = (byte) base64encodeTable[(triple >> 3*6) & 0x3F];
+            encodedData[j++] = (byte) base64encodeTable[(triple >> 2*6) & 0x3F];
+            encodedData[j++] = (byte) base64encodeTable[(triple >> 1*6) & 0x3F];
+            encodedData[j++] = (byte) base64encodeTable[(triple >> 0*6) & 0x3F];
+        }
+
+        for (int i = 0; i < modTable[dataLength%3]; i++){
+            encodedData[outputLength - 1 - i] = '=';
+        }
+
+        return encodedData;
+    }
+
+    // Decode Base64 string data
+    byte[] DecodeDataBase64(byte[] data, int outputLength) {
+        byte[] base64decodeTable = {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 62, 0, 0, 0, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 0, 0, 0, 0, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+            37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+        };
+
+        // Get output size of Base64 input data
+        int outLength = 0;
+        for (int i = 0; data[4*i] != 0; i++)
+        {
+            if (data[4*i + 3] == '=')
+            {
+                if (data[4*i + 2] == '=') outLength += 1;
+                else outLength += 2;
+            }
+            else outLength += 3;
+        }
+
+        // Allocate memory to store decoded Base64 data
+        byte[] decodedData = new byte[outLength];
+
+        for (int i = 0; i < outLength/3; i++){
+            byte a = base64decodeTable[data[4*i]];
+            byte b = base64decodeTable[data[4*i + 1]];
+            byte c = base64decodeTable[data[4*i + 2]];
+            byte d = base64decodeTable[data[4*i + 3]];
+
+            decodedData[3*i] = (byte) ((byte) (a << 2) | (b >> 4));
+            decodedData[3*i + 1] = (byte) ((byte) (b << 4) | (c >> 2));
+            decodedData[3*i + 2] = (byte) ((byte) (c << 6) | d);
+        }
+
+        if (outLength%3 == 1)
+        {
+            int n = outLength/3;
+            byte a = base64decodeTable[data[4*n]];
+            byte b = base64decodeTable[data[4*n + 1]];
+            decodedData[outLength - 1] = (byte) ((byte) (a << 2) | (b >> 4));
+        }
+        else if (outLength%3 == 2)
+        {
+            int n = outLength/3;
+            byte a = base64decodeTable[data[4*n]];
+            byte b = base64decodeTable[data[4*n + 1]];
+            byte c = base64decodeTable[data[4*n + 2]];
+            decodedData[outLength - 2] = (byte) ((byte) (a << 2) | (b >> 4));
+            decodedData[outLength - 1] = (byte) ((byte) (b << 4) | (c >> 2));
+        }
+
+        outputLength = outLength;
+        return decodedData;
+    }
+
 
     // Save integer value to storage file (to defined position)
     // NOTE: Storage positions is directly related to file memory layout (4 bytes each integer)
@@ -1785,21 +1931,6 @@ public class Core{
         return (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad];
     }
 
-    // Check gamepad name (if available)
-    public boolean IsGamepadName(int gamepad, String name){
-        boolean result = false;
-        String currentName = null;
-
-        if (input.gamepad.getReady()[gamepad]){
-            currentName = GetGamepadName(gamepad);
-        }
-        if ((name != null) && (currentName != null)){
-            result = (name.equals(currentName));
-        }
-
-        return result;
-    }
-
     // Return gamepad internal name id
     public String GetGamepadName(int gamepad){
         if (PLATFORM_DESKTOP){
@@ -1838,7 +1969,7 @@ public class Core{
         boolean pressed = false;
 
         pressed = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getPreviousState()[gamepad][button] == 0) && (input.gamepad.getCurrentState()[gamepad][button] == 1);
+                (input.gamepad.getPreviousButtonState()[gamepad][button] == 0) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 1);
 
         return pressed;
     }
@@ -1846,7 +1977,7 @@ public class Core{
     // Detect if a gamepad button is being pressed
     public boolean IsGamepadButtonDown(int gamepad, int button){
         boolean result = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getCurrentState()[gamepad][button] == 1);
+                (input.gamepad.getCurrentButtonState()[gamepad][button] == 1);
 
         return result;
     }
@@ -1856,7 +1987,7 @@ public class Core{
         boolean released = false;
 
         released = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getPreviousState()[gamepad][button] == 1) && (input.gamepad.getCurrentState()[gamepad][button] == 0);
+                (input.gamepad.getPreviousButtonState()[gamepad][button] == 1) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 0);
 
         return released;
     }
@@ -1864,7 +1995,7 @@ public class Core{
     // Detect if a mouse button is NOT being pressed
     boolean IsGamepadButtonUp(int gamepad, int button){
         boolean result = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getCurrentState()[gamepad][button] == 0);
+                (input.gamepad.getCurrentButtonState()[gamepad][button] == 0);
 
         return result;
     }
@@ -1943,7 +2074,7 @@ public class Core{
             return (int)input.Touch.position[0].x;
         #else
         */
-        return (int) ((input.mouse.getPosition().getX() + input.mouse.getOffset().getX()) * input.mouse.getScale().getX());
+        return (int) ((input.mouse.currentPosition.x + input.mouse.getOffset().getX()) * input.mouse.getScale().getX());
         //#endif
     }
 
@@ -1954,7 +2085,7 @@ public class Core{
             return (int)input.Touch.position[0].y;
         #else
         */
-        return (int) ((input.mouse.getPosition().getY() + input.mouse.getOffset().getY()) * input.mouse.getScale().getY());
+        return (int) ((input.mouse.currentPosition.y + input.mouse.getOffset().getY()) * input.mouse.getScale().getY());
         //#endif
     }
 
@@ -1968,18 +2099,28 @@ public class Core{
         position = GetTouchPosition(0);
         #else
         */
-        position.setX((input.mouse.getPosition().getX() + input.mouse.getOffset().getX()) * input.mouse.getScale().getX());
-        position.setY((input.mouse.getPosition().getY() + input.mouse.getOffset().getY()) * input.mouse.getScale().getY());
+        position.setX((input.mouse.currentPosition.x + input.mouse.getOffset().getX()) * input.mouse.getScale().getX());
+        position.setY((input.mouse.currentPosition.y + input.mouse.getOffset().getY()) * input.mouse.getScale().getY());
         //#endif
 
         return position;
     }
 
+    // Get mouse delta between frames
+    public Vector2 GetMouseDelta() {
+        Vector2 delta = new Vector2();
+
+        delta.x = input.mouse.currentPosition.x - input.mouse.previousPosition.x;
+        delta.y = input.mouse.currentPosition.y - input.mouse.previousPosition.y;
+
+        return delta;
+    }
+
     // Set mouse position XY
     public void SetMousePosition(int x, int y){
-        input.mouse.setPosition(new Vector2((float) x, (float) y));
+        input.mouse.setCurrentPosition(new Vector2((float) x, (float) y));
         // NOTE: emscripten not implemented
-        glfwSetCursorPos(window.handle, input.mouse.getPosition().getX(), input.mouse.getPosition().getY());
+        glfwSetCursorPos(window.handle, input.mouse.currentPosition.x, input.mouse.currentPosition.y);
     }
 
     // Set mouse offset
@@ -2205,11 +2346,11 @@ public class Core{
 
         // Check selection OpenGL version
 
-        if (RLGL.rlGetVersion() == GlVersion.OPENGL_21){
+        if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_21){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);          // Choose OpenGL minor version (just hint)
         }
-        else if (RLGL.rlGetVersion() == GlVersion.OPENGL_33){
+        else if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_33){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);          // Choose OpenGL minor version (just hint)
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Profiles Hint: Only 3.3 and above!
@@ -2221,7 +2362,7 @@ public class Core{
             }
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
-        else if (RLGL.rlGetVersion() == GlVersion.OPENGL_ES_20){
+        else if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_ES_20){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -2505,7 +2646,7 @@ public class Core{
      *
      * @param ms Time to wait in milliseconds
      */
-    void Wait(float ms){
+    public void WaitTime(float ms){
         if (SUPPORT_WINMM_HIGHRES_TIMER){
             double prevTime = GetTime();
             double nextTime = 0.0;
@@ -2555,7 +2696,7 @@ public class Core{
         for (int i = 0; i < MAX_GAMEPADS; i++){
             if (input.gamepad.getReady()[i]){     // Check if gamepad is available
                 // Register previous gamepad states
-                input.gamepad.setPreviousState(input.gamepad.getCurrentState());
+                input.gamepad.setPreviousButtonState(input.gamepad.getCurrentButtonState());
 
                 // Get current gamepad state
                 // NOTE: There is no callback available, so we get it manually
@@ -2626,11 +2767,11 @@ public class Core{
                     if (button != -1)   // Check for valid button
                     {
                         if (buttons.get(k) == GLFW_PRESS){
-                            input.gamepad.getCurrentState()[i][button] = 1;
+                            input.gamepad.getCurrentButtonState()[i][button] = 1;
                             input.gamepad.setLastButtonPressed(button);
                         }
                         else{
-                            input.gamepad.getCurrentState()[i][button] = 0;
+                            input.gamepad.getCurrentButtonState()[i][button] = 0;
                         }
                     }
                 }
@@ -2643,8 +2784,8 @@ public class Core{
                 }
 
                 // Register buttons for 2nd triggers (because GLFW doesn't count these as buttons but rather axis)
-                input.gamepad.getCurrentState()[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_LEFT_TRIGGER] > 0.1 ? 0 : 1);
-                input.gamepad.getCurrentState()[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.1 ? 0 : 1);
+                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_LEFT_TRIGGER] > 0.1 ? 0 : 1);
+                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.1 ? 0 : 1);
 
                 input.gamepad.setAxisCount(GLFW_GAMEPAD_AXIS_LAST);
             }
@@ -2663,7 +2804,7 @@ public class Core{
     /**
      * Copy back buffer to front buffers
      */
-    void SwapBuffers(){
+    void SwapScreenBuffers(){
         glfwSwapBuffers(window.handle);
     }
 
@@ -2697,6 +2838,380 @@ public class Core{
     //InitGamepad
 
     //GamepadThread
-    //END RPI | DRM
+    //END RPI
+
+    //FindMatching
+    //FindExact
+    //FindNearest
+    //END DRM
+
+    // NOTE: Loading happens over AutomationEvent *events
+    public static void LoadAutomationEvents(String fileName) {
+        //unsigned char fileId[4] = { 0 };
+
+        // Load binary
+        /*
+        FILE *repFile = fopen(fileName, "rb");
+        fread(fileId, 4, 1, repFile);
+
+        if ((fileId[0] == 'r') && (fileId[1] == 'E') && (fileId[2] == 'P') && (fileId[1] == ' '))
+        {
+            fread(&eventCount, sizeof(int), 1, repFile);
+            TraceLog(LOG_WARNING, "Events loaded: %i\n", eventCount);
+            fread(events, sizeof(AutomationEvent), eventCount, repFile);
+        }
+
+        fclose(repFile);
+        */
+
+        // Load events (text file)
+        String[] repFile = new String[0];
+        try{
+            repFile = FileIO.LoadFileText(fileName).split("\n");
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+        if (repFile != null) {
+            int count = 0;
+
+            while (count < repFile.length) {
+                if (repFile[count].charAt(0) == 'c' && !repFile[count].contains("#")){
+                    eventCount = Integer.parseInt(repFile[count].substring(2));
+                }
+                else if (repFile[count].charAt(0) == 'e') {
+                    String[] eLine = repFile[count].split(" ");
+                    events.get(count).frame = Integer.parseInt(eLine[1]);
+                    events.get(count).type = Integer.parseInt(eLine[2]);
+                    events.get(count).params[0] = Integer.parseInt(eLine[3]);
+                    events.get(count).params[1] = Integer.parseInt(eLine[4]);
+                    events.get(count).params[2] = Integer.parseInt(eLine[5]);
+
+                    count++;
+                }
+
+            }
+
+            if (count != eventCount) {
+                Tracelog(LOG_WARNING, "Events count provided is different than count");
+            }
+
+        }
+
+        Tracelog(LOG_WARNING, "Events loaded: " + eventCount);
+    }
+
+    // Export recorded events into a file
+    public static void ExportAutomationEvents(String fileName) {
+        // Save as binary
+        /*
+        FILE *repFile = fopen(fileName, "wb");
+        fwrite(fileId, 4, 1, repFile);
+        fwrite(&eventCount, sizeof(int), 1, repFile);
+        fwrite(events, sizeof(AutomationEvent), eventCount, repFile);
+        fclose(repFile);
+        */
+
+        // Export events as text
+        StringBuilder repFileText = new StringBuilder();
+
+        if (fileName != null || fileName != "") {
+            repFileText.append("# Automation events list\n");
+            repFileText.append("#    c <events_count>\n");
+            repFileText.append("#    e <frame> <event_type> <param0> <param1> <param2> // <event_type_name>\n");
+
+            repFileText.append("c ").append(eventCount).append("\n");
+            for (int i = 0; i < eventCount; i++) {
+                repFileText.append("e ").append(events.get(i).frame).append(" ").append(events.get(i).type)
+                        .append(" ").append(events.get(i).params[0]).append(" ").append(events.get(i).params[1])
+                        .append(" ").append(events.get(i).params[2]).append(" // ").append(autoEventTypeName[events.get(i).type])
+                        .append("\n");
+            }
+
+            try{
+                FileIO.SaveFileText(fileName, repFileText.toString());
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    // EndDrawing() -> After PollInputEvents()
+    // Check event in current frame and save into the events[i] array
+    public static void RecordAutomationEvent(int frame) {
+        for (int key = 0; key < Config.MAX_KEYBOARD_KEYS; key++) {
+            // INPUT_KEY_UP (only saved once)
+            if (input.keyboard.previousKeyState[key] && !input.keyboard.currentKeyState[key]) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_KEY_UP;
+                events.get(eventCount).params[0] = key;
+                events.get(eventCount).params[1] = 0;
+                events.get(eventCount).params[2] = 0;
+
+                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                eventCount++;
+            }
+
+            // INPUT_KEY_DOWN
+            if (input.keyboard.currentKeyState[key]) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_KEY_DOWN;
+                events.get(eventCount).params[0] = key;
+                events.get(eventCount).params[1] = 0;
+                events.get(eventCount).params[2] = 0;
+
+                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                eventCount++;
+            }
+        }
+
+        for (int button = 0; button < MAX_MOUSE_BUTTONS; button++) {
+            // INPUT_MOUSE_BUTTON_UP
+            if (input.mouse.previousButtonState[button] == 1 && !(input.mouse.currentButtonState[button] == 1)) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_MOUSE_BUTTON_UP;
+                events.get(eventCount).params[0] = button;
+                events.get(eventCount).params[1] = 0;
+                events.get(eventCount).params[2] = 0;
+
+                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                eventCount++;
+            }
+
+            // INPUT_MOUSE_BUTTON_DOWN
+            if (input.mouse.currentButtonState[button] == 1) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_MOUSE_BUTTON_DOWN;
+                events.get(eventCount).params[0] = button;
+                events.get(eventCount).params[1] = 0;
+                events.get(eventCount).params[2] = 0;
+
+                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                eventCount++;
+            }
+        }
+
+        // INPUT_MOUSE_POSITION (only saved if changed)
+        if (((int)input.mouse.currentPosition.x != (int)input.mouse.previousPosition.x) || ((int)input.mouse.currentPosition.y != (int)input.mouse.previousPosition.y)) {
+            events.get(eventCount).frame = frame;
+            events.get(eventCount).type = INPUT_MOUSE_POSITION;
+            events.get(eventCount).params[0] = (int)input.mouse.currentPosition.x;
+            events.get(eventCount).params[1] = (int)input.mouse.currentPosition.y;
+            events.get(eventCount).params[2] = 0;
+
+            Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            eventCount++;
+        }
+
+        // INPUT_MOUSE_WHEEL_MOTION
+        if ((int)input.mouse.currentWheelMove != (int)input.mouse.previousWheelMove) {
+            events.get(eventCount).frame = frame;
+            events.get(eventCount).type = INPUT_MOUSE_WHEEL_MOTION;
+            events.get(eventCount).params[0] = (int)input.mouse.currentWheelMove;
+            events.get(eventCount).params[1] = 0;
+            events.get(eventCount).params[2] = 0;
+
+            Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            eventCount++;
+        }
+
+        for (int id = 0; id < MAX_TOUCH_POINTS; id++) {
+            // INPUT_TOUCH_UP
+            if (input.touch.previousTouchState[id] && !input.touch.currentTouchState[id]) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_TOUCH_UP;
+                events.get(eventCount).params[0] = id;
+                events.get(eventCount).params[1] = 0;
+                events.get(eventCount).params[2] = 0;
+
+                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                eventCount++;
+            }
+
+            // INPUT_TOUCH_DOWN
+            if (input.touch.currentTouchState[id]) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_TOUCH_DOWN;
+                events.get(eventCount).params[0] = id;
+                events.get(eventCount).params[1] = 0;
+                events.get(eventCount).params[2] = 0;
+
+                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                eventCount++;
+            }
+
+            // INPUT_TOUCH_POSITION
+            // TODO: It requires the id!
+            /*
+            if (((int)input.touch.currentPosition[id].x != (int)input.touch.previousPosition[id].x) || ((int)input.touch.currentPosition[id].y != (int)input.touch.previousPosition[id].y)) {
+                events.get(eventCount).frame = frame;
+                events.get(eventCount).type = INPUT_TOUCH_POSITION;
+                events.get(eventCount).params[0] = id;
+                events.get(eventCount).params[1] = (int)input.touch.currentPosition[id].x;
+                events.get(eventCount).params[2] = (int)input.touch.currentPosition[id].y;
+
+                Tracelog(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events.get(eventCount).frame, events.get(eventCount).params[0], events.get(eventCount).params[1], events.get(eventCount).params[2]);
+                eventCount++;
+            }
+            */
+        }
+
+        for (int gamepad = 0; gamepad < MAX_GAMEPADS; gamepad++) {
+            // INPUT_GAMEPAD_CONNECT
+            /*
+            if ((input.gamepad.currentState[gamepad] != input.gamepad.previousState[gamepad]) && (input.gamepad.currentState[gamepad] == true)) {
+                // Check if changed to ready
+                // TODO: Save gamepad connect event
+            }
+            */
+
+            // INPUT_GAMEPAD_DISCONNECT
+            /*
+            if ((input.gamepad.currentState[gamepad] != input.gamepad.previousState[gamepad]) && (input.gamepad.currentState[gamepad] == false)) {
+                // Check if changed to not-ready
+                // TODO: Save gamepad disconnect event
+            }
+            */
+
+            for (int button = 0; button < MAX_GAMEPAD_BUTTONS; button++) {
+                // INPUT_GAMEPAD_BUTTON_UP
+                if (input.gamepad.previousButtonState[gamepad][button] == 1 && !(input.gamepad.currentButtonState[gamepad][button] == 1)) {
+                    events.get(eventCount).frame = frame;
+                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_UP;
+                    events.get(eventCount).params[0] = gamepad;
+                    events.get(eventCount).params[1] = button;
+                    events.get(eventCount).params[2] = 0;
+
+                    Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    eventCount++;
+                }
+
+                // INPUT_GAMEPAD_BUTTON_DOWN
+                if (input.gamepad.currentButtonState[gamepad][button] == 1) {
+                    events.get(eventCount).frame = frame;
+                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_DOWN;
+                    events.get(eventCount).params[0] = gamepad;
+                    events.get(eventCount).params[1] = button;
+                    events.get(eventCount).params[2] = 0;
+
+                    Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    eventCount++;
+                }
+            }
+
+            for (int axis = 0; axis < MAX_GAMEPAD_AXIS; axis++) {
+                // INPUT_GAMEPAD_AXIS_MOTION
+                if (input.gamepad.axisState[gamepad][axis] > 0.1f) {
+                    events.get(eventCount).frame = frame;
+                    events.get(eventCount).type = INPUT_GAMEPAD_AXIS_MOTION;
+                    events.get(eventCount).params[0] = gamepad;
+                    events.get(eventCount).params[1] = axis;
+                    events.get(eventCount).params[2] = (int)(input.gamepad.axisState[gamepad][axis]*32768.0f);
+
+                    Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    eventCount++;
+                }
+            }
+        }
+
+        // INPUT_GESTURE
+        /* TODO
+        if (gestures.current != GESTURE_NONE) {
+            events.get(eventCount).frame = frame;
+            events.get(eventCount).type = INPUT_GESTURE;
+            events.get(eventCount).params[0] = gestures.current;
+            events.get(eventCount).params[1] = 0;
+            events.get(eventCount).params[2] = 0;
+
+            Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GESTURE: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            eventCount++;
+        }
+        */
+    }
+
+    // Play automation event
+    public void PlayAutomationEvent(int frame) {
+        for (int i = 0; i < eventCount; i++) {
+            if (events.get(i).frame == frame) {
+                switch (events.get(i).type) {
+                    // Input events
+                    case INPUT_KEY_UP:    // param[0]: key
+                        input.keyboard.currentKeyState[events.get(i).params[0]] = false;
+                        break;
+                    case INPUT_KEY_DOWN:  // param[0]: key
+                        input.keyboard.currentKeyState[events.get(i).params[0]] = true;
+                        break;
+                    case INPUT_MOUSE_BUTTON_UP:    // param[0]: key
+                        input.mouse.currentButtonState[events.get(i).params[0]] = 0;
+                        break;
+                    case INPUT_MOUSE_BUTTON_DOWN:   // param[0]: key
+                        input.mouse.currentButtonState[events.get(i).params[0]] = 1;
+                        break;
+                    case INPUT_MOUSE_POSITION:      // param[0]: x, param[1]: y
+                        input.mouse.currentPosition.x = (float)events.get(i).params[0];
+                        input.mouse.currentPosition.y = (float)events.get(i).params[1];
+                        break;
+                    case INPUT_MOUSE_WHEEL_MOTION:   // param[0]: delta
+                        input.mouse.currentWheelMove = (float)events.get(i).params[0];
+                        break;
+                    case INPUT_TOUCH_UP:     // param[0]: id
+                        input.touch.currentTouchState[events.get(i).params[0]] = false;
+                        break;
+                    case INPUT_TOUCH_DOWN:   // param[0]: id
+                        input.touch.currentTouchState[events.get(i).params[0]] = true;
+                        break;
+                    case INPUT_TOUCH_POSITION:      // param[0]: id, param[1]: x, param[2]: y
+                        input.touch.position[events.get(i).params[0]].x = (float)events.get(i).params[1];
+                        input.touch.position[events.get(i).params[0]].y = (float)events.get(i).params[2];
+                        break;
+                    case INPUT_GAMEPAD_CONNECT:     // param[0]: gamepad
+                        input.gamepad.ready[events.get(i).params[0]] = true;
+                        break;
+                    case INPUT_GAMEPAD_DISCONNECT:    // param[0]: gamepad
+                        input.gamepad.ready[events.get(i).params[0]] = false;
+                        break;
+                    case INPUT_GAMEPAD_BUTTON_UP:    // param[0]: gamepad, param[1]: button
+                        input.gamepad.currentButtonState[events.get(i).params[0]][events.get(i).params[1]] = 0;
+                        break;
+                    case INPUT_GAMEPAD_BUTTON_DOWN:  // param[0]: gamepad, param[1]: button
+                        input.gamepad.currentButtonState[events.get(i).params[0]][events.get(i).params[1]] = 1;
+                        break;
+                    case INPUT_GAMEPAD_AXIS_MOTION: // param[0]: gamepad, param[1]: axis, param[2]: delta
+                        input.gamepad.axisState[events.get(i).params[0]][events.get(i).params[1]] = ((float)events.get(i).params[2]/32768.0f);
+                        break;
+                    case INPUT_GESTURE: // param[0]: gesture (enum Gesture) -> rgestures.h: GESTURES.current
+                        //TODO
+                        //GESTURES.current = events.get(i).params[0];
+                        break;
+
+                    // Window events
+                    case WINDOW_CLOSE:
+                        window.shouldClose = true;
+                        break;
+                    case WINDOW_MAXIMIZE:
+                        MaximizeWindow();
+                        break;
+                    case WINDOW_MINIMIZE:
+                        MinimizeWindow();
+                        break;
+                    case WINDOW_RESIZE:
+                        SetWindowSize(events.get(i).params[0], events.get(i).params[1]);
+                        break;
+
+                    // Custom events
+                    case ACTION_TAKE_SCREENSHOT:
+                        TakeScreenshot("screenshot" + screenshotCounter + ".png");
+                        screenshotCounter++;
+                        break;
+                    case ACTION_SETTARGETFPS:
+                        SetTargetFPS(events.get(i).params[0]);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
 
 }

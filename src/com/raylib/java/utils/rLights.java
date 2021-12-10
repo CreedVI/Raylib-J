@@ -1,11 +1,11 @@
 package com.raylib.java.utils;
 
 import com.raylib.java.core.Color;
-import com.raylib.java.core.Core;
+import com.raylib.java.core.rCore;
 import com.raylib.java.raymath.Vector3;
 import com.raylib.java.rlgl.shader.Shader;
 
-import static com.raylib.java.rlgl.RLGL.ShaderUniformDataType.*;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.*;
 
 public class rLights{
 
@@ -117,11 +117,11 @@ public class rLights{
             targetName = targetName.replace('x', (char) lightsCount);
             colorName = colorName.replace('x', (char) lightsCount);
 
-            light.enabledLoc = Core.GetShaderLocation(shader, enabledName);
-            light.typeLoc = Core.GetShaderLocation(shader, typeName);
-            light.posLoc = Core.GetShaderLocation(shader, posName);
-            light.targetLoc = Core.GetShaderLocation(shader, targetName);
-            light.colorLoc = Core.GetShaderLocation(shader, colorName);
+            light.enabledLoc = rCore.GetShaderLocation(shader, enabledName);
+            light.typeLoc = rCore.GetShaderLocation(shader, typeName);
+            light.posLoc = rCore.GetShaderLocation(shader, posName);
+            light.targetLoc = rCore.GetShaderLocation(shader, targetName);
+            light.colorLoc = rCore.GetShaderLocation(shader, colorName);
 
             UpdateLightValues(shader, light);
 
@@ -135,16 +135,16 @@ public class rLights{
     // NOTE: Light shader locations should be available
     public static void UpdateLightValues(Shader shader, Light light){
         // Send to shader light enabled state and type
-        Core.SetShaderValue(shader, light.enabledLoc, new float[]{1}, SHADER_UNIFORM_INT);
-        Core.SetShaderValue(shader, light.typeLoc, new float[]{light.type}, SHADER_UNIFORM_INT);
+        rCore.SetShaderValue(shader, light.enabledLoc, new float[]{1}, RL_SHADER_UNIFORM_INT);
+        rCore.SetShaderValue(shader, light.typeLoc, new float[]{light.type}, RL_SHADER_UNIFORM_INT);
 
         // Send to shader light position values
         float[] position = new float[]{light.position.x, light.position.y, light.position.z};
-        Core.SetShaderValue(shader, light.posLoc, position, SHADER_UNIFORM_VEC3);
+        rCore.SetShaderValue(shader, light.posLoc, position, RL_SHADER_UNIFORM_VEC3);
 
         // Send to shader light target position values
         float[] target = new float[]{light.target.x, light.target.y, light.target.z};
-        Core.SetShaderValue(shader, light.targetLoc, target, SHADER_UNIFORM_VEC3);
+        rCore.SetShaderValue(shader, light.targetLoc, target, RL_SHADER_UNIFORM_VEC3);
 
         // Send to shader light color values
         float[] color = new float[]{
@@ -153,7 +153,7 @@ public class rLights{
                 (float) light.color.b / (float) 255,
                 (float) light.color.a / (float) 255
         };
-        Core.SetShaderValue(shader, light.colorLoc, color, SHADER_UNIFORM_VEC4);
+        rCore.SetShaderValue(shader, light.colorLoc, color, RL_SHADER_UNIFORM_VEC4);
     }
 
 }

@@ -1,56 +1,51 @@
 package com.raylib.java.rlgl.data;
 
 import com.raylib.java.raymath.Matrix;
-import com.raylib.java.rlgl.shader.Shader;
-import com.raylib.java.shapes.Rectangle;
-import com.raylib.java.textures.Texture2D;
 
 import static com.raylib.java.rlgl.RLGL.*;
 
 public  class State{                    // Renderer state
-    int currentMatrixMode;              // Current matrix mode
-    Matrix modelview;                   // Default modelview matrix
-    Matrix projection;                  // Default projection matrix
-    Matrix transform;                   // Transform matrix to be used with rlTranslate, rlRotate, rlScale
-    boolean transformRequired;          // Require transform matrix application to current draw-call vertex (if required)
-    Matrix[] stack;                     // Matrix stack for push/pop
-    int stackCounter;                   // Matrix stack counter
 
-    Texture2D shapesTexture;            // Texture used on shapes drawing (usually a white pixel)
-    Rectangle shapesTextureRec;         // Texture source rectangle used on shapes drawing
-    int defaultTextureId;               // Default texture used on shapes/poly drawing (required by shader)
-    int[] activeTextureId;              // Active texture ids to be enabled on batch drawing (0 active by default)
-    int defaultVShaderId;               // Default vertex shader id (used by default shader program)
-    int defaultFShaderId;               // Default fragment shader Id (used by default shader program)
-    Shader defaultShader;               // Basic shader, support vertex color and diffuse texture
-    Shader currentShader;               // Shader to be used on rendering (by default, defaultShader)
+    public int vertexCounter;                  // Current active render batch vertex counter (generic, used for all batches)
+    public float texcoordx, texcoordy;         // Current active texture coordinate (added on glVertex*())
+    public float normalx, normaly, normalz;    // Current active normal (added on glVertex*())
+    public int colorr, colorg, colorb, colora;   // Current active color (added on glVertex*())
 
-    boolean stereoRender;                  // Stereo rendering flag
-    Matrix[] projectionStereo;         // VR stereo rendering eyes projection matrices
-    Matrix[] viewOffsetStereo;         // VR stereo rendering eyes view offset matrices
+    public int currentMatrixMode;              // Current matrix mode
+    public Matrix currentMatrix;              // Current matrix pointer
+    public Matrix modelview;                   // Default modelview matrix
+    public Matrix projection;                  // Default projection matrix
+    public Matrix transform;                   // Transform matrix to be used with rlTranslate, rlRotate, rlScale
+    public boolean transformRequired;             // Require transform matrix application to current draw-call vertex (if required)
+    public Matrix[] stack;// Matrix stack for push/pop
+    public int stackCounter;                   // Matrix stack counter
 
-    int currentBlendMode;               // Blending mode active
-    int glBlendSrcFactor;               // Blending source factor
-    int glBlendDstFactor;               // Blending destination factor
-    int glBlendEquation;                // Blending equation
+    public int defaultTextureId;      // Default texture used on shapes/poly drawing (required by shader)
+    public int[] activeTextureId;     // Active texture ids to be enabled on batch drawing (0 active by default)
+    public int defaultVShaderId;      // Default vertex shader id (used by default shader program)
+    public int defaultFShaderId;      // Default fragment shader id (used by default shader program)
+    public int defaultShaderId;       // Default shader program id, supports vertex color and diffuse texture
+    public int[] defaultShaderLocs;     // Default shader locations pointer to be used on rendering
+    public int currentShaderId;       // Current shader id to be used on rendering (by default, defaultShaderId)
+    public int[] currentShaderLocs;     // Current shader locations pointer to be used on rendering (by default, defaultShaderLocs)
 
-    int framebufferWidth;               // Default framebuffer width
-    int framebufferHeight;              // Default framebuffer height
+    public boolean stereoRender;              // Stereo rendering flag
+    public Matrix[] projectionStereo;         // VR stereo rendering eyes projection matrices
+    public Matrix[] viewOffsetStereo;         // VR stereo rendering eyes view offset matrices
+
+    public int currentBlendMode;               // Blending mode active
+    public int glBlendSrcFactor;               // Blending source factor
+    public int glBlendDstFactor;               // Blending destination factor
+    public int glBlendEquation;                // Blending equation
+
+    public int framebufferWidth;               // Default framebuffer width
+    public int framebufferHeight;              // Default framebuffer height
 
     public State(){
         stack = new Matrix[MAX_MATRIX_STACK_SIZE];
-        defaultShader = new Shader();
         activeTextureId = new int[MAX_BATCH_ACTIVE_TEXTURES];
         projectionStereo = new Matrix[2];
         viewOffsetStereo = new Matrix[2];
-    }
-
-    public int getCurrentMatrixMode(){
-        return currentMatrixMode;
-    }
-
-    public void setCurrentMatrixMode(int currentMatrixMode){
-        this.currentMatrixMode = currentMatrixMode;
     }
 
     public Matrix getCurrentMatrix(){
@@ -80,6 +75,94 @@ public  class State{                    // Renderer state
         else if(mode == RL_MODELVIEW){
             modelview = currentMatrix;
         }
+    }
+
+    public int getVertexCounter(){
+        return vertexCounter;
+    }
+
+    public void setVertexCounter(int vertexCounter){
+        this.vertexCounter = vertexCounter;
+    }
+
+    public float getTexcoordx(){
+        return texcoordx;
+    }
+
+    public void setTexcoordx(float texcoordx){
+        this.texcoordx = texcoordx;
+    }
+
+    public float getTexcoordy(){
+        return texcoordy;
+    }
+
+    public void setTexcoordy(float texcoordy){
+        this.texcoordy = texcoordy;
+    }
+
+    public float getNormalx(){
+        return normalx;
+    }
+
+    public void setNormalx(float normalx){
+        this.normalx = normalx;
+    }
+
+    public float getNormaly(){
+        return normaly;
+    }
+
+    public void setNormaly(float normaly){
+        this.normaly = normaly;
+    }
+
+    public float getNormalz(){
+        return normalz;
+    }
+
+    public void setNormalz(float normalz){
+        this.normalz = normalz;
+    }
+
+    public int getColorr(){
+        return colorr;
+    }
+
+    public void setColorr(int colorr){
+        this.colorr = colorr;
+    }
+
+    public int getColorg(){
+        return colorg;
+    }
+
+    public void setColorg(int colorg){
+        this.colorg = colorg;
+    }
+
+    public int getColorb(){
+        return colorb;
+    }
+
+    public void setColorb(int colorb){
+        this.colorb = colorb;
+    }
+
+    public int getColora(){
+        return colora;
+    }
+
+    public void setColora(int colora){
+        this.colora = colora;
+    }
+
+    public int getCurrentMatrixMode(){
+        return currentMatrixMode;
+    }
+
+    public void setCurrentMatrixMode(int currentMatrixMode){
+        this.currentMatrixMode = currentMatrixMode;
     }
 
     public Matrix getModelview(){
@@ -130,22 +213,6 @@ public  class State{                    // Renderer state
         this.stackCounter = stackCounter;
     }
 
-    public Texture2D getShapesTexture(){
-        return shapesTexture;
-    }
-
-    public void setShapesTexture(Texture2D shapesTexture){
-        this.shapesTexture = shapesTexture;
-    }
-
-    public Rectangle getShapesTextureRec(){
-        return shapesTextureRec;
-    }
-
-    public void setShapesTextureRec(Rectangle shapesTextureRec){
-        this.shapesTextureRec = shapesTextureRec;
-    }
-
     public int getDefaultTextureId(){
         return defaultTextureId;
     }
@@ -178,20 +245,36 @@ public  class State{                    // Renderer state
         this.defaultFShaderId = defaultFShaderId;
     }
 
-    public Shader getDefaultShader(){
-        return defaultShader;
+    public int getDefaultShaderId(){
+        return defaultShaderId;
     }
 
-    public void setDefaultShader(Shader defaultShader){
-        this.defaultShader = defaultShader;
+    public void setDefaultShaderId(int defaultShaderId){
+        this.defaultShaderId = defaultShaderId;
     }
 
-    public Shader getCurrentShader(){
-        return currentShader;
+    public int[] getDefaultShaderLocs(){
+        return defaultShaderLocs;
     }
 
-    public void setCurrentShader(Shader currentShader){
-        this.currentShader = currentShader;
+    public void setDefaultShaderLocs(int[] defaultShaderLocs){
+        this.defaultShaderLocs = defaultShaderLocs;
+    }
+
+    public int getCurrentShaderId(){
+        return currentShaderId;
+    }
+
+    public void setCurrentShaderId(int currentShaderId){
+        this.currentShaderId = currentShaderId;
+    }
+
+    public int[] getCurrentShaderLocs(){
+        return currentShaderLocs;
+    }
+
+    public void setCurrentShaderLocs(int[] currentShaderLocs){
+        this.currentShaderLocs = currentShaderLocs;
     }
 
     public boolean isStereoRender(){

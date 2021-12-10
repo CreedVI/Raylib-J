@@ -1,17 +1,16 @@
 package com.raylib.java.core.camera;
 
-import com.raylib.java.core.Core;
+import com.raylib.java.core.rCore;
 import com.raylib.java.raymath.Matrix;
 import com.raylib.java.raymath.Raymath;
 import com.raylib.java.raymath.Vector2;
 import com.raylib.java.raymath.Vector3;
 
-import static com.raylib.java.core.camera.Camera.CameraMode.*;
-import static com.raylib.java.raymath.Raymath.DEG2RAD;
+import static com.raylib.java.core.camera.rCamera.CameraMode.*;
 
-public abstract class Camera{
+public abstract class rCamera{
 
-    // Camera mouse movement sensitivity
+    // rCamera mouse movement sensitivity
     static float CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003f;
     static float CAMERA_MOUSE_SCROLL_SENSITIVITY = 1.5f;
 
@@ -76,7 +75,7 @@ public abstract class Camera{
         }
     }
 
-    // Camera projection modes
+    // rCamera projection modes
     public static class CameraProjection{
         public static int
                 CAMERA_PERSPECTIVE = 0,
@@ -95,26 +94,26 @@ public abstract class Camera{
 
         CAMERA.targetDistance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);   // Distance to target
 
-        // Camera angle calculation
-        CAMERA.angle.x = (float) Math.atan2(dx, dz); // Camera angle in plane XZ (0 aligned with Z, move positive CCW)
-        CAMERA.angle.y = (float) Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)); // Camera angle in plane XY (0 aligned with X,
+        // rCamera angle calculation
+        CAMERA.angle.x = (float) Math.atan2(dx, dz); // rCamera angle in plane XZ (0 aligned with Z, move positive CCW)
+        CAMERA.angle.y = (float) Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)); // rCamera angle in plane XY (0 aligned with X,
         // move positive CW)
 
         CAMERA.playerEyesPosition = camera.position.y;          // Init player eyes position to camera Y position
 
         // Lock cursor for first person and third person cameras
         if ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON)){
-            Core.DisableCursor();
+            rCore.DisableCursor();
         }
         else{
-            Core.EnableCursor();
+            rCore.EnableCursor();
         }
 
         CAMERA.mode = mode;
     }
 
     // Update camera depending on selected mode
-    // NOTE: Camera controls depend on some raylib functions:
+    // NOTE: rCamera controls depend on some raylib functions:
     //       System: EnableCursor(), DisableCursor()
     //       Mouse: IsMouseButtonDown(), GetMousePosition(), GetMouseWheelMove()
     //       Keys:  IsKeyDown()
@@ -127,21 +126,21 @@ public abstract class Camera{
 
         // Mouse movement detection
         Vector2 mousePositionDelta = new Vector2(0.0f, 0.0f);
-        Vector2 mousePosition = Core.GetMousePosition();
-        float mouseWheelMove = Core.GetMouseWheelMove();
+        Vector2 mousePosition = rCore.GetMousePosition();
+        float mouseWheelMove = rCore.GetMouseWheelMove();
 
         // Keys input detection
         // TODO: Input detection is raylib-dependant, it could be moved outside the module
-        boolean keyPan = Core.IsMouseButtonDown(CAMERA.panControl);
-        boolean keyAlt = Core.IsKeyDown(CAMERA.altControl);
-        boolean sZoomKey = Core.IsKeyDown(CAMERA.smoothZoomControl);
+        boolean keyPan = rCore.IsMouseButtonDown(CAMERA.panControl);
+        boolean keyAlt = rCore.IsKeyDown(CAMERA.altControl);
+        boolean sZoomKey = rCore.IsKeyDown(CAMERA.smoothZoomControl);
         int[] direction = new int[]{
-                Core.IsKeyDown(CAMERA.MoveFront) ? 1 : 0,
-                Core.IsKeyDown(CAMERA.MoveBack) ? 1 : 0,
-                Core.IsKeyDown(CAMERA.MoveRight) ? 1 : 0,
-                Core.IsKeyDown(CAMERA.MoveLeft) ? 1 : 0,
-                Core.IsKeyDown(CAMERA.MoveUp) ? 1 : 0,
-                Core.IsKeyDown(CAMERA.MoveDown) ? 1 : 0
+                rCore.IsKeyDown(CAMERA.MoveFront) ? 1 : 0,
+                rCore.IsKeyDown(CAMERA.MoveBack) ? 1 : 0,
+                rCore.IsKeyDown(CAMERA.MoveRight) ? 1 : 0,
+                rCore.IsKeyDown(CAMERA.MoveLeft) ? 1 : 0,
+                rCore.IsKeyDown(CAMERA.MoveUp) ? 1 : 0,
+                rCore.IsKeyDown(CAMERA.MoveDown) ? 1 : 0
         };
 
         if (CAMERA.mode != CAMERA_CUSTOM){
@@ -153,9 +152,9 @@ public abstract class Camera{
         // Support for multiple automatic camera modes
         // NOTE: In case of CAMERA_CUSTOM nothing happens here, user must update it manually
         switch (CAMERA.mode){
-            case CAMERA_FREE:           // Camera free controls, using standard 3d-content-creation scheme
+            case CAMERA_FREE:           // rCamera free controls, using standard 3d-content-creation scheme
             {
-                // Camera zoom
+                // rCamera zoom
                 if ((CAMERA.targetDistance < CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
                     CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
                     if (CAMERA.targetDistance > CAMERA_FREE_DISTANCE_MAX_CLAMP){
@@ -163,7 +162,7 @@ public abstract class Camera{
                     }
                 }
 
-                // Camera looking down
+                // rCamera looking down
                 else if ((camera.position.y > camera.target.y) && (CAMERA.targetDistance == CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
                     camera.target.x += mouseWheelMove * (camera.target.x - camera.position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / CAMERA.targetDistance;
                     camera.target.y += mouseWheelMove * (camera.target.y - camera.position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / CAMERA.targetDistance;
@@ -182,7 +181,7 @@ public abstract class Camera{
                         CAMERA.targetDistance = CAMERA_FREE_DISTANCE_MIN_CLAMP;
                     }
                 }
-                // Camera looking up
+                // rCamera looking up
                 else if ((camera.position.y < camera.target.y) && (CAMERA.targetDistance == CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
                     camera.target.x += mouseWheelMove * (camera.target.x - camera.position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / CAMERA.targetDistance;
                     camera.target.y += mouseWheelMove * (camera.target.y - camera.position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / CAMERA.targetDistance;
@@ -207,11 +206,11 @@ public abstract class Camera{
                     if (keyAlt)     // Alternative key behaviour
                     {
                         if (sZoomKey){
-                            // Camera smooth zoom
+                            // rCamera smooth zoom
                             CAMERA.targetDistance += (mousePositionDelta.y * CAMERA_FREE_SMOOTH_ZOOM_SENSITIVITY);
                         }
                         else{
-                            // Camera rotation
+                            // rCamera rotation
                             CAMERA.angle.x += mousePositionDelta.x * -CAMERA_FREE_MOUSE_SENSITIVITY;
                             CAMERA.angle.y += mousePositionDelta.y * -CAMERA_FREE_MOUSE_SENSITIVITY;
 
@@ -225,7 +224,7 @@ public abstract class Camera{
                         }
                     }
                     else{
-                        // Camera panning
+                        // rCamera panning
                         camera.target.x += ((mousePositionDelta.x * CAMERA_FREE_MOUSE_SENSITIVITY) * Math.cos(CAMERA.angle.x) + (mousePositionDelta.y * CAMERA_FREE_MOUSE_SENSITIVITY) * Math.sin(CAMERA.angle.x) * Math.sin(CAMERA.angle.y)) * (CAMERA.targetDistance / CAMERA_FREE_PANNING_DIVIDER);
                         camera.target.y += ((mousePositionDelta.y * CAMERA_FREE_MOUSE_SENSITIVITY) * Math.cos(CAMERA.angle.y)) * (CAMERA.targetDistance / CAMERA_FREE_PANNING_DIVIDER);
                         camera.target.z += ((mousePositionDelta.x * -CAMERA_FREE_MOUSE_SENSITIVITY) * Math.sin(CAMERA.angle.x) + (mousePositionDelta.y * CAMERA_FREE_MOUSE_SENSITIVITY) * Math.cos(CAMERA.angle.x) * Math.sin(CAMERA.angle.y)) * (CAMERA.targetDistance / CAMERA_FREE_PANNING_DIVIDER);
@@ -239,12 +238,12 @@ public abstract class Camera{
 
             }
             break;
-            case CAMERA_ORBITAL:        // Camera just orbits around target, only zoom allowed
+            case CAMERA_ORBITAL:        // rCamera just orbits around target, only zoom allowed
             {
-                CAMERA.angle.x += CAMERA_ORBITAL_SPEED;      // Camera orbit angle
-                CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);   // Camera zoom
+                CAMERA.angle.x += CAMERA_ORBITAL_SPEED;      // rCamera orbit angle
+                CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);   // rCamera zoom
 
-                // Camera distance clamp
+                // rCamera distance clamp
                 if (CAMERA.targetDistance < CAMERA_THIRD_PERSON_DISTANCE_CLAMP){
                     CAMERA.targetDistance = CAMERA_THIRD_PERSON_DISTANCE_CLAMP;
                 }
@@ -256,7 +255,7 @@ public abstract class Camera{
 
             }
             break;
-            case CAMERA_FIRST_PERSON:   // Camera moves as in a first-person game, controls are configurable
+            case CAMERA_FIRST_PERSON:   // rCamera moves as in a first-person game, controls are configurable
             {
                 camera.position.x += (Math.sin(CAMERA.angle.x) * direction[1] -
                         Math.sin(CAMERA.angle.x) * direction[0] -
@@ -272,7 +271,7 @@ public abstract class Camera{
                         Math.sin(CAMERA.angle.x) * direction[3] -
                         Math.sin(CAMERA.angle.x) * direction[2]) / PLAYER_MOVEMENT_SENSITIVITY;
 
-                // Camera orientation calculation
+                // rCamera orientation calculation
                 CAMERA.angle.x += (mousePositionDelta.x * -CAMERA_MOUSE_MOVE_SENSITIVITY);
                 CAMERA.angle.y += (mousePositionDelta.y * -CAMERA_MOUSE_MOVE_SENSITIVITY);
 
@@ -302,7 +301,7 @@ public abstract class Camera{
                     }
                 }
 
-                // Camera position update
+                // rCamera position update
                 // NOTE: On CAMERA_FIRST_PERSON player Y-movement is limited to player 'eyes position'
                 camera.position.y = (float) (CAMERA.playerEyesPosition - Math.sin(swingCounter / CAMERA_FIRST_PERSON_STEP_TRIGONOMETRIC_DIVIDER) / CAMERA_FIRST_PERSON_STEP_DIVIDER);
 
@@ -311,7 +310,7 @@ public abstract class Camera{
 
             }
             break;
-            case CAMERA_THIRD_PERSON:   // Camera moves as in a third-person game, following target at a
+            case CAMERA_THIRD_PERSON:   // rCamera moves as in a third-person game, following target at a
                 // distance, controls are configurable
             {
                 camera.position.x += (Math.sin(CAMERA.angle.x) * direction[1] -
@@ -328,7 +327,7 @@ public abstract class Camera{
                         Math.sin(CAMERA.angle.x) * direction[3] -
                         Math.sin(CAMERA.angle.x) * direction[2]) / PLAYER_MOVEMENT_SENSITIVITY;
 
-                // Camera orientation calculation
+                // rCamera orientation calculation
                 CAMERA.angle.x += (mousePositionDelta.x * -CAMERA_MOUSE_MOVE_SENSITIVITY);
                 CAMERA.angle.y += (mousePositionDelta.y * -CAMERA_MOUSE_MOVE_SENSITIVITY);
 
@@ -340,10 +339,10 @@ public abstract class Camera{
                     CAMERA.angle.y = CAMERA_THIRD_PERSON_MAX_CLAMP * Raymath.DEG2RAD;
                 }
 
-                // Camera zoom
+                // rCamera zoom
                 CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
 
-                // Camera distance clamp
+                // rCamera distance clamp
                 if (CAMERA.targetDistance < CAMERA_THIRD_PERSON_DISTANCE_CLAMP){
                     CAMERA.targetDistance = CAMERA_THIRD_PERSON_DISTANCE_CLAMP;
                 }

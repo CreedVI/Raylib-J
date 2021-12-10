@@ -4,14 +4,14 @@ import com.raylib.java.core.Color;
 import com.raylib.java.raymath.Vector2;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.textures.Texture2D;
-import com.raylib.java.utils.Easings;
 
 import static com.raylib.java.Config.SUPPORT_QUADS_DRAW_MODE;
 import static com.raylib.java.raymath.Raymath.DEG2RAD;
 import static com.raylib.java.raymath.Raymath.PI;
 import static com.raylib.java.rlgl.RLGL.*;
+import static com.raylib.java.utils.Easings.EaseCubicInOut;
 
-public class Shapes{
+public class rShapes{
 
 
     /**
@@ -25,15 +25,15 @@ public class Shapes{
      */
     int BEZIER_LINE_DIVISIONS = 24;
 
-    static Texture2D texShapes = new Texture2D(1, 1, 1, 1, 7);        // Texture used on shapes drawing (usually a white pixel)
-    static Rectangle texShapesRec = new Rectangle(0, 0, 1, 1);        // Texture source rectangle used on shapes drawing
+    static Texture2D texShapes = new Texture2D(1, 1, 1, 1, 7);        // Texture used on rShapes drawing (usually a white pixel)
+    static Rectangle texShapesRec = new Rectangle(0, 0, 1, 1);        // Texture source rectangle used on rShapes drawing
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition
     //----------------------------------------------------------------------------------
 
-    /** Set texture and rectangle to be used on shapes drawing
-     * NOTE: It can be useful when using basic shapes and one single font,
+    /** Set texture and rectangle to be used on rShapes drawing
+     * NOTE: It can be useful when using basic rShapes and one single font,
      * defining a font char white rectangle would allow drawing everything in a single draw call
      *
      * @param texture
@@ -144,11 +144,12 @@ public class Shapes{
         Vector2 previous = startPos;
         Vector2 current = new Vector2();
 
-        for(int i = 1; i <= BEZIER_LINE_DIVISIONS; i++){
+        for (int i = 1; i <= BEZIER_LINE_DIVISIONS; i++)
+        {
             // Cubic easing in-out
             // NOTE: Easing is calculated only for y position value
-            current.setY(Easings.EaseCubicInOut((float) i, startPos.getY(), endPos.getY() - startPos.getY(), (float) BEZIER_LINE_DIVISIONS));
-            current.setX(previous.getX() + (endPos.getX() - startPos.getX()) / (float) BEZIER_LINE_DIVISIONS);
+            current.y = EaseCubicInOut((float)i, startPos.y, endPos.y - startPos.y, (float)BEZIER_LINE_DIVISIONS);
+            current.x = previous.x + (endPos.x - startPos.x)/ (float)BEZIER_LINE_DIVISIONS;
 
             DrawLineEx(previous, current, thick, color);
 
@@ -187,6 +188,33 @@ public class Shapes{
             previous = current;
         }
     }
+
+    // Draw line using cubic bezier curves with 2 control points
+    public void DrawLineBezierCubic(Vector2 startPos, Vector2 endPos, Vector2 startControlPos, Vector2 endControlPos,
+                                   float thick, Color color) {
+        float step = 1.0f/BEZIER_LINE_DIVISIONS;
+
+        Vector2 previous = startPos;
+        Vector2 current = new Vector2();
+        float t = 0.0f;
+
+        for (int i = 0; i <= BEZIER_LINE_DIVISIONS; i++)
+        {
+            t = step*i;
+            float a = (float) Math.pow(1 - t, 3);
+            float b = (float) (3*Math.pow(1 - t, 2)*t);
+            float c = (float) (3*(1-t)*Math.pow(t, 2));
+            float d = (float) Math.pow(t, 3);
+
+            current.y = a*startPos.y + b*startControlPos.y + c*endControlPos.y + d*endPos.y;
+            current.x = a*startPos.x + b*startControlPos.x + c*endControlPos.x + d*endPos.x;
+
+            DrawLineEx(previous, current, thick, color);
+
+            previous = current;
+        }
+    }
+
 
     /**
      * Draw lines sequence
@@ -1681,6 +1709,68 @@ public class Shapes{
             rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * radius, (float) Math.cos(DEG2RAD * centralAngle) * radius);
         }
         rlEnd();
+        rlPopMatrix();
+    }
+
+    public void DrawPolyLinesEx(Vector2 center, int sides, float radius, float rotation, float lineThick, Color color)
+    {
+        if (sides < 3) sides = 3;
+        float centralAngle = 0.0f;
+        float exteriorAngle = 360.0f/(float)sides;
+        float innerRadius = radius - (lineThick*(float) Math.cos(DEG2RAD*exteriorAngle/2.0f));
+
+        if(SUPPORT_QUADS_DRAW_MODE){
+            rlCheckRenderBatchLimit(4 * sides);
+        }
+        else{
+            rlCheckRenderBatchLimit(6 * sides);
+        }
+
+        rlPushMatrix();
+        rlTranslatef(center.x, center.y, 0.0f);
+        rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
+
+        if(SUPPORT_QUADS_DRAW_MODE){
+            rlSetTexture(texShapes.id);
+
+            rlBegin(RL_QUADS);
+            for (int i = 0; i < sides; i++){
+                rlColor4ub(color.r, color.g, color.b, color.a);
+
+                rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * innerRadius, (float) Math.cos(DEG2RAD * centralAngle) * innerRadius);
+
+                rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * radius, (float) Math.cos(DEG2RAD * centralAngle) * radius);
+
+                centralAngle += exteriorAngle;
+                rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * radius, (float) Math.cos(DEG2RAD * centralAngle) * radius);
+
+                rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * innerRadius, (float) Math.cos(DEG2RAD * centralAngle) * innerRadius);
+            }
+            rlEnd();
+            rlSetTexture(0);
+        }
+        else{
+            rlBegin(RL_TRIANGLES);
+            for (int i = 0; i < sides; i++){
+                rlColor4ub(color.r, color.g, color.b, color.a);
+                float nextAngle = centralAngle + exteriorAngle;
+
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * radius, (float) Math.cos(DEG2RAD * centralAngle) * radius);
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * innerRadius, (float) Math.cos(DEG2RAD * centralAngle) * innerRadius);
+                rlVertex2f((float) Math.sin(DEG2RAD * nextAngle) * radius, (float) Math.cos(DEG2RAD * nextAngle) * radius);
+
+                rlVertex2f((float) Math.sin(DEG2RAD * centralAngle) * innerRadius, (float) Math.cos(DEG2RAD * centralAngle) * innerRadius);
+                rlVertex2f((float) Math.sin(DEG2RAD * nextAngle) * radius, (float) Math.cos(DEG2RAD * nextAngle) * radius);
+                rlVertex2f((float) Math.sin(DEG2RAD * nextAngle) * innerRadius, (float) Math.cos(DEG2RAD * nextAngle) * innerRadius);
+
+                centralAngle = nextAngle;
+            }
+            rlEnd();
+        }
         rlPopMatrix();
     }
 

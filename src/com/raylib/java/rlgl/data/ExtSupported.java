@@ -1,26 +1,24 @@
 package com.raylib.java.rlgl.data;
 
 public class ExtSupported{
+    
+    public boolean vao;                           // VAO support (OpenGL ES2 could not support VAO extension) (GL_ARB_vertex_array_object)
+    public boolean instancing;                    // Instancing supported (GL_ANGLE_instanced_arrays, GL_EXT_draw_instanced + GL_EXT_instanced_arrays)
+    public boolean texNPOT;                       // NPOT textures full support (GL_ARB_texture_non_power_of_two, GL_OES_texture_npot)
+    public boolean texDepth;                      // Depth textures supported (GL_ARB_depth_texture, GL_WEBGL_depth_texture, GL_OES_depth_texture)
+    public boolean texFloat32;                    // float textures support (32 bit per channel) (GL_OES_texture_float)
+    public boolean texCompDXT;                    // DDS texture compression support (GL_EXT_texture_compression_s3tc, GL_WEBGL_compressed_texture_s3tc, GL_WEBKIT_WEBGL_compressed_texture_s3tc)
+    public boolean texCompETC1;                   // ETC1 texture compression support (GL_OES_compressed_ETC1_RGB8_texture, GL_WEBGL_compressed_texture_etc1)
+    public boolean texCompETC2;                   // ETC2/EAC texture compression support (GL_ARB_ES3_compatibility)
+    public boolean texCompPVRT;                   // PVR texture compression support (GL_IMG_texture_compression_pvrtc)
+    public boolean texCompASTC;                   // ASTC texture compression support (GL_KHR_texture_compression_astc_hdr, GL_KHR_texture_compression_astc_ldr)
+    public boolean texMirrorClamp;                // Clamp mirror wrap mode supported (GL_EXT_texture_mirror_clamp)
+    public boolean texAnisoFilter;                // Anisotropic texture filtering support (GL_EXT_texture_filter_anisotropic)
+    public boolean computeShader;                 // Compute shaders support (GL_ARB_compute_shader)
+    public boolean ssbo;                          // Shader storage buffer object support (GL_ARB_shader_storage_buffer_object)
 
-    boolean vao;                           // VAO support (OpenGL ES2 could not support VAO extension) (GL_ARB_vertex_array_object)
-    boolean instancing;                    // Instancing supported (GL_ANGLE_instanced_arrays, GL_EXT_draw_instanced + GL_EXT_instanced_arrays)
-    boolean texNPOT;                       // NPOT textures full support (GL_ARB_texture_non_power_of_two, GL_OES_texture_npot)
-    boolean texDepth;                      // Depth textures supported (GL_ARB_depth_texture, GL_WEBGL_depth_texture, GL_OES_depth_texture)
-    boolean texFloat32;                    // float textures support (32 bit per channel) (GL_OES_texture_float)
-    boolean texCompDXT;                    // DDS texture compression support (GL_EXT_texture_compression_s3tc, GL_WEBGL_compressed_texture_s3tc, GL_WEBKIT_WEBGL_compressed_texture_s3tc)
-    boolean texCompETC1;                   // ETC1 texture compression support (GL_OES_compressed_ETC1_RGB8_texture, GL_WEBGL_compressed_texture_etc1)
-    boolean texCompETC2;                   // ETC2/EAC texture compression support (GL_ARB_ES3_compatibility)
-    boolean texCompPVRT;                   // PVR texture compression support (GL_IMG_texture_compression_pvrtc)
-    boolean texCompASTC;                   // ASTC texture compression support (GL_KHR_texture_compression_astc_hdr, GL_KHR_texture_compression_astc_ldr)
-    boolean texMirrorClamp;                // Clamp mirror wrap mode supported (GL_EXT_texture_mirror_clamp)
-    boolean texAnisoFilter;                // Anisotropic texture filtering support (GL_EXT_texture_filter_anisotropic)
-
-    float maxAnisotropyLevel;          // Maximum anisotropy level supported (minimum is 2.0f)
-    int maxDepthBits;
-
-    public ExtSupported(){
-
-    }
+    public float maxAnisotropyLevel;           // Maximum anisotropy level supported (minimum is 2.0f)
+    public int maxDepthBits;                   // Maximum bits for depth component
 
     public boolean isVao(){
         return vao;
@@ -118,6 +116,22 @@ public class ExtSupported{
         this.texAnisoFilter = texAnisoFilter;
     }
 
+    public boolean isComputeShader(){
+        return computeShader;
+    }
+
+    public void setComputeShader(boolean computeShader){
+        this.computeShader = computeShader;
+    }
+
+    public boolean isSsbo(){
+        return ssbo;
+    }
+
+    public void setSsbo(boolean ssbo){
+        this.ssbo = ssbo;
+    }
+
     public float getMaxAnisotropyLevel(){
         return maxAnisotropyLevel;
     }
@@ -133,4 +147,5 @@ public class ExtSupported{
     public void setMaxDepthBits(int maxDepthBits){
         this.maxDepthBits = maxDepthBits;
     }
+    
 }

@@ -4,12 +4,12 @@ import static com.raylib.java.Config.MAX_KEY_PRESSED_QUEUE;
 
 public class Keyboard{
 
-    int exitKey;                    // Default exit key
-    boolean[] currentKeyState;      // Registers current frame key state
-    boolean[] previousKeyState;     // Registers previous frame key state
+    public int exitKey;                    // Default exit key
+    public boolean[] currentKeyState;      // Registers current frame key state
+    public boolean[] previousKeyState;     // Registers previous frame key state
 
-    int[] keyPressedQueue;     // Input keys queue
-    int keyPressedQueueCount;       // Input keys queue count
+    public int[] keyPressedQueue;     // Input keys queue
+    public int keyPressedQueueCount;       // Input keys queue count
 
     int[] charPressedQueue;   // Input characters queue
     int charPressedQueueCount;      // Input characters queue count

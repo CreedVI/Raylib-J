@@ -6,18 +6,18 @@ import com.raylib.java.textures.Texture2D;
 public class Font{
 
     public int baseSize;           // Base size (default chars height)
-    public int charsCount;         // Number of characters
-    public int charsPadding;       // Padding around the chars
+    public int glyphCount;         // Number of characters
+    public int glyphPadding;       // Padding around the chars
     public Texture2D texture;      // Characters texture atlas
     public Rectangle[] recs;        // Characters rectangles in texture
-    public CharInfo[] chars;        // Characters info data
+    public GlyphInfo[] glyphs;        // Characters info data
 
     public Font(){
         baseSize = 0;
-        charsCount = 0;
-        charsPadding = 0;
+        glyphCount = 0;
+        glyphPadding = 0;
         recs = new Rectangle[256];
-        chars = new CharInfo[256];
+        glyphs = new GlyphInfo[256];
     }
 
     public int getBaseSize(){
@@ -28,20 +28,20 @@ public class Font{
         this.baseSize = baseSize;
     }
 
-    public int getCharsCount(){
-        return charsCount;
+    public int getGlyphCount(){
+        return glyphCount;
     }
 
-    public void setCharsCount(int charsCount){
-        this.charsCount = charsCount;
+    public void setGlyphCount(int glyphCount){
+        this.glyphCount = glyphCount;
     }
 
-    public int getCharsPadding(){
-        return charsPadding;
+    public int getGlyphPadding(){
+        return glyphPadding;
     }
 
-    public void setCharsPadding(int charsPadding){
-        this.charsPadding = charsPadding;
+    public void setGlyphPadding(int glyphPadding){
+        this.glyphPadding = glyphPadding;
     }
 
     public Texture2D getTexture(){
@@ -60,11 +60,11 @@ public class Font{
         this.recs = recs;
     }
 
-    public CharInfo[] getChars(){
-        return chars;
+    public GlyphInfo[] getGlyphs(){
+        return glyphs;
     }
 
-    public void setChars(CharInfo[] chars){
-        this.chars = chars;
+    public void setGlyphs(GlyphInfo[] glyphs){
+        this.glyphs = glyphs;
     }
 }

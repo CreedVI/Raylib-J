@@ -2,14 +2,14 @@ package com.raylib.java.core.camera;
 
 import com.raylib.java.raymath.Vector3;
 
-public class Camera3D extends Camera{
+public class Camera3D extends rCamera{
 
 
-    public Vector3 position;                // Camera position
-    public Vector3 up;                      // Camera up vector (rotation over its axis)
+    public Vector3 position;                // rCamera position
+    public Vector3 up;                      // rCamera up vector (rotation over its axis)
     public Vector3 target;
-    public float fovy;                      // Camera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
-    public int projection;                  // Camera type, defines projection type: CAMERA_PERSPECTIVE or
+    public float fovy;                      // rCamera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
+    public int projection;                  // rCamera type, defines projection type: CAMERA_PERSPECTIVE or
                                             // CAMERA_ORTHOGRAPHIC
     CameraData cameraData;
 

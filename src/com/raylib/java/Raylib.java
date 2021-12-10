@@ -1,32 +1,35 @@
 package com.raylib.java;
 
-import com.raylib.java.core.Core;
-import com.raylib.java.models.Models;
-import com.raylib.java.shapes.Shapes;
-import com.raylib.java.text.Text;
-import com.raylib.java.textures.Textures;
+import com.raylib.java.core.rCore;
+import com.raylib.java.models.rModels;
+import com.raylib.java.physac.Physac;
+import com.raylib.java.shapes.rShapes;
+import com.raylib.java.text.rText;
+import com.raylib.java.textures.rTextures;
 
 public class Raylib{
 
-    //public Audio audio;
-    public Core core;
+    //public rAudio audio;
+    public rCore core;
     public Config config;
-    public Text text;
-    public Shapes shapes;
-    public Textures textures;
-    public Models models;
+    public rText text;
+    public rShapes shapes;
+    public rTextures textures;
+    public rModels models;
+    public Physac physac;
 
     /**
      * Creates new Raylib instance.
      */
     public Raylib(){
-        //audio = new Audio();
-        core = new Core();
+        //audio = new rAudio();
+        core = new rCore();
         config = new Config();
-        text = new Text();
-        shapes = new Shapes();
-        textures = new Textures();
-        models = new Models();
+        text = new rText();
+        shapes = new rShapes();
+        textures = new rTextures();
+        models = new rModels();
+        physac = new Physac();
     }
 
     /**
@@ -36,13 +39,14 @@ public class Raylib{
      * @param title title to display for the window
      */
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
-        //audio = new Audio();
-        core = new Core();
+        //audio = new rAudio();
+        core = new rCore();
         config = new Config();
-        text = new Text();
-        shapes = new Shapes();
-        textures = new Textures();
-        models = new Models();
+        text = new rText();
+        shapes = new rShapes();
+        textures = new rTextures();
+        models = new rModels();
+        physac = new Physac();
 
         core.InitWindow(ScreenWidth, ScreenHeight, title);
     }

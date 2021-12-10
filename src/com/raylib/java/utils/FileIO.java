@@ -120,7 +120,7 @@ public class FileIO{
             if (SUPPORT_STANDARD_FILEIO){
                 if (path.toFile().exists()){
                     text = Files.readAllLines(path).stream().collect(Collectors.joining(System.lineSeparator()));
-                    Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Text file loaded successfully");
+                    Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] rText file loaded successfully");
                     return text;
                 }
                 else{

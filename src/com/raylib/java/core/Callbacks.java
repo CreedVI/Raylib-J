@@ -2,10 +2,9 @@ package com.raylib.java.core;
 
 import org.lwjgl.glfw.*;
 
+import static com.raylib.java.Config.*;
 import static com.raylib.java.Config.ConfigFlag.*;
-import static com.raylib.java.Config.MAX_FILEPATH_LENGTH;
-import static com.raylib.java.Config.MAX_KEY_PRESSED_QUEUE;
-import static com.raylib.java.core.Core.getWindow;
+import static com.raylib.java.core.rCore.getWindow;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -24,18 +23,18 @@ public class Callbacks{
         @Override
         public void invoke(long window, int width, int height){
             Tracelog(LOG_DEBUG, "Window Size Callback Triggered");
-            Core.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-            Core.getWindow().currentFbo.setWidth(width);
-            Core.getWindow().currentFbo.setHeight(height);
-            Core.getWindow().setResizedLastFrame(true);
+            rCore.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
+            rCore.getWindow().currentFbo.setWidth(width);
+            rCore.getWindow().currentFbo.setHeight(height);
+            rCore.getWindow().setResizedLastFrame(true);
 
-            if(Core.IsWindowFullscreen()){
+            if(rCore.IsWindowFullscreen()){
                 return;
             }
 
             // Set current screen size
-            Core.getWindow().screen.setWidth(width);
-            Core.getWindow().screen.setHeight(height);
+            rCore.getWindow().screen.setWidth(width);
+            rCore.getWindow().screen.setHeight(height);
             // NOTE: Postprocessing texture is not scaled to new size
         }
     }
@@ -45,10 +44,10 @@ public class Callbacks{
         public void invoke(long window, boolean iconified){
             Tracelog(LOG_DEBUG, "Iconify Callback Triggered");
             if (iconified){
-                Core.getWindow().flags |= FLAG_WINDOW_MINIMIZED;  // The window was iconified
+                rCore.getWindow().flags |= FLAG_WINDOW_MINIMIZED;  // The window was iconified
             }
             else{
-                Core.getWindow().flags &= ~FLAG_WINDOW_MINIMIZED;           // The window was restored
+                rCore.getWindow().flags &= ~FLAG_WINDOW_MINIMIZED;           // The window was restored
             }
         }
     }
@@ -57,10 +56,10 @@ public class Callbacks{
         @Override
         public void invoke(long window, boolean maximized){
             if (maximized){
-                Core.getWindow().flags |= FLAG_WINDOW_MAXIMIZED;  // The window was maximized
+                rCore.getWindow().flags |= FLAG_WINDOW_MAXIMIZED;  // The window was maximized
             }
             else{
-                Core.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED;           // The window was restored
+                rCore.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED;           // The window was restored
             }
         }
     }
@@ -70,10 +69,10 @@ public class Callbacks{
         public void invoke(long window, boolean focused){
             Tracelog(LOG_DEBUG, "Focus Callback Triggered");
             if (focused){
-                Core.getWindow().flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
+                rCore.getWindow().flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
             }
             else{
-                Core.getWindow().flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
+                rCore.getWindow().flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
             }
         }
     }
@@ -81,30 +80,52 @@ public class Callbacks{
     static class KeyCallback extends GLFWKeyCallback{
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods){
-            Tracelog(LOG_DEBUG, "Key Callback: KEY: " + key + "(" + Character.highSurrogate(key) + ") - SCANCODE:" +
-                    scancode + " (STATE: " + action + ")");
+            // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
+            // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
+            rCore.getInput().keyboard.currentKeyState[key] = action != GLFW_RELEASE;
 
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ){
-                getWindow().setReady(false);
-                //glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            // Check if there is space available in the key queue
+            if ((rCore.getInput().keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)){
+                // Add character to the queue
+                rCore.getInput().keyboard.keyPressedQueue[rCore.getInput().keyboard.keyPressedQueueCount] = key;
+                rCore.getInput().keyboard.keyPressedQueueCount++;
             }
-            else {
-                // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
-                // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
-                if (action == GLFW_RELEASE){
-                    Core.getInput().keyboard.getCurrentKeyState()[key] = false;
+
+            // Check the exit key to set close window
+            if ((key == rCore.getInput().keyboard.exitKey) && (action == GLFW_PRESS)){
+                glfwSetWindowShouldClose(rCore.getWindow().handle, true);
+            }
+
+            if(SUPPORT_SCREEN_CAPTURE){
+                if ((key == GLFW_KEY_F12) && (action == GLFW_PRESS)){
+                    if(SUPPORT_GIF_RECORDING){
+                        //TODO: GIF RECORDING
+                    }
+                    else {
+                        rCore.TakeScreenshot("screenshot" + rCore.screenshotCounter + ".png");
+                        rCore.screenshotCounter++;
+                    }
                 }
-                else{
-                    Core.getInput().keyboard.getCurrentKeyState()[key] = true;
+            }
+
+            if(SUPPORT_EVENTS_AUTOMATION){
+                if ((key == GLFW_KEY_F11) && (action == GLFW_PRESS)){
+                    rCore.eventsRecording = !rCore.eventsRecording;
+
+                    // On finish recording, we export events into a file
+                    if (!rCore.eventsRecording){
+                        rCore.ExportAutomationEvents("eventsrec.rep");
+                    }
+                }
+                else if ((key == GLFW_KEY_F9) && (action == GLFW_PRESS)){
+                    rCore.LoadAutomationEvents("eventsrec.rep");
+                    rCore.eventsPlaying = true;
+
+                    Tracelog(LOG_WARNING, "eventsPlaying enabled!");
                 }
 
-                // Check if there is space available in the key queue
-                if ((Core.getInput().keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)) {
-                    // Add character to the queue
-                    Core.getInput().keyboard.getKeyPressedQueue()[Core.getInput().keyboard.getKeyPressedQueueCount()] = key;
-                    Core.getInput().keyboard.setKeyPressedQueueCount(Core.getInput().keyboard.getKeyPressedQueueCount() + 1);
-                }
             }
+
         }
     }
 
@@ -119,11 +140,11 @@ public class Callbacks{
             // Ref: https://www.glfw.org/docs/latest/input_guide.html#input_char
 
             // Check if there is space available in the queue
-            if (Core.getInput().keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE){
+            if (rCore.getInput().keyboard.getCharPressedQueueCount() < MAX_KEY_PRESSED_QUEUE){
                 // Add character to the queue
-                Core.getInput().keyboard.getCharPressedQueue()[Core.getInput().keyboard.getCharPressedQueueCount()] =
+                rCore.getInput().keyboard.getCharPressedQueue()[rCore.getInput().keyboard.getCharPressedQueueCount()] =
                         codepoint;
-                Core.getInput().keyboard.setCharPressedQueueCount(Core.getInput().keyboard.getCharPressedQueueCount() + 1);
+                rCore.getInput().keyboard.setCharPressedQueueCount(rCore.getInput().keyboard.getCharPressedQueueCount() + 1);
             }
         }
     }
@@ -134,7 +155,7 @@ public class Callbacks{
             Tracelog(LOG_DEBUG, "Mouse Button Callback Triggered");
             // WARNING: GLFW could only return GLFW_PRESS (1) or GLFW_RELEASE (0) for now,
             // but future releases may add more actions (i.e. GLFW_REPEAT)
-            Core.getInput().mouse.getCurrentButtonState()[button] = action;
+            rCore.getInput().mouse.getCurrentButtonState()[button] = action;
         }
     }
 
@@ -142,8 +163,9 @@ public class Callbacks{
         @Override
         public void invoke(long window, double xpos, double ypos){
             Tracelog(LOG_DEBUG, "Cursor Position Callback Triggered");
-            Core.getInput().mouse.getPosition().setX((float) xpos);
-            Core.getInput().mouse.getPosition().setY((float) ypos);
+            rCore.getInput().mouse.setPreviousPosition(rCore.getInput().mouse.currentPosition);
+            rCore.getInput().mouse.currentPosition.x = (float) xpos;
+            rCore.getInput().mouse.currentPosition.y = (float) ypos;
         }
     }
 
@@ -151,7 +173,7 @@ public class Callbacks{
         @Override
         public void invoke(long window, double xoffset, double yoffset){
             Tracelog(LOG_DEBUG, "Scroll Callback Triggered");
-            Core.getInput().mouse.setCurrentWheelMove((float) yoffset);
+            rCore.getInput().mouse.setCurrentWheelMove((float) yoffset);
         }
     }
 
@@ -159,7 +181,7 @@ public class Callbacks{
         @Override
         public void invoke(long window, boolean entered){
             Tracelog(LOG_DEBUG, "Cursor Enter Callback Triggered");
-            Core.getInput().mouse.setCursorOnScreen(entered);
+            rCore.getInput().mouse.setCursorOnScreen(entered);
         }
     }
 
@@ -167,17 +189,17 @@ public class Callbacks{
         @Override
         public void invoke(long window, int count, long names){
             Tracelog(LOG_DEBUG, "Drop Callback Triggered");
-            Core.ClearDroppedFiles();
+            rCore.ClearDroppedFiles();
             String[] paths = new String[(int) names];
 
-            Core.getWindow().setDropFilesPath(new String[count]);
+            rCore.getWindow().setDropFilesPath(new String[count]);
 
             for (int j = 0; j < count; j++){
-                Core.getWindow().getDropFilesPath()[count] = String.valueOf(MAX_FILEPATH_LENGTH);
+                rCore.getWindow().getDropFilesPath()[count] = String.valueOf(MAX_FILEPATH_LENGTH);
                 paths[j] = String.valueOf(getWindow().dropFilesPath[j]);
             }
 
-            Core.getWindow().setDropFilesCount(count);
+            rCore.getWindow().setDropFilesCount(count);
         }
     }
 }

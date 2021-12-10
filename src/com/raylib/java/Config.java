@@ -7,7 +7,7 @@ public class Config{
      * This file defines all the configuration flags for the different raylib modules.txt
      */
 
-    public static final String RAYLIB_VERSION = "3.7";
+    public static final String RAYLIB_VERSION = "4.0";
 
     //------------------------------------------------------------------------------------
     // Module: core - Configuration Flags
@@ -19,9 +19,8 @@ public class Config{
     public static boolean PLATFORM_DESKTOP = (__WINDOWS__ || __APPLE__ || __LINUX__);
 
     /**
-     * Camera module is included (core.camera.java) and multiple predefined cameras are available: free, 1st/3rd
-     * person,
-     * orbital
+     * rCamera module is included (core.camera.java) and multiple predefined cameras are available: free, 1st/3rd
+     * person, orbital
      */
     static boolean SUPPORT_CAMERA_SYSTEM = true;
     /**
@@ -55,11 +54,11 @@ public class Config{
     /**
      * Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
      */
-    static boolean SUPPORT_SCREEN_CAPTURE = false;
+    public static boolean SUPPORT_SCREEN_CAPTURE = false;
     /**
      * Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
      */
-    static boolean SUPPORT_GIF_RECORDING = false;
+    public static boolean SUPPORT_GIF_RECORDING = false;
     /**
      * Support CompressData() and DecompressData() functions
      */
@@ -73,19 +72,30 @@ public class Config{
      */
     public static boolean SUPPORT_STANDARD_FILEIO = true;
 
+    // Support automatic generated events, loading and recording of those events when required
+    public static boolean SUPPORT_EVENTS_AUTOMATION = false;
+
+    // Support custom frame control, only for advance users
+    // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timming + PollInputEvents()
+    // Enabling this flag allows manual control of the frame processes, use at your own risk
+    //#define SUPPORT_CUSTOM_FRAME_CONTROL   1
+
+
     // core: Configuration values
     //------------------------------------------------------------------------------------
 
     public final static int LINUX_MAX_FILEPATH_LENGTH = 4096;
     // Maximum length for filepaths (Linux PATH_MAX default value)
-    public final static int MAX_FILEPATH_LENGTH = 512;        // Maximum length supported for filepaths
-    public final static int MAX_GAMEPADS = 4;        // Max number of gamepads supported
-    public final static int MAX_GAMEPAD_AXIS = 8;        // Max number of axis supported (per gamepad)
-    public final static int MAX_GAMEPAD_BUTTONS = 32;        // Max bumber of buttons supported (per gamepad)
-    public final static int MAX_TOUCH_POINTS = 10;        // Maximum number of touch points supported
-    public final static int MAX_KEY_PRESSED_QUEUE = 16;        // Max number of characters in the key input queue
-    public final static String STORAGE_DATA_FILE = "storage.data";       // Automatic storage filename
-    final static int MAX_DECOMPRESSION_SIZE = 64;        // Max size allocated for decompression in MB
+    public final static int MAX_FILEPATH_LENGTH = 512;              // Maximum length supported for file paths
+    public final static int MAX_KEYBOARD_KEYS = 512;                // Maximum number of keyboard keys supported
+    public final static int MAX_MOUSE_BUTTONS = 8;                  // Maximum number of mouse buttons supported
+    public final static int MAX_GAMEPADS = 4;                       // Max number of gamepads supported
+    public final static int MAX_GAMEPAD_AXIS = 8;                   // Max number of axis supported (per gamepad)
+    public final static int MAX_GAMEPAD_BUTTONS = 32;               // Max number of buttons supported (per gamepad)
+    public final static int MAX_TOUCH_POINTS = 10;                  // Maximum number of touch points supported
+    public final static int MAX_KEY_PRESSED_QUEUE = 16;             // Max number of characters in the key input queue
+    public final static String STORAGE_DATA_FILE = "storage.data";  // Automatic storage filename
+    public final static int MAX_DECOMPRESSION_SIZE = 64;                   // Max size allocated for decompression in MB
 
 
     //------------------------------------------------------------------------------------
@@ -99,48 +109,50 @@ public class Config{
     // rlgl: Configuration values
     //------------------------------------------------------------------------------------
     public final static boolean SUPPORT_GL_DETAILS_INFO = false;
-    public final static int DEFAULT_BATCH_BUFFER_ELEMENTS = 8192;    // Default internal render batch limits
+    public final static int RL_DEFAULT_BATCH_BUFFER_ELEMENTS = 8192;    // Default internal render batch limits
     final static int ES2_DEFAULT_BATCH_BUFFER_ELEMENTS = 2048;    // Default internal render batch limits
 
 
-    final static int DEFAULT_BATCH_BUFFERS = 1;      // Default number of batch buffers (multi-buffering)
-    final static int DEFAULT_BATCH_DRAWCALLS = 256;      // Default number of batch draw calls (by state changes:
+    final static int RL_DEFAULT_BATCH_BUFFERS = 1;      // Default number of batch buffers (multi-buffering)
+    public final static int RL_DEFAULT_BATCH_DRAWCALLS = 256;      // Default number of batch draw calls (by state changes:
     // mode, texture)
 
-    final static int MAX_MATRIX_STACK_SIZE = 32;      // Maximum size of internal Matrix stack
-    final static int MAX_MESH_VERTEX_BUFFERS = 7;      // Maximum vertex buffers (VBO) per mesh
-    final static int MAX_SHADER_LOCATIONS = 32;      // Maximum number of shader locations supported
-    final static int MAX_MATERIAL_MAPS = 12;      // Maximum number of shader maps supported
+    public final static int RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS = 4; // Maximum number of textures units that can be activated on batch
+    // drawing (SetShaderValueTexture())
+    public final static int RL_MAX_MATRIX_STACK_SIZE = 32;      // Maximum size of internal Matrix stack
+    final static int RL_MAX_SHADER_LOCATIONS = 32;      // Maximum number of shader locations supported
 
     public final static float RL_CULL_DISTANCE_NEAR = 0.01f;      // Default projection matrix near cull distance
     public final static float RL_CULL_DISTANCE_FAR = 1000.0f;      // Default projection matrix far cull distance
 
     // Default shader vertex attribute names to set location points
-    public final static String DEFAULT_SHADER_ATTRIB_NAME_POSITION = "vertexPosition";    // Binded by default to shader
-    // location:0
-    public final static String DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD = "vertexTexCoord";   // Binded by default to shader
-    // location:1
-    public final static String DEFAULT_SHADER_ATTRIB_NAME_NORMAL = "vertexNormal";      // Binded by default to shader
-    // location:2
-    public final static String DEFAULT_SHADER_ATTRIB_NAME_COLOR = "vertexColor";       // Binded by default to shader
-    // location:3
-    public final static String DEFAULT_SHADER_ATTRIB_NAME_TANGENT = "vertexTangent";     // Binded by default to shader
-    // location:4
-    public final static String DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2 = "vertexTexCoord2";   // Binded by default to shader
-    // location: 5
-
+    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION    = "vertexPosition";   // Binded by default to shader location: 0
+    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD    = "vertexTexCoord";    // Binded by default to shader location: 1
+    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL      = "vertexNormal";      // Binded by default to shader location: 2
+    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR       =  "vertexColor";       // Binded by default to shader location: 3
+    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT     = "vertexTangent";     // Binded by default to shader location: 4
+    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2   = "vertexTexCoord2";   // Binded by default to shader location: 5
+    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_MVP        = "mvp";               // model-view-projection matrix
+    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW       = "matView";           // view matrix
+    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION = "matProjection";     // projection matrix
+    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL      = "matModel";          // model matrix
+    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL     = "matNormal";         // normal matrix (transpose(inverse(matModelView))
+    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR      = "colDiffuse";        // color diffuse (base tint color, multiplied by texture color)
+    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0 = "texture0";          // texture0 (texture slot active 0)
+    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1 = "texture1";          // texture1 (texture slot active 1)
+    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2 = "texture2";          // texture2 (texture slot active 2)
 
     //------------------------------------------------------------------------------------
-    // Module: shapes - Configuration Flags
+    // Module: rShapes - Configuration Flags
     //------------------------------------------------------------------------------------
     /**
-     * Draw rectangle shapes using font texture white character instead of default white texture
+     * Draw rectangle rShapes using font texture white character instead of default white texture
      * Allows drawing rectangles and text with a single draw call, very useful for GUI systems!
      */
     static boolean SUPPORT_FONT_TEXTURE = true;
     /**
      * Use QUADS instead of TRIANGLES for drawing when possible
-     * Some lines-based shapes could still use lines
+     * Some lines-based rShapes could still use lines
      */
     public static boolean SUPPORT_QUADS_DRAW_MODE = true;
 
@@ -240,11 +252,11 @@ public class Config{
     /**
      * Support .wav to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_WAV = true;
+    public static boolean SUPPORT_FILEFORMAT_WAV = true;
     /**
      * Support .ogg to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_OGG = true;
+    public static boolean SUPPORT_FILEFORMAT_OGG = true;
     /**
      * Support .xm to be supported for loading
      */
@@ -264,12 +276,12 @@ public class Config{
 
     // audio: Configuration values
     //------------------------------------------------------------------------------------
-    final static String AUDIO_DEVICE_FORMAT = "ma_format_f32";    // Device output format (miniaudio: float-32bit)
+    public final static String AUDIO_DEVICE_FORMAT = "ma_format_f32";    // Device output format (miniaudio: float-32bit)
     final static int AUDIO_DEVICE_CHANNELS = 2;    // Device output channels: stereo
     final static int AUDIO_DEVICE_SAMPLE_RATE = 44100;    // Device output sample rate
 
     final static int DEFAULT_AUDIO_BUFFER_SIZE = 4096;    // Default audio buffer size for streaming
-    final static int MAX_AUDIO_BUFFER_POOL_CHANNELS = 16;    // Maximum number of audio pool channels
+    public final static int MAX_AUDIO_BUFFER_POOL_CHANNELS = 16;    // Maximum number of audio pool channels
 
     //------------------------------------------------------------------------------------
     // Module: utils - Configuration Flags

@@ -13,7 +13,7 @@ public class Image{
     public int width;                        // Image base width
     public int height;                       // Image base height
     public int mipmaps;                      // Mipmap levels, 1 by default
-    public int format;                       // Data format (PixelFormat type)
+    public int format;                       // Data format (rlPixelFormat type)
 
     public Image(){
         width = 0;

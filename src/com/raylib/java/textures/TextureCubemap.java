@@ -1,8 +1,8 @@
 package com.raylib.java.textures;
 
-import static com.raylib.java.rlgl.RLGL.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-import static com.raylib.java.textures.Textures.LoadTexture;
-import static com.raylib.java.textures.Textures.LoadTextureFromImage;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import static com.raylib.java.textures.rTextures.LoadTexture;
+import static com.raylib.java.textures.rTextures.LoadTextureFromImage;
 
 public class TextureCubemap{
 
@@ -10,13 +10,13 @@ public class TextureCubemap{
     int width;              // Texture base width
     int height;             // Texture base height
     int mipmaps;            // Mipmap levels, 1 by default
-    int format;             // Data format (PixelFormat type)
+    int format;             // Data format (rlPixelFormat type)
 
     public TextureCubemap(){
         this.width = 1;
         this.height = 1;
         this.mipmaps = 1;
-        this.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        this.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     }
 
     public TextureCubemap(Image image){
