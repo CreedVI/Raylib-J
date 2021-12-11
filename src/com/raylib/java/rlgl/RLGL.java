@@ -952,11 +952,6 @@ public class RLGL{
             GRAPHICS_API_OPENGL_11 = true;
         }
 
-        GRAPHICS_API_OPENGL_43 = false;
-        GRAPHICS_API_OPENGL_33 = false;
-        GRAPHICS_API_OPENGL_21 = true;
-        GRAPHICS_API_OPENGL_11 = false;
-
         // Initialize buffers, default shaders and default textures
         //----------------------------------------------------------
         // Init default white texture
