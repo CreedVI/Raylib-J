@@ -10,17 +10,17 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static com.raylib.java.Config.*;
-import static com.raylib.java.Config.RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.*;
 import static com.raylib.java.rlgl.RLGL.rlGlVersion.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
@@ -955,7 +955,7 @@ public class RLGL{
         // Initialize buffers, default shaders and default textures
         //----------------------------------------------------------
         // Init default white texture
-        DataBuffer pixels = new DataBufferShort(new short[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255}, 4);
+        DataBuffer pixels = new DataBufferByte(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255}, 4);
         rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
 
         if (rlglData.getState().getDefaultTextureId() != 0){

@@ -246,10 +246,10 @@ public class GL_33{
             // By default rlVertexBuffer type does not store normals
 
             // Add current color
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter] = rlglData.getState().colorr;
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 1] = rlglData.getState().colorg;
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 2] = rlglData.getState().colorb;
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 3] = rlglData.getState().colora;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter] = (float) rlglData.getState().colorr/255;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 1] = (float) rlglData.getState().colorg/255;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 2] = (float) rlglData.getState().colorb/255;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 3] = (float) rlglData.getState().colora/255;
 
             rlglData.getState().vertexCounter++;
 

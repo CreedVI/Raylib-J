@@ -790,8 +790,7 @@ public class rShapes{
         Vector2 bottomRight = new Vector2();
 
         // Only calculate rotation if needed
-        if (rotation == 0.0f)
-        {
+        if (rotation == 0.0f) {
             float x = rec.x - origin.x;
             float y = rec.y - origin.y;
             topLeft = new Vector2(x, y);
@@ -799,8 +798,7 @@ public class rShapes{
             bottomLeft = new Vector2(x, y + rec.height);
             bottomRight = new Vector2(x + rec.width, y + rec.height);
         }
-        else
-        {
+        else {
             float sinRotation = (float) Math.sin(rotation*DEG2RAD);
             float cosRotation = (float) Math.cos(rotation*DEG2RAD);
             float x = rec.x;
