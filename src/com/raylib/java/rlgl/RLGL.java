@@ -46,7 +46,7 @@ public class RLGL{
     private static boolean GRAPHICS_API_OPENGL_11 = false;
     private static boolean GRAPHICS_API_OPENGL_21 = false;
     public static boolean GRAPHICS_API_OPENGL_33 = true;
-    public static boolean GRAPHICS_API_OPENGL_43 = true;
+    public static boolean GRAPHICS_API_OPENGL_43 = false;
     public static boolean GRAPHICS_API_OPENGL_ES2 = false;
     private static final boolean RLGL_RENDER_TEXTURES_HINT = true;
 
@@ -943,7 +943,7 @@ public class RLGL{
             GRAPHICS_API_OPENGL_43 = false;
             GRAPHICS_API_OPENGL_33 = false;
             GRAPHICS_API_OPENGL_21 = true;
-            GRAPHICS_API_OPENGL_11 = true;
+            GRAPHICS_API_OPENGL_11 = false;
         }
         else {
             GRAPHICS_API_OPENGL_43 = false;
@@ -951,6 +951,11 @@ public class RLGL{
             GRAPHICS_API_OPENGL_21 = false;
             GRAPHICS_API_OPENGL_11 = true;
         }
+
+        GRAPHICS_API_OPENGL_43 = false;
+        GRAPHICS_API_OPENGL_33 = false;
+        GRAPHICS_API_OPENGL_21 = true;
+        GRAPHICS_API_OPENGL_11 = false;
 
         // Initialize buffers, default shaders and default textures
         //----------------------------------------------------------

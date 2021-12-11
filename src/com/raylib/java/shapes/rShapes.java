@@ -39,8 +39,7 @@ public class rShapes{
      * @param texture
      * @param source 
      */
-    public static void SetShapesTexture(Texture2D texture, Rectangle source)
-    {
+    public static void SetShapesTexture(Texture2D texture, Rectangle source) {
         texShapes = texture;
         texShapesRec = source;
     }
@@ -196,7 +195,7 @@ public class rShapes{
 
         Vector2 previous = startPos;
         Vector2 current = new Vector2();
-        float t = 0.0f;
+        float t;
 
         for (int i = 0; i <= BEZIER_LINE_DIVISIONS; i++)
         {
@@ -265,7 +264,7 @@ public class rShapes{
     public void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments,
                                  Color color){
         if(radius <= 0.0f){
-            radius = 0.1f;  // Apublic void div by zero
+            radius = 0.1f;  // A public void div by zero
         }
 
         // Function expects (endAngle > startAngle)
@@ -1268,7 +1267,7 @@ public class rShapes{
         }
 
         float stepLength = 90.0f / (float) segments;
-        float outerRadius = radius + (float) lineThick, innerRadius = radius;
+        float outerRadius = radius + (float) lineThick;
 
         /*
             Quick sketch to make sense of all of this,
@@ -1287,29 +1286,29 @@ public class rShapes{
                    P5 ================== P4
         */
         Vector2[] point = {
-                new Vector2(rec.getX() + innerRadius, rec.getY() - lineThick),
-                new Vector2((rec.getX() + rec.getWidth()) - innerRadius, rec.getY() - lineThick),
-                new Vector2(rec.getX() + rec.getWidth() + lineThick, rec.getY() + innerRadius), // PO, P1, P2
-                new Vector2(rec.getX() + rec.getWidth() + lineThick, (rec.getY() + rec.getHeight()) - innerRadius),
-                new Vector2((rec.getX() + rec.getWidth()) - innerRadius, rec.getY() + rec.getHeight() + lineThick), // P3, P4
-                new Vector2(rec.getX() + innerRadius, rec.getY() + rec.getHeight() + lineThick),
-                new Vector2(rec.getX() - lineThick, (rec.getY() + rec.getHeight()) - innerRadius),
-                new Vector2(rec.getX() - lineThick, rec.getY() + innerRadius), // P5, P6, P7
-                new Vector2(rec.getX() + innerRadius, rec.getY()),
-                new Vector2((rec.getX() + rec.getWidth()) - innerRadius, rec.getY()), // P8, P9
-                new Vector2(rec.getX() + rec.getWidth(), rec.getY() + innerRadius),
-                new Vector2(rec.getX() + rec.getWidth(), (rec.getY() + rec.getHeight()) - innerRadius), // P10, P11
-                new Vector2((rec.getX() + rec.getWidth()) - innerRadius, rec.getY() + rec.getHeight()),
-                new Vector2(rec.getX() + innerRadius, rec.getY() + rec.getHeight()), // P12, P13
-                new Vector2(rec.getX(), (rec.getY() + rec.getHeight()) - innerRadius),
-                new Vector2(rec.getX(), rec.getY() + innerRadius) // P14, P15
+                new Vector2(rec.getX() + radius, rec.getY() - lineThick),
+                new Vector2((rec.getX() + rec.getWidth()) - radius, rec.getY() - lineThick),
+                new Vector2(rec.getX() + rec.getWidth() + lineThick, rec.getY() + radius), // PO, P1, P2
+                new Vector2(rec.getX() + rec.getWidth() + lineThick, (rec.getY() + rec.getHeight()) - radius),
+                new Vector2((rec.getX() + rec.getWidth()) - radius, rec.getY() + rec.getHeight() + lineThick), // P3, P4
+                new Vector2(rec.getX() + radius, rec.getY() + rec.getHeight() + lineThick),
+                new Vector2(rec.getX() - lineThick, (rec.getY() + rec.getHeight()) - radius),
+                new Vector2(rec.getX() - lineThick, rec.getY() + radius), // P5, P6, P7
+                new Vector2(rec.getX() + radius, rec.getY()),
+                new Vector2((rec.getX() + rec.getWidth()) - radius, rec.getY()), // P8, P9
+                new Vector2(rec.getX() + rec.getWidth(), rec.getY() + radius),
+                new Vector2(rec.getX() + rec.getWidth(), (rec.getY() + rec.getHeight()) - radius), // P10, P11
+                new Vector2((rec.getX() + rec.getWidth()) - radius, rec.getY() + rec.getHeight()),
+                new Vector2(rec.getX() + radius, rec.getY() + rec.getHeight()), // P12, P13
+                new Vector2(rec.getX(), (rec.getY() + rec.getHeight()) - radius),
+                new Vector2(rec.getX(), rec.getY() + radius) // P14, P15
         };
 
         Vector2[] centers = {
-                new Vector2(rec.getX() + innerRadius, rec.getY() + innerRadius),
-                new Vector2((rec.getX() + rec.getWidth()) - innerRadius, rec.getY() + innerRadius), // P16, P17
-                new Vector2(rec.getX() + rec.getWidth() - innerRadius, (rec.getY() + rec.getHeight()) - innerRadius),
-                new Vector2(rec.getX() + innerRadius, (rec.getY() + rec.getHeight()) - innerRadius) // P18, P19
+                new Vector2(rec.getX() + radius, rec.getY() + radius),
+                new Vector2((rec.getX() + rec.getWidth()) - radius, rec.getY() + radius), // P16, P17
+                new Vector2(rec.getX() + rec.getWidth() - radius, (rec.getY() + rec.getHeight()) - radius),
+                new Vector2(rec.getX() + radius, (rec.getY() + rec.getHeight()) - radius) // P18, P19
         };
 
         float[] angles = {180.0f, 90.0f, 0.0f, 270.0f};
@@ -1329,13 +1328,13 @@ public class rShapes{
                     for(int i = 0; i < segments; i++){
                         rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
                         rlTexCoord2f(texShapesRec.getX() / texShapes.getWidth(), texShapesRec.getY() / texShapes.getHeight());
-                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * innerRadius);
+                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * radius, center.getY() + (float) Math.cos(DEG2RAD * angle) * radius);
                         rlTexCoord2f(texShapesRec.getX() / texShapes.getWidth(), (texShapesRec.getY() + texShapesRec.getHeight()) / texShapes.getHeight());
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * outerRadius);
                         rlTexCoord2f((texShapesRec.getX() + texShapesRec.getWidth()) / texShapes.getWidth(), (texShapesRec.getY() + texShapesRec.getHeight()) / texShapes.getHeight());
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * outerRadius);
                         rlTexCoord2f((texShapesRec.getX() + texShapesRec.getWidth()) / texShapes.getWidth(), texShapesRec.getY() / texShapes.getHeight());
-                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * innerRadius);
+                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * radius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * radius);
 
                         angle += stepLength;
                     }
@@ -1402,11 +1401,11 @@ public class rShapes{
                     for(int i = 0; i < segments; i++){
                         rlColor4ub(color.getR(), color.getG(), color.getB(), color.getA());
 
-                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * innerRadius);
+                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * radius, center.getY() + (float) Math.cos(DEG2RAD * angle) * radius);
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * outerRadius);
-                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * innerRadius);
+                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * radius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * radius);
 
-                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * innerRadius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * innerRadius);
+                        rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * radius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * radius);
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * angle) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * angle) * outerRadius);
                         rlVertex2f(center.getX() + (float) Math.sin(DEG2RAD * (angle + stepLength)) * outerRadius, center.getY() + (float) Math.cos(DEG2RAD * (angle + stepLength)) * outerRadius);
 
@@ -1527,7 +1526,7 @@ public class rShapes{
     }
 
     /**
-     * Draw a trianlge using lines
+     * Draw a triangle using lines
      * NOTE: Vertex must be provided in counter-clockwise order
      *
      * @param v1    X,Y coordinate (top vertex)
@@ -1877,7 +1876,7 @@ public class rShapes{
      * @param rec    Rectangle to check
      * @return Are circle and rectangle colliding
      */
-    public boolean CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec){
+    public boolean CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec) {
         int recCenterX = (int) (rec.getX() + rec.getWidth() / 2.0f);
         int recCenterY = (int) (rec.getY() + rec.getHeight() / 2.0f);
 
@@ -1913,7 +1912,7 @@ public class rShapes{
      * @param endPos2   X, Y coordinate for final endpoint of line 2
      * @return if lines intersect
      */
-    public boolean CheckCollisionLine(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2){
+    public boolean CheckCollisionLine(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2) {
         float div = (endPos2.getY() - startPos2.getY()) * (endPos1.getX() - startPos1.getX()) - (endPos2.getX() - startPos2.getX()) * (endPos1.getY() - startPos1.getY());
 
         if(div == 0.0f){
@@ -1948,7 +1947,7 @@ public class rShapes{
      * @param endPos2   X, Y coordinate for final endpoint of line 2
      * @return X, Y coordinate of intersection
      */
-    public Vector2 CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2){
+    public Vector2 CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2) {
         float div = (endPos2.getY() - startPos2.getY()) * (endPos1.getX() - startPos1.getX()) - (endPos2.getX() - startPos2.getX()) * (endPos1.getY() - startPos1.getY());
 
         if(div == 0.0f){
@@ -1975,8 +1974,7 @@ public class rShapes{
     }
 
     // Check if point belongs to line created between two points [p1] and [p2] with defined margin in pixels [threshold]
-    boolean CheckCollisionPointLine(Vector2 point, Vector2 p1, Vector2 p2, int threshold)
-    {
+    boolean CheckCollisionPointLine(Vector2 point, Vector2 p1, Vector2 p2, int threshold) {
         boolean collision = false;
         float dxc = point.x - p1.x;
         float dyc = point.y - p1.y;
@@ -1996,7 +1994,7 @@ public class rShapes{
     }
 
     // Get collision rectangle for two rectangles collision
-    public Rectangle GetCollisionRec(Rectangle rec1, Rectangle rec2){
+    public Rectangle GetCollisionRec(Rectangle rec1, Rectangle rec2) {
         Rectangle rec = new Rectangle();
 
         if(CheckCollisionRecs(rec1, rec2)){
