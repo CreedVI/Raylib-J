@@ -120,7 +120,7 @@ public class Config{
     public final static int RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS = 4; // Maximum number of textures units that can be activated on batch
     // drawing (SetShaderValueTexture())
     public final static int RL_MAX_MATRIX_STACK_SIZE = 32;      // Maximum size of internal Matrix stack
-    final static int RL_MAX_SHADER_LOCATIONS = 32;      // Maximum number of shader locations supported
+    public final static int RL_MAX_SHADER_LOCATIONS = 32;      // Maximum number of shader locations supported
 
     public final static float RL_CULL_DISTANCE_NEAR = 0.01f;      // Default projection matrix near cull distance
     public final static float RL_CULL_DISTANCE_FAR = 1000.0f;      // Default projection matrix far cull distance

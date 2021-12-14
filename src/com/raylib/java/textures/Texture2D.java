@@ -10,7 +10,7 @@ public class Texture2D{
     public int width;              // Texture base width
     public int height;             // Texture base height
     int mipmaps;            // Mipmap levels, 1 by default
-    int format;             // Data format (rlPixelFormat type)
+    public int format;             // Data format (rlPixelFormat type)
 
     public Texture2D(){
         this.width = 1;

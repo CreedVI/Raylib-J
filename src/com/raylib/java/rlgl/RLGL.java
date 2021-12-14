@@ -1,6 +1,5 @@
 package com.raylib.java.rlgl;
 
-import com.raylib.java.core.Color;
 import com.raylib.java.raymath.Matrix;
 import com.raylib.java.rlgl.data.rlglData;
 import com.raylib.java.rlgl.shader.Shader;
@@ -20,7 +19,6 @@ import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.*;
 import static com.raylib.java.rlgl.RLGL.rlGlVersion.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
@@ -1455,24 +1453,24 @@ public class RLGL{
             batch.rlVertexBuffer[i].vboId[0] = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[0]);
             glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vertices, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_POSITION]);
-            glVertexAttribPointer(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_POSITION],
+            glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION]);
+            glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION],
                                   3, GL_FLOAT, false, 0, 0);
 
             // Vertex texcoord buffer (shader-location = 1)
             batch.rlVertexBuffer[i].vboId[1] = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[1]);
             glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].texcoords, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
-            glVertexAttribPointer(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_TEXCOORD01],
+            glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+            glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01],
                                   2, GL_FLOAT, false, 0, 0);
 
             // Vertex color buffer (shader-location = 3)
             batch.rlVertexBuffer[i].vboId[2] = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[2]);
             glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].colors, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_COLOR]);
-            glVertexAttribPointer(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_COLOR],
+            glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR]);
+            glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR],
                                   4, GL_FLOAT, false, 0, 0);
 
             // Fill index buffer
@@ -1626,12 +1624,11 @@ public class RLGL{
             // Draw buffers
             if (rlglData.getState().vertexCounter > 0){
                 // Set current shader and upload current MVP matrix
-                glUseProgram(rlglData.getState().getCurrentShaderId());
+                glUseProgram(rlglData.getState().currentShaderId);
 
                 // Create modelview-projection matrix and upload to shader
                 Matrix matMVP = MatrixMultiply(rlglData.getState().getModelview(), rlglData.getState().getProjection());
-                glUniformMatrix4fv(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_MATRIX_MVP],
-                        false, MatrixToFloat(matMVP));
+                glUniformMatrix4fv(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_MATRIX_MVP],false, MatrixToFloat(matMVP));
 
                 if (rlglData.getExtSupported().isVao()){
                     glBindVertexArray(batch.rlVertexBuffer[batch.currentBuffer].vaoId);
@@ -1639,33 +1636,32 @@ public class RLGL{
                 else{
                     // Bind vertex attrib: position (shader-location = 0)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[0]);
-                    glVertexAttribPointer(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_POSITION],
+                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION],
                             3, GL_FLOAT, false, 0, 0);
-                    glEnableVertexAttribArray(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_POSITION]);
+                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION]);
 
                     // Bind vertex attrib: texcoord (shader-location = 1)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[1]);
-                    glVertexAttribPointer(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_TEXCOORD01],
+                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01],
                             2, GL_FLOAT, false, 0, 0);
-                    glEnableVertexAttribArray(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
 
                     // Bind vertex attrib: color (shader-location = 3)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[2]);
-                    glVertexAttribPointer(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_COLOR],
+                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR],
                             4, GL_FLOAT, false, 0, 0);
-                    glEnableVertexAttribArray(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_VERTEX_COLOR]);
+                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR]);
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[3]);
                 }
 
                 // Setup some default shader values
-                glUniform4f(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_COLOR_DIFFUSE], 1.0f, 1.0f, 1.0f, 1.0f);
-                glUniform1i(rlglData.getState().getCurrentShaderLocs()[RL_SHADER_LOC_MAP_ALBEDO], 0);
-                // Active default sampler2D: texture0
+                glUniform4f(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_COLOR_DIFFUSE], 1.0f, 1.0f, 1.0f, 1.0f);
+                glUniform1i(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_MAP_ALBEDO], 0); // Active default sampler2D: texture0
 
                 // Activate additional sampler textures
                 // Those additional textures will be common for all draw calls of the batch
-                for (int i = 0; i < MAX_BATCH_ACTIVE_TEXTURES; i++){
+                for (int i = 0; i < RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS; i++){
                     if (rlglData.getState().getActiveTextureId()[i] > 0){
                         glActiveTexture(GL_TEXTURE0 + 1 + i);
                         glBindTexture(GL_TEXTURE_2D, rlglData.getState().getActiveTextureId()[i]);
@@ -1686,7 +1682,7 @@ public class RLGL{
                     }
                     else{
                         if (GRAPHICS_API_OPENGL_33){
-                            // We need to define the number of indices to be processed: quadsCount*6
+                            // We need to define the number of indices to be processed: elementCount*6
                             // NOTE: The final parameter tells the GPU the offset in bytes from the
                             // start of the index buffer to the location of the first index to process
                             glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT,
@@ -1718,7 +1714,7 @@ public class RLGL{
         //------------------------------------------------------------------------------------------------------------
         // Reset batch buffers
         //------------------------------------------------------------------------------------------------------------
-        // Reset vertex counters for next frame
+        // Reset vertex counter for next frame
         rlglData.getState().vertexCounter = 0;
 
         // Reset depth for next draw
@@ -1729,14 +1725,14 @@ public class RLGL{
         rlglData.getState().setModelview(matModelView);
 
         // Reset rlglData.getCurrentBatch().draws array
-        for (int i = 0; i < DEFAULT_BATCH_DRAWCALLS; i++){
+        for (int i = 0; i < RL_DEFAULT_BATCH_DRAWCALLS; i++){
             batch.draws[i].mode = RL_QUADS;
             batch.draws[i].vertexCount = 0;
-            batch.draws[i].textureId = rlglData.getState().getDefaultTextureId();
+            batch.draws[i].textureId = rlglData.getState().defaultTextureId;
         }
 
         // Reset active texture units for next batch
-        for (int i = 0; i < MAX_BATCH_ACTIVE_TEXTURES; i++){
+        for (int i = 0; i < RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS; i++){
             rlglData.getState().getActiveTextureId()[i] = 0;
         }
 
@@ -1779,11 +1775,19 @@ public class RLGL{
         boolean overflow = false;
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            if ((rlglData.getState().vertexCounter + vCount) >= (rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].elementCount * 4)){
-                overflow = true;
-                rlDrawRenderBatch(rlglData.getCurrentBatch());    // NOTE: Stereo rendering is checked inside
+            if((rlglData.getState().vertexCounter + vCount) >=
+                    (rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].elementCount * 4)) {
+                 int currentMode = rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode;
+                 int currentTexture = rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].textureId;
+
+                 overflow = true;
+                 rlDrawRenderBatch(rlglData.getCurrentBatch());
+
+                 rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode = currentMode;
+                 rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].textureId = currentTexture;
             }
         }
+
         return overflow;
     }
 
@@ -1989,8 +1993,8 @@ public class RLGL{
         glBindTexture(GL_TEXTURE_2D, 0);
 
         if (id > 0){
-            Tracelog(LOG_INFO, "TEXTURE: [ID " + id + "] Texture created successfully (" + width + "x" + height +
-                    " - " + mipmapCount + " mipmaps)");
+            Tracelog(LOG_INFO, "TEXTURE: [ID " + id + "] Texture loaded successfully (" + width + "x" + height +
+                    " | " + rlGetPixelFormatName(format) + " | " + mipmapCount + " mipmaps)");
         }
         else{
             Tracelog(LOG_WARNING, "TEXTURE: Failed to load texture");
@@ -2397,7 +2401,7 @@ public class RLGL{
     }
 
     // Generate mipmap data for selected texture
-    public static void rlGenerateMipmaps(Texture2D texture){
+    public static void rlGenTextureMipmaps(Texture2D texture){
         glBindTexture(GL_TEXTURE_2D, texture.getId());
 
         // Check if texture is power-of-two (POT)
@@ -2409,11 +2413,11 @@ public class RLGL{
                 // WARNING: Manual mipmap generation only works for RGBA 32bit textures!
                 if (texture.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
                     // Retrieve texture data from VRAM
-                    byte[] texData = rlReadTexturePixels(texture);
+                    byte[] texData = rlReadTexturePixels(texture.id, texture.width, texture.height, texture.format);
 
                     // NOTE: Texture data size is reallocated to fit mipmaps data
                     // NOTE: CPU mipmap generation only supports RGBA 32bit data
-                    int mipmapCount = GenerateMipmaps(texData, texture.getWidth(), texture.getHeight());
+                    int mipmapCount = rlGenTextureMipmapsData(texData, texture.getWidth(), texture.getHeight());
 
                     int size = texture.getWidth() * texture.getHeight() * 4;
                     int offset = size;
@@ -2464,11 +2468,11 @@ public class RLGL{
     }
 
     // Read texture pixel data
-    public static byte[] rlReadTexturePixels(Texture2D texture){
+    public static byte[] rlReadTexturePixels(int id, int width, int height, int format){
         byte[] pixels = null;
 
         if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
-            glBindTexture(GL_TEXTURE_2D, texture.getId());
+            glBindTexture(GL_TEXTURE_2D, id);
 
             // NOTE: Using texture.id, we can retrieve some texture info (but not on OpenGL ES 2.0)
             // Possible texture info: GL_TEXTURE_RED_SIZE, GL_TEXTURE_GREEN_SIZE, GL_TEXTURE_BLUE_SIZE, GL_TEXTURE_ALPHA_SIZE
@@ -2483,10 +2487,10 @@ public class RLGL{
             // GL_UNPACK_ALIGNMENT affects operations that write to OpenGL memory (glTexImage, etc.)
             glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
-            rlGetGlTextureFormats(texture.getFormat());
-            int size = rlGetPixelDataSize(texture.getWidth(), texture.getHeight(), texture.getFormat());
+            rlGetGlTextureFormats(format);
+            int size = rlGetPixelDataSize(width, height, format);
 
-            if ((glInternalFormat != -1) && (texture.getFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB)){
+            if ((glInternalFormat != -1) && (format < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB)){
                 pixels = new byte[size];
                 ByteBuffer bb = ByteBuffer.allocateDirect(pixels.length);
                 bb.put(pixels).flip();
@@ -2496,8 +2500,8 @@ public class RLGL{
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "TEXTURE: [ID " + texture.getId() + "] Data retrieval not suported for " +
-                        "pixel format (" + texture.getFormat() + ")");
+                Tracelog(LOG_WARNING, "TEXTURE: [ID " + id + "] Data retrieval not suported for " +
+                        "pixel format (" + format + ")");
             }
 
             glBindTexture(GL_TEXTURE_2D, 0);
@@ -2511,7 +2515,7 @@ public class RLGL{
             // 2 - Create an fbo, activate it, render quad with texture, glReadPixels()
             // We are using Option 1, just need to care for texture format on retrieval
             // NOTE: This behaviour could be conditioned by graphic driver...
-            int fboId = rlLoadFramebuffer(texture.getWidth(), texture.getHeight());
+            int fboId = rlLoadFramebuffer(width, width);
 
             // TODO: Create depth texture/renderbuffer for fbo?
 
@@ -2519,14 +2523,14 @@ public class RLGL{
             glBindTexture(GL_TEXTURE_2D, 0);
 
             // Attach our texture to FBO
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
 
             // We read data as RGBA because FBO texture is configured as RGBA, despite binding another texture format
-            pixels = new byte[rlGetPixelDataSize(texture.getWidth(), texture.getHeight(),
+            pixels = new byte[rlGetPixelDataSize(width, width,
                                                  RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)];
             ByteBuffer bb = ByteBuffer.allocateDirect(pixels.length);
             bb.put(pixels).flip();
-            GL11.glReadPixels(0, 0, texture.getWidth(), texture.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, bb);
+            GL11.glReadPixels(0, 0, width, width, GL_RGBA, GL_UNSIGNED_BYTE, bb);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -2734,37 +2738,41 @@ public class RLGL{
         return id;
     }
 
+    // Enable vertex buffer (VBO)
     public void rlEnableVertexBuffer(int id) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ARRAY_BUFFER, id);
         }
     }
 
+    // Disable vertex buffer (VBO)
     public void rlDisableVertexBuffer() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
     }
 
+    // Enable vertex buffer element (VBO Element)
     public void rlEnableVertexBufferElement(int id) {
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
         }
     }
 
+    // Disable vertex buffer element (VBO Element)
     public void rlDisableVertexBufferElement() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
     }
 
-    // Update GPU buffer with new data
+    // Update vertex buffer with new data
     // NOTE: dataSize and offset must be provided in bytes
-    public void rlUpdateVertexBuffer(int bufferId, byte[] data, int offset) {
+    public void rlUpdateVertexBuffer(int id, byte[] data, int offset) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
             dataBuffer.put(data).flip();
-            glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+            glBindBuffer(GL_ARRAY_BUFFER, id);
             glBufferSubData(GL_ARRAY_BUFFER, offset, dataBuffer);
         }
     }
@@ -2781,6 +2789,7 @@ public class RLGL{
         }
     }
 
+    // Enable vertex array object (VAO)
     public boolean rlEnableVertexArray(int vaoId) {
         boolean result = false;
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2792,6 +2801,7 @@ public class RLGL{
         return result;
     }
 
+    // Disable vertex array object (VAO)
     public void rlDisableVertexArray() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getExtSupported().isVao()){
@@ -2800,39 +2810,45 @@ public class RLGL{
         }
     }
 
+    // Enable vertex attribute index
     public void rlEnableVertexAttribute(int index) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glEnableVertexAttribArray(index);
         }
     }
 
+    // Disable vertex attribute index
     public void rlDisableVertexAttribute(int index) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDisableVertexAttribArray(index);
         }
     }
 
+    // Draw vertex array
     public void rlDrawVertexArray(int offset, int count) {
         glDrawArrays(GL_TRIANGLES, offset, count);
     }
 
+    // Draw vetex array elements
     public void rlDrawVertexArrayElements(int offset, int count, byte[] buffer) {
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, buffer.length + offset);
     }
 
+    // Draw vertex array instanced
     public void rlDrawVertexArrayInstanced(int offset, int count, int instances) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDrawArraysInstanced(GL_TRIANGLES, 0, count, instances);
         }
     }
 
+    // Draw vertex array elements instanced
     public void rlDrawVertexArrayElementsInstanced(int offset, int count, int[] buffer, int instances) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, buffer.length + offset, instances);
         }
     }
 
-
+    // Enable vertex state pointer
     public void rlEnableStatePointer(int vertexAttribType, int[] buffer){
         if (GRAPHICS_API_OPENGL_11){
             if (buffer != null) glEnableClientState(vertexAttribType);
@@ -2856,12 +2872,14 @@ public class RLGL{
         }
     }
 
+    // Disable vertex state pointer
     public void rlDisableStatePointer(int vertexAttribType){
         if(GRAPHICS_API_OPENGL_11){
             glDisableClientState(vertexAttribType);
         }
     }
 
+    // Load vertex array object (VAO)
     public int rlLoadVertexArray() {
         int vaoId = 0;
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2870,18 +2888,21 @@ public class RLGL{
         return vaoId;
     }
 
+    // Set vertex attribute
     public void rlSetVertexAttribute(int index, int compSize, int type, boolean normalized, int stride, long pointer) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glVertexAttribPointer(index, compSize, type, normalized, stride, pointer);
         }
     }
 
+    // Set vertex attribute divisor
     public void rlSetVertexAttributeDivisor(int index, int divisor) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glVertexAttribDivisor(index, divisor);
         }
     }
 
+    // Unload vertex array object (VAO)
     public void rlUnloadVertexArray(int vaoId) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getExtSupported().isVao())
@@ -2893,6 +2914,7 @@ public class RLGL{
         }
     }
 
+    // Unload vertex buffer (VBO)
     public void rlUnloadVertexBuffer(int vboId) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDeleteBuffers(vboId);
@@ -2914,10 +2936,16 @@ public class RLGL{
             int vertexShaderId = rlglData.getState().defaultVShaderId;
             int fragmentShaderId = rlglData.getState().defaultFShaderId;
 
-            if (vsCode != null) vertexShaderId = rlCompileShader(vsCode, GL_VERTEX_SHADER);
-            if (fsCode != null) fragmentShaderId = rlCompileShader(fsCode, GL_FRAGMENT_SHADER);
+            if (vsCode != null) {
+                vertexShaderId = rlCompileShader(vsCode, GL_VERTEX_SHADER);
+            }
+            if (fsCode != null) {
+                fragmentShaderId = rlCompileShader(fsCode, GL_FRAGMENT_SHADER);
+            }
 
-            if ((vertexShaderId == rlglData.getState().defaultVShaderId) && (fragmentShaderId == rlglData.getState().defaultFShaderId)) id = rlglData.getState().defaultShaderId;
+            if ((vertexShaderId == rlglData.getState().defaultVShaderId) && (fragmentShaderId == rlglData.getState().defaultFShaderId)) {
+                id = rlglData.getState().defaultShaderId;
+            }
             else{
                 id = rlLoadShaderProgram(vertexShaderId, fragmentShaderId);
 
@@ -2931,7 +2959,6 @@ public class RLGL{
                     glDetachShader(id, fragmentShaderId);
                     glDeleteShader(fragmentShaderId);
                 }
-
                 if (id == 0){
                     Tracelog(LOG_WARNING, "SHADER: Failed to load custom shader code");
                     id = rlglData.getState().defaultShaderId;
@@ -3057,7 +3084,12 @@ public class RLGL{
                 program = 0;
             }
             else{
-                Tracelog(LOG_INFO, "SHADER: [ID " + program + "] Program loaded successfully");
+                // Get the size of compiled shader program (not available on OpenGL ES 2.0)
+                // NOTE: If GL_LINK_STATUS is GL_FALSE, program binary length is zero.
+                //GLint binarySize = 0;
+                //glGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binarySize);
+
+                Tracelog(LOG_INFO, "SHADER: [ID " + program + "] Program shader loaded successfully");
             }
         }
         return program;
@@ -3176,7 +3208,7 @@ public class RLGL{
     public void rlSetUniformSampler(int locIndex, int textureId) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // Check if texture is already active
-            for (int i = 0; i < MAX_BATCH_ACTIVE_TEXTURES; i++){
+            for (int i = 0; i < RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS; i++){
                 if (rlglData.getState().getActiveTextureId()[i] == textureId) {
                     return;
                 }
@@ -3184,7 +3216,7 @@ public class RLGL{
 
             // Register a new active texture for the internal batch system
             // NOTE: Default texture is always activated as GL_TEXTURE0
-            for (int i = 0; i < MAX_BATCH_ACTIVE_TEXTURES; i++){
+            for (int i = 0; i < RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS; i++){
                 if (rlglData.getState().getActiveTextureId()[i] == 0){
                     glUniform1i(locIndex, 1 + i);              // Activate new texture unit
                     rlglData.getState().getActiveTextureId()[i] = textureId; // Save texture id for binding on drawing
@@ -3456,7 +3488,7 @@ public class RLGL{
         }
     }
 
-    // Renders a 1x1 XY quad in NDC
+    // Renders a quad in NDC
     public static void rlLoadDrawQuad() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             int quadVAO = 0;
@@ -3496,7 +3528,7 @@ public class RLGL{
         }
     }
 
-    // Renders a 1x1 3D cube in NDC
+    // Renders a cube in NDC
     public static void rlLoadDrawCube(){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             int cubeVAO = 0;
@@ -3578,7 +3610,7 @@ public class RLGL{
     }
 
     // Get name string for pixel format
-    public String rlGetPixelFormatName(int format){
+    public static String rlGetPixelFormatName(int format){
         switch (format) {
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE: return "GRAYSCALE";          // 8 bit per pixel (no alpha)
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA: return "GRAY_ALPHA";        // 8*2 bpp (2 channels)
@@ -3611,93 +3643,94 @@ public class RLGL{
 
     // Load default shader (just vertex positioning and texture coloring)
     // NOTE: This shader program is used for internal buffers
+    // NOTE: Loaded: rlglData.state.defaultShaderId, rlglData.state.defaultShaderLocs
     public static void rlLoadShaderDefault(){
 
-        rlglData.getState().setDefaultShaderLocs(new int[MAX_SHADER_LOCATIONS]);
+        rlglData.getState().setDefaultShaderLocs(new int[RL_MAX_SHADER_LOCATIONS]);
 
         // NOTE: All locations must be reseted to -1 (no location)
-        for (int i = 0; i < MAX_SHADER_LOCATIONS; i++){
+        for (int i = 0; i < RL_MAX_SHADER_LOCATIONS; i++){
             rlglData.getState().defaultShaderLocs[i] = -1;
         }
 
         // Vertex shader directly defined, no external file required
-        StringBuilder vShaderDefault = new StringBuilder();
+        StringBuilder defaultVShaderCode = new StringBuilder();
         if (GRAPHICS_API_OPENGL_21){
-            vShaderDefault.append("#version 120                       \n");
-            vShaderDefault.append("attribute vec3 vertexPosition;     \n");
-            vShaderDefault.append("attribute vec2 vertexTexCoord;     \n");
-            vShaderDefault.append("attribute vec4 vertexColor;        \n");
-            vShaderDefault.append("varying vec2 fragTexCoord;         \n");
-            vShaderDefault.append("varying vec4 fragColor;            \n");
+            defaultVShaderCode.append("#version 120                       \n");
+            defaultVShaderCode.append("attribute vec3 vertexPosition;     \n");
+            defaultVShaderCode.append("attribute vec2 vertexTexCoord;     \n");
+            defaultVShaderCode.append("attribute vec4 vertexColor;        \n");
+            defaultVShaderCode.append("varying vec2 fragTexCoord;         \n");
+            defaultVShaderCode.append("varying vec4 fragColor;            \n");
         }
         else if (GRAPHICS_API_OPENGL_33){
-            vShaderDefault.append("#version 330                       \n");
-            vShaderDefault.append("in vec3 vertexPosition;            \n");
-            vShaderDefault.append("in vec2 vertexTexCoord;            \n");
-            vShaderDefault.append("in vec4 vertexColor;               \n");
-            vShaderDefault.append("out vec2 fragTexCoord;             \n");
-            vShaderDefault.append("out vec4 fragColor;                \n");
+            defaultVShaderCode.append("#version 330                       \n");
+            defaultVShaderCode.append("in vec3 vertexPosition;            \n");
+            defaultVShaderCode.append("in vec2 vertexTexCoord;            \n");
+            defaultVShaderCode.append("in vec4 vertexColor;               \n");
+            defaultVShaderCode.append("out vec2 fragTexCoord;             \n");
+            defaultVShaderCode.append("out vec4 fragColor;                \n");
         }
         if (GRAPHICS_API_OPENGL_ES2){
-            vShaderDefault.append("#version 100                       \n");
-            vShaderDefault.append("attribute vec3 vertexPosition;     \n");
-            vShaderDefault.append("attribute vec2 vertexTexCoord;     \n");
-            vShaderDefault.append("attribute vec4 vertexColor;        \n");
-            vShaderDefault.append("varying vec2 fragTexCoord;         \n");
-            vShaderDefault.append("varying vec4 fragColor;            \n");
+            defaultVShaderCode.append("#version 100                       \n");
+            defaultVShaderCode.append("attribute vec3 vertexPosition;     \n");
+            defaultVShaderCode.append("attribute vec2 vertexTexCoord;     \n");
+            defaultVShaderCode.append("attribute vec4 vertexColor;        \n");
+            defaultVShaderCode.append("varying vec2 fragTexCoord;         \n");
+            defaultVShaderCode.append("varying vec4 fragColor;            \n");
         }
-        vShaderDefault.append("uniform mat4 mvp;                  \n");
-        vShaderDefault.append("void main()                        \n");
-        vShaderDefault.append("{                                  \n");
-        vShaderDefault.append("    fragTexCoord = vertexTexCoord; \n");
-        vShaderDefault.append("    fragColor = vertexColor;       \n");
-        vShaderDefault.append("    gl_Position = mvp*vec4(vertexPosition, 1.0); \n");
-        vShaderDefault.append("}                                  \n");
+        defaultVShaderCode.append("uniform mat4 mvp;                  \n");
+        defaultVShaderCode.append("void main()                        \n");
+        defaultVShaderCode.append("{                                  \n");
+        defaultVShaderCode.append("    fragTexCoord = vertexTexCoord; \n");
+        defaultVShaderCode.append("    fragColor = vertexColor;       \n");
+        defaultVShaderCode.append("    gl_Position = mvp*vec4(vertexPosition, 1.0); \n");
+        defaultVShaderCode.append("}                                  \n");
 
         // Fragment shader directly defined, no external file required
-        StringBuilder fShaderDefault = new StringBuilder();
+        StringBuilder defaultFShaderCode = new StringBuilder();
         if (GRAPHICS_API_OPENGL_21){
-            fShaderDefault.append("#version 120                       \n");
-            fShaderDefault.append("varying vec2 fragTexCoord;         \n");
-            fShaderDefault.append("varying vec4 fragColor;            \n");
-            fShaderDefault.append("uniform sampler2D texture0;        \n");
-            fShaderDefault.append("uniform vec4 colDiffuse;           \n");
-            fShaderDefault.append("void main()                        \n");
-            fShaderDefault.append("{                                  \n");
-            fShaderDefault.append("    vec4 texelColor = texture2D(texture0, fragTexCoord); \n");
-            fShaderDefault.append("    gl_FragColor = texelColor*colDiffuse*fragColor;      \n");
-            fShaderDefault.append("}                                  \n");
+            defaultFShaderCode.append("#version 120                       \n");
+            defaultFShaderCode.append("varying vec2 fragTexCoord;         \n");
+            defaultFShaderCode.append("varying vec4 fragColor;            \n");
+            defaultFShaderCode.append("uniform sampler2D texture0;        \n");
+            defaultFShaderCode.append("uniform vec4 colDiffuse;           \n");
+            defaultFShaderCode.append("void main()                        \n");
+            defaultFShaderCode.append("{                                  \n");
+            defaultFShaderCode.append("    vec4 texelColor = texture2D(texture0, fragTexCoord); \n");
+            defaultFShaderCode.append("    gl_FragColor = texelColor*colDiffuse*fragColor;      \n");
+            defaultFShaderCode.append("}                                  \n");
         }
         else if (GRAPHICS_API_OPENGL_33){
-            fShaderDefault.append("#version 330       \n");
-            fShaderDefault.append("in vec2 fragTexCoord;              \n");
-            fShaderDefault.append("in vec4 fragColor;                 \n");
-            fShaderDefault.append("out vec4 finalColor;               \n");
-            fShaderDefault.append("uniform sampler2D texture0;        \n");
-            fShaderDefault.append("uniform vec4 colDiffuse;           \n");
-            fShaderDefault.append("void main()                        \n");
-            fShaderDefault.append("{                                  \n");
-            fShaderDefault.append("    vec4 texelColor = texture(texture0, fragTexCoord);   \n");
-            fShaderDefault.append("    finalColor = texelColor*colDiffuse*fragColor;        \n");
-            fShaderDefault.append("}                                  \n");
+            defaultFShaderCode.append("#version 330       \n");
+            defaultFShaderCode.append("in vec2 fragTexCoord;              \n");
+            defaultFShaderCode.append("in vec4 fragColor;                 \n");
+            defaultFShaderCode.append("out vec4 finalColor;               \n");
+            defaultFShaderCode.append("uniform sampler2D texture0;        \n");
+            defaultFShaderCode.append("uniform vec4 colDiffuse;           \n");
+            defaultFShaderCode.append("void main()                        \n");
+            defaultFShaderCode.append("{                                  \n");
+            defaultFShaderCode.append("    vec4 texelColor = texture(texture0, fragTexCoord);   \n");
+            defaultFShaderCode.append("    finalColor = texelColor*colDiffuse*fragColor;        \n");
+            defaultFShaderCode.append("}                                  \n");
         }
         if (GRAPHICS_API_OPENGL_ES2){
-            fShaderDefault.append("#version 100                       \n");
-            fShaderDefault.append("precision mediump float;           \n");     // Precision required for OpenGL ES2 (WebGL)
-            fShaderDefault.append("varying vec2 fragTexCoord;         \n");
-            fShaderDefault.append("varying vec4 fragColor;            \n");
-            fShaderDefault.append("uniform sampler2D texture0;        \n");
-            fShaderDefault.append("uniform vec4 colDiffuse;           \n");
-            fShaderDefault.append("void main()                        \n");
-            fShaderDefault.append("{                                  \n");
-            fShaderDefault.append("    vec4 texelColor = texture2D(texture0, fragTexCoord); \n");
-            fShaderDefault.append("    gl_FragColor = texelColor*colDiffuse*fragColor;      \n");
-            fShaderDefault.append("}                                  \n");
+            defaultFShaderCode.append("#version 100                       \n");
+            defaultFShaderCode.append("precision mediump float;           \n");     // Precision required for OpenGL ES2 (WebGL)
+            defaultFShaderCode.append("varying vec2 fragTexCoord;         \n");
+            defaultFShaderCode.append("varying vec4 fragColor;            \n");
+            defaultFShaderCode.append("uniform sampler2D texture0;        \n");
+            defaultFShaderCode.append("uniform vec4 colDiffuse;           \n");
+            defaultFShaderCode.append("void main()                        \n");
+            defaultFShaderCode.append("{                                  \n");
+            defaultFShaderCode.append("    vec4 texelColor = texture2D(texture0, fragTexCoord); \n");
+            defaultFShaderCode.append("    gl_FragColor = texelColor*colDiffuse*fragColor;      \n");
+            defaultFShaderCode.append("}                                  \n");
         }
 
         // NOTE: Compiled vertex/fragment shaders are kept for re-use
-        rlglData.getState().setDefaultVShaderId(rlCompileShader(String.valueOf(vShaderDefault), GL_VERTEX_SHADER));     // Compile default vertex shader
-        rlglData.getState().setDefaultFShaderId(rlCompileShader(String.valueOf(fShaderDefault), GL_FRAGMENT_SHADER));   // Compile default fragment shader
+        rlglData.getState().setDefaultVShaderId(rlCompileShader(String.valueOf(defaultVShaderCode), GL_VERTEX_SHADER));     // Compile default vertex shader
+        rlglData.getState().setDefaultFShaderId(rlCompileShader(String.valueOf(defaultFShaderCode), GL_FRAGMENT_SHADER));   // Compile default fragment shader
 
         rlglData.getState().defaultShaderId = rlLoadShaderProgram(rlglData.getState().defaultVShaderId, rlglData.getState().defaultFShaderId);
 
@@ -3719,7 +3752,8 @@ public class RLGL{
         }
     }
 
-    //Unload default shader
+    // Unload default shader
+    // NOTE: Unloads: rlglData.state.defaultShaderId, rlglData.state.defaultShaderLocs
     public static void rlUnloadShaderDefault(){
         glUseProgram(0);
 
@@ -3928,7 +3962,7 @@ public class RLGL{
 
     // Mipmaps data is generated after image data
     // NOTE: Only works with RGBA (4 bytes) data!
-    static int GenerateMipmaps(byte[] data, int baseWidth, int baseHeight){
+    static int rlGenTextureMipmapsData(byte[] data, int baseWidth, int baseHeight){
         int mipmapCount = 1;                // Required mipmap levels count (including base level)
         if(GRAPHICS_API_OPENGL_11){
         int width = baseWidth;
@@ -3961,22 +3995,20 @@ public class RLGL{
 
         width = baseWidth;
         height = baseHeight;
-        size = (width * height * 4);
+        size = (width * height * 4);    // RGBA: 4 bytes
 
         // Generate mipmaps
         // NOTE: Every mipmap data is stored after data
-        Color[] image = new Color[width * height];
-        Color[] mipmap;
+        byte[] image = new byte[width * height];
+        byte[] mipmap;
         int offset = 0;
-        int j = 0;
 
         for (int i = 0; i < size; i += 4){
-            image[j].setR(data[i]);
-            image[j].setG(data[i + 1]);
-            image[j].setB(data[i + 2]);
-            image[j].setA(data[i + 3]);
+            image[i]     = data[i];
+            image[i + 1] = data[i + 1];
+            image[i + 2] = data[i + 2];
+            image[i + 3] = data[i + 3];
 
-            j++;
         }
 
         Tracelog.Tracelog("TEXTURE: Mipmap base size (" + width + "x" + height + ")");
@@ -3985,7 +4017,6 @@ public class RLGL{
             mipmap = rlGenNextMipmapData(image, width, height);
 
             offset += (width * height * 4); // Size of last mipmap
-            j = 0;
 
             width /= 2;
             height /= 2;
@@ -3993,11 +4024,10 @@ public class RLGL{
 
             // Add mipmap to data
             for (int i = 0; i < size; i += 4){
-                data[offset + i] = (byte) mipmap[j].getR();
-                data[offset + i + 1] = (byte) mipmap[j].getG();
-                data[offset + i + 2] = (byte) mipmap[j].getB();
-                data[offset + i + 3] = (byte) mipmap[j].getA();
-                j++;
+                data[offset + i]     = mipmap[i];
+                data[offset + i + 1] = mipmap[i + 1];
+                data[offset + i + 2] = mipmap[i + 1];
+                data[offset + i + 3] = mipmap[i + 1];
             }
 
             image = null;
@@ -4011,37 +4041,37 @@ public class RLGL{
     }
 
     // Manual mipmap generation (basic scaling algorithm)
-    static Color[] rlGenNextMipmapData(Color[] srcData, int srcWidth, int srcHeight){
+    static byte[] rlGenNextMipmapData(byte[] srcData, int srcWidth, int srcHeight) {
         int x2, y2;
-        Color prow = new Color();
-        Color pcol = new Color();
+        byte[] prow = new byte[4];
+        byte[] pcol = new byte[4];
 
-        int width = srcWidth / 2;
-        int height = srcHeight / 2;
+        int width = srcWidth/2;
+        int height = srcHeight/2;
 
-        Color[] mipmap = new Color[width * height];
+         byte[] mipmap = new byte[width*height*4];
 
         // Scaling algorithm works perfectly (box-filter)
-        for (int y = 0; y < height; y++){
-            y2 = 2 * y;
+        for (int y = 0; y < height; y++) {
+            y2 = 2*y;
 
-            for (int x = 0; x < width; x++){
-                x2 = 2 * x;
+            for (int x = 0; x < width; x++) {
+                x2 = 2*x;
 
-                prow.setR((byte) ((srcData[y2 * srcWidth + x2].getR() + srcData[y2 * srcWidth + x2 + 1].getR()) / 2));
-                prow.setG((byte) ((srcData[y2 * srcWidth + x2].getG() + srcData[y2 * srcWidth + x2 + 1].getG()) / 2));
-                prow.setB((byte) ((srcData[y2 * srcWidth + x2].getB() + srcData[y2 * srcWidth + x2 + 1].getB()) / 2));
-                prow.setA((byte) ((srcData[y2 * srcWidth + x2].getA() + srcData[y2 * srcWidth + x2 + 1].getA()) / 2));
+                prow[0] = (byte) ((srcData[(y2*srcWidth + x2)*4 + 0] + srcData[(y2*srcWidth + x2 + 1)*4 + 0])/2);
+                prow[1] = (byte) ((srcData[(y2*srcWidth + x2)*4 + 1] + srcData[(y2*srcWidth + x2 + 1)*4 + 1])/2);
+                prow[2] = (byte) ((srcData[(y2*srcWidth + x2)*4 + 2] + srcData[(y2*srcWidth + x2 + 1)*4 + 2])/2);
+                prow[3] = (byte) ((srcData[(y2*srcWidth + x2)*4 + 3] + srcData[(y2*srcWidth + x2 + 1)*4 + 3])/2);
 
-                pcol.setR((byte) ((srcData[(y2 + 1) * srcWidth + x2].getR() + srcData[(y2 + 1) * srcWidth + x2 + 1].getR()) / 2));
-                pcol.setG((byte) ((srcData[(y2 + 1) * srcWidth + x2].getG() + srcData[(y2 + 1) * srcWidth + x2 + 1].getG()) / 2));
-                pcol.setB((byte) ((srcData[(y2 + 1) * srcWidth + x2].getB() + srcData[(y2 + 1) * srcWidth + x2 + 1].getB()) / 2));
-                pcol.setA((byte) ((srcData[(y2 + 1) * srcWidth + x2].getA() + srcData[(y2 + 1) * srcWidth + x2 + 1].getA()) / 2));
+                pcol[0] = (byte) ((srcData[((y2 + 1)*srcWidth + x2)*4 + 0] + srcData[((y2 + 1)*srcWidth + x2 + 1)*4 + 0])/2);
+                pcol[1] = (byte) ((srcData[((y2 + 1)*srcWidth + x2)*4 + 1] + srcData[((y2 + 1)*srcWidth + x2 + 1)*4 + 1])/2);
+                pcol[2] = (byte) ((srcData[((y2 + 1)*srcWidth + x2)*4 + 2] + srcData[((y2 + 1)*srcWidth + x2 + 1)*4 + 2])/2);
+                pcol[3] = (byte) ((srcData[((y2 + 1)*srcWidth + x2)*4 + 3] + srcData[((y2 + 1)*srcWidth + x2 + 1)*4 + 3])/2);
 
-                mipmap[y * width + x].setR((byte) ((prow.getR() + pcol.getR()) / 2));
-                mipmap[y * width + x].setG((byte) ((prow.getG() + pcol.getG()) / 2));
-                mipmap[y * width + x].setB((byte) ((prow.getB() + pcol.getB()) / 2));
-                mipmap[y * width + x].setA((byte) ((prow.getA() + pcol.getA()) / 2));
+                mipmap[(y*width + x)*4 + 0] = (byte) ((prow[0] + pcol[0])/2);
+                mipmap[(y*width + x)*4 + 1] = (byte) ((prow[1] + pcol[1])/2);
+                mipmap[(y*width + x)*4 + 2] = (byte) ((prow[2] + pcol[2])/2);
+                mipmap[(y*width + x)*4 + 3] = (byte) ((prow[3] + pcol[3])/2);
             }
         }
 
