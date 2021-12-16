@@ -950,42 +950,43 @@ public class RLGL{
             GRAPHICS_API_OPENGL_11 = true;
         }
 
-        // Initialize buffers, default shaders and default textures
-        //----------------------------------------------------------
-        // Init default white texture
-        DataBuffer pixels = new DataBufferByte(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255}, 4);
-        rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
+        //TODO: OPENGL_DEBUG_CONTEXT
 
-        if (rlglData.getState().getDefaultTextureId() != 0){
-            Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId()
-                    + "] Default texture loaded successfully");
-        }
-        else{
-            Tracelog(LOG_WARNING, "TEXTURE: Failed to load default texture");
-        }
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            // Init default white texture
+            DataBuffer pixels = new DataBufferByte(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255}, 4);
+            rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
 
-        // Init default Shader (customized for GL 3.3 and ES2)
-        // Loaded: RLGL.State.defaultShaderId + RLGL.State.defaultShaderLocs
-        rlLoadShaderDefault();
-        rlglData.getState().currentShaderId = rlglData.getState().defaultShaderId;
-        rlglData.getState().currentShaderLocs = rlglData.getState().defaultShaderLocs;
+            if(rlglData.getState().getDefaultTextureId() != 0){
+                Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId()
+                        + "] Default texture loaded successfully");
+            }
+            else{
+                Tracelog(LOG_WARNING, "TEXTURE: Failed to load default texture");
+            }
 
-        // Init default vertex arrays buffers
-        rlglData.setDefaultBatch(rlLoadRenderBatch(DEFAULT_BATCH_BUFFERS, RL_DEFAULT_BATCH_BUFFER_ELEMENTS));
-        rlglData.setCurrentBatch(rlglData.getDefaultBatch());
+            // Init default Shader (customized for GL 3.3 and ES2)
+            // Loaded: RLGL.State.defaultShaderId + RLGL.State.defaultShaderLocs
+            rlLoadShaderDefault();
+            rlglData.getState().currentShaderId = rlglData.getState().defaultShaderId;
+            rlglData.getState().currentShaderLocs = rlglData.getState().defaultShaderLocs;
 
-        // Init stack matrices (emulating OpenGL 1.1)
-        for (int i = 0; i < MAX_MATRIX_STACK_SIZE; i++){
-            rlglData.getState().getStack()[i] = MatrixIdentity();
-        }
+            // Init default vertex arrays buffers
+            rlglData.setDefaultBatch(rlLoadRenderBatch(DEFAULT_BATCH_BUFFERS, RL_DEFAULT_BATCH_BUFFER_ELEMENTS));
+            rlglData.setCurrentBatch(rlglData.getDefaultBatch());
 
-        // Init internal matrices
-        rlglData.getState().setTransform(MatrixIdentity());
-        rlglData.getState().setProjection(MatrixIdentity());
-        rlglData.getState().setModelview(MatrixIdentity());
-        rlglData.getState().setCurrentMatrix(rlglData.getState().getModelview());
+            // Init stack matrices (emulating OpenGL 1.1)
+            for(int i = 0; i < MAX_MATRIX_STACK_SIZE; i++){
+                rlglData.getState().getStack()[i] = MatrixIdentity();
+            }
 
-        // GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2
+            // Init internal matrices
+            rlglData.getState().setTransform(MatrixIdentity());
+            rlglData.getState().setProjection(MatrixIdentity());
+            rlglData.getState().setModelview(MatrixIdentity());
+            rlglData.getState().setCurrentMatrix(rlglData.getState().getModelview());
+
+        } // GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2
 
         // Initialize OpenGL default states
         //----------------------------------------------------------
@@ -1019,7 +1020,7 @@ public class RLGL{
             rlglData.getState().setFramebufferWidth(width);
             rlglData.getState().setFramebufferHeight(height);
 
-            Tracelog(LOG_INFO, "RLGL: Default state initialized successfully");
+            Tracelog(LOG_INFO, "RLGL: Default OpenGL state initialized successfully");
         }
 
         // Init state: Color/Depth buffers clear
@@ -1037,8 +1038,7 @@ public class RLGL{
             rlUnloadShaderDefault();          // Unload default shader
             glDeleteTextures(rlglData.getState().getDefaultTextureId()); // Unload default texture
 
-            Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Unloaded default texture " +
-                    "data from VRAM (GPU)");
+            Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Default texture unloaded successfully");
         }
     }
 
@@ -1373,145 +1373,144 @@ public class RLGL{
         //--------------------------------------------------------------------------------------------
         batch.rlVertexBuffer = new rlVertexBuffer[numBuffers];
 
-        for (int i = 0; i < batch.rlVertexBuffer.length; i++){
-            batch.rlVertexBuffer[i] = new rlVertexBuffer();
-        }
-
-        for (int i = 0; i < numBuffers; i++){
-            batch.rlVertexBuffer[i].elementCount = bufferElements;
-
-            batch.rlVertexBuffer[i].setVertices(new float[bufferElements * 3 * Float.BYTES]);
-            // 3 float by vertex, 4 vertex by quad
-            batch.rlVertexBuffer[i].setTexcoords(new float[bufferElements * 2 * Float.BYTES]);
-            // 2 float by texcoord, 4 texcoord by quad
-            batch.rlVertexBuffer[i].setColors(new float[bufferElements * 4 * Float.BYTES]);
-            // 4 float by color, 4 colors by quad
-            if (GRAPHICS_API_OPENGL_33){
-                batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6 * Integer.BYTES]);
-            }// 6 int by quad (indices)
-            else if (GRAPHICS_API_OPENGL_ES2){
-                batch.rlVertexBuffer[i].setIndices_ES20(new short[bufferElements * 6 * Short.SIZE]);
-                // 6 int by quad (indices)
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            for(int i = 0; i < batch.rlVertexBuffer.length; i++){
+                batch.rlVertexBuffer[i] = new rlVertexBuffer();
             }
 
-            for (int j = 0; j < (3 * 4 * bufferElements); j++){
-                batch.rlVertexBuffer[i].vertices[j] = 0.0f;
-            }
-            for (int j = 0; j < (2 * 4 * bufferElements); j++){
-                batch.rlVertexBuffer[i].texcoords[j] = 0.0f;
-            }
-            for (int j = 0; j < (4 * 4 * bufferElements); j++){
-                batch.rlVertexBuffer[i].colors[j] = 0;
+            for(int i = 0; i < numBuffers; i++){
+                batch.rlVertexBuffer[i].elementCount = bufferElements;
+
+                batch.rlVertexBuffer[i].setVertices(new float[bufferElements * 3 * Float.BYTES]);
+                // 3 float by vertex, 4 vertex by quad
+                batch.rlVertexBuffer[i].setTexcoords(new float[bufferElements * 2 * Float.BYTES]);
+                // 2 float by texcoord, 4 texcoord by quad
+                batch.rlVertexBuffer[i].setColors(new float[bufferElements * 4 * Float.BYTES]);
+                // 4 float by color, 4 colors by quad
+                if(GRAPHICS_API_OPENGL_33){
+                    batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6 * Integer.BYTES]);
+                }// 6 int by quad (indices)
+                else if(GRAPHICS_API_OPENGL_ES2){
+                    batch.rlVertexBuffer[i].setIndices_ES20(new short[bufferElements * 6 * Short.SIZE]);
+                    // 6 int by quad (indices)
+                }
+
+                for(int j = 0; j < (3 * 4 * bufferElements); j++){
+                    batch.rlVertexBuffer[i].vertices[j] = 0.0f;
+                }
+                for(int j = 0; j < (2 * 4 * bufferElements); j++){
+                    batch.rlVertexBuffer[i].texcoords[j] = 0.0f;
+                }
+                for(int j = 0; j < (4 * 4 * bufferElements); j++){
+                    batch.rlVertexBuffer[i].colors[j] = 0;
+                }
+
+                int k = 0;
+
+                if(GRAPHICS_API_OPENGL_33){
+                    // Indices can be initialized right now
+                    for(int j = 0; j < (6 * bufferElements); j += 6){
+                        batch.rlVertexBuffer[i].getIndices_GL11()[j] = 4 * k;
+                        batch.rlVertexBuffer[i].getIndices_GL11()[j + 1] = 4 * k + 1;
+                        batch.rlVertexBuffer[i].getIndices_GL11()[j + 2] = 4 * k + 2;
+                        batch.rlVertexBuffer[i].getIndices_GL11()[j + 3] = 4 * k;
+                        batch.rlVertexBuffer[i].getIndices_GL11()[j + 4] = 4 * k + 2;
+                        batch.rlVertexBuffer[i].getIndices_GL11()[j + 5] = 4 * k + 3;
+
+                        k++;
+                    }
+                }
+
+                if(GRAPHICS_API_OPENGL_ES2){
+                    // Indices can be initialized right now
+                    for(int j = 0; j < (6 * bufferElements); j += 6){
+                        batch.rlVertexBuffer[i].getIndices_ES20()[j] = (short) (4 * k);
+                        batch.rlVertexBuffer[i].getIndices_ES20()[j + 1] = (short) (4 * k + 1);
+                        batch.rlVertexBuffer[i].getIndices_ES20()[j + 2] = (short) (4 * k + 2);
+                        batch.rlVertexBuffer[i].getIndices_ES20()[j + 3] = (short) (4 * k);
+                        batch.rlVertexBuffer[i].getIndices_ES20()[j + 4] = (short) (4 * k + 2);
+                        batch.rlVertexBuffer[i].getIndices_ES20()[j + 5] = (short) (4 * k + 3);
+
+                        k++;
+                    }
+                }
+
+                rlglData.getState().vertexCounter = 0;
             }
 
-            int k = 0;
+            Tracelog(LOG_INFO, "RLGL: Internal vertex buffers initialized successfully in RAM (CPU)");
+            //--------------------------------------------------------------------------------------------
+            // Upload to GPU (VRAM) vertex data and initialize VAOs/VBOs
+            //--------------------------------------------------------------------------------------------
+            for(int i = 0; i < numBuffers; i++){
+                if(rlglData.getExtSupported().isVao()){
+                    // Initialize Quads VAO
+                    batch.rlVertexBuffer[i].setVaoId(glGenVertexArrays());
+                    glBindVertexArray(batch.rlVertexBuffer[i].getVaoId());
+                }
 
-            if (GRAPHICS_API_OPENGL_33){
-                // Indices can be initialized right now
-                for (int j = 0; j < (6 * bufferElements); j += 6){
-                    batch.rlVertexBuffer[i].getIndices_GL11()[j] = 4 * k;
-                    batch.rlVertexBuffer[i].getIndices_GL11()[j + 1] = 4 * k + 1;
-                    batch.rlVertexBuffer[i].getIndices_GL11()[j + 2] = 4 * k + 2;
-                    batch.rlVertexBuffer[i].getIndices_GL11()[j + 3] = 4 * k;
-                    batch.rlVertexBuffer[i].getIndices_GL11()[j + 4] = 4 * k + 2;
-                    batch.rlVertexBuffer[i].getIndices_GL11()[j + 5] = 4 * k + 3;
+                // Quads - Vertex buffers binding and attributes enable
+                // Vertex position buffer (shader-location = 0)
+                batch.rlVertexBuffer[i].vboId[0] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[0]);
+                glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vertices, GL_DYNAMIC_DRAW);
+                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION]);
+                glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION],
+                        3, GL_FLOAT, false, 0, 0);
 
-                    k++;
+                // Vertex texcoord buffer (shader-location = 1)
+                batch.rlVertexBuffer[i].vboId[1] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[1]);
+                glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].texcoords, GL_DYNAMIC_DRAW);
+                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+                glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01],
+                        2, GL_FLOAT, false, 0, 0);
+
+                // Vertex color buffer (shader-location = 3)
+                batch.rlVertexBuffer[i].vboId[2] = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[2]);
+                glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].colors, GL_DYNAMIC_DRAW);
+                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR]);
+                glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR],
+                        4, GL_FLOAT, false, 0, 0);
+
+                // Fill index buffer
+                batch.rlVertexBuffer[i].vboId[3] = glGenBuffers();
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[3]);
+                if(GRAPHICS_API_OPENGL_33){
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[i].getIndices_GL11(), GL_STATIC_DRAW);
+                }
+                else if(GRAPHICS_API_OPENGL_ES2){
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[i].getIndices_ES20(), GL_STATIC_DRAW);
                 }
             }
 
-            if (GRAPHICS_API_OPENGL_ES2){
-                // Indices can be initialized right now
-                for (int j = 0; j < (6 * bufferElements); j += 6){
-                    batch.rlVertexBuffer[i].getIndices_ES20()[j] = (short) (4 * k);
-                    batch.rlVertexBuffer[i].getIndices_ES20()[j + 1] = (short) (4 * k + 1);
-                    batch.rlVertexBuffer[i].getIndices_ES20()[j + 2] = (short) (4 * k + 2);
-                    batch.rlVertexBuffer[i].getIndices_ES20()[j + 3] = (short) (4 * k);
-                    batch.rlVertexBuffer[i].getIndices_ES20()[j + 4] = (short) (4 * k + 2);
-                    batch.rlVertexBuffer[i].getIndices_ES20()[j + 5] = (short) (4 * k + 3);
+            Tracelog(LOG_INFO, "RLGL: Render batch vertex buffers loaded successfully in VRAM (GPU)");
 
-                    k++;
-                }
+            // Unbind the current VAO
+            if(rlglData.getExtSupported().isVao()){
+                glBindVertexArray(0);
             }
 
-            rlglData.getState().vertexCounter = 0;
-        }
-
-        Tracelog(LOG_INFO, "RLGL: Internal vertex buffers initialized successfully in RAM (CPU)");
-        //--------------------------------------------------------------------------------------------
-        // Upload to GPU (VRAM) vertex data and initialize VAOs/VBOs
-        //--------------------------------------------------------------------------------------------
-        for (int i = 0; i < numBuffers; i++){
-            if (rlglData.getExtSupported().isVao()){
-                // Initialize Quads VAO
-                batch.rlVertexBuffer[i].setVaoId(glGenVertexArrays());
-                glBindVertexArray(batch.rlVertexBuffer[i].getVaoId());
+            //--------------------------------------------------------------------------------------------
+            // Init draw calls tracking system
+            //--------------------------------------------------------------------------------------------
+            batch.draws = new rlDrawCall[DEFAULT_BATCH_DRAWCALLS];
+            for(int i = 0; i < batch.draws.length; i++){
+                batch.draws[i] = new rlDrawCall();
+            }
+            for(int i = 0; i < DEFAULT_BATCH_DRAWCALLS; i++){
+                batch.draws[i].mode = RL_QUADS;
+                batch.draws[i].vertexCount = 0;
+                batch.draws[i].vertexAlignment = 0;
+                batch.draws[i].textureId = rlglData.getState().getDefaultTextureId();
             }
 
-            // Quads - Vertex buffers binding and attributes enable
-            // Vertex position buffer (shader-location = 0)
-            batch.rlVertexBuffer[i].vboId[0] = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[0]);
-            glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vertices, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION]);
-            glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION],
-                                  3, GL_FLOAT, false, 0, 0);
-
-            // Vertex texcoord buffer (shader-location = 1)
-            batch.rlVertexBuffer[i].vboId[1] = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[1]);
-            glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].texcoords, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
-            glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01],
-                                  2, GL_FLOAT, false, 0, 0);
-
-            // Vertex color buffer (shader-location = 3)
-            batch.rlVertexBuffer[i].vboId[2] = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[2]);
-            glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].colors, GL_DYNAMIC_DRAW);
-            glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR]);
-            glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR],
-                                  4, GL_FLOAT, false, 0, 0);
-
-            // Fill index buffer
-            batch.rlVertexBuffer[i].vboId[3] = glGenBuffers();
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[3]);
-            if (GRAPHICS_API_OPENGL_33){
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[i].getIndices_GL11(), GL_STATIC_DRAW);
-            }
-            else if (GRAPHICS_API_OPENGL_ES2){
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[i].getIndices_ES20(), GL_STATIC_DRAW);
-            }
+            batch.bufferCount = numBuffers;    // Record buffer count
+            batch.drawCounter = 1;             // Reset draws counter
+            batch.currentDepth = -1.0f;         // Reset depth value
+            //--------------------------------------------------------------------------------------------
         }
-
-        Tracelog(LOG_INFO, "RLGL: Render batch vertex buffers loaded successfully");
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        // Unbind the current VAO
-        if (rlglData.getExtSupported().isVao()){
-            glBindVertexArray(0);
-        }
-
-
-        //--------------------------------------------------------------------------------------------
-        // Init draw calls tracking system
-        //--------------------------------------------------------------------------------------------
-        batch.draws = new rlDrawCall[DEFAULT_BATCH_DRAWCALLS];
-        for (int i = 0; i < batch.draws.length; i++){
-            batch.draws[i] = new rlDrawCall();
-        }
-        for (int i = 0; i < DEFAULT_BATCH_DRAWCALLS; i++){
-            batch.draws[i].mode = RL_QUADS;
-            batch.draws[i].vertexCount = 0;
-            batch.draws[i].vertexAlignment = 0;
-            batch.draws[i].textureId = rlglData.getState().getDefaultTextureId();
-        }
-
-        batch.bufferCount = numBuffers;    // Record buffer count
-        batch.drawCounter = 1;             // Reset draws counter
-        batch.currentDepth = -1.0f;         // Reset depth value
-        //--------------------------------------------------------------------------------------------
 
         return batch;
     }
