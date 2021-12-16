@@ -479,7 +479,7 @@ public class RLGL{
     // Define one vertex (color)
     public static void rlColor4ub(int x, int y, int z, int w){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlColor4ub(x, y, z, w);
+            GL_33.rlColor4ub((byte)x, (byte)y, (byte)z, (byte)w);
         }
         else{
             GL_11.rlColor4ub(x, y, z, w);
@@ -1381,11 +1381,11 @@ public class RLGL{
             for(int i = 0; i < numBuffers; i++){
                 batch.rlVertexBuffer[i].elementCount = bufferElements;
 
-                batch.rlVertexBuffer[i].setVertices(new float[bufferElements * 3 * Float.BYTES]);
+                batch.rlVertexBuffer[i].setVertices(new float[bufferElements * 3 * 4 * Float.BYTES]);
                 // 3 float by vertex, 4 vertex by quad
-                batch.rlVertexBuffer[i].setTexcoords(new float[bufferElements * 2 * Float.BYTES]);
+                batch.rlVertexBuffer[i].setTexcoords(new float[bufferElements * 4 * 2 * Float.BYTES]);
                 // 2 float by texcoord, 4 texcoord by quad
-                batch.rlVertexBuffer[i].setColors(new float[bufferElements * 4 * Float.BYTES]);
+                batch.rlVertexBuffer[i].setColors(new byte[bufferElements * 4 * 4 * Byte.BYTES]);
                 // 4 float by color, 4 colors by quad
                 if(GRAPHICS_API_OPENGL_33){
                     batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6 * Integer.BYTES]);
@@ -1442,6 +1442,7 @@ public class RLGL{
             //--------------------------------------------------------------------------------------------
             // Upload to GPU (VRAM) vertex data and initialize VAOs/VBOs
             //--------------------------------------------------------------------------------------------
+
             for(int i = 0; i < numBuffers; i++){
                 if(rlglData.getExtSupported().isVao()){
                     // Initialize Quads VAO
@@ -1467,12 +1468,15 @@ public class RLGL{
                         2, GL_FLOAT, false, 0, 0);
 
                 // Vertex color buffer (shader-location = 3)
+                ByteBuffer colours = ByteBuffer.allocateDirect(batch.rlVertexBuffer[i].colors.length);
+                colours.put(batch.rlVertexBuffer[i].colors).flip();
+
                 batch.rlVertexBuffer[i].vboId[2] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[2]);
-                glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].colors, GL_DYNAMIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, colours, GL_DYNAMIC_DRAW);
                 glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR]);
                 glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR],
-                        4, GL_FLOAT, false, 0, 0);
+                        4, GL_UNSIGNED_BYTE, true, 0, 0);
 
                 // Fill index buffer
                 batch.rlVertexBuffer[i].vboId[3] = glGenBuffers();
@@ -1574,9 +1578,12 @@ public class RLGL{
             // batch->rlVertexBuffer[batch->currentBuffer].texcoords, GL_DYNAMIC_DRAW);
             // Update all buffer
 
+            ByteBuffer colours = ByteBuffer.allocateDirect(batch.rlVertexBuffer[batch.getCurrentBuffer()].colors.length);
+            colours.put(batch.rlVertexBuffer[batch.getCurrentBuffer()].colors).flip();
+
             // Colors buffer
             glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.getCurrentBuffer()].vboId[2]);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, batch.rlVertexBuffer[batch.getCurrentBuffer()].colors);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, colours);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(float)*4*4*batch->rlVertexBuffer[batch->currentBuffer].elementsCount,
             // batch->rlVertexBuffer[batch->currentBuffer].colors, GL_DYNAMIC_DRAW);
             // Update all buffer

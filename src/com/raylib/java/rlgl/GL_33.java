@@ -245,10 +245,10 @@ public class GL_33{
             // By default rlVertexBuffer type does not store normals
 
             // Add current color
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter] = (float) rlglData.getState().colorr/255;
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 1] = (float) rlglData.getState().colorg/255;
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 2] = (float) rlglData.getState().colorb/255;
-            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 3] = (float) rlglData.getState().colora/255;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter] = rlglData.getState().colorr;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 1] = rlglData.getState().colorg;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 2] = rlglData.getState().colorb;
+            rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter + 3] = rlglData.getState().colora;
 
             rlglData.getState().vertexCounter++;
 
@@ -285,7 +285,7 @@ public class GL_33{
     }
 
     // Define one vertex (color)
-    static void rlColor4ub(int x, int y, int z, int w){
+    static void rlColor4ub(byte x, byte y, byte z, byte w){
         rlglData.getState().colorr = x;
         rlglData.getState().colorg = y;
         rlglData.getState().colorb = z;
@@ -294,12 +294,12 @@ public class GL_33{
 
     // Define one vertex (color)
     static void rlColor4f(float r, float g, float b, float a){
-        rlColor4ub((int)(r * 255),  (int)(g * 255),  (int)(b * 255),  (int)(a * 255));
+        rlColor4ub((byte)(r * 255),  (byte)(g * 255),  (byte)(b * 255),  (byte)(a * 255));
     }
 
     // Define one vertex (color)
     public static void rlColor3f(float x, float y, float z){
-        rlColor4ub((int)(x * 255), (int)(y * 255), (int)(z * 255), 255);
+        rlColor4ub((byte)(x * 255), (byte)(y * 255), (byte)(z * 255), (byte)255);
     }
 
 }

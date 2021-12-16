@@ -9,15 +9,15 @@ public  class State{                    // Renderer state
     public int vertexCounter;                  // Current active render batch vertex counter (generic, used for all batches)
     public float texcoordx, texcoordy;         // Current active texture coordinate (added on glVertex*())
     public float normalx, normaly, normalz;    // Current active normal (added on glVertex*())
-    public int colorr, colorg, colorb, colora;   // Current active color (added on glVertex*())
+    public byte colorr, colorg, colorb, colora; // Current active color (added on glVertex*())
 
     public int currentMatrixMode;              // Current matrix mode
-    public Matrix currentMatrix;              // Current matrix pointer
+    public Matrix currentMatrix;               // Current matrix pointer
     public Matrix modelview;                   // Default modelview matrix
     public Matrix projection;                  // Default projection matrix
     public Matrix transform;                   // Transform matrix to be used with rlTranslate, rlRotate, rlScale
-    public boolean transformRequired;             // Require transform matrix application to current draw-call vertex (if required)
-    public Matrix[] stack;// Matrix stack for push/pop
+    public boolean transformRequired;          // Require transform matrix application to current draw-call vertex (if required)
+    public Matrix[] stack;                     // Matrix stack for push/pop
     public int stackCounter;                   // Matrix stack counter
 
     public int defaultTextureId;      // Default texture used on shapes/poly drawing (required by shader)
@@ -129,7 +129,7 @@ public  class State{                    // Renderer state
         return colorr;
     }
 
-    public void setColorr(int colorr){
+    public void setColorr(byte colorr){
         this.colorr = colorr;
     }
 
@@ -137,7 +137,7 @@ public  class State{                    // Renderer state
         return colorg;
     }
 
-    public void setColorg(int colorg){
+    public void setColorg(byte colorg){
         this.colorg = colorg;
     }
 
@@ -145,7 +145,7 @@ public  class State{                    // Renderer state
         return colorb;
     }
 
-    public void setColorb(int colorb){
+    public void setColorb(byte colorb){
         this.colorb = colorb;
     }
 
@@ -153,7 +153,7 @@ public  class State{                    // Renderer state
         return colora;
     }
 
-    public void setColora(int colora){
+    public void setColora(byte colora){
         this.colora = colora;
     }
 

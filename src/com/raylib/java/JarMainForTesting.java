@@ -24,6 +24,7 @@ public class JarMainForTesting{
     private static void render(){
         rlj.core.BeginDrawing();
         rlj.core.ClearBackground(Color.WHITE);
+        rlj.shapes.DrawRectangle(0,0,200,200,Color.BLACK);
         rlj.text.DrawText("Hello, World!", 400 - (rlj.text.MeasureText("Hello, World!", 20)/2), 300, 20, Color.DARKGRAY);
         rlj.core.EndDrawing();
     }

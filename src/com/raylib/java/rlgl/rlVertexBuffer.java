@@ -5,7 +5,7 @@ public class rlVertexBuffer{
     int elementCount;          // Number of elements in the buffer (QUADS)
     float[] vertices;            // Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
     float[] texcoords;           // Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
-    float[] colors;              // Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
+    byte[] colors;              // Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
     int[] indices_GL11;      // Vertex indices (in case vertex data comes indexed) (6 indices per quad)
     short[] indices_ES20;    // Vertex indices (in case vertex data comes indexed) (6 indices per quad)
     int vaoId;         // OpenGL Vertex Array Object id
@@ -14,7 +14,7 @@ public class rlVertexBuffer{
     public rlVertexBuffer(){
         vertices = new float[3];
         texcoords = new float[2];
-        colors = new float[64];
+        colors = new byte[64];
         indices_GL11 = new int[6];
         indices_ES20 = new short[6];
         vboId = new int[4];
@@ -44,11 +44,11 @@ public class rlVertexBuffer{
         this.texcoords = texcoords;
     }
 
-    public float[] getColors(){
+    public byte[] getColors(){
         return colors;
     }
 
-    public void setColors(float[] colors){
+    public void setColors(byte[] colors){
         this.colors = colors;
     }
 

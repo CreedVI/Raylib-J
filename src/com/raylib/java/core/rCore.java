@@ -36,7 +36,6 @@ import java.util.stream.IntStream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
-import static com.raylib.java.Config.RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD;
 import static com.raylib.java.core.AutomationEvent.AutomationEventType.*;
 import static com.raylib.java.core.Color.RAYWHITE;
 import static com.raylib.java.core.camera.rCamera.CameraProjection.CAMERA_ORTHOGRAPHIC;
@@ -854,44 +853,127 @@ public class rCore{
      * Setup canvas (framebuffer) to start drawing
      */
     public void BeginDrawing(){
-        time.setCurrent(GetTime());            // Number of elapsed seconds since InitTimer()
-        time.setUpdate(time.getCurrent() - time.getPrevious());
-        time.setPrevious(time.getCurrent());
+        // WARNING: Previously to BeginDrawing() other render textures drawing could happen,
+        // consequently the measure for update vs draw is not accurate (only the total frame time is accurate)
 
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
-        RLGL.rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling
+        time.current = GetTime();      // Number of elapsed seconds since InitTimer()
+        time.update = time.current - time.previous;
+        time.previous = time.current;
+
+        rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlMultMatrixf(MatrixToFloat(window.screenScale)); // Apply screen scaling
 
         //rlTranslatef(0.375, 0.375, 0);    // HACK to have 2D pixel-perfect drawing on OpenGL 1.1
         // NOTE: Not required with OpenGL 3.3+
+
     }
 
     /**
      * End canvas drawing and swap buffers (double buffering)
      */
     public void EndDrawing(){
+        rlgl.rlDrawRenderBatchActive();      // Update and draw internal render batch
 
-        rlgl.rlDrawRenderBatchActive();                     // Draw Buffers (Only OpenGL 3+ and ES2)
-        SwapScreenBuffers();                  // Copy back buffer to front buffer
-
-        // Frame time control system
-        time.setCurrent(GetTime());
-        time.setDraw(time.getCurrent() - time.getPrevious());
-        time.previous = time.current;
-
-        time.setFrame(time.getUpdate() + time.getDraw());
-
-        // Wait for some milliseconds...
-        if (time.frame < time.target){
-            WaitTime((float) ((time.target - time.frame) * 1000.0f));
-
-            time.current = GetTime();
-            double waitTime = time.current - time.previous;
-            time.previous = time.current;
-
-            time.frame += waitTime;      // Total frame time: update + draw + wait
+        if(SUPPORT_MOUSE_CURSOR_POINT) {
+            // Draw a small rectangle on mouse position for user reference
+            /*TODO
+            if (!input.mouse.cursorHidden) {
+                rShapes.DrawRectangle((int)input.mouse.currentPosition.x, (int)input.mouse.currentPosition.y, 3, 3, Color.MAROON);
+                rlgl.rlDrawRenderBatchActive();  // Update and draw internal render batch
+            }
+             */
         }
 
-        PollInputEvents();              // Poll user events
+        if(SUPPORT_GIF_RECORDING) {
+            // Draw record indicator
+            /*TODO
+            if (gifRecording) {
+            #define GIF_RECORD_FRAMERATE    10
+                gifFrameCounter++;
+
+                // NOTE: We record one gif frame every 10 game frames
+                if ((gifFrameCounter%GIF_RECORD_FRAMERATE) == 0)
+                {
+                    // Get image data for the current frame (from backbuffer)
+                    // NOTE: This process is quite slow... :(
+                    unsigned char *screenData = rlReadScreenPixels(CORE.Window.screen.width, CORE.Window.screen.height);
+                    msf_gif_frame(&gifState, screenData, 10, 16, CORE.Window.screen.width*4);
+
+                    RL_FREE(screenData);    // Free image data
+                }
+
+                if (((gifFrameCounter/15)%2) == 1)
+                {
+                    DrawCircle(30, CORE.Window.screen.height - 20, 10, MAROON);
+                    DrawText("GIF RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);
+                }
+
+                rlDrawRenderBatchActive();  // Update and draw internal render batch
+            }*/
+        }
+
+        if(SUPPORT_EVENTS_AUTOMATION) {
+            // Draw record/play indicator
+            /* TODO
+            if (eventsRecording) {
+                gifFrameCounter++;
+
+                if (((gifFrameCounter/15)%2) == 1) {
+                    DrawCircle(30, CORE.Window.screen.height - 20, 10, MAROON);
+                    DrawText("EVENTS RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);
+                }
+
+                rlDrawRenderBatchActive();  // Update and draw internal render batch
+            }
+            else if (eventsPlaying) {
+                gifFrameCounter++;
+
+                if (((gifFrameCounter/15)%2) == 1) {
+                    DrawCircle(30, CORE.Window.screen.height - 20, 10, LIME);
+                    DrawText("EVENTS PLAYING", 50, CORE.Window.screen.height - 25, 10, GREEN);
+                }
+
+                rlgl.rlDrawRenderBatchActive();  // Update and draw internal render batch
+            }*/
+        }
+
+        if(!SUPPORT_CUSTOM_FRAME_CONTROL) {
+            SwapScreenBuffer();                  // Copy back buffer to front buffer (screen)
+
+            // Frame time control system
+            time.current = GetTime();
+            time.draw = time.current - time.previous;
+            time.previous = time.current;
+
+            time.frame = time.update + time.draw;
+
+            // Wait for some milliseconds...
+            if (time.frame < time.target) {
+                WaitTime((float)(time.target - time.frame)*1000.0f);
+
+                time.current = GetTime();
+                double waitTime = time.current - time.previous;
+                time.previous = time.current;
+
+                time.frame += waitTime;    // Total frame time: update + draw + wait
+            }
+
+            PollInputEvents();      // Poll user events (before next frame update)
+        }
+
+        if(SUPPORT_EVENTS_AUTOMATION) {
+            // Events recording and playing logic
+            if (eventsRecording) {
+                RecordAutomationEvent(time.frameCounter);
+            }
+            else if (eventsPlaying) {
+                // TODO: When should we play? After/before/replace PollInputEvents()?
+                if (time.frameCounter >= eventCount) eventsPlaying = false;
+                PlayAutomationEvent(time.frameCounter);
+            }
+        }
+
+        time.frameCounter++;
     }
 
     // Initialize 2D mode with custom camera (2D)
@@ -2802,9 +2884,9 @@ public class rCore{
     }
 
     /**
-     * Copy back buffer to front buffers
+     * Swap back buffer with front buffer (screen drawing)
      */
-    void SwapScreenBuffers(){
+    void SwapScreenBuffer(){
         glfwSwapBuffers(window.handle);
     }
 

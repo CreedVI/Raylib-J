@@ -9,6 +9,8 @@ public class Time{
     double frame;                       // Time measure for one frame
     double target;                      // Desired time for one frame, if 0 not applied
 
+    int frameCounter;          // Frame counter
+
     public Time(){
 
     }

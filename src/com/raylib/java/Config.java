@@ -38,7 +38,7 @@ public class Config{
     /**
      * Draw a mouse pointer on screen
      */
-    static boolean SUPPORT_MOUSE_CURSOR_NATIVE = true;
+    public static boolean SUPPORT_MOUSE_CURSOR_POINT = true;
     /**
      * Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
      */
@@ -78,7 +78,7 @@ public class Config{
     // Support custom frame control, only for advance users
     // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timming + PollInputEvents()
     // Enabling this flag allows manual control of the frame processes, use at your own risk
-    //#define SUPPORT_CUSTOM_FRAME_CONTROL   1
+    public static boolean SUPPORT_CUSTOM_FRAME_CONTROL = false;
 
 
     // core: Configuration values
@@ -361,7 +361,7 @@ public class Config{
      * @param supportMouseCursorNative flag for support
      */
     public void setSupportMouseCursorNative(boolean supportMouseCursorNative){
-        SUPPORT_MOUSE_CURSOR_NATIVE = supportMouseCursorNative;
+        SUPPORT_MOUSE_CURSOR_POINT = supportMouseCursorNative;
     }
 
     /**
