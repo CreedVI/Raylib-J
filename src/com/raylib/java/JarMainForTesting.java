@@ -4,10 +4,10 @@ import com.raylib.java.core.Color;
 
 public class JarMainForTesting{
 
-    static Raylib rlj = new Raylib();
+    static Raylib rlj;
 
     public static void main(String[] args){
-        rlj.core.InitWindow(800, 600, null);
+        rlj = new Raylib(800, 600, null);
         rlj.core.SetTargetFPS(60);
 
         while(!rlj.core.WindowShouldClose()){

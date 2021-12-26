@@ -261,17 +261,17 @@ public class RLGL{
                 RL_SHADER_LOC_COLOR_DIFFUSE = 12, // Shader location: vector uniform: diffuse color
                 RL_SHADER_LOC_COLOR_SPECULAR = 13, // Shader location: vector uniform: specular color
                 RL_SHADER_LOC_COLOR_AMBIENT = 14, // Shader location: vector uniform: ambient color
-                RL_SHADER_LOC_MAP_ALBEDO = 12, // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
-                RL_SHADER_LOC_MAP_METALNESS = 13, // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
-                RL_SHADER_LOC_MAP_NORMAL = 15, // Shader location: sampler2d texture: normal
-                RL_SHADER_LOC_MAP_ROUGHNESS = 16, // Shader location: sampler2d texture: roughness
-                RL_SHADER_LOC_MAP_OCCLUSION = 17, // Shader location: sampler2d texture: occlusion
-                RL_SHADER_LOC_MAP_EMISSION = 18, // Shader location: sampler2d texture: emission
-                RL_SHADER_LOC_MAP_HEIGHT = 19, // Shader location: sampler2d texture: height
-                RL_SHADER_LOC_MAP_CUBEMAP = 20, // Shader location: samplerCube texture: cubemap
-                RL_SHADER_LOC_MAP_IRRADIANCE = 21, // Shader location: samplerCube texture: irradiance
-                RL_SHADER_LOC_MAP_PREFILTER = 22, // Shader location: samplerCube texture: prefilter
-                RL_SHADER_LOC_MAP_BRDF = 23; // Shader location: sampler2d texture: brdf
+                RL_SHADER_LOC_MAP_ALBEDO = 15, // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+                RL_SHADER_LOC_MAP_METALNESS = 16, // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+                RL_SHADER_LOC_MAP_NORMAL = 17, // Shader location: sampler2d texture: normal
+                RL_SHADER_LOC_MAP_ROUGHNESS = 18, // Shader location: sampler2d texture: roughness
+                RL_SHADER_LOC_MAP_OCCLUSION = 19, // Shader location: sampler2d texture: occlusion
+                RL_SHADER_LOC_MAP_EMISSION = 20, // Shader location: sampler2d texture: emission
+                RL_SHADER_LOC_MAP_HEIGHT = 21, // Shader location: sampler2d texture: height
+                RL_SHADER_LOC_MAP_CUBEMAP = 22, // Shader location: samplerCube texture: cubemap
+                RL_SHADER_LOC_MAP_IRRADIANCE = 23, // Shader location: samplerCube texture: irradiance
+                RL_SHADER_LOC_MAP_PREFILTER = 24, // Shader location: samplerCube texture: prefilter
+                RL_SHADER_LOC_MAP_BRDF = 25; // Shader location: sampler2d texture: brdf
 
         public final static int
                 RL_SHADER_LOC_MAP_DIFFUSE = RL_SHADER_LOC_MAP_ALBEDO,
@@ -1470,7 +1470,6 @@ public class RLGL{
                 // Vertex color buffer (shader-location = 3)
                 ByteBuffer colours = ByteBuffer.allocateDirect(batch.rlVertexBuffer[i].colors.length);
                 colours.put(batch.rlVertexBuffer[i].colors).flip();
-
                 batch.rlVertexBuffer[i].vboId[2] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[2]);
                 glBufferData(GL_ARRAY_BUFFER, colours, GL_DYNAMIC_DRAW);
@@ -1655,7 +1654,7 @@ public class RLGL{
                     // Bind vertex attrib: color (shader-location = 3)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[2]);
                     glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR],
-                            4, GL_FLOAT, false, 0, 0);
+                            4, GL_UNSIGNED_BYTE, true, 0, 0);
                     glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR]);
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[3]);
@@ -1663,7 +1662,7 @@ public class RLGL{
 
                 // Setup some default shader values
                 glUniform4f(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_COLOR_DIFFUSE], 1.0f, 1.0f, 1.0f, 1.0f);
-                glUniform1i(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_MAP_ALBEDO], 0); // Active default sampler2D: texture0
+                glUniform1i(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_MAP_DIFFUSE], 0); // Active default sampler2D: texture0
 
                 // Activate additional sampler textures
                 // Those additional textures will be common for all draw calls of the batch
@@ -1677,7 +1676,6 @@ public class RLGL{
                 // Activate default sampler2D texture0 (one texture is always active for default batch shader)
                 // NOTE: Batch system accumulates calls by texture0 changes, additional textures are enabled for all the draw calls
                 glActiveTexture(GL_TEXTURE0);
-
 
                 for (int i = 0, vertexOffset = 0; i < batch.drawCounter; i++){
                     // Bind current draw call texture, activated as GL_TEXTURE0 and binded to sampler2D texture0 by default
@@ -2971,8 +2969,9 @@ public class RLGL{
                 }
             }
 
-            // Get available shader uniforms
+            /* Get available shader uniforms
             // NOTE: This information is useful for debug...
+            // NOTE: glGetProgramiv() causes the JRE to crash...
             IntBuffer uniformCount = IntBuffer.allocate(64);
 
             glGetProgramiv(id, GL_ACTIVE_UNIFORMS, uniformCount);
@@ -2987,6 +2986,7 @@ public class RLGL{
 
                 Tracelog(LOG_DEBUG, "SHADER: [ID " + id + "] Active uniform (" + name + ") set at location: " + glGetUniformLocation(id, name));
             }
+             */
         }
 
         return id;
@@ -3751,7 +3751,7 @@ public class RLGL{
             // Set default shader locations: uniform locations
             rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_MATRIX_MVP]  = glGetUniformLocation(rlglData.getState().defaultShaderId, "mvp");
             rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_COLOR_DIFFUSE] = glGetUniformLocation(rlglData.getState().defaultShaderId, "colDiffuse");
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_MAP_ALBEDO] = glGetUniformLocation(rlglData.getState().defaultShaderId, "texture0");
+            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_MAP_DIFFUSE] = glGetUniformLocation(rlglData.getState().defaultShaderId, "texture0");
         }
         else{
             Tracelog(LOG_WARNING, "SHADER: [ID " + rlglData.getState().getDefaultShaderId() + "] Failed to load default shader");
