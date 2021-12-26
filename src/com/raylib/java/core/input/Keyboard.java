@@ -126,66 +126,66 @@ public class Keyboard{
         KEY_KP_ENTER       = 335,
         KEY_KP_EQUAL       = 336;
 
-    public Keyboard(){
+    public Keyboard() {
         currentKeyState = new boolean[512];
         previousKeyState = new boolean[512];
         keyPressedQueue = new int[MAX_KEY_PRESSED_QUEUE];
         charPressedQueue = new int[MAX_KEY_PRESSED_QUEUE];
     }
 
-    public boolean[] getCurrentKeyState(){
+    public boolean[] getCurrentKeyState() {
         return currentKeyState;
     }
 
-    public void setCurrentKeyState(boolean[] currentKeyState){
+    public void setCurrentKeyState(boolean[] currentKeyState) {
         this.currentKeyState = currentKeyState;
     }
 
-    public boolean[] getPreviousKeyState(){
+    public boolean[] getPreviousKeyState() {
         return previousKeyState;
     }
 
-    public void setPreviousKeyState(boolean[] previousKeyState){
+    public void setPreviousKeyState(boolean[] previousKeyState) {
         this.previousKeyState = previousKeyState;
     }
 
-    public int[] getKeyPressedQueue(){
+    public int[] getKeyPressedQueue() {
         return keyPressedQueue;
     }
 
-    public void setKeyPressedQueue(int[] keyPressedQueue){
+    public void setKeyPressedQueue(int[] keyPressedQueue) {
         this.keyPressedQueue = keyPressedQueue;
     }
 
-    public int getKeyPressedQueueCount(){
+    public int getKeyPressedQueueCount() {
         return keyPressedQueueCount;
     }
 
-    public void setKeyPressedQueueCount(int keyPressedQueueCount){
+    public void setKeyPressedQueueCount(int keyPressedQueueCount) {
         this.keyPressedQueueCount = keyPressedQueueCount;
     }
 
-    public int[] getCharPressedQueue(){
+    public int[] getCharPressedQueue() {
         return charPressedQueue;
     }
 
-    public void setCharPressedQueue(int[] charPressedQueue){
+    public void setCharPressedQueue(int[] charPressedQueue) {
         this.charPressedQueue = charPressedQueue;
     }
 
-    public int getCharPressedQueueCount(){
+    public int getCharPressedQueueCount() {
         return charPressedQueueCount;
     }
 
-    public void setCharPressedQueueCount(int charPressedQueueCount){
+    public void setCharPressedQueueCount(int charPressedQueueCount) {
         this.charPressedQueueCount = charPressedQueueCount;
     }
 
-    public int getExitKey(){
+    public int getExitKey() {
         return exitKey;
     }
 
-    public void setExitKey(int exitKey){
+    public void setExitKey(int exitKey) {
         this.exitKey = exitKey;
     }
 

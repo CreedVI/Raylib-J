@@ -26,7 +26,7 @@ public class CameraData{
     // rCamera movement control keys
     int[] moveControl;             // Move controls (CAMERA_FIRST_PERSON)
 
-    public CameraData(){
+    public CameraData() {
         mode = rCamera.CameraMode.CAMERA_CUSTOM;
         targetDistance = 0;
         playerEyesPosition = 1.85f;

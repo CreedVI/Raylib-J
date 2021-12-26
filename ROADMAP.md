@@ -26,6 +26,7 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 [ ] 3D Camera
 
 ## 0.5 - The Aural Update 
+###We are here!
 <hr>
 
 [ ] rAudio Module
@@ -33,12 +34,11 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 [ ] Raymath method comments
 
 ## 0.4 - The Action Update
-###We are here!
 <hr>
 
 [X] Physac Module
 
-[O] 4,0 update
+[X] 4,0 update
 
 ## 0.3 - The Enhanced Visual Update
 <hr>

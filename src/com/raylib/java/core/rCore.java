@@ -1656,7 +1656,7 @@ public class rCore{
         return (int) (Math.random() * (max - min + 1) + min);
     }
 
-    public void SetRandomSeed(int seed){
+    void SetRandomSeed(int seed){
         //TODO
     }
 
@@ -1753,7 +1753,7 @@ public class rCore{
 
 
     // Encode data to Base64 string
-    byte[] EncodeDataBase64(byte[] data, int dataLength, int outputLength)
+    public byte[] EncodeDataBase64(byte[] data, int dataLength, int outputLength)
     {
         char base64encodeTable[] = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -1793,7 +1793,7 @@ public class rCore{
     }
 
     // Decode Base64 string data
-    byte[] DecodeDataBase64(byte[] data, int outputLength) {
+    public byte[] DecodeDataBase64(byte[] data, int outputLength) {
         byte[] base64decodeTable = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 62, 0, 0, 0, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -1803,8 +1803,7 @@ public class rCore{
 
         // Get output size of Base64 input data
         int outLength = 0;
-        for (int i = 0; data[4*i] != 0; i++)
-        {
+        for (int i = 0; data[4*i] != 0; i++) {
             if (data[4*i + 3] == '=')
             {
                 if (data[4*i + 2] == '=') outLength += 1;

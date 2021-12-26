@@ -18,7 +18,7 @@ public class NPatchInfo{
                 NPATCH_THREE_PATCH_HORIZONTAL = 2;   // Npatch defined by 3x1 tiles
     }
 
-    public NPatchInfo(){
+    public NPatchInfo() {
         source = new Rectangle(0,0,1,1);
         left = 0;
         right = 0;
@@ -26,7 +26,7 @@ public class NPatchInfo{
         bottom = 0;
     }
 
-    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, int type){
+    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, int type) {
         this.source = source;
         this.left = left;
         this.top = top;
@@ -35,51 +35,51 @@ public class NPatchInfo{
         this.type = type;
     }
 
-    public Rectangle getSource(){
+    public Rectangle getSource() {
         return source;
     }
 
-    public void setSource(Rectangle source){
+    public void setSource(Rectangle source) {
         this.source = source;
     }
 
-    public int getLeft(){
+    public int getLeft() {
         return left;
     }
 
-    public void setLeft(int left){
+    public void setLeft(int left) {
         this.left = left;
     }
 
-    public int getTop(){
+    public int getTop() {
         return top;
     }
 
-    public void setTop(int top){
+    public void setTop(int top) {
         this.top = top;
     }
 
-    public int getRight(){
+    public int getRight() {
         return right;
     }
 
-    public void setRight(int right){
+    public void setRight(int right) {
         this.right = right;
     }
 
-    public int getBottom(){
+    public int getBottom() {
         return bottom;
     }
 
-    public void setBottom(int bottom){
+    public void setBottom(int bottom) {
         this.bottom = bottom;
     }
 
-    public int getType(){
+    public int getType() {
         return type;
     }
 
-    public void setType(int type){
+    public void setType(int type) {
         this.type = type;
     }
 }

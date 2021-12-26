@@ -20,67 +20,67 @@ public class ExtSupported{
     public float maxAnisotropyLevel;           // Maximum anisotropy level supported (minimum is 2.0f)
     public int maxDepthBits;                   // Maximum bits for depth component
 
-    public boolean isVao(){
+    public boolean isVao() {
         return vao;
     }
 
-    public void setVao(boolean vao){
+    public void setVao(boolean vao) {
         this.vao = vao;
     }
 
-    public boolean isInstancing(){
+    public boolean isInstancing() {
         return instancing;
     }
 
-    public void setInstancing(boolean instancing){
+    public void setInstancing(boolean instancing) {
         this.instancing = instancing;
     }
 
-    public boolean isTexNPOT(){
+    public boolean isTexNPOT() {
         return texNPOT;
     }
 
-    public void setTexNPOT(boolean texNPOT){
+    public void setTexNPOT(boolean texNPOT) {
         this.texNPOT = texNPOT;
     }
 
-    public boolean isTexDepth(){
+    public boolean isTexDepth() {
         return texDepth;
     }
 
-    public void setTexDepth(boolean texDepth){
+    public void setTexDepth(boolean texDepth) {
         this.texDepth = texDepth;
     }
 
-    public boolean isTexFloat32(){
+    public boolean isTexFloat32() {
         return texFloat32;
     }
 
-    public void setTexFloat32(boolean texFloat32){
+    public void setTexFloat32(boolean texFloat32) {
         this.texFloat32 = texFloat32;
     }
 
-    public boolean isTexCompDXT(){
+    public boolean isTexCompDXT() {
         return texCompDXT;
     }
 
-    public void setTexCompDXT(boolean texCompDXT){
+    public void setTexCompDXT(boolean texCompDXT) {
         this.texCompDXT = texCompDXT;
     }
 
-    public boolean isTexCompETC1(){
+    public boolean isTexCompETC1() {
         return texCompETC1;
     }
 
-    public void setTexCompETC1(boolean texCompETC1){
+    public void setTexCompETC1(boolean texCompETC1) {
         this.texCompETC1 = texCompETC1;
     }
 
-    public boolean isTexCompETC2(){
+    public boolean isTexCompETC2() {
         return texCompETC2;
     }
 
-    public void setTexCompETC2(boolean texCompETC2){
+    public void setTexCompETC2(boolean texCompETC2) {
         this.texCompETC2 = texCompETC2;
     }
 

@@ -5,8 +5,8 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class GL_11{
 
-    static void rlMatrixMode(int mode){
-        switch (mode){
+    static void rlMatrixMode(int mode) {
+        switch (mode) {
             case RL_PROJECTION:
                 glMatrixMode(GL_PROJECTION);
                 break;
@@ -21,8 +21,8 @@ public class GL_11{
         }
     }
 
-    static void rlBegin(int mode){
-        switch (mode){
+    static void rlBegin(int mode) {
+        switch (mode) {
             case RL_LINES:
                 glBegin(GL_LINES);
                 break;
@@ -46,39 +46,39 @@ public class GL_11{
     static void rlColor3f(float x, float y, float z) { glColor3f(x, y, z); }
     static void rlColor4f(float x, float y, float z, float w) { glColor4f(x, y, z, w); }
 
-    static void rlFrustum(double left, double right, double bottom, double top, double znear, double zfar){
+    static void rlFrustum(double left, double right, double bottom, double top, double znear, double zfar) {
         glFrustum(left, right, bottom, top, znear, zfar);
     }
 
-    static void rlOrtho(double left, double right, double bottom, double top, double znear, double zfar){
+    static void rlOrtho(double left, double right, double bottom, double top, double znear, double zfar) {
         glOrtho(left, right, bottom, top, znear, zfar);
     }
 
-    static void rlPushMatrix(){
+    static void rlPushMatrix() {
         glPushMatrix();
     }
 
-    static void rlPopMatrix(){
+    static void rlPopMatrix() {
         glPopMatrix();
     }
 
-    static void rlLoadIdentity(){
+    static void rlLoadIdentity() {
         glLoadIdentity();
     }
 
-    static void rlTranslatef(float x, float y, float z){
+    static void rlTranslatef(float x, float y, float z) {
         glTranslatef(x, y, z);
     }
 
-    static void rlRotatef(float angle, float x, float y, float z){
+    static void rlRotatef(float angle, float x, float y, float z) {
         glRotatef(angle, x, y, z);
     }
 
-    static void rlScalef(float x, float y, float z){
+    static void rlScalef(float x, float y, float z) {
         glScalef(x, y, z);
     }
 
-    static void rlMultMatrixf(float[] matf){
+    static void rlMultMatrixf(float[] matf) {
         glMultMatrixf(matf);
     }
 }

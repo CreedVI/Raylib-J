@@ -6,13 +6,12 @@
 * [Physac-J](https://github.com/CreedVI/Physac-J) implemented
 * Fixed issues when creating font
   * Namely, when generating an SDF font characters now render with correct kerning
-* Raylib 4.0 update complete
+* Raylib 4.0 update
 
 <hr>
 
 # Release: Raylib-J v0.3
 ## The Enhanced Visual Update
-
 <hr>
 
 * Simplified the `src` directory
@@ -31,7 +30,6 @@
 * Added `rLights` to the `utils` package
 * `FileIO` fixes
   * Loading files from an external directory is now working
-
 
 <hr>
 

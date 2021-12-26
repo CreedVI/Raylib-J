@@ -9,12 +9,12 @@ public class Camera2D extends rCamera{
     public float rotation;         // rCamera rotation in degrees
     public float zoom;             // rCamera zoom (scaling), should be 1.0f by default
 
-    public Camera2D(){
+    public Camera2D() {
         target = new Vector2();
         offset = new Vector2();
     }
 
-    public Camera2D(Vector2 offset, Vector2 target, float rotation, float zoom){
+    public Camera2D(Vector2 offset, Vector2 target, float rotation, float zoom) {
         this.offset = offset;
         this.target = target;
         this.rotation = rotation;
@@ -22,38 +22,38 @@ public class Camera2D extends rCamera{
     }
 
     @Override
-    public void update(){
+    public void update() {
     }
 
-    public Vector2 getTarget(){
+    public Vector2 getTarget() {
         return target;
     }
 
-    public void setTarget(Vector2 target){
+    public void setTarget(Vector2 target) {
         this.target = target;
     }
 
-    public Vector2 getOffset(){
+    public Vector2 getOffset() {
         return offset;
     }
 
-    public void setOffset(Vector2 offset){
+    public void setOffset(Vector2 offset) {
         this.offset = offset;
     }
 
-    public float getRotation(){
+    public float getRotation() {
         return rotation;
     }
 
-    public void setRotation(float rotation){
+    public void setRotation(float rotation) {
         this.rotation = rotation;
     }
 
-    public float getZoom(){
+    public float getZoom() {
         return zoom;
     }
 
-    public void setZoom(float zoom){
+    public void setZoom(float zoom) {
         this.zoom = zoom;
     }
 }

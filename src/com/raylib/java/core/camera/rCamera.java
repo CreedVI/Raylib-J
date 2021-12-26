@@ -57,17 +57,17 @@ public abstract class rCamera{
 
         final int camMode;
 
-        CameraMode(int i){
+        CameraMode(int i) {
             camMode = i;
         }
 
-        public int getCamMode(){
+        public int getCamMode() {
             return camMode;
         }
 
-        static CameraMode getByInt(int i){
+        static CameraMode getByInt(int i) {
             for (CameraMode m: values()){
-                if (m.camMode == i){
+                if (m.camMode == i) {
                     return m;
                 }
             }
@@ -84,7 +84,7 @@ public abstract class rCamera{
 
     abstract public void update();
 
-    public static void SetCameraMode(Camera3D camera, CameraMode mode){
+    public static void SetCameraMode(Camera3D camera, CameraMode mode) {
         Vector3 v1 = camera.getPosition();
         Vector3 v2 = new Vector3(camera.getTarget().x, camera.getTarget().y, 0);
 
@@ -118,7 +118,7 @@ public abstract class rCamera{
     //       Mouse: IsMouseButtonDown(), GetMousePosition(), GetMouseWheelMove()
     //       Keys:  IsKeyDown()
     // TODO: Port to quaternion-based camera (?)
-    public static void UpdateCamera(Camera3D camera){
+    public static void UpdateCamera(Camera3D camera) {
         int swingCounter = 0;    // Used for 1st person swinging movement
         Vector2 previousMousePosition = new Vector2(0.0f, 0.0f);
 
@@ -143,7 +143,7 @@ public abstract class rCamera{
                 rCore.IsKeyDown(CAMERA.MoveDown) ? 1 : 0
         };
 
-        if (CAMERA.mode != CAMERA_CUSTOM){
+        if (CAMERA.mode != CAMERA_CUSTOM) {
             mousePositionDelta.x = mousePosition.x - previousMousePosition.x;
             mousePositionDelta.y = mousePosition.y - previousMousePosition.y;
         }
@@ -151,13 +151,13 @@ public abstract class rCamera{
 
         // Support for multiple automatic camera modes
         // NOTE: In case of CAMERA_CUSTOM nothing happens here, user must update it manually
-        switch (CAMERA.mode){
+        switch (CAMERA.mode) {
             case CAMERA_FREE:           // rCamera free controls, using standard 3d-content-creation scheme
             {
                 // rCamera zoom
                 if ((CAMERA.targetDistance < CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
                     CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
-                    if (CAMERA.targetDistance > CAMERA_FREE_DISTANCE_MAX_CLAMP){
+                    if (CAMERA.targetDistance > CAMERA_FREE_DISTANCE_MAX_CLAMP) {
                         CAMERA.targetDistance = CAMERA_FREE_DISTANCE_MAX_CLAMP;
                     }
                 }
@@ -177,7 +177,7 @@ public abstract class rCamera{
                 }
                 else if ((camera.position.y > camera.target.y) && (camera.target.y < 0) && (mouseWheelMove > 0)){
                     CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
-                    if (CAMERA.targetDistance < CAMERA_FREE_DISTANCE_MIN_CLAMP){
+                    if (CAMERA.targetDistance < CAMERA_FREE_DISTANCE_MIN_CLAMP) {
                         CAMERA.targetDistance = CAMERA_FREE_DISTANCE_MIN_CLAMP;
                     }
                 }
@@ -196,16 +196,16 @@ public abstract class rCamera{
                 }
                 else if ((camera.position.y < camera.target.y) && (camera.target.y > 0) && (mouseWheelMove > 0)){
                     CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
-                    if (CAMERA.targetDistance < CAMERA_FREE_DISTANCE_MIN_CLAMP){
+                    if (CAMERA.targetDistance < CAMERA_FREE_DISTANCE_MIN_CLAMP) {
                         CAMERA.targetDistance = CAMERA_FREE_DISTANCE_MIN_CLAMP;
                     }
                 }
 
                 // Input keys checks
-                if (keyPan){
+                if (keyPan) {
                     if (keyAlt)     // Alternative key behaviour
                     {
-                        if (sZoomKey){
+                        if (sZoomKey) {
                             // rCamera smooth zoom
                             CAMERA.targetDistance += (mousePositionDelta.y * CAMERA_FREE_SMOOTH_ZOOM_SENSITIVITY);
                         }
@@ -215,10 +215,10 @@ public abstract class rCamera{
                             CAMERA.angle.y += mousePositionDelta.y * -CAMERA_FREE_MOUSE_SENSITIVITY;
 
                             // Angle clamp
-                            if (CAMERA.angle.y > CAMERA_FREE_MIN_CLAMP * Raymath.DEG2RAD){
+                            if (CAMERA.angle.y > CAMERA_FREE_MIN_CLAMP * Raymath.DEG2RAD) {
                                 CAMERA.angle.y = CAMERA_FREE_MIN_CLAMP * Raymath.DEG2RAD;
                             }
-                            else if (CAMERA.angle.y < CAMERA_FREE_MAX_CLAMP * Raymath.DEG2RAD){
+                            else if (CAMERA.angle.y < CAMERA_FREE_MAX_CLAMP * Raymath.DEG2RAD) {
                                 CAMERA.angle.y = CAMERA_FREE_MAX_CLAMP * Raymath.DEG2RAD;
                             }
                         }
@@ -244,7 +244,7 @@ public abstract class rCamera{
                 CAMERA.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);   // rCamera zoom
 
                 // rCamera distance clamp
-                if (CAMERA.targetDistance < CAMERA_THIRD_PERSON_DISTANCE_CLAMP){
+                if (CAMERA.targetDistance < CAMERA_THIRD_PERSON_DISTANCE_CLAMP) {
                     CAMERA.targetDistance = CAMERA_THIRD_PERSON_DISTANCE_CLAMP;
                 }
 
@@ -276,10 +276,10 @@ public abstract class rCamera{
                 CAMERA.angle.y += (mousePositionDelta.y * -CAMERA_MOUSE_MOVE_SENSITIVITY);
 
                 // Angle clamp
-                if (CAMERA.angle.y > CAMERA_FIRST_PERSON_MIN_CLAMP * Raymath.DEG2RAD){
+                if (CAMERA.angle.y > CAMERA_FIRST_PERSON_MIN_CLAMP * Raymath.DEG2RAD) {
                     CAMERA.angle.y = CAMERA_FIRST_PERSON_MIN_CLAMP * Raymath.DEG2RAD;
                 }
-                else if (CAMERA.angle.y < CAMERA_FIRST_PERSON_MAX_CLAMP * Raymath.DEG2RAD){
+                else if (CAMERA.angle.y < CAMERA_FIRST_PERSON_MAX_CLAMP * Raymath.DEG2RAD) {
                     CAMERA.angle.y = CAMERA_FIRST_PERSON_MAX_CLAMP * Raymath.DEG2RAD;
                 }
 

@@ -10,54 +10,54 @@ public class rlRenderBatch{
     int drawCounter;           // Draw calls counter
     float currentDepth;         // Current depth value for next draw
 
-    public rlRenderBatch(){
+    public rlRenderBatch() {
     }
 
-    public int getBufferCount(){
+    public int getBufferCount() {
         return bufferCount;
     }
 
-    public void setBufferCount(int bufferCount){
+    public void setBufferCount(int bufferCount) {
         this.bufferCount = bufferCount;
     }
 
-    public int getCurrentBuffer(){
+    public int getCurrentBuffer() {
         return currentBuffer;
     }
 
-    public void setCurrentBuffer(int currentBuffer){
+    public void setCurrentBuffer(int currentBuffer) {
         this.currentBuffer = currentBuffer;
     }
 
-    public rlVertexBuffer[] getVertexBuffer(){
+    public rlVertexBuffer[] getVertexBuffer() {
         return rlVertexBuffer;
     }
 
-    public void setVertexBuffer(rlVertexBuffer[] rlVertexBuffer){
+    public void setVertexBuffer(rlVertexBuffer[] rlVertexBuffer) {
         this.rlVertexBuffer = rlVertexBuffer;
     }
 
-    public rlDrawCall[] getDraws(){
+    public rlDrawCall[] getDraws() {
         return draws;
     }
 
-    public void setDraws(rlDrawCall[] draws){
+    public void setDraws(rlDrawCall[] draws) {
         this.draws = draws;
     }
 
-    public int getDrawCounter(){
+    public int getDrawCounter() {
         return drawCounter;
     }
 
-    public void setDrawCounter(int drawCounter){
+    public void setDrawCounter(int drawCounter) {
         this.drawCounter = drawCounter;
     }
 
-    public float getCurrentDepth(){
+    public float getCurrentDepth() {
         return currentDepth;
     }
 
-    public void setCurrentDepth(float currentDepth){
+    public void setCurrentDepth(float currentDepth) {
         this.currentDepth = currentDepth;
     }
 }

@@ -7,7 +7,7 @@ public class Color{
     /**
      * Creates new color (Black)
      */
-    public Color(){
+    public Color() {
         this.r = 0;
         this.g = 0;
         this.b = 0;
@@ -21,7 +21,7 @@ public class Color{
      * @param b Blue (0-255)
      * @param a Alpha (0-255)
      */
-    public Color(int r, int g, int b, int a){
+    public Color(int r, int g, int b, int a) {
         this.r = (r > 0 ? Math.min(r, 255) : 0);
         this.g = (g > 0 ? Math.min(g, 255) : 0);
         this.b = (b > 0 ? Math.min(b, 255) : 0);
@@ -32,7 +32,7 @@ public class Color{
      * String value of Color
      * @return R, G, B, A
      */
-    public String toString(){
+    public String toString() {
         return r + ", " + g + ", " + b + ", " + a;
     }
 
@@ -67,7 +67,7 @@ public class Color{
      * Returns red value
      * @return Red
      */
-    public int getR(){
+    public int getR() {
         return r;
     }
 
@@ -75,7 +75,7 @@ public class Color{
      * Sets the red value
      * @param r Red (0-255)
      */
-    public void setR(int r){
+    public void setR(int r) {
         this.r = r;
     }
 
@@ -83,7 +83,7 @@ public class Color{
      * Returns green value
      * @return green
      */
-    public int getG(){
+    public int getG() {
         return g;
     }
 
@@ -91,7 +91,7 @@ public class Color{
      * Sets the green value
      * @param g Green (0-255)
      */
-    public void setG(int g){
+    public void setG(int g) {
         this.g = g;
     }
 
@@ -99,7 +99,7 @@ public class Color{
      * Returns the blue value
      * @return blue
      */
-    public int getB(){
+    public int getB() {
         return b;
     }
 
@@ -107,7 +107,7 @@ public class Color{
      * Sets the blue value
      * @param b Blue (0-255)
      */
-    public void setB(int b){
+    public void setB(int b) {
         this.b = b;
     }
 

@@ -11,7 +11,7 @@ public class rlVertexBuffer{
     int vaoId;         // OpenGL Vertex Array Object id
     int[] vboId;      // OpenGL Vertex Buffer Objects id (4 types of vertex data)
 
-    public rlVertexBuffer(){
+    public rlVertexBuffer() {
         vertices = new float[3];
         texcoords = new float[2];
         colors = new byte[64];
@@ -20,11 +20,11 @@ public class rlVertexBuffer{
         vboId = new int[4];
     }
 
-    public int getElementCount(){
+    public int getElementCount() {
         return elementCount;
     }
 
-    public void setElementCount(int elementCount){
+    public void setElementCount(int elementCount) {
         this.elementCount = elementCount;
     }
 

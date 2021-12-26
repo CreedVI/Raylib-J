@@ -11,7 +11,7 @@ public class rlglData {
     State state;
     VR vr;
 
-    public rlglData(){
+    public rlglData() {
         currentBatch = new rlRenderBatch();
         defaultBatch = new rlRenderBatch();
         extSupported = new ExtSupported();
@@ -19,43 +19,43 @@ public class rlglData {
         vr = new VR();
     }
 
-    public void setCurrentBatch(rlRenderBatch currentBatch){
+    public void setCurrentBatch(rlRenderBatch currentBatch) {
         this.currentBatch = currentBatch;
     }
 
-    public void setDefaultBatch(rlRenderBatch defaultBatch){
+    public void setDefaultBatch(rlRenderBatch defaultBatch) {
         this.defaultBatch = defaultBatch;
     }
 
-    public rlRenderBatch getCurrentBatch(){
+    public rlRenderBatch getCurrentBatch() {
         return currentBatch;
     }
 
-    public rlRenderBatch getDefaultBatch(){
+    public rlRenderBatch getDefaultBatch() {
         return defaultBatch;
     }
 
-    public ExtSupported getExtSupported(){
+    public ExtSupported getExtSupported() {
         return extSupported;
     }
 
-    public void setExtSupported(ExtSupported extSupported){
+    public void setExtSupported(ExtSupported extSupported) {
         this.extSupported = extSupported;
     }
 
-    public State getState(){
+    public State getState() {
         return state;
     }
 
-    public void setState(State state){
+    public void setState(State state) {
         this.state = state;
     }
 
-    public VR getVr(){
+    public VR getVr() {
         return vr;
     }
 
-    public void setVr(VR vr){
+    public void setVr(VR vr) {
         this.vr = vr;
     }
 }

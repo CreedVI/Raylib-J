@@ -7,29 +7,29 @@ public class Shader {
     int id;                 // Shader program id
     public int[] locs;              // Shader locations array (MAX_SHADER_LOCATIONS)
 
-    public Shader(){
+    public Shader() {
         id = 0;
         locs = new int[MAX_SHADER_LOCATIONS];
     }
 
-    public Shader(int id, int[] locs){
+    public Shader(int id, int[] locs) {
         this.id = id;
         this.locs = locs;
     }
 
-    public int getId(){
+    public int getId() {
         return id;
     }
 
-    public void setId(int id){
+    public void setId(int id) {
         this.id = id;
     }
 
-    public int[] getLocs(){
+    public int[] getLocs() {
         return locs;
     }
 
-    public void setLocs(int[] locs){
+    public void setLocs(int[] locs) {
         this.locs = locs;
     }
 
