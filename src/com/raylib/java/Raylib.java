@@ -3,13 +3,14 @@ package com.raylib.java;
 import com.raylib.java.core.rCore;
 import com.raylib.java.models.rModels;
 import com.raylib.java.physac.Physac;
+import com.raylib.java.raudio.rAudio;
 import com.raylib.java.shapes.rShapes;
 import com.raylib.java.text.rText;
 import com.raylib.java.textures.rTextures;
 
 public class Raylib{
 
-    //public rAudio audio;
+    public rAudio audio;
     public rCore core;
     public Config config;
     public rText text;
@@ -22,7 +23,7 @@ public class Raylib{
      * Creates new Raylib instance.
      */
     public Raylib(){
-        //audio = new rAudio();
+        audio = new rAudio();
         core = new rCore();
         config = new Config();
         text = new rText();
@@ -39,7 +40,7 @@ public class Raylib{
      * @param title title to display for the window
      */
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
-        //audio = new rAudio();
+        audio = new rAudio();
         core = new rCore();
         config = new Config();
         text = new rText();

@@ -26,7 +26,7 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 [ ] 3D Camera
 
 ## 0.5 - The Aural Update 
-###We are here!
+### We are here!
 <hr>
 
 [ ] rAudio Module
