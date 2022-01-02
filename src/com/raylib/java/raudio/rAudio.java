@@ -1,6 +1,7 @@
 package com.raylib.java.raudio;
 
 import com.raylib.java.core.rCore;
+import com.raylib.java.utils.FileIO;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
@@ -8,13 +9,24 @@ import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.stb.STBVorbisInfo;
 import org.lwjgl.system.MemoryStack;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import static com.raylib.java.Config.SUPPORT_FILEFORMAT_OGG;
+import static com.raylib.java.Config.*;
+import static com.raylib.java.raudio.rAudio.AudioBufferUsage.AUDIO_BUFFER_USAGE_STATIC;
 import static com.raylib.java.raudio.rAudio.AudioBufferUsage.AUDIO_BUFFER_USAGE_STREAM;
+import static com.raylib.java.raudio.rAudio.MusicContextType.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
@@ -108,12 +120,8 @@ public class rAudio{
         alListenerf(AL_GAIN, volume);
     }
 
-    private AudioBuffer LoadAudioBuffer(int format, int channels, int sampleRate, int sizeInFrames, int usage) {
+    private AudioBuffer LoadAudioBuffer(int channels, int sampleRate, int sizeInFrames, int usage) {
         AudioBuffer audioBuffer = new AudioBuffer();
-
-        if(sizeInFrames > 0) {
-            audioBuffer.data = ShortBuffer.allocate(sizeInFrames*channels*8);
-        }
 
         // Init audio buffer values
         audioBuffer.volume = 1.0f;
@@ -139,6 +147,8 @@ public class rAudio{
 
     private void UnloadAudioBuffer(AudioBuffer buffer) {
         buffer.data = null;
+        alDeleteBuffers(buffer.bufferId);
+        alDeleteSources(buffer.sourceId);
     }
 
     private boolean IsAudioBufferPlaying(AudioBuffer buffer) {
@@ -190,14 +200,132 @@ public class rAudio{
     }
 
     /*
-    // Wave/Sound loading/unloading functions
-    Wave LoadWave(const char *fileName);                            // Load wave data from file
-    Wave LoadWaveFromMemory(const char *fileType, const unsigned char *fileData, int dataSize); // Load wave from memory buffer, fileType refers to extension: i.e. ".wav"
-    Sound LoadSound(const char *fileName);                          // Load sound from file
-    Sound LoadSoundFromWave(Wave wave);                             // Load sound from wave data
+    Wave/Sound loading/unloading functions
+     */
+
+    // Load wave data from file
+    public Wave LoadWave(String fileName) {
+        Wave wave = new Wave();
+
+        // Loading file to memory
+        int fileSize = 0;
+        byte[] fileData = new byte[0];
+        try{
+            fileData = FileIO.LoadFileData(fileName);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        fileSize = fileData.length;
+
+        // Loading wave from memory data
+        if (fileData != null) {
+            wave = LoadWaveFromMemory(rCore.GetFileExtension(fileName), fileData, fileSize);
+        }
+
+        return wave;
+    }
+
+    // Load wave from memory buffer, fileType refers to extension: i.e. ".wav"
+    public Wave LoadWaveFromMemory(String fileType, byte[] fileData, int dataSize) {
+        //TODO
+        Wave wave = new Wave();
+
+        if (SUPPORT_FILEFORMAT_WAV && fileType.equalsIgnoreCase(".wav")) {
+            wave.frameCount = fileData.length * 2;
+            wave.sampleRate = 44100;
+            wave.sampleSize = 16;
+            wave.channels = 2;
+            ByteBuffer data = ByteBuffer.allocateDirect(fileData.length);
+            data.put(fileData).flip();
+            wave.data = data;
+        }
+        else if (SUPPORT_FILEFORMAT_OGG && fileType.equalsIgnoreCase(".ogg")) {
+            try(MemoryStack stack = MemoryStack.stackPush()){
+                IntBuffer errorBuffer = stack.mallocInt(1);
+                ByteBuffer dataBuffer = ByteBuffer.allocateDirect(fileData.length);
+                dataBuffer.put(fileData).flip();
+
+                long oggData = stb_vorbis_open_memory(dataBuffer, errorBuffer, null);
+
+                if(oggData != 0) {
+                    ByteBuffer infoBuffer = ByteBuffer.allocateDirect(STBVorbisInfo.SIZEOF);
+                    STBVorbisInfo vorbisInfo = new STBVorbisInfo(infoBuffer);
+                    stb_vorbis_get_info(oggData,vorbisInfo);
+
+                    wave.sampleRate = vorbisInfo.sample_rate();
+                    wave.sampleSize = 16;
+                    wave.channels = vorbisInfo.channels();
+                    wave.frameCount = stb_vorbis_stream_length_in_samples(oggData);
+                    ShortBuffer samplesBuffer = ShortBuffer.allocate(wave.channels * wave.frameCount);
+                    stb_vorbis_get_samples_short_interleaved(oggData, vorbisInfo.channels(), samplesBuffer);
+                    wave.data = samplesBuffer;
+
+                    stb_vorbis_close(oggData);
+                }
+            }
+        }
+        //elif flac
+        else if(SUPPORT_FILEFORMAT_MP3 && fileType.equalsIgnoreCase(".mp3")) {
+            //TODO
+        }
+
+        return wave;
+    }
+
+    // Load sound from file
+    public Sound LoadSound(String fileName) {
+        Wave wave = LoadWave(fileName);
+
+        Sound sound = LoadSoundFromWave(wave);
+
+        UnloadWave(wave);
+
+        return sound;
+    }
+
+    // Load sound from wave data
+    public Sound LoadSoundFromWave(Wave wave) {
+        Sound sound = new Sound();
+
+        if (wave.data != null) {
+            int frameCount = wave.frameCount;
+
+            AudioBuffer audioBuffer = LoadAudioBuffer(AUDIO_DEVICE_CHANNELS, alcGetInteger(audioData.system.device, AUDIO_DEVICE_SAMPLE_RATE), frameCount, AUDIO_BUFFER_USAGE_STATIC);
+            if (audioBuffer == null) {
+                Tracelog(LOG_WARNING, "SOUND: Failed to create buffer");
+                return sound; // early return to avoid dereferencing the audioBuffer null pointer
+            }
+
+            //todo: recalc framecount
+
+            sound.frameCount = frameCount;
+            sound.stream.sampleRate = alcGetInteger(audioData.system.device, AUDIO_DEVICE_SAMPLE_RATE);
+            sound.stream.sampleSize = 32;
+            sound.stream.channels = AUDIO_DEVICE_CHANNELS;
+            sound.stream.buffer = audioBuffer;
+        }
+
+        return sound;
+    }
+
+    /*
     void UpdateSound(Sound sound, const void *data, int samplesCount);// Update sound buffer with new data
-    void UnloadWave(Wave wave);                                     // Unload wave data
-    void UnloadSound(Sound sound);                                  // Unload sound
+    */
+
+    // Unload wave data
+    public void UnloadWave(Wave wave) {
+        wave.data = null;
+        Tracelog(LOG_INFO, "WAVE: Unloaded wave data from RAM");
+    }
+
+    // Unload sound
+    public void UnloadSound(Sound sound) {
+        UnloadAudioBuffer(sound.stream.buffer);
+
+        Tracelog(LOG_INFO, "WAVE: Unloaded sound data from RAM");
+    }
+
+    /*
     bool ExportWave(Wave wave, const char *fileName);               // Export wave data to file, returns true on success
     bool ExportWaveAsCode(Wave wave, const char *fileName);         // Export wave sample data to code (.h), returns true on success
     */
@@ -262,10 +390,45 @@ public class rAudio{
         Music music = new Music();
         boolean musicLoaded = false;
 
-        //wav
-        if(SUPPORT_FILEFORMAT_OGG && rCore.IsFileExtension(fileName, ".ogg")){
+        if (SUPPORT_FILEFORMAT_WAV && rCore.IsFileExtension(fileName, ".wav")){
+            //TODO
+            music.ctxType = MUSIC_AUDIO_WAV;
+
+            try {
+                AudioInputStream audioInputStream;
+                File audioFile = new File(fileName);
+                byte[] audioBytes;
+                if (audioFile != null){
+                    audioInputStream = AudioSystem.getAudioInputStream(audioFile);
+                    audioBytes = new byte[(int) audioFile.length()];
+                }
+                else {
+                    audioInputStream = AudioSystem.getAudioInputStream(rAudio.class.getResourceAsStream(fileName));
+                    audioBytes = new byte[audioInputStream.getFormat().getSampleSizeInBits()];
+                }
+
+                audioInputStream.read(audioBytes);
+
+                ByteBuffer rawAudio = ByteBuffer.allocateDirect(audioBytes.length);
+                rawAudio.put(audioBytes).flip();
+
+                music.stream = LoadAudioStream((int) audioInputStream.getFormat().getSampleRate(), 16, audioInputStream.getFormat().getChannels());
+                music.stream.buffer.data = rawAudio;
+
+                int format = (audioInputStream.getFormat().getChannels() < 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+                music.stream.buffer.bufferData("wav", format, (int) audioInputStream.getFormat().getSampleRate());
+
+                music.frameCount = (int) audioInputStream.getFrameLength();
+                music.looping = true;
+                musicLoaded = true;
+            }
+            catch (IOException | UnsupportedAudioFileException e){
+                e.printStackTrace();
+            }
+        }
+        else if(SUPPORT_FILEFORMAT_OGG && rCore.IsFileExtension(fileName, ".ogg")){
             IntBuffer errorBuffer = IntBuffer.allocate(1);
-            music.ctxType = MusicContextType.MUSIC_AUDIO_OGG;
+            music.ctxType = MUSIC_AUDIO_OGG;
             music.ctxData = stb_vorbis_open_filename(fileName, errorBuffer, null);
 
             if (music.ctxData != 0){
@@ -280,7 +443,7 @@ public class rAudio{
                     music.stream.buffer.data = stb_vorbis_decode_filename(fileName, channels, sampleRate);
 
                     int format = (info.channels() < 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-                    music.stream.buffer.bufferData(format, info.sample_rate());
+                    music.stream.buffer.bufferData("ogg", format, info.sample_rate());
 
                     music.frameCount = stb_vorbis_stream_length_in_samples(music.ctxData);
                     music.looping = true;
@@ -289,7 +452,30 @@ public class rAudio{
             }
         }
         //flac
-        //mp3
+        else if (SUPPORT_FILEFORMAT_MP3 && rCore.IsFileExtension(fileName, ".mp3")) {
+            music.ctxType = MUSIC_AUDIO_MP3;
+
+            try {
+                Path path = Paths.get(fileName);
+                fr.delthas.javamp3.Sound mp3Sound = new fr.delthas.javamp3.Sound(new BufferedInputStream(Files.newInputStream(path)));
+
+                byte[] audioData = new byte[(int) path.toFile().length()];
+                int read = mp3Sound.read(audioData);
+                ByteBuffer rawAudio = ByteBuffer.allocateDirect(read);
+                rawAudio.put(audioData).flip();
+
+                music.stream = LoadAudioStream(mp3Sound.getSamplingFrequency(), 16, 2);
+                music.stream.buffer.data = rawAudio;
+
+                music.stream.buffer.bufferData("mp3", AL_FORMAT_STEREO16, mp3Sound.getSamplingFrequency());
+
+                music.frameCount = read * 2;
+
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+        }
         //xm
         //mod
         else {
@@ -304,7 +490,7 @@ public class rAudio{
             Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Music file loaded successfully");
             Tracelog(LOG_INFO, "    > Sample rate:   " + music.stream.sampleRate + " Hz");
             Tracelog(LOG_INFO, "    > Sample size:   " + music.stream.sampleSize + " bits");
-            Tracelog(LOG_INFO, "    > Channels:       " + music.stream.channels + ((music.stream.channels == 1)? " Mono" : (music.stream.channels == 2)? " Stereo" : " Multi"));
+            Tracelog(LOG_INFO, "    > Channels:      " + music.stream.channels + ((music.stream.channels == 1)? " Mono" : (music.stream.channels == 2)? " Stereo" : " Multi"));
             Tracelog(LOG_INFO, "    > Total frames:  " + music.frameCount);
         }
         return music;
@@ -315,11 +501,15 @@ public class rAudio{
         Music music = new Music();
         boolean musicLoaded = false;
 
-        //wav
-        if (SUPPORT_FILEFORMAT_OGG && filetype.equalsIgnoreCase(".ogg")){
+        if (SUPPORT_FILEFORMAT_WAV && filetype.equalsIgnoreCase(".wav")){
             //TODO
         }
-        //mp3
+        else if (SUPPORT_FILEFORMAT_OGG && filetype.equalsIgnoreCase(".ogg")){
+            //TODO
+        }
+        else if(SUPPORT_FILEFORMAT_MP3 && filetype.equalsIgnoreCase(".mp3")) {
+            //TODO
+        }
         //xm
         //mod
         else {
@@ -343,7 +533,7 @@ public class rAudio{
 
     // Update buffers for music streaming
     public void UpdateMusicStream(Music music) {
-
+        //TODO
     }
 
     //Unload music Stream
@@ -392,8 +582,7 @@ public class rAudio{
     */
 
     /*
-    // AudioStream management functions
-    AudioStream LoadAudioStream(unsigned int sampleRate, unsigned int sampleSize, unsigned int channels); // Load audio stream (to stream raw audio pcm data)
+    AudioStream management functions
     */
 
     AudioStream LoadAudioStream(int sampleRate, int sampleSize, int channels) {
@@ -406,7 +595,7 @@ public class rAudio{
         // If the buffer is not set, compute one that would give us a buffer good enough for a decent frame rate
         int subBufferSize = (audioData.buffer.defaultSize == 0)? alGetInteger(AUDIO_DEVICE_SAMPLE_RATE)/30 : audioData.buffer.defaultSize;
 
-        stream.buffer = LoadAudioBuffer( 0,stream.channels, stream.sampleRate, subBufferSize*2, AUDIO_BUFFER_USAGE_STREAM);
+        stream.buffer = LoadAudioBuffer( stream.channels, stream.sampleRate, subBufferSize*2, AUDIO_BUFFER_USAGE_STREAM);
 
         if (stream.buffer != null) {
             stream.buffer.looping = true;    // Always loop for streaming buffers
@@ -476,6 +665,5 @@ public class rAudio{
     public void SetAudioStreamBufferSizeDefault(int size) {
         audioData.buffer.defaultSize = size;
     }
-
 
 }

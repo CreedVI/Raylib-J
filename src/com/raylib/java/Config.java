@@ -268,7 +268,7 @@ public class Config{
     /**
      * Support .mp3 to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_MP3 = true;
+    public static boolean SUPPORT_FILEFORMAT_MP3 = true;
     /**
      * Support .flac to be supported for loading
      */

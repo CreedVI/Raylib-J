@@ -1,5 +1,7 @@
 package com.raylib.java.raudio;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
 import static org.lwjgl.openal.AL10.*;
@@ -23,7 +25,7 @@ public class AudioBuffer{
     int frameCursorPos;                //Frame cursor position
     int framesProcessed;               //Total frames processed in this buffer (required for play timing)
 
-    ShortBuffer data;                       //Data buffer, on music stream keeps filling
+    Buffer data;                       //Data buffer, on music stream keeps filling
 
 
     public AudioBuffer(){
@@ -31,9 +33,13 @@ public class AudioBuffer{
         this.sourceId = alGenSources();
     }
 
-    void bufferData(int format, int samplerate) {
-        alBufferData(bufferId, format, data, samplerate);
-
+    void bufferData(String filetype, int format, int samplerate) {
+        if(filetype.equalsIgnoreCase("ogg")){
+            alBufferData(bufferId, format, (ShortBuffer) data, samplerate);
+        }
+        else {
+            alBufferData(bufferId, format, (ByteBuffer) data, samplerate);
+        }
         alSourcei(sourceId, AL_BUFFER, bufferId);
         alSourcei(sourceId, AL_LOOPING, (this.looping ? 1 : 0));
         alSourcei(sourceId, AL_POSITION, 0);
