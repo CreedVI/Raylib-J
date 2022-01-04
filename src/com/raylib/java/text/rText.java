@@ -986,7 +986,8 @@ public class rText{
             lenCounter++;
 
             next = 0;
-            letter = GetCodepoint(text.toCharArray(), i);
+            letter = GetCodepoint(text.substring(i).toCharArray(), next);
+            next = rText.codepointByteCount;
             index = GetGlyphIndex(font, letter);
 
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
