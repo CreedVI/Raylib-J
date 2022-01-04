@@ -15,12 +15,13 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
 import static com.raylib.java.rlgl.RLGL.*;
+import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
@@ -873,7 +874,7 @@ public class rText{
         for (int i = 0; i < length; ) {
             // Get next codepoint from byte string and glyph index in font
             codepointByteCount = 0;
-            int codepoint = GetCodepoint(text.toCharArray(), i);
+            int codepoint = GetCodepoint(text.substring(i).toCharArray(), codepointByteCount);
             int index = GetGlyphIndex(font, codepoint);
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -1263,6 +1264,9 @@ public class rText{
         return len;
     }
 
+    /*
+    TODO: Restore this method
+     */
     // Returns next codepoint in a UTF8 encoded text, scanning until '\0' is found
     // When a invalid UTF8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
     // Total number of bytes processed are returned as a parameter
@@ -1283,42 +1287,42 @@ public class rText{
         // NOTE: on decode errors we return as soon as possible
 
         int code = 0x3f;   // Codepoint (defaults to '?')
-        int octet = (text[bytesProcessed]); // The first UTF8 octet
-        next = 1;
+        int octet = text.toString().getBytes(StandardCharsets.UTF_8)[0]; // The first UTF8 octet
+        bytesProcessed = 1;
 
         if (octet <= 0x7f){
             // Only one octet (ASCII range x00-7F)
-            code = text[bytesProcessed];
+            code = text[0];
         }
         else if ((octet & 0xe0) == 0xc0){
             // Two octets
             // [0]xC2-DF    [1]UTF8-tail(x80-BF)
-            char octet1 = text[bytesProcessed + 1];
+            char octet1 = text[1];
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                next = 2;
+                bytesProcessed = 2;
                 return code;
             } // Unexpected sequence
 
             if ((octet >= 0xc2) && (octet <= 0xdf)){
                 code = ((octet & 0x1f) << 6) | (octet1 & 0x3f);
-                next = 2;
+                bytesProcessed = 2;
             }
         }
         else if ((octet & 0xf0) == 0xe0){
             // Three octets
-            char octet1 = text[bytesProcessed + 1];
+            char octet1 = text[1];
             char octet2;
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                next = 2;
+                bytesProcessed = 2;
                 return code;
             } // Unexpected sequence
 
-            octet2 = text[bytesProcessed + 2];
+            octet2 = text[2];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
-                next = 3;
+                bytesProcessed = 3;
                 return code;
             } // Unexpected sequence
 
@@ -1331,13 +1335,13 @@ public class rText{
 
             if (((octet == 0xe0) && !((octet1 >= 0xa0) && (octet1 <= 0xbf))) ||
                     ((octet == 0xed) && !((octet1 >= 0x80) && (octet1 <= 0x9f)))){
-                next = 2;
+                bytesProcessed = 2;
                 return code;
             }
 
             if ((octet >= 0xe0) && (0 <= 0xef)){
                 code = ((octet & 0xf) << 12) | ((octet1 & 0x3f) << 6) | (octet2 & 0x3f);
-                next = 3;
+                bytesProcessed = 3;
             }
         }
         else if ((octet & 0xf8) == 0xf0){
@@ -1346,26 +1350,26 @@ public class rText{
                 return code;
             }
 
-            char octet1 = text[bytesProcessed + 1];
+            char octet1 = text[1];
             char octet2 = '\0';
             char octet3 = '\0';
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                next = 2;
+                bytesProcessed = 2;
                 return code;
             }  // Unexpected sequence
 
-            octet2 = text[bytesProcessed + 2];
+            octet2 = text[2];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
-                next = 3;
+                bytesProcessed = 3;
                 return code;
             }  // Unexpected sequence
 
-            octet3 = text[bytesProcessed + 3];
+            octet3 = text[3];
 
             if ((octet3 == '\0') || ((octet3 >> 6) != 2)){
-                next = 4;
+                bytesProcessed = 4;
                 return code;
             }  // Unexpected sequence
 
@@ -1377,13 +1381,13 @@ public class rText{
 
             if (((octet == 0xf0) && !((octet1 >= 0x90) && (octet1 <= 0xbf))) ||
                     ((octet == 0xf4) && !((octet1 >= 0x80) && (octet1 <= 0x8f)))){
-                next = 2;
+                bytesProcessed = 2;
                 return code;
             } // Unexpected sequence
 
             if (octet >= 0xf0){
                 code = ((octet & 0x7) << 18) | ((octet1 & 0x3f) << 12) | ((octet2 & 0x3f) << 6) | (octet3 & 0x3f);
-                next = 4;
+                bytesProcessed = 4;
             }
         }
 
@@ -1391,7 +1395,7 @@ public class rText{
             code = 0x3f;     // Codepoints after U+10ffff are invalid
         }
 
-        codepointByteCount = next;
+        rText.codepointByteCount = bytesProcessed;
 
         return code;
     }
