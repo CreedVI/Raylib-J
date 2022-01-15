@@ -22,14 +22,14 @@ public class FileIO{
 
         if (SUPPORT_STANDARD_FILEIO){
 
-            InputStream inputStream = getFileFromResourceAsStream(fileName);
+            InputStream inputStream = FileIO.class.getClassLoader().getResourceAsStream(fileName);
 
-            if(inputStream == null){
+            if(inputStream == null) {
                 String ext = fileName.substring(fileName.lastIndexOf('.')).toUpperCase();
                 inputStream = getFileFromResourceAsStream(fileName.substring(0, fileName.lastIndexOf('.'))+ext);
             }
 
-            if (inputStream != null){
+            if (inputStream != null) {
                 try{
                     BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream));
                     String contents = breader.lines().collect(Collectors.joining());
@@ -46,7 +46,7 @@ public class FileIO{
                     File tmp = new File(fileName);
                     data = Files.readAllBytes(tmp.toPath());
                 } catch (NoSuchFileException e){
-
+                    Tracelog(LOG_WARNING, "FILEIO: File does not exist: " + fileName);
                 }
                 if(data == null){
                     Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid\n\t" + fileName);
@@ -182,8 +182,6 @@ public class FileIO{
     }
 
     private static InputStream getFileFromResourceAsStream(String fileName){
-        fileName = fileName.replace('\\', '/');
-
         return FileIO.class.getResourceAsStream(fileName);
     }
 }
