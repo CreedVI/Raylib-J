@@ -29,9 +29,14 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 ### We are here!
 <hr>
 
-[ ] rAudio Module
+[O] rAudio Module
+  - [X] MP3 audio
+  - [X] WAV audio
+  - [X] OGG audio
+  - [ ] FLAC audio
+  - [ ] XM audio
 
-[ ] Raymath method comments
+[ ] Raymath JavaDoc comments
 
 ## 0.4 - The Action Update
 <hr>
