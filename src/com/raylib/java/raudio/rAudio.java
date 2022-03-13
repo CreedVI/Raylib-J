@@ -23,6 +23,7 @@ import java.nio.ShortBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.raudio.rAudio.AudioBufferUsage.AUDIO_BUFFER_USAGE_STATIC;
@@ -52,7 +53,7 @@ public class rAudio{
     }
 
     // NOTE: Different logic is used when feeding data to the playback device
-    // depending on whether or not data is streamed (Music vs Sound)
+    // depending on whether data is streamed (Music vs Sound)
     public static class AudioBufferUsage{
         public static final int
                 AUDIO_BUFFER_USAGE_STATIC = 0,
@@ -94,6 +95,10 @@ public class rAudio{
             Tracelog(LOG_INFO, "    > Channels:      2");
             Tracelog(LOG_INFO, "    > Sample rate:   " + alcGetInteger(audioData.system.device, ALC_FREQUENCY));
             //Tracelog(LOG_INFO, "    > Periods size:  %d", audioData.system.device.playback.internalPeriodSizeInFrames*audioData.system.device.playback.internalPeriods);
+
+            for(int i = 0; i < audioData.multiChannel.pool.length; i++) {
+                audioData.multiChannel.pool[i] = new AudioBuffer();
+            }
 
             audioData.system.isReady = true;
         }
@@ -162,9 +167,6 @@ public class rAudio{
             alSourcePlay(buffer.bufferId);
             buffer.playing = true;
         }
-        else {
-            Tracelog(LOG_WARNING, "AUDIO: Audio buffer already playing");
-        }
     }
 
     private void StopAudioBuffer(AudioBuffer buffer) {
@@ -210,7 +212,7 @@ public class rAudio{
         Wave wave = new Wave();
 
         // Loading file to memory
-        int fileSize = 0;
+        int fileSize;
         byte[] fileData = new byte[0];
         try{
             fileData = FileIO.LoadFileData(fileName);
@@ -242,9 +244,10 @@ public class rAudio{
             wave.data = data;
         }
         else if (SUPPORT_FILEFORMAT_OGG && fileType.equalsIgnoreCase(".ogg")) {
-            //TODO: WHy crash
             try(MemoryStack stack = MemoryStack.stackPush()){
                 IntBuffer errorBuffer = stack.mallocInt(1);
+                IntBuffer ChannelsBuffer = stack.mallocInt(1);
+                IntBuffer SamplesBuffer = stack.mallocInt(1);
                 ByteBuffer dataBuffer = ByteBuffer.allocateDirect(fileData.length);
                 dataBuffer.put(fileData).flip();
 
@@ -255,12 +258,12 @@ public class rAudio{
                     STBVorbisInfo vorbisInfo = new STBVorbisInfo(infoBuffer);
                     stb_vorbis_get_info(oggData, vorbisInfo);
 
-                    wave.sampleRate = vorbisInfo.sample_rate();
+                    ShortBuffer oggAudio = stb_vorbis_decode_memory(dataBuffer, ChannelsBuffer, SamplesBuffer);
+                    wave.sampleRate = SamplesBuffer.get(0);
                     wave.sampleSize = 16;
-                    wave.channels = vorbisInfo.channels();
+                    wave.channels = ChannelsBuffer.get(0);
                     wave.frameCount = stb_vorbis_stream_length_in_samples(oggData);
-                    wave.data = ShortBuffer.allocate(wave.frameCount * wave.channels);
-                    stb_vorbis_get_samples_short_interleaved(oggData, vorbisInfo.channels(), (ShortBuffer) wave.data);
+                    wave.data = oggAudio;
 
                     stb_vorbis_close(oggData);
                 }
@@ -329,10 +332,15 @@ public class rAudio{
         return sound;
     }
 
-    /*
-    void UpdateSound(Sound sound, const void *data, int samplesCount);// Update sound buffer with new data
-    */
-
+    // Update sound buffer with new data
+    public void UpdateSound(Sound sound, byte[] data, int sampleCount)  {
+        if (sound.stream.buffer != null)  {
+            StopAudioBuffer(sound.stream.buffer);
+            if(sound.stream.buffer.data.position() - sound.stream.buffer.data.capacity() > data.length) {
+                ((ByteBuffer) sound.stream.buffer.data).put(data).flip();
+            }
+        }
+    }
     // Unload wave data
     public void UnloadWave(Wave wave) {
         wave.data = null;
@@ -346,10 +354,103 @@ public class rAudio{
         Tracelog(LOG_INFO, "WAVE: Unloaded sound data from RAM");
     }
 
-    /*
-    bool ExportWave(Wave wave, const char *fileName);               // Export wave data to file, returns true on success
-    bool ExportWaveAsCode(Wave wave, const char *fileName);         // Export wave sample data to code (.h), returns true on success
-    */
+    // Export wave data to file
+    public boolean ExportWave(Wave wave, String fileName) {
+        boolean success = false;
+
+        if(SUPPORT_FILEFORMAT_WAV && rCore.IsFileExtension(fileName, ".wav")) {
+            //TODO: format header for wav saving
+            //success = SaveFileData(fileName, (unsigned char *)fileData, (unsigned int)fileDataSize);
+        }
+        else if (rCore.IsFileExtension(fileName, ".raw")) {
+            // Export raw sample data (without header)
+            // NOTE: It's up to the user to track wave parameters
+            byte[] waveData = new byte[wave.data.capacity()];
+            for(int i = 0; i < waveData.length; i++) {
+                waveData[i] = ((ByteBuffer)wave.data).get(i);
+            }
+
+            try {
+                success = FileIO.SaveFileData(fileName, waveData, wave.frameCount*wave.channels*wave.sampleSize/8);
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (success) {
+            Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Wave data exported successfully");
+        }
+        else {
+            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export wave data");
+        }
+
+        return success;
+    }
+
+    // Export wave sample data to code (.h)
+    public boolean ExportWaveAsCode(Wave wave, String fileName) {
+        boolean success = false;
+
+        int TEXT_BYTES_PER_LINE = 20;
+
+        int waveDataSize = wave.frameCount*wave.channels*wave.sampleSize/8;
+
+        // NOTE: Text data buffer size is estimated considering wave data size in bytes
+        // and requiring 6 char bytes for every byte: "0x00, "
+        StringBuilder txtData = new StringBuilder();
+        //char *txtData = (char *)RL_CALLOC(waveDataSize*6 + 2000, sizeof(char));
+
+        int byteCount = 0;
+        txtData.append("\n//////////////////////////////////////////////////////////////////////////////////\n");
+        txtData.append("//                                                                              //\n");
+        txtData.append("// WaveAsCode exporter v1.0 - Wave data exported as an array of bytes           //\n");
+        txtData.append("//                                                                              //\n");
+        txtData.append("// more info and bugs-report:  github.com/raysan5/raylib                        //\n");
+        txtData.append("// feedback and support:       ray[at]raylib.com                                //\n");
+        txtData.append("//                                                                              //\n");
+        txtData.append("// Copyright (c) 2018-2021 Ramon Santamaria (@raysan5)                          //\n");
+        txtData.append("//                                                                              //\n");
+        txtData.append("//////////////////////////////////////////////////////////////////////////////////\n\n");
+
+        // Get file name from path and convert variable name to uppercase
+        char[] varFileName = rCore.GetFileNameWithoutExt(fileName).toCharArray();
+        for (int i = 0; varFileName[i] != '\0'; i++) {
+            if (varFileName[i] >= 'a' && varFileName[i] <= 'z') {
+                varFileName[i] = Character.highSurrogate(varFileName[i] - 32);
+            }
+        }
+
+
+        txtData.append("// Wave data information\n");
+        txtData.append("#define " + Arrays.toString(varFileName) + "_FRAME_COUNT      " + wave.frameCount + "\n");
+        txtData.append("#define " + Arrays.toString(varFileName) + "_FRAME_COUNT      " + wave.frameCount + "\n");
+        txtData.append("#define " + Arrays.toString(varFileName) + "_SAMPLE_RATE      " + wave.sampleRate + "\n");
+        txtData.append("#define " + Arrays.toString(varFileName) + "_SAMPLE_SIZE      " + wave.sampleSize + "\n");
+        txtData.append("#define " + Arrays.toString(varFileName) + "_CHANNELS         " + wave.channels + "\n\n");
+
+        byte[] waveData = new byte[wave.data.capacity()];
+        for(int i = 0; i < waveData.length; i++) {
+            waveData[i] = ((ByteBuffer)wave.data).get(i);
+        }
+
+        // Write byte data as hexadecimal text
+        // NOTE: Frame data exported is interlaced: Frame01[Sample-Channel01, Sample-Channel02, ...], Frame02[], Frame03[]
+        txtData.append("static unsigned char " + Arrays.toString(varFileName) + "_DATA[" + waveDataSize + "] = { ");
+        for (int i = 0; i < waveDataSize - 1; i++) {
+            txtData.append((i%TEXT_BYTES_PER_LINE == 0)? "0x" + waveData[i] + ",\n" : "0x" + waveData[i] + ", ");
+        }
+        txtData.append("0x" + waveData[waveDataSize-1] + " };\n");
+
+        // NOTE: Text data length exported is determined by '\0' (NULL) character
+        try {
+            success = FileIO.SaveFileText(fileName, String.valueOf(txtData));
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+
+        return success;
+    }
+
 
     /*
     Sound Management functions
@@ -389,18 +490,157 @@ public class rAudio{
     public void SetSoundPitch(Sound sound, float pitch) {
         SetAudioBufferPitch(sound.stream.buffer, pitch);
     }
-    
+
+    // Play a sound in the multichannel buffer pool
+    public void PlaySoundMulti(Sound sound) {
+        int index = -1;
+        int oldAge = 0;
+        int oldIndex = -1;
+
+        // find the first non playing pool entry
+        for (int i = 0; i < MAX_AUDIO_BUFFER_POOL_CHANNELS; i++) {
+            if (audioData.multiChannel.channels[i] > oldAge) {
+                oldAge = audioData.multiChannel.channels[i];
+                oldIndex = i;
+            }
+
+            if (!IsAudioBufferPlaying(audioData.multiChannel.pool[i])) {
+                index = i;
+                break;
+            }
+        }
+
+        // If no none playing pool members can be index choose the oldest
+        if (index == -1) {
+            Tracelog(LOG_WARNING, "SOUND: Buffer pool is already full, count: " + audioData.multiChannel.poolCounter);
+
+            if (oldIndex == -1) {
+                // Shouldn't be able to get here... but just in case something odd happens!
+                Tracelog(LOG_WARNING, "SOUND: Buffer pool could not determine oldest buffer not playing sound");
+                return;
+            }
+
+            index = oldIndex;
+
+            // Just in case...
+            StopAudioBuffer(audioData.multiChannel.pool[index]);
+        }
+
+        // Experimentally mutex lock doesn't seem to be needed this makes sense
+        // as pool[index] isn't playing and the only stuff we're copying
+        // shouldn't be changing...
+
+        audioData.multiChannel.channels[index] = audioData.multiChannel.poolCounter;
+        audioData.multiChannel.poolCounter++;
+
+        audioData.multiChannel.pool[index].volume = sound.stream.buffer.volume;
+        audioData.multiChannel.pool[index].pitch = sound.stream.buffer.pitch;
+        audioData.multiChannel.pool[index].looping = sound.stream.buffer.looping;
+        audioData.multiChannel.pool[index].usage = sound.stream.buffer.usage;
+        audioData.multiChannel.pool[index].isSubBufferProcessed[0] = false;
+        audioData.multiChannel.pool[index].isSubBufferProcessed[1] = false;
+        audioData.multiChannel.pool[index].sizeInFrames = sound.stream.buffer.sizeInFrames;
+        audioData.multiChannel.pool[index].data = sound.stream.buffer.data;
+
+        audioData.multiChannel.pool[index].bufferData("multi", AL_FORMAT_STEREO16, sound.stream.sampleRate);
+
+        PlayAudioBuffer(audioData.multiChannel.pool[index]);
+    }
+
+    // Stop any sound played with PlaySoundMulti()
+    public void StopSoundMulti() {
+        for (int i = 0; i < MAX_AUDIO_BUFFER_POOL_CHANNELS; i++) {
+            StopAudioBuffer(audioData.multiChannel.pool[i]);
+        }
+    }
+
+    // Get number of sounds playing in the multichannel buffer pool
+    public int GetSoundsPlaying() {
+        int counter = 0;
+
+        for (int i = 0; i < MAX_AUDIO_BUFFER_POOL_CHANNELS; i++) {
+            if (IsAudioBufferPlaying(audioData.multiChannel.pool[i])) {
+                counter++;
+            }
+        }
+
+        return counter;
+    }
+
     /*
-    void PlaySoundMulti(Sound sound);                               // Play a sound (using multichannel buffer pool)
-    void StopSoundMulti(void);                                      // Stop any sound playing (using multichannel buffer pool)
-    int GetSoundsPlaying(void);                                     // Get number of sounds playing in the multichannel
-    
+    TODO:
     void WaveFormat(Wave *wave, int sampleRate, int sampleSize, int channels);  // Convert wave data to desired format
-    Wave WaveCopy(Wave wave);                                       // Copy a wave to a new wave
-    void WaveCrop(Wave *wave, int initSample, int finalSample);     // Crop a wave to defined samples range
-    float *LoadWaveSamples(Wave wave);                              // Load samples data from wave as a floats array
-    void UnloadWaveSamples(float *samples);                         // Unload samples data loaded with LoadWaveSamples()
     */
+
+    // Copy a wave to a new wave
+    public Wave WaveCopy(Wave wave) {
+        Wave newWave = new Wave();
+
+        if (wave.data != null) {
+            // NOTE: Size must be provided in bytes
+            newWave.data = wave.data;
+            newWave.frameCount = wave.frameCount;
+            newWave.sampleRate = wave.sampleRate;
+            newWave.sampleSize = wave.sampleSize;
+            newWave.channels = wave.channels;
+        }
+
+        return newWave;
+    }
+
+    // Crop a wave to defined samples range
+    // NOTE: Security check in case of out-of-range
+    public void WaveCrop(Wave wave, int initSample, int finalSample) {
+        if ((initSample >= 0) && (initSample < finalSample) && (finalSample > 0) && (finalSample < (wave.frameCount*wave.channels))) {
+            int sampleCount = finalSample - initSample;
+
+            byte[] data = new byte[sampleCount*wave.sampleSize/8];
+
+            for(int i = initSample, j = 0; i < finalSample; i++, j++) {
+                data[j] = ((ByteBuffer)wave.data).get(i);
+            }
+
+            ByteBuffer bb = ByteBuffer.allocateDirect(data.length);
+            bb.put(data).flip();
+
+            wave.data = bb;
+        }
+        else {
+            Tracelog(LOG_WARNING, "WAVE: Crop range out of bounds");
+        }
+    }
+
+    // Load samples data from wave as a floats array
+    // NOTE 1: Returned sample values are normalized to range [-1..1]
+    // NOTE 2: Sample data allocated should be freed with UnloadWaveSamples()
+    public float[] LoadWaveSamples(Wave wave) {
+        float[] samples = new float[wave.frameCount*wave.channels];
+        byte[] waveData = new byte[wave.data.capacity()];
+        for(int i = 0; i < waveData.length; i++) {
+            waveData[i] = ((ByteBuffer)wave.data).get(i);
+        }
+
+        // NOTE: sampleCount is the total number of interlaced samples (including channels)
+
+        for (int i = 0; i < wave.frameCount*wave.channels; i++) {
+            if (wave.sampleSize == 8) {
+                samples[i] = (float)(waveData[i] - 127)/256.0f;
+            }
+            else if (wave.sampleSize == 16) {
+                samples[i] = (float)(waveData[i])/32767.0f;
+            }
+            else if (wave.sampleSize == 32) {
+                samples[i] = waveData[i];
+            }
+        }
+
+        return samples;
+    }
+
+    // Unload samples data loaded with LoadWaveSamples()
+    public void UnloadWaveSamples(float[] samples) {
+        samples = null;
+    }
 
     /*
     Music management functions
@@ -471,7 +711,9 @@ public class rAudio{
                 }
             }
         }
-        //TODO: flac
+        else if (SUPPORT_FILEFORMAT_MP3 && rCore.IsFileExtension(fileName, ".flac")) {
+            //TODO: FLAC SUPPORT
+        }
         else if (SUPPORT_FILEFORMAT_MP3 && rCore.IsFileExtension(fileName, ".mp3")) {
             music.ctxType = MUSIC_AUDIO_MP3;
 
@@ -497,8 +739,12 @@ public class rAudio{
                 e.printStackTrace();
             }
         }
-        //TODO: xm
-        //TODO: mod
+        else if (SUPPORT_FILEFORMAT_MP3 && rCore.IsFileExtension(fileName, ".xm")) {
+            //TODO: XM SUPPORT
+        }
+        else if (SUPPORT_FILEFORMAT_MP3 && rCore.IsFileExtension(fileName, ".mod")) {
+            //TODO: MOD SUPPORT
+        }
         else {
             Tracelog(LOG_WARNING, "STREAM: [" + fileName + "] File format not supported");
         }
@@ -532,8 +778,12 @@ public class rAudio{
         else if(SUPPORT_FILEFORMAT_MP3 && filetype.equalsIgnoreCase(".mp3")) {
             //TODO
         }
-        //xm
-        //mod
+        else if(SUPPORT_FILEFORMAT_MP3 && filetype.equalsIgnoreCase(".xm")) {
+            //TODO
+        }
+        else if(SUPPORT_FILEFORMAT_MP3 && filetype.equalsIgnoreCase(".mod")) {
+            //TODO
+        }
         else {
             Tracelog(LOG_WARNING, "STREAM: Data format not supported");
         }
@@ -555,12 +805,65 @@ public class rAudio{
 
     // Update buffers for music streaming
     public void UpdateMusicStream(Music music) {
-        //TODO
+        if(music.stream.buffer == null) {
+            return;
+        }
+
+        boolean streamEnding = false;
+        int subBufferSizeInFrames = music.stream.buffer.sizeInFrames/2;
+        int frameCountToStream;
+        int framesLeft = music.frameCount - music.stream.buffer.framesProcessed;
+
+        Buffer pcm = ByteBuffer.allocateDirect(subBufferSizeInFrames*music.stream.channels*music.stream.sampleSize/8);
+
+        while(IsAudioStreamProcessed(music.stream)) {
+            frameCountToStream = Math.min(framesLeft, subBufferSizeInFrames);
+
+            pcm = music.stream.buffer.data;
+
+            UpdateAudioStream(music.stream, pcm, frameCountToStream);
+
+            framesLeft -= frameCountToStream;
+
+            if (framesLeft <= 0) {
+                streamEnding = true;
+                break;
+            }
+
+        }
+
+        // Reset audio stream for looping
+        if(streamEnding) {
+            StopMusicStream(music);      // Stop music (and reset)
+            if(music.looping) {
+                PlayMusicStream(music);  // Play again
+            }
+        }
+        else  {
+            // NOTE: In case window is minimized, music stream is stopped,
+            // just make sure to play again on window restore
+            if(IsMusicStreamPlaying(music)) {
+                PlayMusicStream(music);
+            }
+        }
     }
 
     //Unload music Stream
     public void UnloadMusicStream(Music music) {
         UnloadAudioStream(music.stream);
+    }
+
+    // Start music playing (open stream)
+    public void PlayMusicStream(Music music)  {
+        if (music.stream.buffer != null)  {
+            // For music streams, we need to make sure we maintain the frame cursor position
+            // This is a hack for this section of code in UpdateMusicStream()
+            // NOTE: In case window is minimized, music stream is stopped, just make sure to
+            // play again on window restore: if (IsMusicStreamPlaying(music)) PlayMusicStream(music);
+            int frameCursorPos = music.stream.buffer.frameCursorPos;
+            PlayAudioStream(music.stream);  // WARNING: This resets the cursor position.
+            music.stream.buffer.frameCursorPos = frameCursorPos;
+        }
     }
 
     //Start music playing
@@ -598,16 +901,35 @@ public class rAudio{
         SetAudioBufferPitch(music.stream.buffer, pitch);
     }
 
-    /*
-    float GetMusicTimeLength(Music music);                          // Get music time length (in seconds)
-    float GetMusicTimePlayed(Music music);                          // Get current music time played (in seconds)
-    */
+    // Get music time length (in seconds)
+    public float GetMusicTimeLength(Music music)  {
+        return (float) music.frameCount/music.stream.sampleRate;
+    }
+
+    // Get current music time played (in seconds)
+    public float GetMusicTimePlayed(Music music)  {
+        float secondsPlayed = 0.0f;
+
+        if (music.stream.buffer != null)  {
+            if(SUPPORT_FILEFORMAT_XM && music.ctxType == MUSIC_MODULE_XM) {
+                int framesPlayed = 0;
+                //TODO: XM
+                //jar_xm_get_position(music.ctxData, NULL, NULL, NULL, &framesPlayed);
+                secondsPlayed = (float) framesPlayed / music.stream.sampleRate;
+            }
+            else  {
+                int framesPlayed = music.stream.buffer.framesProcessed;
+                secondsPlayed = (float)framesPlayed/music.stream.sampleRate;
+            }
+        }
+
+        return secondsPlayed;
+    }
 
     /*
     AudioStream management functions
     */
-
-    AudioStream LoadAudioStream(int sampleRate, int sampleSize, int channels) {
+    public AudioStream LoadAudioStream(int sampleRate, int sampleSize, int channels) {
         AudioStream stream = new AudioStream();
 
         stream.sampleRate = sampleRate;
@@ -637,13 +959,76 @@ public class rAudio{
         Tracelog(LOG_INFO, "STREAM: Unloaded audio stream data from RAM");
     }
 
-    /*
-    void UpdateAudioStream(AudioStream stream, const void *data, int samplesCount); // Update audio stream buffers with data
-    */
+    // Update audio stream buffers with data
+    // NOTE 1: Only updates one buffer of the stream source: unqueue -> update -> queue
+    // NOTE 2: To unqueue a buffer it needs to be processed: IsAudioStreamProcessed()
+    public void UpdateAudioStream(AudioStream stream, Buffer data, int frameCount) {
+        if (stream.buffer != null) {
+            if(stream.buffer.isSubBufferProcessed[0] || stream.buffer.isSubBufferProcessed[1]){
+                int subBufferToUpdate;
+
+                if(stream.buffer.isSubBufferProcessed[0] && stream.buffer.isSubBufferProcessed[1]){
+                    // Both buffers are available for updating.
+                    // Update the first one and make sure the cursor is moved back to the front.
+                    subBufferToUpdate = 0;
+                    stream.buffer.frameCursorPos = 0;
+                }
+                else{
+                    // Just update whichever sub-buffer is processed.
+                    subBufferToUpdate = (stream.buffer.isSubBufferProcessed[0]) ? 0 : 1;
+                }
+
+                int subBufferSizeInFrames = stream.buffer.sizeInFrames / 2;
+                int subBuffer = ((subBufferSizeInFrames * stream.channels * (stream.sampleSize / 8)) * subBufferToUpdate);
+
+                // TODO: Get total frames processed on this buffer... DOES NOT WORK.
+                stream.buffer.framesProcessed += subBufferSizeInFrames;
+
+                // Does this API expect a whole buffer to be updated in one go?
+                // Assuming so, but if not will need to change this logic.
+                if(subBufferSizeInFrames >= frameCount) {
+                    int framesToWrite = subBufferSizeInFrames;
+
+                    if(framesToWrite > frameCount) {
+                        framesToWrite = frameCount;
+                    }
+
+                    int bytesToWrite = framesToWrite * stream.channels * (stream.sampleSize / 8);
+                    for(int i = 0; i < data.capacity(); i++) {
+                        //((ByteBuffer) stream.buffer.data).put(subBuffer+i, ((ByteBuffer)data).get(i));
+                        ((ByteBuffer) stream.buffer.data).put(subBuffer + i, ((ByteBuffer)data).get(i));
+                    }
+
+                    // Any leftover frames should be filled with zeros.
+                    int leftoverFrameCount = subBufferSizeInFrames - framesToWrite;
+
+                    if(leftoverFrameCount > 0) {
+                        for(int i = 0; i < leftoverFrameCount * stream.channels * (stream.sampleSize / 8); i++) {
+                            ((ByteBuffer) stream.buffer.data).put(subBuffer+bytesToWrite+i, (byte) 0);
+                        }
+                    }
+
+                    stream.buffer.bufferData("raw", AL_FORMAT_STEREO16, stream.sampleRate);
+
+                    stream.buffer.isSubBufferProcessed[subBufferToUpdate] = false;
+                }
+                else {
+                    Tracelog(LOG_WARNING, "STREAM: Attempting to write too many frames to buffer");
+                }
+            }
+        }
+        else {
+            Tracelog(LOG_WARNING, "STREAM: Buffer not available for updating");
+        }
+
+    }
+
 
     // Check if any audio stream buffers requires refill
     public boolean IsAudioStreamProcessed(AudioStream stream) {
-        if (stream.buffer == null) return false;
+        if (stream.buffer == null) {
+            return false;
+        }
 
         return (stream.buffer.isSubBufferProcessed[0] || stream.buffer.isSubBufferProcessed[1]);
     }

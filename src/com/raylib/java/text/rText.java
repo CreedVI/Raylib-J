@@ -195,35 +195,37 @@ public class rText{
         int currentPosX = charsDivisor;
         int testPosX = charsDivisor;
 
-        for (int j = 0; j < defaultFont.glyphCount; j++) {
-            defaultFont.glyphs[j].setValue(32 + j);  // First char is 32
+        for (int i = 0; i < defaultFont.glyphCount; i++) {
+            defaultFont.glyphs[i].setValue(32 + i);  // First char is 32
 
-            defaultFont.recs[j].setX((float) currentPosX);
-            defaultFont.recs[j].setY((float) (charsDivisor + currentLine * (charsHeight + charsDivisor)));
-            defaultFont.recs[j].setWidth((float) charsWidth[j]);
-            defaultFont.recs[j].setHeight((float) charsHeight);
+            defaultFont.recs[i].setX((float) currentPosX);
+            defaultFont.recs[i].setY((float) (charsDivisor + currentLine * (charsHeight + charsDivisor)));
+            defaultFont.recs[i].setWidth((float) charsWidth[i]);
+            defaultFont.recs[i].setHeight((float) charsHeight);
 
-            testPosX += (int) (defaultFont.recs[j].getWidth() + (float) charsDivisor);
+            testPosX += (int) (defaultFont.recs[i].getWidth() + (float) charsDivisor);
 
             if (testPosX >= defaultFont.texture.getWidth()){
                 currentLine++;
-                currentPosX = 2 * charsDivisor + charsWidth[j];
+                currentPosX = 2 * charsDivisor + charsWidth[i];
                 testPosX = currentPosX;
 
-                defaultFont.recs[j].setX((float) charsDivisor);
-                defaultFont.recs[j].setY((float) (charsDivisor + currentLine * (charsHeight + charsDivisor)));
+                defaultFont.recs[i].setX((float) charsDivisor);
+                defaultFont.recs[i].setY((float) (charsDivisor + currentLine * (charsHeight + charsDivisor)));
             }
             else{
                 currentPosX = testPosX;
             }
 
             // NOTE: On default font character offsets and xAdvance are not required
-            defaultFont.glyphs[j].offsetX = 0;
-            defaultFont.glyphs[j].offsetY = 0;
-            defaultFont.glyphs[j].advanceX = 0;
+            defaultFont.glyphs[i].offsetX = 0;
+            defaultFont.glyphs[i].offsetY = 0;
+            defaultFont.glyphs[i].advanceX = 0;
 
             // Fill character image data from fontClear data
-            defaultFont.glyphs[j].image = rTextures.ImageFromImage(imFont, defaultFont.recs[j]);
+            if(i == 132)
+                System.out.println();
+            defaultFont.glyphs[i].image = rTextures.ImageFromImage(imFont, defaultFont.recs[i]);
         }
 
         rTextures.UnloadImage(imFont);
@@ -1265,9 +1267,6 @@ public class rText{
         return len;
     }
 
-    /*
-    TODO: Restore this method
-     */
     // Returns next codepoint in a UTF8 encoded text, scanning until '\0' is found
     // When a invalid UTF8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
     // Total number of bytes processed are returned as a parameter

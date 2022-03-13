@@ -4,7 +4,7 @@ public class Music{
 
     AudioStream stream;
     int frameCount;
-    boolean looping;
+    public boolean looping;
 
     int ctxType;
     long ctxData;

@@ -610,13 +610,28 @@ public class rTextures{
 
     public static Image ImageFromImage(Image image, Rectangle rectangle) {
         Image result = new Image();
+        int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
 
         // TODO: Check rec is valid?
         result.width = (int) rectangle.getWidth();
         result.height = (int) rectangle.getHeight();
-        result.data = image.data;
+        //result.data = image.data;
         result.format = image.format;
         result.mipmaps = 1;
+
+        byte[] data = new byte[(int) (rectangle.width*rectangle.height*bytesPerPixel)];
+        byte[] srcData = image.getData();
+
+        //memcpy(((unsigned char *)result.data) + y*(int)rec.width*bytesPerPixel, ((unsigned char *)image.data) + ((y + (int)rec.y)*image.width + (int)rec.x)*bytesPerPixel, (int)rec.width*bytesPerPixel);
+        // TODO: 11/03/2022 fix this.
+        //    ?System.arraycopy(srcData,((y + (int)rectangle.y)*image.width + (int)rectangle.x)*bytesPerPixel, data, y*(int)rectangle.width*bytesPerPixel, (int)rectangle.width*bytesPerPixel);
+         for (int y = (int) rectangle.y; y < rectangle.height; y+=rectangle.width*bytesPerPixel) {
+             for(int i = 0; i < rectangle.width*bytesPerPixel; i++) {
+                 data[i] = srcData[i+((y + (int)rectangle.y)*image.width + (int)rectangle.x)];
+             }
+         }
+
+        result.setData(data);
 
         return result;
     }

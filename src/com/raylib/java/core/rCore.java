@@ -1694,7 +1694,7 @@ public class rCore{
     }
 
     // Get filename string without extension (uses static string)
-    public String GetFileNameWithoutExt(String filePath){
+    public static String GetFileNameWithoutExt(String filePath){
 
         filePath = filePath.replace('\\', '/');
 

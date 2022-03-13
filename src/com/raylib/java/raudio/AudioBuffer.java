@@ -27,14 +27,16 @@ public class AudioBuffer{
 
     Buffer data;                       //Data buffer, on music stream keeps filling
 
-
     public AudioBuffer(){
         this.bufferId = alGenBuffers();
         this.sourceId = alGenSources();
+
+        isSubBufferProcessed = new boolean[2];
+        data = ByteBuffer.allocateDirect(512*Byte.SIZE*2);
     }
 
     void bufferData(String filetype, int format, int samplerate) {
-        if(filetype.equalsIgnoreCase("ogg")){
+        if(data instanceof ShortBuffer){
             alBufferData(bufferId, format, (ShortBuffer) data, samplerate);
         }
         else {

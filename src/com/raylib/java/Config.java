@@ -260,7 +260,7 @@ public class Config{
     /**
      * Support .xm to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_XM = true;
+    public static boolean SUPPORT_FILEFORMAT_XM = true;
     /**
      * Support .mod to be supported for loading
      */

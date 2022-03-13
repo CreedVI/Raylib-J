@@ -2,23 +2,94 @@ package com.raylib.java.raymath;
 
 public class Raymath{
 
+    /**********************************************************************************************
+     *
+     *   raymath v1.5 - Math functions to work with Vector2, Vector3, Matrix and Quaternions
+     *
+     *   CONVENTIONS:
+     *
+     *     - Functions are always self-contained, no function use another raymath function inside,
+     *       required code is directly re-implemented inside
+     *     - Functions input parameters are always received by value (2 unavoidable exceptions)
+     *     - Functions always use a variable named "result" for return
+     *     - Functions are always defined inline
+     *     - Angles are always in radians (DEG2RAD/RAD2DEG macros provided for convenience)
+     *
+     *
+     *   LICENSE: zlib/libpng
+     *
+     *   Copyright (c) 2015-2021 Ramon Santamaria (@raysan5)
+     *
+     *   This software is provided "as-is", without any express or implied warranty. In no event
+     *   will the authors be held liable for any damages arising from the use of this software.
+     *
+     *   Permission is granted to anyone to use this software for any purpose, including commercial
+     *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+     *
+     *     1. The origin of this software must not be misrepresented; you must not claim that you
+     *     wrote the original software. If you use this software in a product, an acknowledgment
+     *     in the product documentation would be appreciated but is not required.
+     *
+     *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+     *     as being the original software.
+     *
+     *     3. This notice may not be removed or altered from any source distribution.
+     *
+     **********************************************************************************************/
+
+
     public static float PI = 3.14159265358979323846f;
     public static float DEG2RAD = PI / 180.0f;
     public static float RAD2DEG = 180.0f / PI;
 
+    /**
+     * Clamp float value
+     * @param value value to clamp
+     * @param min floor for the value
+     * @param max ceiling for the value
+     * @return Clamped value
+     */
     public static float Clamp(float value, float min, float max){
-        float res = Math.max(value, min);
-        return Math.min(res, max);
+        float result = Math.max(value, min);
+
+        if (result > max) {
+            result = max;
+        }
+
+        return result;
     }
 
+    /**
+     * Calculate linear interpolation between two floats
+     * @param start start value of interpolation
+     * @param end end value of interpolation
+     * @param amount distance to interpolate
+     * @return linear interpolation of values
+     */
     public static float Lerp(float start, float end, float amount){
         return start + amount * (end - start);
     }
 
+    /**
+     * Normalize input value within input range
+     * @param value value to normalise
+     * @param start
+     * @param end
+     * @return normalised value
+     */
     public static float Normalize(float value, float start, float end){
         return (value - start) / (end - start);
     }
 
+    /**
+     * Remap input value within input range to output range
+     * @param value
+     * @param inputStart
+     * @param inputEnd
+     * @param outputStart
+     * @param outputEnd
+     * @return
+     */
     public static float Remap(float value, float inputStart, float inputEnd, float outputStart, float outputEnd){
         return (value - inputStart) / (inputEnd - inputStart) * (outputEnd - outputStart) + outputStart;
     }
@@ -27,30 +98,67 @@ public class Raymath{
      * Vector2 maths functions
      */
 
+    /**
+     * Vector with components value 0.0f
+     * @return Vector2 with value of (0, 0)
+     */
     public static Vector2 Vector2Zero(){
         return new Vector2();
     }
 
+    /**
+     * Vector with components value 1.0f
+     * @return Vector2 with value of (1, 1)
+     */
     public static Vector2 Vector2One(){
         return new Vector2(1, 1);
     }
 
+    /**
+     * Add two vectors (v1 + v2)
+     * @param v1 first Vector2 to add
+     * @param v2 second Vector2 to add
+     * @return sum of v1 and v2
+     */
     public static Vector2 Vector2Add(Vector2 v1, Vector2 v2){
         return new Vector2(v1.x + v2.x, v1.y + v2.y);
     }
 
+    /**
+     * Add vector and float value
+     * @param v Vector2 to add
+     * @param add float to add
+     * @return sum of v and add
+     */
     public static Vector2 Vector2Vector2AddValue(Vector2 v, float add){
         return new Vector2(v.x + add, v.y + add);
     }
 
+    /**
+     * Subtract two vectors (v1 - v2)
+     * @param v1 first Vector2 to subtract
+     * @param v2 second Vector2 to subtract
+     * @return difference between v1 and v2
+     */
     public static Vector2 Vector2Subtract(Vector2 v1, Vector2 v2){
         return new Vector2(v1.x - v2.x, v1.y - v2.y);
     }
 
+    /**
+     * Subtract vector by float value
+     * @param v Vector2
+     * @param sub value to subtract
+     * @return difference of v and sub
+     */
     public static Vector2 Vector2SubtractValue(Vector2 v, float sub){
         return new Vector2(v.x - sub, v.y - sub);
     }
 
+    /**
+     *  Calculate vector length
+     * @param v Vector2 to calculate
+     * @return Length of v
+     */
     public static float Vector2Length(Vector2 v){
         return (float) Math.sqrt((v.x * v.x) + (v.y + v.y));
     }
@@ -202,20 +310,18 @@ public class Raymath{
     }
 
     public static Vector3 Vector3Perpendicular(Vector3 v){
-        Vector3 result = new Vector3();
+        Vector3 result;
 
         float min = Math.abs(v.x);
         Vector3 cardinalAxis = new Vector3(1.0f, 0.0f, 0.0f);
 
         if (Math.abs(v.y) < min){
             min = Math.abs(v.y);
-            Vector3 tmp = new Vector3(0.0f, 1.0f, 0.0f);
-            cardinalAxis = tmp;
+            cardinalAxis = new Vector3(0.0f, 1.0f, 0.0f);
         }
 
         if (Math.abs(v.z) < min){
-            Vector3 tmp = new Vector3(0.0f, 0.0f, 1.0f);
-            cardinalAxis = tmp;
+            cardinalAxis = new Vector3(0.0f, 0.0f, 1.0f);
         }
 
         result = Vector3CrossProduct(v, cardinalAxis);
@@ -1064,12 +1170,11 @@ public class Raymath{
         {
             angle *= 0.5f;
 
-            float length = 0.0f;
-            float ilength = 0.0f;
+            float length;
+            float ilength;
 
             // Vector3Normalize(axis)
-            Vector3 v = axis;
-            length = (float) Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+            length = (float) Math.sqrt(axis.x* axis.x + axis.y* axis.y + axis.z* axis.z);
             if (length == 0.0f) length = 1.0f;
             ilength = 1.0f/length;
             axis.x *= ilength;
@@ -1085,14 +1190,13 @@ public class Raymath{
             result.w = cosres;
 
             // QuaternionNormalize(q);
-            Quaternion q = result;
-            length = (float) Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+            length = (float) Math.sqrt(result.x* result.x + result.y* result.y + result.z* result.z + result.w* result.w);
             if (length == 0.0f) length = 1.0f;
             ilength = 1.0f/length;
-            result.x = q.x*ilength;
-            result.y = q.y*ilength;
-            result.z = q.z*ilength;
-            result.w = q.w*ilength;
+            result.x = result.x*ilength;
+            result.y = result.y*ilength;
+            result.z = result.z*ilength;
+            result.w = result.w*ilength;
         }
 
         return result;
