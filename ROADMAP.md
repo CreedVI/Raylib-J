@@ -8,63 +8,62 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 ## 1.0 - The Big One-Dot-Oh Update
 <hr>
 
-[ ] Change versioning to match Raylib's (it's simpler that way)
+* [ ] Change versioning to match Raylib's (it's simpler that way)
 
-[ ] Convert method comments to JavaDoc comments
+* [ ] Convert method comments to JavaDoc comments
 
-[ ] Code cleanup
+* [ ] Code cleanup
 
-[ ] Support .jar and Gradle 
+* [ ] Support .jar and Gradle 
 
-[ ] Expose methods inline with Raylib Cheatsheet
+* [ ] Expose methods inline with Raylib Cheatsheet
 
 ## 0.6 - The Next Dimension Update
 <hr>
 
-[ ] rModels Module
+* [ ] rModels Module
 
-[ ] 3D Camera
+* [ ] 3D Camera
 
-## 0.5 - The Aural Update 
-### We are here!
+## 0.5 - The Aural Update <-{We are here!}
 <hr>
 
-[O] rAudio Module
-  - [X] MP3 audio
-  - [X] WAV audio
-  - [X] OGG audio
-  - [ ] FLAC audio
-  - [ ] XM audio
+* [ ] rAudio Module
+  * [X] MP3 audio
+  * [X] WAV audio
+  * [X] OGG audio
+  * [ ] FLAC audio
+  * [ ] XM audio
 
-[ ] Raymath JavaDoc comments
+* [ ] Raymath JavaDoc comments
 
 ## 0.4 - The Action Update
 <hr>
 
-[X] Physac Module
+* [X] Physac Module
 
-[X] 4,0 update
+* [X] 4,0 update
 
 ## 0.3 - The Enhanced Visual Update
 <hr>
 
-[X] - Refactor directories
+* [X] - Refactor directories
 
-[X] FileIO working
+* [X] FileIO working
 
-[X] Text module
+* [X] Text module
 
-[X] rLights
+* [X] rLights
 
 ## 0.2 - The Visual Update
 <hr>
 
-[X] Texture loading/rendering
+* [X] Texture loading/rendering
 
-[X] Textures module
+* [X] Textures module
 
-[X] Gamepad support
+* [X] Gamepad support
 
-[X] Fix font generation bug
+* [X] Fix font generation bug
 
-[X] 2D Camera
+* [X] 2D Camera
