@@ -223,8 +223,6 @@ public class rText{
             defaultFont.glyphs[i].advanceX = 0;
 
             // Fill character image data from fontClear data
-            if(i == 132)
-                System.out.println();
             defaultFont.glyphs[i].image = rTextures.ImageFromImage(imFont, defaultFont.recs[i]);
         }
 

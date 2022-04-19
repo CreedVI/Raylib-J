@@ -2,7 +2,6 @@ package com.raylib.java.raudio;
 
 import com.raylib.java.core.rCore;
 import com.raylib.java.utils.FileIO;
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
@@ -13,9 +12,7 @@ import org.lwjgl.system.MemoryStack;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -224,7 +221,6 @@ public class rAudio{
         // Loading wave from memory data
         if (fileData != null) {
             wave = LoadWaveFromMemory(rCore.GetFileExtension(fileName), fileData, fileSize);
-
         }
 
         return wave;
@@ -272,7 +268,7 @@ public class rAudio{
         //elif flac
         else if(SUPPORT_FILEFORMAT_MP3 && fileType.equalsIgnoreCase(".mp3")) {
             try {
-                fr.delthas.javamp3.Sound mp3Sound = new fr.delthas.javamp3.Sound(new ByteInputStream(fileData, fileData.length));
+                fr.delthas.javamp3.Sound mp3Sound = new fr.delthas.javamp3.Sound(new ByteArrayInputStream(fileData));
 
                 byte[] mp3Data = new byte[fileData.length];
                 int read = mp3Sound.read(mp3Data);
@@ -814,7 +810,7 @@ public class rAudio{
         int frameCountToStream;
         int framesLeft = music.frameCount - music.stream.buffer.framesProcessed;
 
-        Buffer pcm = ByteBuffer.allocateDirect(subBufferSizeInFrames*music.stream.channels*music.stream.sampleSize/8);
+        Buffer pcm;
 
         while(IsAudioStreamProcessed(music.stream)) {
             frameCountToStream = Math.min(framesLeft, subBufferSizeInFrames);
@@ -903,6 +899,7 @@ public class rAudio{
 
     // Get music time length (in seconds)
     public float GetMusicTimeLength(Music music)  {
+
         return (float) music.frameCount/music.stream.sampleRate;
     }
 
@@ -994,9 +991,14 @@ public class rAudio{
                     }
 
                     int bytesToWrite = framesToWrite * stream.channels * (stream.sampleSize / 8);
-                    for(int i = 0; i < data.capacity(); i++) {
+                    for(int i = 0; i < bytesToWrite; i++) {
                         //((ByteBuffer) stream.buffer.data).put(subBuffer+i, ((ByteBuffer)data).get(i));
-                        ((ByteBuffer) stream.buffer.data).put(subBuffer + i, ((ByteBuffer)data).get(i));
+                        if(stream.buffer.data instanceof ByteBuffer) {
+                            ((ByteBuffer) stream.buffer.data).put(subBuffer + i, ((ByteBuffer) data).get(i));
+                        }
+                        else if(stream.buffer.data instanceof ShortBuffer) {
+                            ((ShortBuffer) stream.buffer.data).put(subBuffer + i, ((ShortBuffer) data).get(i));
+                        }
                     }
 
                     // Any leftover frames should be filled with zeros.
@@ -1004,7 +1006,12 @@ public class rAudio{
 
                     if(leftoverFrameCount > 0) {
                         for(int i = 0; i < leftoverFrameCount * stream.channels * (stream.sampleSize / 8); i++) {
-                            ((ByteBuffer) stream.buffer.data).put(subBuffer+bytesToWrite+i, (byte) 0);
+                            if(stream.buffer.data instanceof ByteBuffer) {
+                                ((ByteBuffer) stream.buffer.data).put(subBuffer + bytesToWrite + i, (byte) 0);
+                            }
+                            else if(stream.buffer.data instanceof ShortBuffer) {
+                                ((ShortBuffer) stream.buffer.data).put(subBuffer + bytesToWrite + i, (byte) 0);
+                            }
                         }
                     }
 

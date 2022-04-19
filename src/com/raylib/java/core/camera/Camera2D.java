@@ -12,6 +12,8 @@ public class Camera2D extends rCamera{
     public Camera2D() {
         target = new Vector2();
         offset = new Vector2();
+        rotation = 0.0f;
+        zoom = 1.0f;
     }
 
     public Camera2D(Vector2 offset, Vector2 target, float rotation, float zoom) {
