@@ -2773,7 +2773,6 @@ public class rCore{
         input.gamepad.setReady(gamepadReady);
 
         // Register gamepads buttons events
-
         for (int i = 0; i < MAX_GAMEPADS; i++){
             if (input.gamepad.getReady()[i]){     // Check if gamepad is available
                 // Register previous gamepad states

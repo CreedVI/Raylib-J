@@ -264,7 +264,7 @@ public class Config{
     /**
      * Support .mod to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_MOD = true;
+    public static boolean SUPPORT_FILEFORMAT_MOD = true;
     /**
      * Support .mp3 to be supported for loading
      */
@@ -272,7 +272,7 @@ public class Config{
     /**
      * Support .flac to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_FLAC = true;
+    public static boolean SUPPORT_FILEFORMAT_FLAC = true;
 
     // audio: Configuration values
     //------------------------------------------------------------------------------------
