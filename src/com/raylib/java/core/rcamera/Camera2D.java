@@ -1,8 +1,8 @@
-package com.raylib.java.core.camera;
+package com.raylib.java.core.rcamera;
 
 import com.raylib.java.raymath.Vector2;
 
-public class Camera2D extends rCamera{
+public class Camera2D {
 
     public Vector2 target;          // rCamera target (rotation and zoom origin)
     public Vector2 offset;          // rCamera offset (displacement from target)
@@ -21,10 +21,6 @@ public class Camera2D extends rCamera{
         this.target = target;
         this.rotation = rotation;
         this.zoom = zoom;
-    }
-
-    @Override
-    public void update() {
     }
 
     public Vector2 getTarget() {

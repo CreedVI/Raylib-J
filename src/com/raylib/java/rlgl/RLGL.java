@@ -123,6 +123,8 @@ public class RLGL{
     public static final int RL_PROJECTION = 0x1701;      // GL_PROJECTION
     public static final int RL_TEXTURE = 0x1702;      // GL_TEXTURE
 
+    public static final int RLJ_TRANSFORM = 0x1703;
+
     // Primitive assembly draw modes
     public static final int RL_LINES = 0x0001;      // GL_LINES
     public static final int RL_TRIANGLES = 0x0004;      // GL_TRIANGLES

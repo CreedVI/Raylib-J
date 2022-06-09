@@ -502,7 +502,7 @@ public class rTextures{
         }
 
         for (int i = 0; i < width * height; i++) {
-            if (rCore.GetRandomValue(0, 99) < (int) (factor * 100.0f)) {
+            if ((Math.random() * (99 - 0 + 1) + 0)< (int) (factor * 100.0f)) {
                 pixels[i] = WHITE;
             }
             else{
@@ -527,8 +527,8 @@ public class rTextures{
         Vector2[] seeds = new Vector2[seedsCount];
 
         for (int i = 0; i < seedsCount; i++) {
-            int y = (i / seedsPerRow) * tileSize + rCore.GetRandomValue(0, tileSize - 1);
-            int x = (i % seedsPerRow) * tileSize + rCore.GetRandomValue(0, tileSize - 1);
+            int y = (int) ((i / seedsPerRow) * tileSize + ((Math.random() * (tileSize - 1) - 0 + 1) + 0));
+            int x = (int) ((i % seedsPerRow) * tileSize + ((Math.random() * (tileSize - 1) - 0 + 1) + 0));
             seeds[i] = new Vector2((float) x, (float) y);
         }
 

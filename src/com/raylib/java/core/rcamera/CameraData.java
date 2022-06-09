@@ -1,4 +1,4 @@
-package com.raylib.java.core.camera;
+package com.raylib.java.core.rcamera;
 
 import com.raylib.java.raymath.Vector2;
 
@@ -9,7 +9,7 @@ public class CameraData{
 
     public int
             MoveFront = KEY_W,
-            MoveBack = KEY_A,
+            MoveBack = KEY_S,
             MoveLeft = KEY_A,
             MoveRight = KEY_D,
             MoveUp = KEY_Q,
@@ -18,7 +18,7 @@ public class CameraData{
             altControl = KEY_LEFT_ALT,
             panControl = MOUSE_BUTTON_MIDDLE;
 
-    rCamera.CameraMode mode;              // Current camera mode
+    int mode;              // Current camera mode
     float targetDistance;           // rCamera distance from position to target
     float playerEyesPosition;       // Player eyes position from ground (in meters)
     Vector2 angle;                  // rCamera angle in plane XZ
@@ -27,7 +27,7 @@ public class CameraData{
     int[] moveControl;             // Move controls (CAMERA_FIRST_PERSON)
 
     public CameraData() {
-        mode = rCamera.CameraMode.CAMERA_CUSTOM;
+        mode = Camera3D.CameraMode.CAMERA_CUSTOM;
         targetDistance = 0;
         playerEyesPosition = 1.85f;
         angle = new Vector2();

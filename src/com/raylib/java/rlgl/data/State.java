@@ -12,7 +12,8 @@ public  class State{                    // Renderer state
     public byte colorr, colorg, colorb, colora; // Current active color (added on glVertex*())
 
     public int currentMatrixMode;              // Current matrix mode
-    public Matrix currentMatrix;               // Current matrix pointer
+
+    public Matrix currentMatrix;
     public Matrix modelview;                   // Default modelview matrix
     public Matrix projection;                  // Default projection matrix
     public Matrix transform;                   // Transform matrix to be used with rlTranslate, rlRotate, rlScale
@@ -46,34 +47,26 @@ public  class State{                    // Renderer state
         activeTextureId = new int[MAX_BATCH_ACTIVE_TEXTURES];
         projectionStereo = new Matrix[2];
         viewOffsetStereo = new Matrix[2];
+        currentMatrix = new Matrix();
+        modelview = new Matrix();
+        projection = new Matrix();
     }
 
     public Matrix getCurrentMatrix(){
-        if(currentMatrixMode == RL_PROJECTION){
-            return projection;
-        }
-        else {
-            return modelview;
-        }
+        return currentMatrix;
     }
 
     public void setCurrentMatrix(Matrix currentMatrix){
+        this.currentMatrix = currentMatrix;
 
-        if(currentMatrixMode == RL_PROJECTION){
-            projection = currentMatrix;
+        if (currentMatrixMode == RL_MODELVIEW) {
+            modelview = this.currentMatrix;
         }
-        else if(currentMatrixMode == RL_MODELVIEW){
-            modelview = currentMatrix;
+        else if (currentMatrixMode == RL_PROJECTION) {
+            projection = this.currentMatrix;
         }
-    }
-
-    public void setCurrentMatrix(int mode, Matrix currentMatrix){
-
-        if(mode == RL_PROJECTION){
-            projection = currentMatrix;
-        }
-        else if(mode == RL_MODELVIEW){
-            modelview = currentMatrix;
+        else if (currentMatrixMode == RLJ_TRANSFORM) {
+            transform = this.currentMatrix;
         }
     }
 
@@ -162,7 +155,27 @@ public  class State{                    // Renderer state
     }
 
     public void setCurrentMatrixMode(int currentMatrixMode){
+        if (this.currentMatrixMode == RL_MODELVIEW) {
+            modelview = currentMatrix;
+        }
+        else if (this.currentMatrixMode == RL_PROJECTION) {
+            projection = currentMatrix;
+        }
+        else if (this.currentMatrixMode == RLJ_TRANSFORM) {
+            transform = currentMatrix;
+        }
+
         this.currentMatrixMode = currentMatrixMode;
+
+        if (currentMatrixMode == RL_MODELVIEW) {
+            this.currentMatrix = modelview;
+        }
+        else if (currentMatrixMode == RL_PROJECTION) {
+            this.currentMatrix = projection;
+        }
+        else if (currentMatrixMode == RLJ_TRANSFORM) {
+            this.currentMatrix = transform;
+        }
     }
 
     public Matrix getModelview(){

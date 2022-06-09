@@ -49,10 +49,10 @@ public class Matrix{
     }
 
     public Matrix(float[] mat){
-        this.m0  = mat[0];     this.m1  = mat[4];     this.m2  = mat[8];     this.m3  = mat[12];
-        this.m4  = mat[1];     this.m5  = mat[5];     this.m6  = mat[9];     this.m7  = mat[13];
-        this.m8  = mat[2];     this.m9  = mat[6];     this.m10 = mat[10];    this.m11 = mat[14];
-        this.m12 = mat[3];     this.m13 = mat[7];     this.m14 = mat[11];    this.m15 = mat[15];
+        this.m0  = mat[0];     this.m4  = mat[4];     this.m8  = mat[8];     this.m12 = mat[12];
+        this.m1  = mat[1];     this.m5  = mat[5];     this.m9  = mat[9];     this.m13 = mat[13];
+        this.m2  = mat[2];     this.m6  = mat[6];     this.m10 = mat[10];    this.m14 = mat[14];
+        this.m3 = mat[3];      this.m7  = mat[7];     this.m11 = mat[11];    this.m15 = mat[15];
     }
 
     public String toString() {

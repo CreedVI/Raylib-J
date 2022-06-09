@@ -69,7 +69,7 @@ version!
 [X] rTextures <br>
 [X] rText <br>
 [o] rModels <br>
-[ ] rAudio <br>
+[O] rAudio <br>
 [X] RLGL <br>
 [X] Raymath <br>
 [X] Physac <br>

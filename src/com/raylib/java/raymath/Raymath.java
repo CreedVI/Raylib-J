@@ -641,22 +641,22 @@ public class Raymath{
     public static Matrix MatrixMultiply(Matrix left, Matrix right){
         Matrix result = new Matrix();
 
-        result.m0 = left.m0 * right.m0 + left.m1 * right.m4 + left.m2 * right.m8 + left.m3 * right.m12;
-        result.m1 = left.m0 * right.m1 + left.m1 * right.m5 + left.m2 * right.m9 + left.m3 * right.m13;
-        result.m2 = left.m0 * right.m2 + left.m1 * right.m6 + left.m2 * right.m10 + left.m3 * right.m14;
-        result.m3 = left.m0 * right.m3 + left.m1 * right.m7 + left.m2 * right.m11 + left.m3 * right.m15;
-        result.m4 = left.m4 * right.m0 + left.m5 * right.m4 + left.m6 * right.m8 + left.m7 * right.m12;
-        result.m5 = left.m4 * right.m1 + left.m5 * right.m5 + left.m6 * right.m9 + left.m7 * right.m13;
-        result.m6 = left.m4 * right.m2 + left.m5 * right.m6 + left.m6 * right.m10 + left.m7 * right.m14;
-        result.m7 = left.m4 * right.m3 + left.m5 * right.m7 + left.m6 * right.m11 + left.m7 * right.m15;
-        result.m8 = left.m8 * right.m0 + left.m9 * right.m4 + left.m10 * right.m8 + left.m11 * right.m12;
-        result.m9 = left.m8 * right.m1 + left.m9 * right.m5 + left.m10 * right.m9 + left.m11 * right.m13;
-        result.m10 = left.m8 * right.m2 + left.m9 * right.m6 + left.m10 * right.m10 + left.m11 * right.m14;
-        result.m11 = left.m8 * right.m3 + left.m9 * right.m7 + left.m10 * right.m11 + left.m11 * right.m15;
-        result.m12 = left.m12 * right.m0 + left.m13 * right.m4 + left.m14 * right.m8 + left.m15 * right.m12;
-        result.m13 = left.m12 * right.m1 + left.m13 * right.m5 + left.m14 * right.m9 + left.m15 * right.m13;
-        result.m14 = left.m12 * right.m2 + left.m13 * right.m6 + left.m14 * right.m10 + left.m15 * right.m14;
-        result.m15 = left.m12 * right.m3 + left.m13 * right.m7 + left.m14 * right.m11 + left.m15 * right.m15;
+        result.m0 = left.m0*right.m0 + left.m1*right.m4 + left.m2*right.m8 + left.m3*right.m12;
+        result.m1 = left.m0*right.m1 + left.m1*right.m5 + left.m2*right.m9 + left.m3*right.m13;
+        result.m2 = left.m0*right.m2 + left.m1*right.m6 + left.m2*right.m10 + left.m3*right.m14;
+        result.m3 = left.m0*right.m3 + left.m1*right.m7 + left.m2*right.m11 + left.m3*right.m15;
+        result.m4 = left.m4*right.m0 + left.m5*right.m4 + left.m6*right.m8 + left.m7*right.m12;
+        result.m5 = left.m4*right.m1 + left.m5*right.m5 + left.m6*right.m9 + left.m7*right.m13;
+        result.m6 = left.m4*right.m2 + left.m5*right.m6 + left.m6*right.m10 + left.m7*right.m14;
+        result.m7 = left.m4*right.m3 + left.m5*right.m7 + left.m6*right.m11 + left.m7*right.m15;
+        result.m8 = left.m8*right.m0 + left.m9*right.m4 + left.m10*right.m8 + left.m11*right.m12;
+        result.m9 = left.m8*right.m1 + left.m9*right.m5 + left.m10*right.m9 + left.m11*right.m13;
+        result.m10 = left.m8*right.m2 + left.m9*right.m6 + left.m10*right.m10 + left.m11*right.m14;
+        result.m11 = left.m8*right.m3 + left.m9*right.m7 + left.m10*right.m11 + left.m11*right.m15;
+        result.m12 = left.m12*right.m0 + left.m13*right.m4 + left.m14*right.m8 + left.m15*right.m12;
+        result.m13 = left.m12*right.m1 + left.m13*right.m5 + left.m14*right.m9 + left.m15*right.m13;
+        result.m14 = left.m12*right.m2 + left.m13*right.m6 + left.m14*right.m10 + left.m15*right.m14;
+        result.m15 = left.m12*right.m3 + left.m13*right.m7 + left.m14*right.m11 + left.m15*right.m15;
 
         return result;
     }
@@ -885,27 +885,51 @@ public class Raymath{
     public static Matrix MatrixLookAt(Vector3 eye, Vector3 target, Vector3 up){
         Matrix result = new Matrix();
 
-        Vector3 z = Vector3Subtract(eye, target);
-        z = Vector3Normalize(z);
-        Vector3 x = Vector3CrossProduct(up, z);
-        x = Vector3Normalize(x);
-        Vector3 y = Vector3CrossProduct(z, x);
+        float length = 0.0f;
+        float ilength = 0.0f;
 
-        result.m0 = x.x;
-        result.m1 = y.x;
-        result.m2 = z.x;
+        // Vector3Subtract(eye, target)
+        Vector3 vz = new Vector3(eye.x - target.x, eye.y - target.y, eye.z - target.z);
+
+        // Vector3Normalize(vz)
+        Vector3 v = vz;
+        length = (float) Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+        if (length == 0.0f) length = 1.0f;
+        ilength = 1.0f/length;
+        vz.x *= ilength;
+        vz.y *= ilength;
+        vz.z *= ilength;
+
+        // Vector3CrossProduct(up, vz)
+        Vector3 vx = new Vector3(up.y*vz.z - up.z*vz.y, up.z*vz.x - up.x*vz.z, up.x*vz.y - up.y*vz.x);
+
+        // Vector3Normalize(x)
+        v = vx;
+        length = (float) Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+        if (length == 0.0f) length = 1.0f;
+        ilength = 1.0f/length;
+        vx.x *= ilength;
+        vx.y *= ilength;
+        vx.z *= ilength;
+
+        // Vector3CrossProduct(vz, vx)
+        Vector3 vy = new Vector3(vz.y*vx.z - vz.z*vx.y, vz.z*vx.x - vz.x*vx.z, vz.x*vx.y - vz.y*vx.x);
+
+        result.m0 = vx.x;
+        result.m1 = vy.x;
+        result.m2 = vz.x;
         result.m3 = 0.0f;
-        result.m4 = x.y;
-        result.m5 = y.y;
-        result.m6 = z.y;
+        result.m4 = vx.y;
+        result.m5 = vy.y;
+        result.m6 = vz.y;
         result.m7 = 0.0f;
-        result.m8 = x.z;
-        result.m9 = y.z;
-        result.m10 = z.z;
+        result.m8 = vx.z;
+        result.m9 = vy.z;
+        result.m10 = vz.z;
         result.m11 = 0.0f;
-        result.m12 = -Vector3DotProduct(x, eye);
-        result.m13 = -Vector3DotProduct(y, eye);
-        result.m14 = -Vector3DotProduct(z, eye);
+        result.m12 = -(vx.x*eye.x + vx.y*eye.y + vx.z*eye.z);   // Vector3DotProduct(vx, eye)
+        result.m13 = -(vy.x*eye.x + vy.y*eye.y + vy.z*eye.z);   // Vector3DotProduct(vy, eye)
+        result.m14 = -(vz.x*eye.x + vz.y*eye.y + vz.z*eye.z);   // Vector3DotProduct(vz, eye)
         result.m15 = 1.0f;
 
         return result;

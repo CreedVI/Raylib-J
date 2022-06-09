@@ -1,8 +1,8 @@
 package com.raylib.java.core;
 
 import com.raylib.java.Config;
-import com.raylib.java.core.camera.Camera2D;
-import com.raylib.java.core.camera.Camera3D;
+import com.raylib.java.core.rcamera.Camera2D;
+import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.core.input.Input;
 import com.raylib.java.core.ray.Ray;
 import com.raylib.java.raymath.Matrix;
@@ -38,14 +38,14 @@ import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.AutomationEvent.AutomationEventType.*;
 import static com.raylib.java.core.Color.RAYWHITE;
-import static com.raylib.java.core.camera.rCamera.CameraProjection.CAMERA_ORTHOGRAPHIC;
-import static com.raylib.java.core.camera.rCamera.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_LEFT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadButton.*;
 import static com.raylib.java.core.input.Keyboard.KEY_ESCAPE;
 import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
 import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
+import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_ORTHOGRAPHIC;
+import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
@@ -160,6 +160,7 @@ public class rCore{
         window.ready = InitGraphicsDevice(width, height);
 
         if (!window.ready){
+            System.exit(-1);
             return;
         }
 
@@ -1013,6 +1014,7 @@ public class rCore{
             double right = top * aspect;
 
             RLGL.rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC){
             // Setup orthographic projection
@@ -1030,7 +1032,6 @@ public class rCore{
         // Setup rCamera view
         Matrix matView = MatrixLookAt(camera.getPosition(), camera.getTarget(), camera.getUp());
         RLGL.rlMultMatrixf(MatrixToFloat(matView));      // Multiply modelview matrix by view matrix (camera)
-
         rlgl.rlEnableDepthTest();                // Enable DEPTH_TEST for 3D
     }
 
@@ -1646,7 +1647,7 @@ public class rCore{
      * @param max Maximum value of random number
      * @return Random value between the <code>min/code> and <code>max</code>
      */
-    public static int GetRandomValue(int min, int max){
+    public int GetRandomValue(int min, int max){
         if (min > max){
             int tmp = max;
             max = min;
