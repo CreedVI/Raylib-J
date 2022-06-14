@@ -427,7 +427,7 @@ public class RLGL{
 
     // Define one vertex (position)
     // NOTE: Vertex position data is the basic information required for drawing
-    void rlVertex3f(float x, float y, float z){
+    public static void rlVertex3f(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
             GL_33.rlVertex3f(x, y, z);
         }
@@ -499,7 +499,7 @@ public class RLGL{
     }
 
     // Define one vertex (color)
-    void rlColor3f(float x, float y, float z){
+    public static void rlColor3f(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
             GL_33.rlColor3f(x, y, z);
         }
