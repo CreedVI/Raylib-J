@@ -4,7 +4,7 @@ import static com.raylib.java.rlgl.RLGL.MAX_SHADER_LOCATIONS;
 
 public class Shader {
 
-    int id;                 // Shader program id
+    public int id;                 // Shader program id
     public int[] locs;              // Shader locations array (MAX_SHADER_LOCATIONS)
 
     public Shader() {

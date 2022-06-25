@@ -1,8 +1,10 @@
 package com.raylib.java.utils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -22,8 +24,13 @@ public class FileIO{
 
         if (SUPPORT_STANDARD_FILEIO){
 
-            InputStream inputStream = FileIO.class.getClassLoader().getResourceAsStream(fileName);
-
+            InputStream inputStream;
+            if (fileName.contains("/")) {
+                inputStream = FileIO.class.getResourceAsStream(fileName.substring(fileName.lastIndexOf('/')));
+            }
+            else {
+                inputStream = FileIO.class.getResourceAsStream("/"+fileName);
+            }
             if(inputStream == null) {
                 String ext = fileName.substring(fileName.lastIndexOf('.')).toUpperCase();
                 inputStream = getFileFromResourceAsStream(fileName.substring(0, fileName.lastIndexOf('.'))+ext);
@@ -31,29 +38,13 @@ public class FileIO{
 
             if (inputStream != null) {
                 try{
-                    BufferedReader breader = new BufferedReader(new InputStreamReader(inputStream));
-                    String contents = breader.lines().collect(Collectors.joining());
-                    data = new byte[contents.length()];
-                    for (int i = 0; i < data.length; i++){
-                        data[i] = (byte) contents.charAt(i);
-                    }
+                    data = new byte[inputStream.available()];
+                    inputStream.read(data);
                 } catch (Exception e){
                     e.printStackTrace();
                 }
             }
-            else{
-                try{
-                    File tmp = new File(fileName);
-                    data = Files.readAllBytes(tmp.toPath());
-                } catch (NoSuchFileException e){
-                    Tracelog(LOG_WARNING, "FILEIO: File does not exist: " + fileName);
-                }
-                if(data == null){
-                    Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid\n\t" + fileName);
-                }
-            }
         }
-
         else{
             Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
         }
@@ -115,13 +106,16 @@ public class FileIO{
      */
     public static String LoadFileText(String fileName) throws IOException{
         if (fileName != null){
-            String text;
-            Path path = Paths.get(fileName);
+
             if (SUPPORT_STANDARD_FILEIO){
-                if (path.toFile().exists()){
-                    text = Files.readAllLines(path).stream().collect(Collectors.joining(System.lineSeparator()));
-                    Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Text file loaded successfully");
-                    return text;
+
+                InputStream inputStream = FileIO.class.getResourceAsStream(fileName.substring(fileName.lastIndexOf('/')));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String tmp = reader.lines().collect(Collectors.joining());
+
+                if (tmp != null) {
+                    return tmp;
                 }
                 else{
                     Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to open text file");

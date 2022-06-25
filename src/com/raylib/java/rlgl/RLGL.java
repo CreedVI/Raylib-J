@@ -41,7 +41,7 @@ public class RLGL{
     //*********************
     //GL API VERSION
     //*********************
-    private static boolean GRAPHICS_API_OPENGL_11 = false;
+    public static boolean GRAPHICS_API_OPENGL_11 = false;
     private static boolean GRAPHICS_API_OPENGL_21 = false;
     public static boolean GRAPHICS_API_OPENGL_33 = true;
     public static boolean GRAPHICS_API_OPENGL_43 = false;
@@ -294,7 +294,7 @@ public class RLGL{
                 RL_SHADER_UNIFORM_SAMPLER2D = 8; // Shader uniform type: sampler2d
     }
 
-    static class rlShaderAttributeDataType{
+    public static class rlShaderAttributeDataType{
         public static final int
                 RL_SHADER_ATTRIB_FLOAT = 0,        // Shader attribute type: float
                 RL_SHADER_ATTRIB_VEC2 = 1,        // Shader attribute type: vec2 (2 float)
@@ -560,13 +560,13 @@ public class RLGL{
     }
 
     // Select and active a texture slot
-    public void rlActiveTextureSlot(int slot) {
+    public static void rlActiveTextureSlot(int slot) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2)
             glActiveTexture(GL_TEXTURE0 + slot);
     }
 
     // Enable texture
-    public void rlEnableTexture(int id)
+    public static void rlEnableTexture(int id)
     {
         if(GRAPHICS_API_OPENGL_11){
             glEnable(GL_TEXTURE_2D);
@@ -583,7 +583,7 @@ public class RLGL{
     }
 
     // Enable texture cubemap
-    void rlEnableTextureCubemap(int id){
+    public static void rlEnableTextureCubemap(int id){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glEnable(GL_TEXTURE_CUBE_MAP);   // rCore in OpenGL 1.4
             glBindTexture(GL_TEXTURE_CUBE_MAP, id);
@@ -591,7 +591,7 @@ public class RLGL{
     }
 
     // Disable texture cubemap
-    void rlDisableTextureCubemap(){
+    public static void rlDisableTextureCubemap(){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDisable(GL_TEXTURE_CUBE_MAP);
             glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -656,7 +656,7 @@ public class RLGL{
     }
 
     // Disable shader program usage
-    void rlDisableShader(){
+    public static void rlDisableShader(){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glUseProgram(0);
         }
@@ -764,7 +764,7 @@ public class RLGL{
     }
 
     // Enable wire mode
-    public void rlEnableWireMode(){
+    public static void rlEnableWireMode(){
         if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
             // NOTE: glPolygonMode() not available on OpenGL ES
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -772,7 +772,7 @@ public class RLGL{
     }
 
     // Disable wire mode
-    public void rlDisableWireMode(){
+    public static void rlDisableWireMode(){
         if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
             // NOTE: glPolygonMode() not available on OpenGL ES
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -815,7 +815,7 @@ public class RLGL{
         }
     }
 
-    public boolean rlIsStereoRendererEnabled(){
+    public static boolean rlIsStereoRendererEnabled(){
         return rlglData.getState().isStereoRender();
     }
 
@@ -1320,7 +1320,7 @@ public class RLGL{
         return version;
     }
 
-    public int rlGetFramebufferWidth(){
+    public static int rlGetFramebufferWidth(){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             return rlglData.getState().getFramebufferWidth();
         }
@@ -1329,7 +1329,7 @@ public class RLGL{
         }
     }
 
-    public int rlGetFramebufferHeight(){
+    public static int rlGetFramebufferHeight(){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             return rlglData.getState().getFramebufferHeight();
         }
@@ -1340,7 +1340,7 @@ public class RLGL{
 
     // Get default internal texture (white texture)
     // NOTE: Default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-    public int rlGetTextureIdDefault() {
+    public static int rlGetTextureIdDefault() {
         int id = 0;
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             id = rlglData.getState().defaultTextureId;
@@ -1349,7 +1349,7 @@ public class RLGL{
     }
 
     // Get default shader id
-    public int rlGetShaderIdDefault() {
+    public static int rlGetShaderIdDefault() {
         int id = 0;
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             id = rlglData.getState().defaultShaderId;
@@ -1358,7 +1358,7 @@ public class RLGL{
     }
 
     // Get default shader locs
-    public int[] rlGetShaderLocsDefault() {
+    public static int[] rlGetShaderLocsDefault() {
         int[] locs = null;
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             locs = rlglData.getState().defaultShaderLocs;
@@ -2719,7 +2719,7 @@ public class RLGL{
     //-----------------------------------------------------------------------------------------
 
     // Load a new attributes buffer
-    public int rlLoadVertexBuffer(float[] buffer, boolean dynamic){
+    public static int rlLoadVertexBuffer(float[] buffer, boolean dynamic){
         int id = 0;
 
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2732,7 +2732,7 @@ public class RLGL{
     }
 
     // Load a new attributes element buffer
-    public int rlLoadVertexBufferElement(float[] buffer, boolean dynamic){
+    public static int rlLoadVertexBufferElement(float[] buffer, boolean dynamic){
         int id = 0;
 
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -2745,28 +2745,28 @@ public class RLGL{
     }
 
     // Enable vertex buffer (VBO)
-    public void rlEnableVertexBuffer(int id) {
+    public static void rlEnableVertexBuffer(int id) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ARRAY_BUFFER, id);
         }
     }
 
     // Disable vertex buffer (VBO)
-    public void rlDisableVertexBuffer() {
+    public static void rlDisableVertexBuffer() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
     }
 
     // Enable vertex buffer element (VBO Element)
-    public void rlEnableVertexBufferElement(int id) {
+    public static void rlEnableVertexBufferElement(int id) {
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
         }
     }
 
     // Disable vertex buffer element (VBO Element)
-    public void rlDisableVertexBufferElement() {
+    public static void rlDisableVertexBufferElement() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
@@ -2774,9 +2774,20 @@ public class RLGL{
 
     // Update vertex buffer with new data
     // NOTE: dataSize and offset must be provided in bytes
-    public void rlUpdateVertexBuffer(int id, byte[] data, int offset) {
+    public static void rlUpdateVertexBuffer(int id, byte[] data, int offset) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
+            dataBuffer.put(data).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, id);
+            glBufferSubData(GL_ARRAY_BUFFER, offset, dataBuffer);
+        }
+    }
+
+    // Update vertex buffer with new data
+    // NOTE: dataSize and offset must be provided in bytes
+    public static void rlUpdateVertexBuffer(int id, float[] data, int offset) {
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            FloatBuffer dataBuffer = FloatBuffer.allocate(data.length);
             dataBuffer.put(data).flip();
             glBindBuffer(GL_ARRAY_BUFFER, id);
             glBufferSubData(GL_ARRAY_BUFFER, offset, dataBuffer);
@@ -2796,7 +2807,7 @@ public class RLGL{
     }
 
     // Enable vertex array object (VAO)
-    public boolean rlEnableVertexArray(int vaoId) {
+    public static boolean rlEnableVertexArray(int vaoId) {
         boolean result = false;
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getExtSupported().isVao()){
@@ -2808,7 +2819,7 @@ public class RLGL{
     }
 
     // Disable vertex array object (VAO)
-    public void rlDisableVertexArray() {
+    public static void rlDisableVertexArray() {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getExtSupported().isVao()){
                 glBindVertexArray(0);
@@ -2817,26 +2828,31 @@ public class RLGL{
     }
 
     // Enable vertex attribute index
-    public void rlEnableVertexAttribute(int index) {
+    public static void rlEnableVertexAttribute(int index) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glEnableVertexAttribArray(index);
         }
     }
 
     // Disable vertex attribute index
-    public void rlDisableVertexAttribute(int index) {
+    public static void rlDisableVertexAttribute(int index) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDisableVertexAttribArray(index);
         }
     }
 
     // Draw vertex array
-    public void rlDrawVertexArray(int offset, int count) {
+    public static void rlDrawVertexArray(int offset, int count) {
         glDrawArrays(GL_TRIANGLES, offset, count);
     }
 
     // Draw vetex array elements
-    public void rlDrawVertexArrayElements(int offset, int count, byte[] buffer) {
+    public static void rlDrawVertexArrayElements(int offset, int count, byte[] buffer) {
+        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, buffer.length + offset);
+    }
+
+    // Draw vetex array elements
+    public static void rlDrawVertexArrayElements(int offset, int count, float[] buffer) {
         glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, buffer.length + offset);
     }
 
@@ -2855,7 +2871,31 @@ public class RLGL{
     }
 
     // Enable vertex state pointer
-    public void rlEnableStatePointer(int vertexAttribType, int[] buffer){
+    public static void rlEnableStatePointer(int vertexAttribType, byte[] buffer){
+        if (GRAPHICS_API_OPENGL_11){
+            if (buffer != null) glEnableClientState(vertexAttribType);
+            switch (vertexAttribType){
+                case GL_VERTEX_ARRAY:
+                    glVertexPointer(3, GL_FLOAT, 0, buffer.length);
+                    break;
+                case GL_TEXTURE_COORD_ARRAY:
+                    glTexCoordPointer(2, GL_FLOAT, 0, buffer.length);
+                    break;
+                case GL_NORMAL_ARRAY:
+                    if (buffer != null) glNormalPointer(GL_FLOAT, 0, buffer.length);
+                    break;
+                case GL_COLOR_ARRAY:
+                    if (buffer != null) glColorPointer(4, GL_UNSIGNED_BYTE, 0, buffer.length);
+                    break;
+                //case GL_INDEX_ARRAY: if (buffer != NULL) glIndexPointer(GL_SHORT, 0, buffer); break; // Indexed colors
+                default:
+                    break;
+            }
+        }
+    }
+
+    // Enable vertex state pointer
+    public static void rlEnableStatePointer(int vertexAttribType, float[] buffer){
         if (GRAPHICS_API_OPENGL_11){
             if (buffer != null) glEnableClientState(vertexAttribType);
             switch (vertexAttribType){
@@ -2879,14 +2919,14 @@ public class RLGL{
     }
 
     // Disable vertex state pointer
-    public void rlDisableStatePointer(int vertexAttribType){
+    public static void rlDisableStatePointer(int vertexAttribType){
         if(GRAPHICS_API_OPENGL_11){
             glDisableClientState(vertexAttribType);
         }
     }
 
     // Load vertex array object (VAO)
-    public int rlLoadVertexArray() {
+    public static int rlLoadVertexArray() {
         int vaoId = 0;
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             vaoId = glGenVertexArrays();
@@ -2895,7 +2935,7 @@ public class RLGL{
     }
 
     // Set vertex attribute
-    public void rlSetVertexAttribute(int index, int compSize, int type, boolean normalized, int stride, long pointer) {
+    public static void rlSetVertexAttribute(int index, int compSize, int type, boolean normalized, int stride, long pointer) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glVertexAttribPointer(index, compSize, type, normalized, stride, pointer);
         }
@@ -2909,7 +2949,7 @@ public class RLGL{
     }
 
     // Unload vertex array object (VAO)
-    public void rlUnloadVertexArray(int vaoId) {
+    public static void rlUnloadVertexArray(int vaoId) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getExtSupported().isVao())
             {
@@ -2921,7 +2961,7 @@ public class RLGL{
     }
 
     // Unload vertex buffer (VBO)
-    public void rlUnloadVertexBuffer(int vboId) {
+    public static void rlUnloadVertexBuffer(int vboId) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDeleteBuffers(vboId);
             //TRACELOG(LOG_INFO, "VBO: Unloaded vertex data from VRAM (GPU)");
@@ -3183,7 +3223,7 @@ public class RLGL{
     }
 
     // Set shader value attribute
-    public void rlSetVertexAttributeDefault(int locIndex, float[] value, int attribType, int count) {
+    public static void rlSetVertexAttributeDefault(int locIndex, float[] value, int attribType, int count) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
 
             switch (attribType){
@@ -3206,7 +3246,7 @@ public class RLGL{
     }
 
     // Set shader value uniform matrix
-    public void rlSetUniformMatrix(int locIndex, Matrix mat) {
+    public static void rlSetUniformMatrix(int locIndex, Matrix mat) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glUniformMatrix4fv(locIndex, false, MatrixToFloat(mat));
         }
@@ -3379,7 +3419,7 @@ public class RLGL{
     //-----------------------------------------------------------------------------------------
 
     // Get internal modelview matrix
-    public Matrix rlGetMatrixModelview() {
+    public static Matrix rlGetMatrixModelview() {
         Matrix matrix = MatrixIdentity();
         if(GRAPHICS_API_OPENGL_11){
             FloatBuffer mat = FloatBuffer.allocate(16);
@@ -3408,7 +3448,7 @@ public class RLGL{
     }
 
     // Get internal projection matrix
-    public Matrix rlGetMatrixProjection() {
+    public static Matrix rlGetMatrixProjection() {
         if(GRAPHICS_API_OPENGL_11){
             FloatBuffer mat = FloatBuffer.allocate(16);
             glGetFloatv(GL_PROJECTION_MATRIX, mat);
@@ -3436,7 +3476,7 @@ public class RLGL{
         }
     }
     // Get internal accumulated transform matrix
-    public Matrix rlGetMatrixTransform() {
+    public static Matrix rlGetMatrixTransform() {
         Matrix mat = MatrixIdentity();
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // TODO: Consider possible transform matrices in the RLGL.State.stack
@@ -3449,7 +3489,7 @@ public class RLGL{
     }
 
     // Get internal projection matrix for stereo render (selected eye)
-    public Matrix rlGetMatrixProjectionStereo(int eye) {
+    public static Matrix rlGetMatrixProjectionStereo(int eye) {
         Matrix mat = MatrixIdentity();
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             mat = rlglData.getState().getProjectionStereo()[eye];
@@ -3458,7 +3498,7 @@ public class RLGL{
     }
 
     // Get internal view offset matrix for stereo render (selected eye)
-    public Matrix rlGetMatrixViewOffsetStereo(int eye) {
+    public static Matrix rlGetMatrixViewOffsetStereo(int eye) {
         Matrix mat = MatrixIdentity();
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             mat = rlglData.getState().getViewOffsetStereo()[eye];

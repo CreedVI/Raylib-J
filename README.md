@@ -5,7 +5,7 @@ A handmade version of Raylib for Java.
 
 **Raylib-J is still in development.**<br>
 
-<hr>
+---
   
 ## About
 
@@ -23,7 +23,7 @@ Raylib-J is meant to be a one-for-one rewrite of Raylib with some quality of lif
 to: JavaDoc comments, `DrawFPS(int posX, int posY, Color theColorYouWant)`, and `CloseWindow()` being handled 
 automatically!
 
-<hr>
+---
 
 ## Basic Example
 
@@ -54,13 +54,22 @@ public class example{
 
 More examples like the one above can be found at the [Examples repo](https://github.com/CreedVI/Raylib-J-Examples), or you can 
 see the wiki for additional documentation and elaboration!
-<hr>
+---
 
 ## Using Raylib-J
 At the current moment Raylib-J is only available as a .jar file. Check the releases page to download the most up-to-date 
 version! 
 
-<hr>
+---
+
+## Other Libraries
+
+Other libraries were used in place of the original libraries to make a lot of this project possible, or at least much easier to develop. 
+Special thanks to the following:
+  - [delthas](https://github.com/delthas) for their [JavaMP3 API](https://github.com/delthas/JavaMP3)
+  - [javagl](https://github.com/javagl) for their [Obj file loader](https://github.com/javagl/Obj)
+
+---
 
 ## Development Status:
 

@@ -1,6 +1,7 @@
 package com.raylib.java.models;
 
 import com.raylib.java.core.Color;
+import com.raylib.java.core.rCore;
 import com.raylib.java.core.ray.Ray;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.raymath.Matrix;
@@ -10,10 +11,57 @@ import com.raylib.java.raymath.Vector3;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.Rectangle;
 import com.raylib.java.textures.Texture2D;
+import de.javagl.obj.Obj;
+import de.javagl.obj.ObjFace;
+import de.javagl.obj.ObjReader;
+import de.javagl.obj.ObjUtils;
 
-import static com.raylib.java.raymath.Raymath.Vector3DotProduct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static com.raylib.java.Config.*;
+import static com.raylib.java.core.Color.WHITE;
+import static com.raylib.java.models.rModels.MaterialMapIndex.*;
+import static com.raylib.java.raymath.Raymath.*;
+import static com.raylib.java.rlgl.RLGL.*;
+import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC4;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_NORMAL;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
+import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
+import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 
 public class rModels{
+
+    public class MaterialMapIndex {
+        final static int
+                MATERIAL_MAP_ALBEDO    = 0,     // Albedo material (same as: MATERIAL_MAP_DIFFUSE)
+                MATERIAL_MAP_METALNESS = 1,     // Metalness material (same as: MATERIAL_MAP_SPECULAR)
+                MATERIAL_MAP_NORMAL    = 2,     // Normal material
+                MATERIAL_MAP_ROUGHNESS = 3,     // Roughness material
+                MATERIAL_MAP_OCCLUSION = 4,     // Ambient occlusion material
+                MATERIAL_MAP_EMISSION  = 5,     // Emission material
+                MATERIAL_MAP_HEIGHT    = 6,     // Heightmap material
+                MATERIAL_MAP_CUBEMAP   = 7,     // Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+                MATERIAL_MAP_IRRADIANCE= 8,     // Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+                MATERIAL_MAP_PREFILTER = 9,     // Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+                MATERIAL_MAP_BRDF      = 10;    // Brdf material
+
+        public final static int MATERIAL_MAP_DIFFUSE = 0;
+        final static int MATERIAL_MAP_SPECULAR = 1;
+    }
+
+    //----------------------------------------------------------------------------------
+    // Defines and Macros
+    //----------------------------------------------------------------------------------
+    final static int MAX_MATERIAL_MAPS = 12;    // Maximum number of maps supported
+
+    final static int MAX_MESH_VERTEX_BUFFERS = 7;    // Maximum vertex buffers (VBO) per mesh
+
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition
@@ -574,6 +622,803 @@ public class rModels{
         RLGL.rlEnd();
     }
 
+    public Model LoadModel(String fileName) {
+
+        Model model = new Model();
+
+        if (rCore.IsFileExtension(fileName, ".obj")) {
+            model = LoadOBJ(fileName);
+        }
+
+        // Make sure model transform is set to identity matrix!
+        model.transform = Raymath.MatrixIdentity();
+
+        if (model.meshCount == 0) {
+            model.meshCount = 1;
+            model.meshes = new Mesh[model.meshCount];
+            if(SUPPORT_MESH_GENERATION) {
+                Tracelog(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data, default to cube mesh");
+                model.meshes[0] = GenMeshCube(1.0f, 1.0f, 1.0f);
+            }
+            else {
+                Tracelog(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data");
+            }
+        }
+        else {
+            // Upload vertex data to GPU (static mesh)
+            for (int i = 0; i < model.meshCount; i++) {
+                UploadMesh(model.meshes[i], false);
+            }
+        }
+
+        if (model.materialCount == 0) {
+            Tracelog(LOG_WARNING, "MATERIAL: ["+fileName+"] Failed to load material data, default to white material");
+
+            model.materialCount = 1;
+            model.materials = new Material[model.materialCount];
+            model.materials[0] = LoadMaterialDefault();
+
+            if (model.meshMaterial == null) {
+                model.meshMaterial = new int[model.meshCount];
+            }
+        }
+
+        return model;
+    }
+
+    // Load model from generated mesh
+    // WARNING: A shallow copy of mesh is generated, passed by value,
+    // as long as struct contains pointers to data and some values, we get a copy
+    // of mesh pointing to same data as original version... be careful!
+    public Model LoadModelFromMesh(Mesh mesh) {
+        Model model = new Model();
+
+        model.transform = Raymath.MatrixIdentity();
+
+        model.meshCount = 1;
+        model.meshes = new Mesh[model.meshCount];
+        model.meshes[0] = mesh;
+
+        model.materialCount = 1;
+        model.materials = new Material[model.materialCount];
+        model.materials[0] = LoadMaterialDefault();
+
+        model.meshMaterial = new int[model.meshCount];
+        model.meshMaterial[0] = 0;  // First material index
+
+        return model;
+    }
+
+    // Unload model (meshes/materials) from memory (RAM and/or VRAM)
+    // NOTE: This function takes care of all model elements, for a detailed control
+    // over them, use UnloadMesh() and UnloadMaterial()
+    public void UnloadModel(Model model) {
+        // Unload meshes
+        for (int i = 0; i < model.meshCount; i++) {
+            UnloadMesh(model.meshes[i]);
+        }
+
+        // Unload materials maps
+        // NOTE: As the user could be sharing shaders and textures between models,
+        // we don't unload the material but just free it's maps,
+        // the user is responsible for freeing models shaders and textures
+        for (int i = 0; i < model.materialCount; i++) {
+            model.materials[i].maps = null;
+        }
+
+        // Unload arrays
+        model.meshes = null;
+        model.materials = null;
+        model.meshMaterial = null;
+
+        // Unload animation data
+        model.bones = null;
+        model.bindPose = null;
+
+        Tracelog(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
+    }
+
+    // Unload model (but not meshes) from memory (RAM and/or VRAM)
+    public void UnloadModelKeepMeshes(Model model) {
+        // Unload materials maps
+        // NOTE: As the user could be sharing shaders and textures between models,
+        // we don't unload the material but just free it's maps,
+        // the user is responsible for freeing models shaders and textures
+        for (int i = 0; i < model.materialCount; i++) {
+            model.materials[i].maps = null;
+        }
+
+        // Unload arrays
+        model.meshes = null;
+        model.materials = null;
+        model.meshMaterial = null;
+
+        // Unload animation data
+        model.bones = null;
+        model.bindPose = null;
+
+        Tracelog(LOG_INFO, "MODEL: Unloaded model (but not meshes) from RAM and VRAM");
+    }
+
+    // Compute model bounding box limits (considers all meshes)
+    public BoundingBox GetModelBoundingBox(Model model) {
+        BoundingBox bounds = new BoundingBox();
+
+        if (model.meshCount > 0) {
+            Vector3 temp = new Vector3();
+            bounds = GetMeshBoundingBox(model.meshes[0]);
+
+            for (int i = 1; i < model.meshCount; i++) {
+                BoundingBox tempBounds = GetMeshBoundingBox(model.meshes[i]);
+
+                temp.x = (bounds.min.x < tempBounds.min.x)? bounds.min.x : tempBounds.min.x;
+                temp.y = (bounds.min.y < tempBounds.min.y)? bounds.min.y : tempBounds.min.y;
+                temp.z = (bounds.min.z < tempBounds.min.z)? bounds.min.z : tempBounds.min.z;
+                bounds.min = temp;
+
+                temp.x = (bounds.max.x > tempBounds.max.x)? bounds.max.x : tempBounds.max.x;
+                temp.y = (bounds.max.y > tempBounds.max.y)? bounds.max.y : tempBounds.max.y;
+                temp.z = (bounds.max.z > tempBounds.max.z)? bounds.max.z : tempBounds.max.z;
+                bounds.max = temp;
+            }
+        }
+
+        return bounds;
+    }
+
+
+    // Upload vertex data into a VAO (if supported) and VBO
+    void UploadMesh(Mesh mesh, boolean dynamic) {
+        if (mesh.vaoId > 0) {
+            // Check if mesh has already been loaded in GPU
+            Tracelog(LOG_WARNING, "VAO: [ID "+mesh.vaoId+"] Trying to re-load an already loaded mesh");
+            return;
+        }
+
+        mesh.vboId = new int[MAX_MESH_VERTEX_BUFFERS];
+
+        mesh.vaoId = 0;        // Vertex Array Object
+        mesh.vboId[0] = 0;     // Vertex buffer: positions
+        mesh.vboId[1] = 0;     // Vertex buffer: texcoords
+        mesh.vboId[2] = 0;     // Vertex buffer: normals
+        mesh.vboId[3] = 0;     // Vertex buffer: colors
+        mesh.vboId[4] = 0;     // Vertex buffer: tangents
+        mesh.vboId[5] = 0;     // Vertex buffer: texcoords2
+        mesh.vboId[6] = 0;     // Vertex buffer: indices
+
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+            mesh.vaoId = RLGL.rlLoadVertexArray();
+            rlEnableVertexArray(mesh.vaoId);
+
+            // NOTE: Attributes must be uploaded considering default locations points
+
+            // Enable vertex attributes: position (shader-location = 0)
+            float[] vertices = mesh.animVertices != null ? mesh.animVertices : mesh.vertices;
+            mesh.vboId[0] = rlLoadVertexBuffer(vertices, dynamic);
+            rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
+            rlEnableVertexAttribute(0);
+
+            // Enable vertex attributes: texcoords (shader-location = 1)
+            mesh.vboId[1] = rlLoadVertexBuffer(mesh.texcoords, dynamic);
+            rlSetVertexAttribute(1, 2, RL_FLOAT, false, 0, 0);
+            rlEnableVertexAttribute(1);
+
+            if (mesh.normals != null) {
+                // Enable vertex attributes: normals (shader-location = 2)
+                float[] normals = mesh.animNormals != null ? mesh.animNormals : mesh.normals;
+                mesh.vboId[2] = rlLoadVertexBuffer(normals, dynamic);
+                rlSetVertexAttribute(2, 3, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(2);
+            }
+            else {
+                // Default color vertex attribute set to WHITE
+                float[] value ={1.0f, 1.0f, 1.0f} ;
+                RLGL.rlSetVertexAttributeDefault(2, value, RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
+                RLGL.rlDisableVertexAttribute(2);
+            }
+
+            if (mesh.colors != null) {
+                // Enable vertex attribute: color (shader-location = 3)
+                float[] tmpColours = new float[mesh.colors.length];
+                for (int i = 0; i < tmpColours.length; i++) {
+                    tmpColours[i] = (float) mesh.colors[i]/255;
+                }
+                mesh.vboId[3] = rlLoadVertexBuffer(tmpColours, dynamic);
+                rlSetVertexAttribute(3, 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                rlEnableVertexAttribute(3);
+            } else {
+                // Default color vertex attribute set to WHITE
+                float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
+                rlSetVertexAttributeDefault(3, value, RL_SHADER_ATTRIB_VEC4, 4);
+                rlDisableVertexAttribute(3);
+            }
+
+            if (mesh.tangents != null) {
+                // Enable vertex attribute: tangent (shader-location = 4)
+                mesh.vboId[4] = rlLoadVertexBuffer(mesh.tangents, dynamic);
+                rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(4);
+            } else {
+                // Default tangents vertex attribute
+                float[] value ={0.0f, 0.0f, 0.0f, 0.0f} ;
+                rlSetVertexAttributeDefault(4, value, RL_SHADER_ATTRIB_VEC4, 4);
+                rlDisableVertexAttribute(4);
+            }
+
+            if (mesh.texcoords2 != null) {
+                // Enable vertex attribute: texcoord2 (shader-location = 5)
+                mesh.vboId[5] = rlLoadVertexBuffer(mesh.texcoords2, dynamic);
+                rlSetVertexAttribute(5, 2, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(5);
+            } else {
+                // Default texcoord2 vertex attribute
+                float[] value ={0.0f, 0.0f} ;
+                rlSetVertexAttributeDefault(5, value, RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
+                rlDisableVertexAttribute(5);
+            }
+
+            if (mesh.indices != null) {
+                mesh.vboId[6] = RLGL.rlLoadVertexBufferElement(mesh.indices, dynamic);
+            }
+
+            if (mesh.vaoId > 0) {
+                Tracelog(LOG_INFO, "VAO: [ID "+mesh.vaoId+"] Mesh uploaded successfully to VRAM (GPU)");
+            }
+            else {
+                Tracelog(LOG_INFO, "VBO: Mesh uploaded successfully to VRAM (GPU)");
+            }
+
+            rlDisableVertexArray();
+        }
+    }
+
+    // Update mesh vertex data in GPU for a specific buffer index
+    public void UpdateMeshBuffer(Mesh mesh, int index, byte[] data, int dataSize, int offset) {
+        RLGL.rlUpdateVertexBuffer(mesh.vboId[index], data, offset);
+    }
+
+    // Draw a 3d mesh with material and transform
+    public void DrawMesh(Mesh mesh, Material material, Matrix transform) {
+        if(GRAPHICS_API_OPENGL_11) {
+            final int GL_VERTEX_ARRAY = 0x8074;
+            final int GL_NORMAL_ARRAY = 0x8075;
+            final int GL_COLOR_ARRAY = 0x8076;
+            final int GL_TEXTURE_COORD_ARRAY = 0x8078;
+
+            RLGL.rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE].texture.id);
+
+            RLGL.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
+            RLGL.rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
+            RLGL.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
+            RLGL.rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
+
+            rlPushMatrix();
+            rlMultMatrixf(MatrixToFloat(transform));
+            rlColor4ub(material.maps[MATERIAL_MAP_DIFFUSE].color.r,
+                    material.maps[MATERIAL_MAP_DIFFUSE].color.g,
+                    material.maps[MATERIAL_MAP_DIFFUSE].color.b,
+                    material.maps[MATERIAL_MAP_DIFFUSE].color.a);
+
+            if (mesh.indices != null) {
+                RLGL.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
+            }
+            else {
+                RLGL.rlDrawVertexArray(0, mesh.vertexCount);
+            }
+            rlPopMatrix();
+
+            RLGL.rlDisableStatePointer(GL_VERTEX_ARRAY);
+            RLGL.rlDisableStatePointer(GL_TEXTURE_COORD_ARRAY);
+            RLGL.rlDisableStatePointer(GL_NORMAL_ARRAY);
+            RLGL.rlDisableStatePointer(GL_COLOR_ARRAY);
+
+            rlDisableTexture();
+        }
+
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+            // Bind shader program
+            rlEnableShader(material.shader.id);
+
+            // Send required data to shader (matrices, values)
+            //-----------------------------------------------------
+            // Upload to shader material.colDiffuse
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] != -1) {
+                float[] values ={
+                    (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
+                            (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
+                            (float) material.maps[MATERIAL_MAP_DIFFUSE].color.b / 255.0f,
+                            (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
+                } ;
+
+                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE], values, RL_SHADER_UNIFORM_VEC4, 1);
+            }
+
+            // Upload to shader material.colSpecular (if location available)
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR] != -1) {
+                float[] values ={
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.r / 255.0f,
+                            (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.g / 255.0f,
+                            (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.b / 255.0f,
+                            (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.a / 255.0f
+                } ;
+
+                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR], values, RL_SHADER_UNIFORM_VEC4, 1);
+            }
+
+            // Get a copy of current matrices to work with,
+            // just in case stereo render is required and we need to modify them
+            // NOTE: At this point the modelview matrix just contains the view matrix (camera)
+            // That's because BeginMode3D() sets it and there is no model-drawing function
+            // that modifies it, all use rlPushMatrix() and rlPopMatrix()
+            Matrix matModel = Raymath.MatrixIdentity();
+            Matrix matView = RLGL.rlGetMatrixModelview();
+            Matrix matModelView = Raymath.MatrixIdentity();
+            Matrix matProjection = RLGL.rlGetMatrixProjection();
+
+            // Upload view and projection matrices (if locations available)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1)
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW], matView);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1)
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION], matProjection);
+
+            // Model transformation matrix is send to shader uniform location: SHADER_LOC_MATRIX_MODEL
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] != -1)
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL], transform);
+
+            // Accumulate several model transformations:
+            //    transform: model transformation provided (includes DrawModel() params combined with model.transform)
+            //    rlGetMatrixTransform(): rlgl internal transform matrix due to push/pop matrix stack
+            matModel = Raymath.MatrixMultiply(transform, RLGL.rlGetMatrixTransform());
+
+            // Get model-view matrix
+            matModelView = Raymath.MatrixMultiply(matModel, matView);
+
+            // Upload model normal matrix (if locations available)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] != -1) {
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL], MatrixTranspose(MatrixInvert(matModel)));
+            }
+            //-----------------------------------------------------
+
+            // Bind active texture maps (if available)
+            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if (material.maps[i].texture.id > 0) {
+                    // Select current shader texture slot
+                    rlActiveTextureSlot(i);
+
+                    // Enable texture for active slot
+                    if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
+                        RLGL.rlEnableTextureCubemap(material.maps[i].texture.id);
+                    }
+                    else {
+                        rlEnableTexture(material.maps[i].texture.id);
+                    }
+
+                    rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE + i], new float[]{i}, RL_SHADER_UNIFORM_INT, 1);
+                }
+            }
+
+            // Try binding vertex array objects (VAO)
+            // or use VBOs if not possible
+            if (!rlEnableVertexArray(mesh.vaoId)) {
+                // Bind mesh VBO data: vertex position (shader-location = 0)
+                rlEnableVertexBuffer(mesh.vboId[0]);
+                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION], 3, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION]);
+
+                // Bind mesh VBO data: vertex texcoords (shader-location = 1)
+                rlEnableVertexBuffer(mesh.vboId[1]);
+                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01], 2, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL] != -1) {
+                    // Bind mesh VBO data: vertex normals (shader-location = 2)
+                    rlEnableVertexBuffer(mesh.vboId[2]);
+                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL], 3, RL_FLOAT, false, 0, 0);
+                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL]);
+                }
+
+                // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR] != -1) {
+                    if (mesh.vboId[3] != 0) {
+                        rlEnableVertexBuffer(mesh.vboId[3]);
+                        rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                        rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                    } else {
+                        // Set default value for unused attribute
+                        // NOTE: Required when using default shader and no VAO support
+                        float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
+                        rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], value, RL_SHADER_ATTRIB_VEC4, 4);
+                        rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                    }
+                }
+
+                // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT] != -1) {
+                    rlEnableVertexBuffer(mesh.vboId[4]);
+                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT], 4, RL_FLOAT, false, 0, 0);
+                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT]);
+                }
+
+                // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] != -1) {
+                    RLGL.rlEnableVertexBuffer(mesh.vboId[5]);
+                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02], 2, RL_FLOAT, false, 0, 0);
+                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02]);
+                }
+
+                if (mesh.indices != null) {
+                    RLGL.rlEnableVertexBufferElement(mesh.vboId[6]);
+                }
+            }
+
+            int eyeCount = 1;
+            if (RLGL.rlIsStereoRendererEnabled()) {
+                eyeCount = 2;
+            }
+
+            for (int eye = 0; eye < eyeCount; eye++) {
+                // Calculate model-view-projection matrix (MVP)
+                Matrix matModelViewProjection = Raymath.MatrixIdentity();
+                if (eyeCount == 1) matModelViewProjection = Raymath.MatrixMultiply(matModelView, matProjection);
+                else {
+                    // Setup current eye viewport (half screen width)
+                    rlViewport(eye * RLGL.rlGetFramebufferWidth() / 2, 0, rlGetFramebufferWidth() / 2, RLGL.rlGetFramebufferHeight());
+                    matModelViewProjection = Raymath.MatrixMultiply(Raymath.MatrixMultiply(matModelView, RLGL.rlGetMatrixViewOffsetStereo(eye)), RLGL.rlGetMatrixProjectionStereo(eye));
+                }
+
+                // Send combined model-view-projection matrix to shader
+                RLGL.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP], matModelViewProjection);
+
+                // Draw mesh
+                if (mesh.indices != null ) {
+                    rlDrawVertexArrayElements(0, mesh.triangleCount * 3, new byte[0]);
+                }
+                else {
+                    rlDrawVertexArray(0, mesh.vertexCount);
+                }
+            }
+
+            // Unbind all binded texture maps
+            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                // Select current shader texture slot
+                RLGL.rlActiveTextureSlot(i);
+
+                // Disable texture for active slot
+                if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MaterialMapIndex.MATERIAL_MAP_PREFILTER) || (i == MaterialMapIndex.MATERIAL_MAP_CUBEMAP)) {
+                    RLGL.rlDisableTextureCubemap();
+                }
+                else {
+                    rlDisableTexture();
+                }
+            }
+
+            // Disable all possible vertex array objects (or VBOs)
+            rlDisableVertexArray();
+            RLGL.rlDisableVertexBuffer();
+            RLGL.rlDisableVertexBufferElement();
+
+            // Disable shader program
+            RLGL.rlDisableShader();
+
+            // Restore rlgl internal modelview and projection matrices
+            rlSetMatrixModelview(matView);
+            rlSetMatrixProjection(matProjection);
+        }
+    }
+
+
+    // Generated cuboid mesh
+    public Mesh GenMeshCube(float width, float height, float length) {
+        Mesh mesh = new Mesh();
+
+        float vertices[] = {
+                -width/2, -height/2, length/2,
+                width/2, -height/2, length/2,
+                width/2, height/2, length/2,
+                -width/2, height/2, length/2,
+                -width/2, -height/2, -length/2,
+                -width/2, height/2, -length/2,
+                width/2, height/2, -length/2,
+                width/2, -height/2, -length/2,
+                -width/2, height/2, -length/2,
+                -width/2, height/2, length/2,
+                width/2, height/2, length/2,
+                width/2, height/2, -length/2,
+                -width/2, -height/2, -length/2,
+                width/2, -height/2, -length/2,
+                width/2, -height/2, length/2,
+                -width/2, -height/2, length/2,
+                width/2, -height/2, -length/2,
+                width/2, height/2, -length/2,
+                width/2, height/2, length/2,
+                width/2, -height/2, length/2,
+                -width/2, -height/2, -length/2,
+                -width/2, -height/2, length/2,
+                -width/2, height/2, length/2,
+                -width/2, height/2, -length/2
+        };
+
+        float texcoords[] = {
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f
+        };
+
+        float normals[] = {
+                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f, 1.0f,
+                0.0f, 0.0f,-1.0f,
+                0.0f, 0.0f,-1.0f,
+                0.0f, 0.0f,-1.0f,
+                0.0f, 0.0f,-1.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f, 1.0f, 0.0f,
+                0.0f,-1.0f, 0.0f,
+                0.0f,-1.0f, 0.0f,
+                0.0f,-1.0f, 0.0f,
+                0.0f,-1.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+                -1.0f, 0.0f, 0.0f,
+                -1.0f, 0.0f, 0.0f,
+                -1.0f, 0.0f, 0.0f,
+                -1.0f, 0.0f, 0.0f
+        };
+
+        mesh.vertices = vertices;
+        mesh.texcoords = texcoords;
+        mesh.normals = normals;
+        mesh.indices = new float[36];
+
+        int k = 0;
+
+        // Indices can be initialized right now
+        for (int i = 0; i < 36; i += 6) {
+            mesh.indices[i] = 4*k;
+            mesh.indices[i + 1] = 4*k + 1;
+            mesh.indices[i + 2] = 4*k + 2;
+            mesh.indices[i + 3] = 4*k;
+            mesh.indices[i + 4] = 4*k + 2;
+            mesh.indices[i + 5] = 4*k + 3;
+
+            k++;
+        }
+
+        mesh.vertexCount = 24;
+        mesh.triangleCount = 12;
+
+        // Upload vertex data to GPU (static mesh)
+        UploadMesh(mesh, false);
+
+        return mesh;
+    }
+
+
+    // Unload mesh from memory (RAM and VRAM)
+    public void UnloadMesh(Mesh mesh) {
+        // Unload rlgl mesh vboId data
+        RLGL.rlUnloadVertexArray(mesh.vaoId);
+
+        if (mesh.vboId != null){
+            for (int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
+                RLGL.rlUnloadVertexBuffer(mesh.vboId[i]);
+            }
+        }
+        mesh = null;
+    }
+
+
+    // Compute mesh bounding box limits
+    // NOTE: minVertex and maxVertex should be transformed by model transform matrix
+    BoundingBox GetMeshBoundingBox(Mesh mesh) {
+        // Get min and max vertex to construct bounds (AABB)
+        Vector3 minVertex = new Vector3();
+        Vector3 maxVertex = new Vector3();
+
+        if (mesh.vertices != null) {
+            minVertex = new Vector3(mesh.vertices[0], mesh.vertices[1], mesh.vertices[2]);
+            maxVertex = new Vector3(mesh.vertices[0], mesh.vertices[1], mesh.vertices[2]);
+
+            for (int i = 1; i < mesh.vertexCount; i++) {
+                minVertex = Raymath.Vector3Min(minVertex, new Vector3(mesh.vertices[i*3], mesh.vertices[i*3 + 1], mesh.vertices[i*3 + 2]));
+                maxVertex = Raymath.Vector3Max(maxVertex, new Vector3(mesh.vertices[i*3], mesh.vertices[i*3 + 1], mesh.vertices[i*3 + 2]));
+            }
+        }
+
+        // Create the bounding box
+        BoundingBox box = new BoundingBox();
+        box.min = minVertex;
+        box.max = maxVertex;
+
+        return box;
+    }
+
+    // Compute mesh tangents
+    // NOTE: To calculate mesh tangents and binormals we need mesh vertex positions and texture coordinates
+    // Implementation base don: https://answers.unity.com/questions/7789/calculating-tangents-vector4.html
+    public void GenMeshTangents(Mesh mesh) {
+        if (mesh.tangents == null) {
+            mesh.tangents = new float[mesh.vertexCount*4];
+        }
+        else {
+            mesh.tangents = null;
+            mesh.tangents = new float[mesh.vertexCount*4];
+        }
+
+        Vector3[] tan1 = new Vector3[mesh.vertexCount];
+        Vector3[] tan2 = new Vector3[mesh.vertexCount];
+
+        for (int i = 0; i < mesh.vertexCount; i += 3) {
+            // Get triangle vertices
+            Vector3 v1 = new Vector3(mesh.vertices[(i + 0)*3 + 0], mesh.vertices[(i + 0)*3 + 1], mesh.vertices[(i + 0)*3 + 2]);
+            Vector3 v2 = new Vector3(mesh.vertices[(i + 1)*3 + 0], mesh.vertices[(i + 1)*3 + 1], mesh.vertices[(i + 1)*3 + 2]);
+            Vector3 v3 = new Vector3(mesh.vertices[(i + 2)*3 + 0], mesh.vertices[(i + 2)*3 + 1], mesh.vertices[(i + 2)*3 + 2]);
+
+            // Get triangle texcoords
+            Vector2 uv1 = new Vector2(mesh.texcoords[(i + 0)*2 + 0], mesh.texcoords[(i + 0)*2 + 1]);
+            Vector2 uv2 = new Vector2(mesh.texcoords[(i + 1)*2 + 0], mesh.texcoords[(i + 1)*2 + 1]);
+            Vector2 uv3 = new Vector2(mesh.texcoords[(i + 2)*2 + 0], mesh.texcoords[(i + 2)*2 + 1]);
+
+            float x1 = v2.x - v1.x;
+            float y1 = v2.y - v1.y;
+            float z1 = v2.z - v1.z;
+            float x2 = v3.x - v1.x;
+            float y2 = v3.y - v1.y;
+            float z2 = v3.z - v1.z;
+
+            float s1 = uv2.x - uv1.x;
+            float t1 = uv2.y - uv1.y;
+            float s2 = uv3.x - uv1.x;
+            float t2 = uv3.y - uv1.y;
+
+            float div = s1*t2 - s2*t1;
+            float r = (div == 0.0f)? 0.0f : 1.0f/div;
+
+            Vector3 sdir = new Vector3((t2*x1 - t1*x2)*r, (t2*y1 - t1*y2)*r, (t2*z1 - t1*z2)*r);
+            Vector3 tdir = new Vector3((s1*x2 - s2*x1)*r, (s1*y2 - s2*y1)*r, (s1*z2 - s2*z1)*r);
+
+            tan1[i + 0] = sdir;
+            tan1[i + 1] = sdir;
+            tan1[i + 2] = sdir;
+
+            tan2[i + 0] = tdir;
+            tan2[i + 1] = tdir;
+            tan2[i + 2] = tdir;
+        }
+
+        // Compute tangents considering normals
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            Vector3 normal = new Vector3(mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2]);
+            Vector3 tangent = tan1[i];
+
+            // TODO: Review, not sure if tangent computation is right, just used reference proposed maths...
+            if(COMPUTE_TANGENTS_METHOD_01) {
+                Vector3 tmp = Raymath.Vector3Subtract(tangent, Raymath.Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
+                tmp = Raymath.Vector3Normalize(tmp);
+                mesh.tangents[i * 4 + 0] = tmp.x;
+                mesh.tangents[i * 4 + 1] = tmp.y;
+                mesh.tangents[i * 4 + 2] = tmp.z;
+                mesh.tangents[i * 4 + 3] = 1.0f;
+            }
+            else {
+                Raymath.Vector3OrthoNormalize(normal, tangent);
+                mesh.tangents[i * 4 + 0] = tangent.x;
+                mesh.tangents[i * 4 + 1] = tangent.y;
+                mesh.tangents[i * 4 + 2] = tangent.z;
+                mesh.tangents[i * 4 + 3] = (Vector3DotProduct(Raymath.Vector3CrossProduct(normal, tangent), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
+            }
+        }
+
+        if (mesh.vboId != null) {
+            if (mesh.vboId[RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] != 0) {
+                // Upate existing vertex buffer
+                RLGL.rlUpdateVertexBuffer(mesh.vboId[RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT], mesh.tangents, mesh.vertexCount*4);
+            }
+            else {
+                // Load a new tangent attributes buffer
+                mesh.vboId[RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] = RLGL.rlLoadVertexBuffer(mesh.tangents, false);
+            }
+
+            RLGL.rlEnableVertexArray(mesh.vaoId);
+            RLGL.rlSetVertexAttribute(4, 4, RLGL.RL_FLOAT, false, 0, 0);
+            RLGL.rlEnableVertexAttribute(4);
+            RLGL.rlDisableVertexArray();
+        }
+
+        Tracelog(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
+    }
+
+    // Compute mesh binormals (aka bitangent)
+    private void GenMeshBinormals(Mesh mesh) {
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            //Vector3 normal = { mesh->normals[i*3 + 0], mesh->normals[i*3 + 1], mesh->normals[i*3 + 2] };
+            //Vector3 tangent = { mesh->tangents[i*4 + 0], mesh->tangents[i*4 + 1], mesh->tangents[i*4 + 2] };
+            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh->tangents[i*4 + 3]);
+
+            // TODO: Register computed binormal in mesh->binormal?
+        }
+    }
+
+    // Draw a model (with texture if set)
+    public void DrawModel(Model model, Vector3 position, float scale, Color tint) {
+        Vector3 vScale = new Vector3(scale, scale, scale);
+        Vector3 rotationAxis = new Vector3(0.0f, 1.0f, 0.0f);
+
+        DrawModelEx(model, position, rotationAxis, 0.0f, vScale, tint);
+    }
+
+    // Draw a model with extended parameters
+    public void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
+        // Calculate transformation matrix from function parameters
+        // Get transform matrix (rotation -> scale -> translation)
+        Matrix matScale = Raymath.MatrixScale(scale.x, scale.y, scale.z);
+        Matrix matRotation = Raymath.MatrixRotate(rotationAxis, rotationAngle*Raymath.DEG2RAD);
+        Matrix matTranslation = Raymath.MatrixTranslate(position.x, position.y, position.z);
+
+        Matrix matTransform = Raymath.MatrixMultiply(Raymath.MatrixMultiply(matScale, matRotation), matTranslation);
+
+        // Combine model transformation matrix (model.transform) with matrix generated by function parameters (matTransform)
+        model.transform = Raymath.MatrixMultiply(model.transform, matTransform);
+
+        for (int i = 0; i < model.meshCount; i++) {
+            Color color = model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
+
+            Color colorTint = WHITE;
+            colorTint.r = (int) (((color.r/255.0f)*(tint.r/255.0f))*255.0f);
+            colorTint.g = (int) (((color.g/255.0f)*(tint.g/255.0f))*255.0f);
+            colorTint.b = (int) (((color.b/255.0f)*(tint.b/255.0f))*255.0f);
+            colorTint.a = (int) (((color.a/255.0f)*(tint.a/255.0f))*255.0f);
+
+            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
+            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], model.transform);
+            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
+        }
+    }
+
+    // Draw a model wires (with texture if set)
+    public void DrawModelWires(Model model, Vector3 position, float scale, Color tint) {
+        RLGL.rlEnableWireMode();
+
+        DrawModel(model, position, scale, tint);
+
+        RLGL.rlDisableWireMode();
+    }
+
+    // Draw a model wires (with texture if set) with extended parameters
+    public void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
+        RLGL.rlEnableWireMode();
+
+        DrawModelEx(model, position, rotationAxis, rotationAngle, scale, tint);
+
+        RLGL.rlDisableWireMode();
+    }
 
     // Draw a billboard
     public void DrawBillboard(Camera3D camera, Texture2D texture, Vector3 position, float size, Color tint) {
@@ -689,6 +1534,187 @@ public class rModels{
         Vector3 center = new Vector3(box.min.x + size.x/2.0f, box.min.y + size.y/2.0f, box.min.z + size.z/2.0f);
 
         DrawCubeWires(center, size.x, size.y, size.z, color);
+    }
+
+
+    // Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
+    public Material LoadMaterialDefault() {
+        Material material = new Material();
+        material.maps = new MaterialMap[MAX_MATERIAL_MAPS];
+
+        // Using rlgl default shader
+        material.shader.id = RLGL.rlGetShaderIdDefault();
+        material.shader.locs = RLGL.rlGetShaderLocsDefault();
+
+        // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
+        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        //material.maps[MATERIAL_MAP_NORMAL].texture;         // NOTE: By default, not set
+        //material.maps[MATERIAL_MAP_SPECULAR].texture;       // NOTE: By default, not set
+
+        material.maps[MATERIAL_MAP_DIFFUSE].color = WHITE;    // Diffuse color
+        material.maps[MATERIAL_MAP_SPECULAR].color = WHITE;   // Specular color
+
+        return material;
+    }
+
+    private Model LoadOBJ(String fileName) {
+
+        Model model = new Model();
+
+        try{
+            InputStream is = Files.newInputStream(Paths.get(fileName));
+            Obj obj = ObjUtils.convertToRenderable(ObjReader.read(is));
+
+            model.meshCount = obj.getNumMaterialGroups();
+
+            // Init model materials array
+            if(obj.getNumMaterialGroups() > 0) {
+                model.materialCount = obj.getNumMaterialGroups();
+                model.materials = new Material[obj.getNumMaterialGroups()];
+                Tracelog(LOG_INFO, "MODEL: model has"+ obj.getNumMaterialGroups() +" material meshes");
+            }
+            else {
+                model.meshCount = 1;
+                Tracelog(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
+            }
+
+            model.meshes = new Mesh[model.meshCount];
+            model.meshMaterial = new int[model.meshCount];
+
+            //Count the faces for each material
+            int[] matFaces = new int[model.meshCount];
+
+            if (obj.getNumMaterialGroups() > 0) {
+                for (int fi = 0; fi < obj.getNumFaces(); fi++) {
+                    int idx = obj.getMaterialGroup(fi).getNumFaces();
+                    matFaces[idx]++;
+
+                }
+            }
+            else {
+                matFaces[0] = obj.getNumFaces();
+            }
+
+            //--------------------------------------
+            // Create the material meshes
+
+            // Running counts/indexes for each material mesh as we are
+            // building them at the same time
+            int vCount = 0;
+            int vtCount = 0;
+            int vnCount = 0;
+            int faceCount = 0;
+
+            // Allocate space for each of the material meshes
+            for (int mi = 0; mi < model.meshCount; mi++) {
+                model.meshes[mi] = new Mesh();
+                model.meshes[mi].vertexCount = matFaces[mi]*3;
+                model.meshes[mi].triangleCount = matFaces[mi];
+                model.meshes[mi].vertices = new float[model.meshes[mi].vertexCount*3];
+                model.meshes[mi].texcoords = new float[model.meshes[mi].vertexCount*2];
+                model.meshes[mi].normals = new float[model.meshes[mi].vertexCount*3];
+                model.meshMaterial[mi] = mi;
+            }
+
+            // Scan through the combined sub meshes and pick out each material mesh
+            for (int af = 0; af < obj.getNumFaces(); af++) {
+                int mm = af;
+                /*int mm = ?;   // mesh material for this face
+                if (mm == -1) {
+                    mm = 0;
+                }           // no material object..
+                 */
+
+                // Get indices for the face
+                ObjFace idx0 =  obj.getFace(3*af+0);
+                ObjFace idx1 =  obj.getFace(3*af+1);
+                ObjFace idx2 =  obj.getFace(3*af+2);
+
+                obj.getFace(3*af+0).getVertexIndex(0);
+
+                // Fill vertices buffer (float) using vertex index of the face
+                for (int v = 0; v < 3; v++) {
+                    //todo: oob here
+                    model.meshes[mm].vertices[vCount + v] = idx0.getVertexIndex(3+v);
+                }
+                vCount += 3;
+                for (int v = 0; v < 3; v++) {
+                    model.meshes[mm].vertices[vCount + v] = idx1.getVertexIndex(3+v);
+                }
+                vCount += 3;
+                for (int v = 0; v < 3; v++) {
+                    model.meshes[mm].vertices[vCount + v] = idx2.getVertexIndex(3+v);
+                }
+                vCount += 3;
+
+                if (obj.getNumTexCoords() > 0) {
+                    // Fill texcoords buffer (float) using vertex index of the face
+                    // NOTE: Y-coordinate must be flipped upside-down to account for
+                    // raylib's upside down textures...
+                    model.meshes[mm].texcoords[vtCount + 0] = idx0.getTexCoordIndex(2 + 0);
+                    model.meshes[mm].texcoords[vtCount + 1] = 1.0f - idx0.getTexCoordIndex(2 + 1);
+                    vtCount += 2;
+                    model.meshes[mm].texcoords[vtCount + 0] = idx1.getTexCoordIndex(2 + 0);
+                    model.meshes[mm].texcoords[vtCount + 1] = 1.0f - idx1.getTexCoordIndex(2 + 1);
+                    vtCount += 2;
+                    model.meshes[mm].texcoords[vtCount + 0] = idx2.getTexCoordIndex(2 + 0);
+                    model.meshes[mm].texcoords[vtCount + 1] = 1.0f - idx2.getTexCoordIndex(2 + 1);
+                    vtCount += 2;
+                }
+
+                if (obj.getNumNormals() > 0) {
+                    // Fill normals buffer (float) using vertex index of the face
+                    for (int v = 0; v < 3; v++) {
+                        model.meshes[mm].normals[vnCount + v] = idx0.getNormalIndex(3 + v);
+                    }
+                    vnCount += 3;
+                    for (int v = 0; v < 3; v++) {
+                        model.meshes[mm].normals[vnCount + v] = idx1.getNormalIndex(3 + v);
+                    }
+                    vnCount += 3;
+                    for (int v = 0; v < 3; v++) {
+                        model.meshes[mm].normals[vnCount + v] = idx2.getNormalIndex(3 + v);
+                    }
+                    vnCount += 3;
+                }
+            }
+            /*
+            // Init model materials
+            for (int m = 0; m < obj.getNumMaterialGroups(); m++) {
+                // Init material to default
+                // NOTE: Uses default shader, which only supports MATERIAL_MAP_DIFFUSE
+                model.materials[m] = LoadMaterialDefault();
+
+                // Get default texture, in case no texture is defined
+                // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
+                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
+                if (materials[m].diffuse_texname != null) {
+                    model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = rTextures.LoadTexture(materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
+                }
+
+                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color(materials[m].diffuse[0]*255.0f, materials[m].diffuse[1]*255.0f, materials[m].diffuse[2]*255.0f, 255 ); //float diffuse[3];
+                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0.0f;
+
+                if (materials[m].specular_texname != null) model.materials[m].maps[MATERIAL_MAP_SPECULAR].texture = rTextures.LoadTexture(materials[m].specular_texname);  //char *specular_texname; // map_Ks
+                model.materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color(materials[m].specular[0]*255.0f, materials[m].specular[1]*255.0f, materials[m].specular[2]*255.0f, 255); //float specular[3];
+                model.materials[m].maps[MATERIAL_MAP_SPECULAR].value = 0.0f;
+
+                if (materials[m].bump_texname != null) model.materials[m].maps[MATERIAL_MAP_NORMAL].texture = rTextures.LoadTexture(materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
+                model.materials[m].maps[MATERIAL_MAP_NORMAL].color = WHITE;
+                model.materials[m].maps[MATERIAL_MAP_NORMAL].value = materials[m].shininess;
+
+                model.materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color(materials[m].emission[0]*255.0f, materials[m].emission[1]*255.0f, materials[m].emission[2]*255.0f, 255); //float emission[3];
+
+                if (materials[m].displacement_texname != null) model.materials[m].maps[MATERIAL_MAP_HEIGHT].texture = rTextures.LoadTexture(materials[m].displacement_texname);  //char *displacement_texname; // disp
+            }
+             */
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return model;
     }
 
 }

@@ -243,7 +243,7 @@ public class Config{
      * Support procedural mesh generation functions, uses external par_shapes.h library
      * NOTE: Some generated meshes DO NOT include generated texture coordinates
      */
-    static boolean SUPPORT_MESH_GENERATION = true;
+    public static boolean SUPPORT_MESH_GENERATION = true;
 
 
     //------------------------------------------------------------------------------------
@@ -301,6 +301,10 @@ public class Config{
     //------------------------------------------------------------------------------------
     final static int MAX_TRACELOG_MSG_LENGTH = 128;    // Max length of one trace-log message
     final static int MAX_UWP_MESSAGES = 512;    // Max UWP messages to process
+
+    // rModels: config values
+    //------------------------------------------------------------------------------------
+    public final static boolean COMPUTE_TANGENTS_METHOD_01 = true;
 
     public static class ConfigFlag{
         public  static final int
