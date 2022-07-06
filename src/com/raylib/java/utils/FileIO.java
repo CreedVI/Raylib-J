@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 import static com.raylib.java.Config.SUPPORT_STANDARD_FILEIO;
 import static com.raylib.java.utils.Tracelog.Tracelog;
@@ -108,14 +107,29 @@ public class FileIO{
         if (fileName != null){
 
             if (SUPPORT_STANDARD_FILEIO){
-
-                InputStream inputStream = FileIO.class.getResourceAsStream(fileName.substring(fileName.lastIndexOf('/')));
+                InputStream inputStream;
+                if (fileName.contains("/")) {
+                    inputStream = FileIO.class.getResourceAsStream(fileName.substring(fileName.lastIndexOf('/')));
+                }
+                else {
+                    inputStream = FileIO.class.getResourceAsStream("/"+fileName);
+                }
+                if(inputStream == null) {
+                    String ext = fileName.substring(fileName.lastIndexOf('.')).toUpperCase();
+                    inputStream = getFileFromResourceAsStream(fileName.substring(0, fileName.lastIndexOf('.'))+ext);
+                }
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                String tmp = reader.lines().collect(Collectors.joining());
+                String[] tmp = reader.lines().toArray(String[]::new);
+                StringBuilder builder = new StringBuilder();
+
+                for (String s : tmp) {
+                    builder.append(s);
+                    builder.append("\n");
+                }
 
                 if (tmp != null) {
-                    return tmp;
+                    return builder.toString();
                 }
                 else{
                     Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to open text file");

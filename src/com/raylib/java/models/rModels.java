@@ -11,24 +11,21 @@ import com.raylib.java.raymath.Vector3;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.Rectangle;
 import com.raylib.java.textures.Texture2D;
-import de.javagl.obj.Obj;
-import de.javagl.obj.ObjFace;
-import de.javagl.obj.ObjReader;
-import de.javagl.obj.ObjUtils;
+import com.raylib.java.textures.rTextures;
+import com.raylib.java.utils.FileIO;
+import com.raylib.java.utils.OBJLoader;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-import static com.raylib.java.Config.*;
+import static com.raylib.java.Config.COMPUTE_TANGENTS_METHOD_01;
+import static com.raylib.java.Config.SUPPORT_MESH_GENERATION;
 import static com.raylib.java.core.Color.WHITE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.*;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC4;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_NORMAL;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
 import static com.raylib.java.utils.Tracelog.Tracelog;
@@ -1541,13 +1538,16 @@ public class rModels{
     public Material LoadMaterialDefault() {
         Material material = new Material();
         material.maps = new MaterialMap[MAX_MATERIAL_MAPS];
+        for (int i = 0; i < material.maps.length; i++) {
+            material.maps[i] = new MaterialMap();
+        }
 
         // Using rlgl default shader
         material.shader.id = RLGL.rlGetShaderIdDefault();
         material.shader.locs = RLGL.rlGetShaderLocsDefault();
 
         // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
-        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
         //material.maps[MATERIAL_MAP_NORMAL].texture;         // NOTE: By default, not set
         //material.maps[MATERIAL_MAP_SPECULAR].texture;       // NOTE: By default, not set
 
@@ -1561,17 +1561,27 @@ public class rModels{
 
         Model model = new Model();
 
-        try{
-            InputStream is = Files.newInputStream(Paths.get(fileName));
-            Obj obj = ObjUtils.convertToRenderable(ObjReader.read(is));
+        try {
+            String filetext = FileIO.LoadFileText(fileName);
 
-            model.meshCount = obj.getNumMaterialGroups();
+            OBJLoader loader = new OBJLoader();
+            boolean success = loader.ReadOBJ(filetext, OBJLoader.FLAG_TRIANGULATE == 1);
+
+            if(success) {
+                Tracelog(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.totalMaterials+" meshes/"+loader.objInfo.totalMaterials+" materials");
+            }
+            else {
+                Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] Failed to load OBJ data");
+                return model;
+            }
+
+            model.meshCount = loader.objInfo.totalMaterials;
 
             // Init model materials array
-            if(obj.getNumMaterialGroups() > 0) {
-                model.materialCount = obj.getNumMaterialGroups();
-                model.materials = new Material[obj.getNumMaterialGroups()];
-                Tracelog(LOG_INFO, "MODEL: model has"+ obj.getNumMaterialGroups() +" material meshes");
+            if(loader.objInfo.totalMaterials > 0) {
+                model.materialCount = loader.objInfo.totalMaterials;
+                model.materials = new Material[model.materialCount];
+                Tracelog(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes.");
             }
             else {
                 model.meshCount = 1;
@@ -1581,18 +1591,18 @@ public class rModels{
             model.meshes = new Mesh[model.meshCount];
             model.meshMaterial = new int[model.meshCount];
 
-            //Count the faces for each material
+            // Count the faces for each material
             int[] matFaces = new int[model.meshCount];
 
-            if (obj.getNumMaterialGroups() > 0) {
-                for (int fi = 0; fi < obj.getNumFaces(); fi++) {
-                    int idx = obj.getMaterialGroup(fi).getNumFaces();
+            // if no materials are present use all faces on one mesh
+            if(loader.objInfo.totalMaterials > 0) {
+                for(int fi = 0; fi < loader.objInfo.totalFaces; fi++) {
+                    int idx = loader.objInfo.materialIds[fi];
                     matFaces[idx]++;
-
                 }
             }
             else {
-                matFaces[0] = obj.getNumFaces();
+                matFaces[0] = loader.objInfo.totalFaces;
             }
 
             //--------------------------------------
@@ -1600,12 +1610,12 @@ public class rModels{
 
             // Running counts/indexes for each material mesh as we are
             // building them at the same time
-            int vCount = 0;
-            int vtCount = 0;
-            int vnCount = 0;
-            int faceCount = 0;
+            int[] vCount = new int[model.meshCount];
+            int[] vtCount = new int[model.meshCount];
+            int[] vnCount = new int[model.meshCount];
+            int[] faceCount = new int[model.meshCount];
 
-            // Allocate space for each of the material meshes
+            // Allocate each of the material meshes
             for (int mi = 0; mi < model.meshCount; mi++) {
                 model.meshes[mi] = new Mesh();
                 model.meshes[mi].vertexCount = matFaces[mi]*3;
@@ -1617,103 +1627,121 @@ public class rModels{
             }
 
             // Scan through the combined sub meshes and pick out each material mesh
-            for (int af = 0; af < obj.getNumFaces(); af++) {
-                int mm = af;
-                /*int mm = ?;   // mesh material for this face
+            for (int af = 0; af < loader.objInfo.totalFaces; af++) {
+                int mm = loader.objInfo.materialIds[af];
                 if (mm == -1) {
                     mm = 0;
-                }           // no material object..
-                 */
+                }
 
                 // Get indices for the face
-                ObjFace idx0 =  obj.getFace(3*af+0);
-                ObjFace idx1 =  obj.getFace(3*af+1);
-                ObjFace idx2 =  obj.getFace(3*af+2);
-
-                obj.getFace(3*af+0).getVertexIndex(0);
+                OBJLoader.OBJVertexIndex idx0 = loader.objInfo.faces[3*af + 0];
+                OBJLoader.OBJVertexIndex idx1 = loader.objInfo.faces[3*af + 1];
+                OBJLoader.OBJVertexIndex idx2 = loader.objInfo.faces[3*af + 2];
 
                 // Fill vertices buffer (float) using vertex index of the face
-                for (int v = 0; v < 3; v++) {
-                    //todo: oob here
-                    model.meshes[mm].vertices[vCount + v] = idx0.getVertexIndex(3+v);
+                if (idx0.vIndex*3 + 2 < loader.objInfo.vertices.length) {
+                    System.arraycopy(loader.objInfo.vertices, idx0.vIndex * 3, model.meshes[mm].vertices, vCount[mm], 3);
+                    vCount[mm] += 3;
                 }
-                vCount += 3;
-                for (int v = 0; v < 3; v++) {
-                    model.meshes[mm].vertices[vCount + v] = idx1.getVertexIndex(3+v);
+                if (idx1.vIndex*3 + 2 < loader.objInfo.vertices.length) {
+                    System.arraycopy(loader.objInfo.vertices, idx1.vIndex * 3, model.meshes[mm].vertices, vCount[mm], 3);
+                    vCount[mm] += 3;
                 }
-                vCount += 3;
-                for (int v = 0; v < 3; v++) {
-                    model.meshes[mm].vertices[vCount + v] = idx2.getVertexIndex(3+v);
+                if (idx2.vIndex*3 + 2 < loader.objInfo.vertices.length) {
+                    System.arraycopy(loader.objInfo.vertices, idx2.vIndex * 3, model.meshes[mm].vertices, vCount[mm], 3);
+                    vCount[mm] += 3;
                 }
-                vCount += 3;
 
-                if (obj.getNumTexCoords() > 0) {
+                //System.out.println(Arrays.toString(model.meshes[mm].vertices));
+
+                if (loader.objInfo.totalTexcoords > 0) {
+                    // todo: all of this will follow
                     // Fill texcoords buffer (float) using vertex index of the face
                     // NOTE: Y-coordinate must be flipped upside-down to account for
                     // raylib's upside down textures...
-                    model.meshes[mm].texcoords[vtCount + 0] = idx0.getTexCoordIndex(2 + 0);
-                    model.meshes[mm].texcoords[vtCount + 1] = 1.0f - idx0.getTexCoordIndex(2 + 1);
-                    vtCount += 2;
-                    model.meshes[mm].texcoords[vtCount + 0] = idx1.getTexCoordIndex(2 + 0);
-                    model.meshes[mm].texcoords[vtCount + 1] = 1.0f - idx1.getTexCoordIndex(2 + 1);
-                    vtCount += 2;
-                    model.meshes[mm].texcoords[vtCount + 0] = idx2.getTexCoordIndex(2 + 0);
-                    model.meshes[mm].texcoords[vtCount + 1] = 1.0f - idx2.getTexCoordIndex(2 + 1);
-                    vtCount += 2;
+                    if (idx0.vtIndex*3 + 1 < loader.objInfo.texcoords.length) {
+                        model.meshes[mm].texcoords[vtCount[mm] + 0] = loader.objInfo.texcoords[idx0.vtIndex * 2 + 0];
+                        model.meshes[mm].texcoords[vtCount[mm] + 1] = 1.0f - loader.objInfo.texcoords[idx0.vtIndex * 2 + 1];
+                        vtCount[mm] += 2;
+                    }
+                    if (idx1.vtIndex*3 + 1 < loader.objInfo.texcoords.length) {
+                        model.meshes[mm].texcoords[vtCount[mm] + 0] = loader.objInfo.texcoords[idx1.vtIndex * 2 + 0];
+                        model.meshes[mm].texcoords[vtCount[mm] + 1] = 1.0f - loader.objInfo.texcoords[idx1.vtIndex * 2 + 1];
+                        vtCount[mm] += 2;
+                    }
+                    if (idx2.vtIndex*3 + 1 < loader.objInfo.texcoords.length) {
+                        model.meshes[mm].texcoords[vtCount[mm] + 0] = loader.objInfo.texcoords[idx2.vtIndex * 2 + 0];
+                        model.meshes[mm].texcoords[vtCount[mm] + 1] = 1.0f - loader.objInfo.texcoords[idx2.vtIndex * 2 + 1];
+                        vtCount[mm] += 2;
+                    }
                 }
 
-                if (obj.getNumNormals() > 0) {
+                if (loader.objInfo.totalNormals > 0) {
                     // Fill normals buffer (float) using vertex index of the face
-                    for (int v = 0; v < 3; v++) {
-                        model.meshes[mm].normals[vnCount + v] = idx0.getNormalIndex(3 + v);
+                    if (idx0.vnIndex*3 + 2 < loader.objInfo.normals.length) {
+                        for (int v = 0; v < 3; v++) {
+                            model.meshes[mm].normals[vnCount[mm] + v] = loader.objInfo.normals[idx0.vnIndex * 3 + v];
+                        }
+                        vnCount[mm] += 3;
                     }
-                    vnCount += 3;
-                    for (int v = 0; v < 3; v++) {
-                        model.meshes[mm].normals[vnCount + v] = idx1.getNormalIndex(3 + v);
+                    if (idx1.vnIndex*3 + 2 < loader.objInfo.normals.length) {
+                        for (int v = 0; v < 3; v++) {
+                            model.meshes[mm].normals[vnCount[mm] + v] = loader.objInfo.normals[idx1.vnIndex * 3 + v];
+                        }
+                        vnCount[mm] += 3;
                     }
-                    vnCount += 3;
-                    for (int v = 0; v < 3; v++) {
-                        model.meshes[mm].normals[vnCount + v] = idx2.getNormalIndex(3 + v);
+                    if (idx2.vnIndex*3 + 2 < loader.objInfo.normals.length) {
+                        for (int v = 0; v < 3; v++) {
+                            model.meshes[mm].normals[vnCount[mm] + v] = loader.objInfo.normals[idx2.vnIndex * 3 + v];
+                        }
+                        vnCount[mm] += 3;
                     }
-                    vnCount += 3;
                 }
+
             }
-            /*
+
             // Init model materials
-            for (int m = 0; m < obj.getNumMaterialGroups(); m++) {
+            for (int m = 0; m < loader.objInfo.totalMaterials; m++) {
                 // Init material to default
                 // NOTE: Uses default shader, which only supports MATERIAL_MAP_DIFFUSE
                 model.materials[m] = LoadMaterialDefault();
 
                 // Get default texture, in case no texture is defined
                 // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
-                if (materials[m].diffuse_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = rTextures.LoadTexture(materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
+                if (loader.mtlInfo.materials[m].diffuse_texname != null) {
+                    model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
                 }
 
-                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color(materials[m].diffuse[0]*255.0f, materials[m].diffuse[1]*255.0f, materials[m].diffuse[2]*255.0f, 255 ); //float diffuse[3];
+                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color((int) (loader.mtlInfo.materials[m].diffuse[0]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[1]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[2]*255.0f), 255); //float diffuse[3];
                 model.materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0.0f;
 
-                if (materials[m].specular_texname != null) model.materials[m].maps[MATERIAL_MAP_SPECULAR].texture = rTextures.LoadTexture(materials[m].specular_texname);  //char *specular_texname; // map_Ks
-                model.materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color(materials[m].specular[0]*255.0f, materials[m].specular[1]*255.0f, materials[m].specular[2]*255.0f, 255); //float specular[3];
+                if (loader.mtlInfo.materials[m].specular_texname != null) {
+                    model.materials[m].maps[MATERIAL_MAP_SPECULAR].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
+                }
+
+                model.materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color((int) (loader.mtlInfo.materials[m].specular[0]*255.0f), (int) (loader.mtlInfo.materials[m].specular[1]*255.0f), (int) (loader.mtlInfo.materials[m].specular[2]*255.0f), 255); //float specular[3];
                 model.materials[m].maps[MATERIAL_MAP_SPECULAR].value = 0.0f;
 
-                if (materials[m].bump_texname != null) model.materials[m].maps[MATERIAL_MAP_NORMAL].texture = rTextures.LoadTexture(materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
+                if (loader.mtlInfo.materials[m].bump_texname != null) {
+                    model.materials[m].maps[MATERIAL_MAP_NORMAL].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
+                }
+
                 model.materials[m].maps[MATERIAL_MAP_NORMAL].color = WHITE;
-                model.materials[m].maps[MATERIAL_MAP_NORMAL].value = materials[m].shininess;
+                model.materials[m].maps[MATERIAL_MAP_NORMAL].value = loader.mtlInfo.materials[m].shininess;
 
-                model.materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color(materials[m].emission[0]*255.0f, materials[m].emission[1]*255.0f, materials[m].emission[2]*255.0f, 255); //float emission[3];
+                model.materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color((int) (loader.mtlInfo.materials[m].emission[0]*255.0f), (int) (loader.mtlInfo.materials[m].emission[1]*255.0f), (int) (loader.mtlInfo.materials[m].emission[2]*255.0f), 255); //float emission[3];
 
-                if (materials[m].displacement_texname != null) model.materials[m].maps[MATERIAL_MAP_HEIGHT].texture = rTextures.LoadTexture(materials[m].displacement_texname);  //char *displacement_texname; // disp
+                if (loader.mtlInfo.materials[m].displacement_texname != null) {
+                    model.materials[m].maps[MATERIAL_MAP_HEIGHT].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
+                }
+
             }
-             */
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         return model;
     }
 
