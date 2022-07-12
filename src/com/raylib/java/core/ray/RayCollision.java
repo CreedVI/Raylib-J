@@ -6,11 +6,11 @@ public class RayCollision{
 
     public boolean hit;            // Did the ray hit something?
     public float distance;         // Distance to nearest hit
-    public Vector3 position;       // Position of nearest hit
+    public Vector3 point;       // Position of nearest hit
     public Vector3 normal;         // Surface normal of hit
 
     public RayCollision(){
-        position = new Vector3();
+        point = new Vector3();
         normal = new Vector3();
     }
 
@@ -30,12 +30,12 @@ public class RayCollision{
         this.distance = distance;
     }
 
-    public Vector3 getPosition(){
-        return position;
+    public Vector3 getPoint(){
+        return point;
     }
 
-    public void setPosition(Vector3 position){
-        this.position = position;
+    public void setPoint(Vector3 point){
+        this.point = point;
     }
 
     public Vector3 getNormal(){

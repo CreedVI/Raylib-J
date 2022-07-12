@@ -201,7 +201,6 @@ public class OBJLoader {
         int i;
 
         for (i = 0; i < cmds.length; i++) {
-            //System.out.println("cmd " + i +": " + cmds[i].type);
             switch (cmds[i].type) {
                 case COMMAND_V:
                     objInfo.vertices[3*vCount + 0] = cmds[i].vx;
@@ -393,7 +392,6 @@ public class OBJLoader {
                 }
                 // f vf/tf/nf vf/tf/nf vf/tf/nf
                 String[] tmp = l.substring(2).split("[/ ]");
-                //System.out.println(Arrays.toString(tmp));
 
                 for (int i = 0; i < 3; i++) {
                     OBJVertexIndex vi = new OBJVertexIndex();
@@ -411,7 +409,7 @@ public class OBJLoader {
 
                     OBJVertexIndex i0 = f[0];
                     OBJVertexIndex i1;
-                    OBJVertexIndex i2 = f[0];
+                    OBJVertexIndex i2 = f[1];
 
                     if (3 * num_f < 16) {
                         for (k = 2; k < num_f; k++) {
@@ -439,10 +437,8 @@ public class OBJLoader {
                     cmds[line].fNumVerts[0] = numF;
                     cmds[line].numFNumVerts = 1;
                 }
-
-                numF += cmds[line].numF;
-                num_faces += cmds[line].numFNumVerts;
-
+                //numF += cmds[line].numF;
+                //num_faces += cmds[line].numFNumVerts;
             }
             else if(l.startsWith("g ")) {
                 cmds[line].type = CommandType.COMMAND_G;
