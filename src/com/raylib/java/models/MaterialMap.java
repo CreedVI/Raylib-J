@@ -6,8 +6,8 @@ import com.raylib.java.textures.Texture2D;
 public class MaterialMap {
 
     public Texture2D texture;      // Material map texture
-    Color color;            // Material map color
-    float value;            // Material map value
+    public Color color;            // Material map color
+    public float value;            // Material map value
 
     public MaterialMap(){
         texture = new Texture2D();

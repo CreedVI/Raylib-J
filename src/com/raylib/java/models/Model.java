@@ -4,18 +4,18 @@ import com.raylib.java.raymath.Matrix;
 
 public class Model {
 
-    Matrix transform;       // Local transform matrix
+    public Matrix transform;       // Local transform matrix
 
-    int meshCount;          // Number of meshes
-    int materialCount;      // Number of materials
-    Mesh[] meshes;           // Meshes array
+    public int meshCount;          // Number of meshes
+    public int materialCount;      // Number of materials
+    public Mesh[] meshes;           // Meshes array
     public Material[] materials;    // Materials array
-    int[] meshMaterial;      // Mesh material number
+    public int[] meshMaterial;      // Mesh material number
 
     // Animation data
-    int boneCount;          // Number of bones
-    BoneInfo[] bones;        // Bones information (skeleton)
-    Transform[] bindPose;    // Bones base transformation (pose)
+    public int boneCount;          // Number of bones
+    public BoneInfo[] bones;        // Bones information (skeleton)
+    public Transform[] bindPose;    // Bones base transformation (pose)
 
     public Model() {
         transform = new Matrix();

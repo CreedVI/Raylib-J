@@ -2,8 +2,8 @@ package com.raylib.java.models;
 
 public class BoneInfo {
 
-    String name;          // Bone name
-    int parent;             // Bone parent
+    public String name;          // Bone name
+    public int parent;             // Bone parent
 
     public BoneInfo() {
         name = "";

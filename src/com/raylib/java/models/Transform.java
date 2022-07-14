@@ -5,9 +5,9 @@ import com.raylib.java.raymath.Vector3;
 
 public class Transform {
 
-    Vector3 translation;    // Translation
-    Quaternion rotation;    // Rotation
-    Vector3 scale;          // Scale
+    public Vector3 translation;    // Translation
+    public Quaternion rotation;    // Rotation
+    public Vector3 scale;          // Scale
 
     public Transform() {
         translation = new Vector3();
