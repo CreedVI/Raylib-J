@@ -674,38 +674,39 @@ public class Raymath{
 
         float x = axis.x, y = axis.y, z = axis.z;
 
-        float length = (float) Math.sqrt(x * x + y * y + z * z);
+        float lengthSquared = x*x + y*y + z*z;
 
-        if ((length != 1.0f) && (length != 0.0f)){
-            length = 1.0f / length;
-            x *= length;
-            y *= length;
-            z *= length;
+        if ((lengthSquared != 1.0f) && (lengthSquared != 0.0f)) {
+            float ilength = (float) (1.0f/Math.sqrt(lengthSquared));
+            x *= ilength;
+            y *= ilength;
+            z *= ilength;
         }
 
         float sinres = (float) Math.sin(angle);
         float cosres = (float) Math.cos(angle);
         float t = 1.0f - cosres;
 
-        result.m0 = x * x * t + cosres;
-        result.m1 = y * x * t + z * sinres;
-        result.m2 = z * x * t - y * sinres;
+        result.m0 = x*x*t + cosres;
+        result.m1 = y*x*t + z*sinres;
+        result.m2 = z*x*t - y*sinres;
         result.m3 = 0.0f;
 
-        result.m4 = x * y * t - z * sinres;
-        result.m5 = y * y * t + cosres;
-        result.m6 = z * y * t + x * sinres;
+        result.m4 = x*y*t - z*sinres;
+        result.m5 = y*y*t + cosres;
+        result.m6 = z*y*t + x*sinres;
         result.m7 = 0.0f;
 
-        result.m8 = x * z * t + y * sinres;
-        result.m9 = y * z * t - x * sinres;
-        result.m10 = z * z * t + cosres;
+        result.m8 = x*z*t + y*sinres;
+        result.m9 = y*z*t - x*sinres;
+        result.m10 = z*z*t + cosres;
         result.m11 = 0.0f;
 
         result.m12 = 0.0f;
         result.m13 = 0.0f;
         result.m14 = 0.0f;
         result.m15 = 1.0f;
+
 
         return result;
     }
