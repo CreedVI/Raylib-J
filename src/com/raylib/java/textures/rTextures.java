@@ -1818,18 +1818,18 @@ public class rTextures{
             for (int i = 0, k = 0; i < image.width * image.height; i++) {
                 switch (image.getFormat()) {
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:{
-                        pixels[i].setR(imgData[i]);
-                        pixels[i].setG(imgData[i]);
-                        pixels[i].setB(imgData[i]);
-                        pixels[i].setA((byte) 255);
+                        pixels[i].setR(Byte.toUnsignedInt(imgData[i]));
+                        pixels[i].setG(Byte.toUnsignedInt(imgData[i]));
+                        pixels[i].setB(Byte.toUnsignedInt(imgData[i]));
+                        pixels[i].setA(Byte.toUnsignedInt((byte) 255));
 
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:{
-                        pixels[i].setR(imgData[k]);
-                        pixels[i].setG(imgData[k]);
-                        pixels[i].setB(imgData[k]);
-                        pixels[i].setA(imgData[k + 1]);
+                        pixels[i].setR(Byte.toUnsignedInt(imgData[k]));
+                        pixels[i].setG(Byte.toUnsignedInt(imgData[k]));
+                        pixels[i].setB(Byte.toUnsignedInt(imgData[k]));
+                        pixels[i].setA(Byte.toUnsignedInt(imgData[k + 1]));
 
                         k += 2;
                     }
@@ -1837,73 +1837,73 @@ public class rTextures{
                     case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:{
                         short pixel = imgData[i];
 
-                        pixels[i].setR((byte) (((pixel & 0b1111100000000000) >> 11) * (255 / 31)));
-                        pixels[i].setG((byte) (((pixel & 0b0000011111000000) >> 6) * (255 / 31)));
-                        pixels[i].setB((byte) (((pixel & 0b0000000000111110) >> 1) * (255 / 31)));
-                        pixels[i].setA((byte) ((pixel & 0b0000000000000001) * 255));
+                        pixels[i].setR(Byte.toUnsignedInt((byte) (((pixel & 0b1111100000000000) >> 11) * (255 / 31))));
+                        pixels[i].setG(Byte.toUnsignedInt((byte) (((pixel & 0b0000011111000000) >> 6) * (255 / 31))));
+                        pixels[i].setB(Byte.toUnsignedInt((byte) (((pixel & 0b0000000000111110) >> 1) * (255 / 31))));
+                        pixels[i].setA(Byte.toUnsignedInt((byte) ((pixel & 0b0000000000000001) * 255)));
 
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5:{
                         short pixel = imgData[i];
 
-                        pixels[i].setR((byte) (((pixel & 0b1111100000000000) >> 11) * (255 / 31)));
-                        pixels[i].setG((byte) (((pixel & 0b0000011111100000) >> 5) * (255 / 63)));
-                        pixels[i].setB((byte) ((pixel & 0b0000000000011111) * (255 / 31)));
-                        pixels[i].setA((byte) 255);
+                        pixels[i].setR(Byte.toUnsignedInt((byte) (((pixel & 0b1111100000000000) >> 11) * (255 / 31))));
+                        pixels[i].setG(Byte.toUnsignedInt((byte) (((pixel & 0b0000011111100000) >> 5) * (255 / 63))));
+                        pixels[i].setB(Byte.toUnsignedInt((byte) ((pixel & 0b0000000000011111) * (255 / 31))));
+                        pixels[i].setA(Byte.toUnsignedInt((byte) 255));
 
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:{
                         short pixel = imgData[i];
 
-                        pixels[i].setR((byte) (((pixel & 0b1111000000000000) >> 12) * (255 / 15)));
-                        pixels[i].setG((byte) (((pixel & 0b0000111100000000) >> 8) * (255 / 15)));
-                        pixels[i].setB((byte) (((pixel & 0b0000000011110000) >> 4) * (255 / 15)));
-                        pixels[i].setA((byte) ((pixel & 0b0000000000001111) * (255 / 15)));
+                        pixels[i].setR(Byte.toUnsignedInt((byte) (((pixel & 0b1111000000000000) >> 12) * (255 / 15))));
+                        pixels[i].setG(Byte.toUnsignedInt((byte) (((pixel & 0b0000111100000000) >> 8) * (255 / 15))));
+                        pixels[i].setB(Byte.toUnsignedInt((byte) (((pixel & 0b0000000011110000) >> 4) * (255 / 15))));
+                        pixels[i].setA(Byte.toUnsignedInt((byte) ((pixel & 0b0000000000001111) * (255 / 15))));
 
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:{
-                        pixels[i].setR(imgData[k]);
-                        pixels[i].setG(imgData[k + 1]);
-                        pixels[i].setB(imgData[k + 2]);
-                        pixels[i].setA(imgData[k + 3]);
+                        pixels[i].setR(Byte.toUnsignedInt(imgData[k]));
+                        pixels[i].setG(Byte.toUnsignedInt(imgData[k + 1]));
+                        pixels[i].setB(Byte.toUnsignedInt(imgData[k + 2]));
+                        pixels[i].setA(Byte.toUnsignedInt(imgData[k + 3]));
 
                         k += 4;
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:{
-                        pixels[i].setR(imgData[k]);
-                        pixels[i].setG(imgData[k + 1]);
-                        pixels[i].setB(imgData[k + 2]);
-                        pixels[i].setA((byte) 255);
+                        pixels[i].setR(Byte.toUnsignedInt(imgData[k]));
+                        pixels[i].setG(Byte.toUnsignedInt(imgData[k + 1]));
+                        pixels[i].setB(Byte.toUnsignedInt(imgData[k + 2]));
+                        pixels[i].setA(255);
 
                         k += 3;
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32:{
-                        pixels[i].setR((byte) (imgData[k] * 255.0f));
-                        pixels[i].setG((byte) 0);
-                        pixels[i].setB((byte) 0);
-                        pixels[i].setA((byte) 255);
+                        pixels[i].setR(Byte.toUnsignedInt((byte) (imgData[k] * 255.0f)));
+                        pixels[i].setG(Byte.toUnsignedInt((byte) 0));
+                        pixels[i].setB(Byte.toUnsignedInt((byte) 0));
+                        pixels[i].setA(Byte.toUnsignedInt((byte) 255));
 
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32:{
-                        pixels[i].setR((byte) (imgData[k] * 255.0f));
-                        pixels[i].setG((byte) (imgData[k + 1] * 255.0f));
-                        pixels[i].setB((byte) (imgData[k + 2] * 255.0f));
-                        pixels[i].setA((byte) 255);
+                        pixels[i].setR(Byte.toUnsignedInt((byte) (imgData[k] * 255.0f)));
+                        pixels[i].setG(Byte.toUnsignedInt((byte) (imgData[k + 1] * 255.0f)));
+                        pixels[i].setB(Byte.toUnsignedInt((byte) (imgData[k + 2] * 255.0f)));
+                        pixels[i].setA(Byte.toUnsignedInt((byte)255));
 
                         k += 3;
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:{
-                        pixels[i].setR((byte) (imgData[k] * 255.0f));
-                        pixels[i].setG((byte) (imgData[k] * 255.0f));
-                        pixels[i].setB((byte) (imgData[k] * 255.0f));
-                        pixels[i].setA((byte) (imgData[k] * 255.0f));
+                        pixels[i].setR(Byte.toUnsignedInt((byte)(imgData[k] * 255.0f)));
+                        pixels[i].setG(Byte.toUnsignedInt((byte)(imgData[k] * 255.0f)));
+                        pixels[i].setB(Byte.toUnsignedInt((byte)(imgData[k] * 255.0f)));
+                        pixels[i].setA(Byte.toUnsignedInt((byte)(imgData[k] * 255.0f)));
 
                         k += 4;
                     }
@@ -1965,7 +1965,7 @@ public class rTextures{
         return palette;
     }
 
-    public Color[] UnloadImageColors(Color[] color) {
+    public static Color[] UnloadImageColors(Color[] color) {
         return null;
     }
 

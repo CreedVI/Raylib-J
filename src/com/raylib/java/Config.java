@@ -244,6 +244,8 @@ public class Config{
      * NOTE: Some generated meshes DO NOT include generated texture coordinates
      */
     public static boolean SUPPORT_MESH_GENERATION = true;
+    public static boolean SUPPORT_CUSTOM_MESH_GEN_PLANE = false;
+    public static boolean SUPPORT_CUSTOM_MESH_GEN_CUBE = false;
 
 
     //------------------------------------------------------------------------------------

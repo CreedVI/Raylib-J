@@ -136,8 +136,7 @@ public class Camera3D {
         // Support for multiple automatic camera modes
         // NOTE: In case of CAMERA_CUSTOM nothing happens here, user must update it manually
         switch (cameraData.mode) {
-            case CameraMode.CAMERA_FREE:           // rCamera free controls, using standard 3d-content-creation scheme
-            {
+            case CameraMode.CAMERA_FREE: {          // rCamera free controls, using standard 3d-content-creation scheme
                 // rCamera zoom
                 if ((cameraData.targetDistance < CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
                     cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
@@ -223,8 +222,7 @@ public class Camera3D {
 
             }
             break;
-            case CameraMode.CAMERA_ORBITAL:        // rCamera just orbits around target, only zoom allowed
-            {
+            case CameraMode.CAMERA_ORBITAL: {        // rCamera just orbits around target, only zoom allowed
                 cameraData.angle.x += CAMERA_ORBITAL_SPEED;      // rCamera orbit angle
                 cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);   // rCamera zoom
 
@@ -240,8 +238,7 @@ public class Camera3D {
 
             }
             break;
-            case CameraMode.CAMERA_FIRST_PERSON:   // rCamera moves as in a first-person game, controls are configurable
-            {
+            case CameraMode.CAMERA_FIRST_PERSON: {   // rCamera moves as in a first-person game, controls are configurable
                 position.x += (Math.sin(cameraData.angle.x) * direction[1] -
                         Math.sin(cameraData.angle.x) * direction[0] -
                         Math.cos(cameraData.angle.x) * direction[3] +
@@ -295,9 +292,9 @@ public class Camera3D {
 
             }
             break;
-            case CameraMode.CAMERA_THIRD_PERSON:   // rCamera moves as in a third-person game, following target at a
+            case CameraMode.CAMERA_THIRD_PERSON:{
+                // rCamera moves as in a third-person game, following target at a
                 // distance, controls are configurable
-            {
                 position.x += (Math.sin(cameraData.angle.x) * direction[1] -
                         Math.sin(cameraData.angle.x) * direction[0] -
                         Math.cos(cameraData.angle.x) * direction[3] +
@@ -347,13 +344,12 @@ public class Camera3D {
             }
             break;
             case CameraMode.CAMERA_CUSTOM:
-                break;
             default:
                 break;
         }
     }
 
-    public void SetCameraMode(Camera3D camera, int mode) {
+    public void SetCameraMode(int mode) {
         Vector3 v1 = position;
         Vector3 v2 = new Vector3(target.x, target.y, 0);
 
@@ -368,7 +364,7 @@ public class Camera3D {
         cameraData.angle.y = (float) Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)); // rCamera angle in plane XY (0 aligned with X,
         // move positive CW)
 
-        cameraData.playerEyesPosition = camera.position.y;          // Init player eyes position to camera Y position
+        cameraData.playerEyesPosition = this.position.y;          // Init player eyes position to camera Y position
 
         // Lock cursor for first person and third person cameras
         if ((mode == CameraMode.CAMERA_FIRST_PERSON) || (mode == CameraMode.CAMERA_THIRD_PERSON)){

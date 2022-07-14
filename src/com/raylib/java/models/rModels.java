@@ -11,15 +11,20 @@ import com.raylib.java.raymath.Vector2;
 import com.raylib.java.raymath.Vector3;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.Rectangle;
+import com.raylib.java.textures.Image;
 import com.raylib.java.textures.Texture2D;
 import com.raylib.java.textures.rTextures;
 import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.OBJLoader;
+import org.lwjgl.util.par.ParShapes;
+import org.lwjgl.util.par.ParShapesMesh;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
-import static com.raylib.java.Config.COMPUTE_TANGENTS_METHOD_01;
-import static com.raylib.java.Config.SUPPORT_MESH_GENERATION;
+import static com.raylib.java.Config.*;
+import static com.raylib.java.core.Color.BLACK;
 import static com.raylib.java.core.Color.WHITE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.*;
 import static com.raylib.java.raymath.Raymath.*;
@@ -766,7 +771,7 @@ public class rModels{
 
 
     // Upload vertex data into a VAO (if supported) and VBO
-    void UploadMesh(Mesh mesh, boolean dynamic) {
+    public void UploadMesh(Mesh mesh, boolean dynamic) {
         if (mesh.vaoId > 0) {
             // Check if mesh has already been loaded in GPU
             Tracelog(LOG_WARNING, "VAO: [ID "+mesh.vaoId+"] Trying to re-load an already loaded mesh");
@@ -1104,113 +1109,350 @@ public class rModels{
         }
     }
 
+    // Generate polygonal mesh
+    public Mesh GenMeshPoly(int sides, float radius) {
+        Mesh mesh = new Mesh();
+
+        if (sides < 3) {
+            return mesh;
+        }
+
+        int vertexCount = sides*3;
+
+        // Vertices definition
+        Vector3[] vertices = new Vector3[vertexCount];
+
+        float d = 0.0f, dStep = 360.0f/sides;
+        for (int v = 0; v < vertexCount; v += 3) {
+            vertices[v] = new Vector3(0.0f, 0.0f, 0.0f);
+            vertices[v + 1] = new Vector3((float)Math.sin(DEG2RAD*d)*radius, 0.0f, (float)Math.cos(DEG2RAD*d)*radius);
+            vertices[v + 2] = new Vector3((float)Math.sin(DEG2RAD*(d+dStep))*radius, 0.0f, (float)Math.cos(DEG2RAD*(d+dStep))*radius);
+            d += dStep;
+        }
+
+        // Normals definition
+        Vector3[] normals = new Vector3[vertexCount];
+        for (int n = 0; n < vertexCount; n++) {
+            normals[n] = new Vector3(0.0f, 1.0f, 0.0f);   // Vector3.up;
+        }
+
+        // TexCoords definition
+        Vector2[] texcoords = new Vector2[vertexCount];
+        for (int n = 0; n < vertexCount; n++) {
+            texcoords[n] = new Vector2(0.0f, 0.0f);
+        }
+
+        mesh.vertexCount = vertexCount;
+        mesh.triangleCount = sides;
+        mesh.vertices = new float[mesh.vertexCount * 3];
+        mesh.texcoords = new float[mesh.vertexCount * 2];
+        mesh.normals = new float[mesh.vertexCount * 3];
+
+        // Mesh vertices position array
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            mesh.vertices[3*i] = vertices[i].x;
+            mesh.vertices[3*i + 1] = vertices[i].y;
+            mesh.vertices[3*i + 2] = vertices[i].z;
+        }
+
+        // Mesh texcoords array
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            mesh.texcoords[2*i] = texcoords[i].x;
+            mesh.texcoords[2*i + 1] = texcoords[i].y;
+        }
+
+        // Mesh normals array
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            mesh.normals[3*i] = normals[i].x;
+            mesh.normals[3*i + 1] = normals[i].y;
+            mesh.normals[3*i + 2] = normals[i].z;
+        }
+
+        vertices = null;
+        normals = null;
+        texcoords = null;
+
+        // Upload vertex data to GPU (static mesh)
+        // NOTE: mesh.vboId array is allocated inside UploadMesh()
+        UploadMesh(mesh, false);
+
+        return mesh;
+    }
+
+    // Generate plane mesh (with subdivisions)
+    public Mesh GenMeshPlane(float width, float length, int resX, int resZ) {
+        Mesh mesh = new Mesh();
+
+        if(SUPPORT_CUSTOM_MESH_GEN_PLANE) {
+            //TODO: Fix this.
+
+            resX++;
+            resZ++;
+
+            // Vertices definition
+            int vertexCount = resX * resZ; // vertices get reused for the faces
+
+            Vector3[] vertices = new Vector3[vertexCount];
+            for(int z = 0; z < resZ; z++) {
+                // [-length/2, length/2]
+                float zPos = ((float) z / (resZ - 1) - 0.5f) * length;
+                for(int x = 0; x < resX; x++) {
+                    // [-width/2, width/2]
+                    float xPos = ((float) x / (resX - 1) - 0.5f) * width;
+                    vertices[x + z * resX] = new Vector3(xPos, 0.0f, zPos);
+                }
+            }
+
+            // Normals definition
+            Vector3[] normals = new Vector3[vertexCount];
+            for(int n = 0; n < vertexCount; n++) {
+                normals[n] = new Vector3(0.0f, 1.0f, 0.0f);   // Vector3.up;
+            }
+
+            // TexCoords definition
+            Vector2[] texcoords = new Vector2[vertexCount];
+            for(int v = 0; v < resZ; v++) {
+                for(int u = 0; u < resX; u++) {
+                    texcoords[u + v * resX] = new Vector2((float) u / (resX - 1), (float) v / (resZ - 1));
+                }
+            }
+
+            // Triangles definition (indices)
+            int numFaces = (resX - 1) * (resZ - 1);
+            int[] triangles = new int[numFaces * 6];
+            int t = 0;
+            for(int face = 0; face < numFaces; face++) {
+                // Retrieve lower left corner from face ind
+                int i = face % (resX - 1) + (face / (resZ - 1) * resX);
+
+                triangles[t++] = i + resX;
+                triangles[t++] = i + 1;
+                triangles[t++] = i;
+
+                triangles[t++] = i + resX;
+                triangles[t++] = i + resX + 1;
+                triangles[t++] = i + 1;
+            }
+
+            mesh.vertexCount = vertexCount;
+            mesh.triangleCount = numFaces * 2;
+            mesh.vertices = new float[mesh.vertexCount * 3];
+            mesh.texcoords = new float[mesh.vertexCount * 2];
+            mesh.normals = new float[mesh.vertexCount * 3];
+            mesh.indices = new float[mesh.triangleCount * 3];
+
+            // Mesh vertices position array
+            for(int i = 0; i < mesh.vertexCount; i++) {
+                mesh.vertices[3 * i] = vertices[i].x;
+                mesh.vertices[3 * i + 1] = vertices[i].y;
+                mesh.vertices[3 * i + 2] = vertices[i].z;
+            }
+
+            // Mesh texcoords array
+            for(int i = 0; i < mesh.vertexCount; i++) {
+                mesh.texcoords[2 * i] = texcoords[i].x;
+                mesh.texcoords[2 * i + 1] = texcoords[i].y;
+            }
+
+            // Mesh normals array
+            for(int i = 0; i < mesh.vertexCount; i++) {
+                mesh.normals[3 * i] = normals[i].x;
+                mesh.normals[3 * i + 1] = normals[i].y;
+                mesh.normals[3 * i + 2] = normals[i].z;
+            }
+
+            // Mesh indices array initialization
+            for(int i = 0; i < mesh.triangleCount * 3; i++) mesh.indices[i] = triangles[i];
+
+            vertices = null;
+            normals = null;
+            texcoords = null;
+            triangles = null;
+        }
+        else {       // Use par_shapes library to generate plane mesh
+
+            ParShapesMesh plane = ParShapes.par_shapes_create_plane(resX, resZ);   // No normals/texcoords generated!!!
+            ParShapes.par_shapes_scale(plane, width, length, 1.0f);
+            ParShapes.par_shapes_rotate(plane, -PI / 2.0f, new float[]{1, 0, 0});
+            ParShapes.par_shapes_translate(plane, -width / 2, 0.0f, length / 2);
+
+            mesh.vertices = new float[plane.ntriangles() * 3 * 3];
+            mesh.texcoords = new float[plane.ntriangles() * 3 * 2];
+            mesh.normals = new float[plane.ntriangles() * 3 * 3];
+
+            mesh.vertexCount = plane.ntriangles() * 3;
+            mesh.triangleCount = plane.ntriangles();
+
+            FloatBuffer points = plane.points(plane.ntriangles()*3*3);
+            FloatBuffer normals = plane.normals(plane.ntriangles()*3*3);
+            FloatBuffer tcoords = plane.tcoords(plane.ntriangles()*3*2);
+            IntBuffer triangles = plane.triangles(plane.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(plane);
+        }
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+
+        return mesh;
+    }
 
     // Generated cuboid mesh
     public Mesh GenMeshCube(float width, float height, float length) {
         Mesh mesh = new Mesh();
 
-        float vertices[] = {
-                -width/2, -height/2, length/2,
-                width/2, -height/2, length/2,
-                width/2, height/2, length/2,
-                -width/2, height/2, length/2,
-                -width/2, -height/2, -length/2,
-                -width/2, height/2, -length/2,
-                width/2, height/2, -length/2,
-                width/2, -height/2, -length/2,
-                -width/2, height/2, -length/2,
-                -width/2, height/2, length/2,
-                width/2, height/2, length/2,
-                width/2, height/2, -length/2,
-                -width/2, -height/2, -length/2,
-                width/2, -height/2, -length/2,
-                width/2, -height/2, length/2,
-                -width/2, -height/2, length/2,
-                width/2, -height/2, -length/2,
-                width/2, height/2, -length/2,
-                width/2, height/2, length/2,
-                width/2, -height/2, length/2,
-                -width/2, -height/2, -length/2,
-                -width/2, -height/2, length/2,
-                -width/2, height/2, length/2,
-                -width/2, height/2, -length/2
-        };
+        if(SUPPORT_CUSTOM_MESH_GEN_CUBE) {
+            //TODO: Fix this.
+            float[] vertices = {
+                    -width / 2, -height / 2, length / 2,
+                    width / 2, -height / 2, length / 2,
+                    width / 2, height / 2, length / 2,
+                    -width / 2, height / 2, length / 2,
+                    -width / 2, -height / 2, -length / 2,
+                    -width / 2, height / 2, -length / 2,
+                    width / 2, height / 2, -length / 2,
+                    width / 2, -height / 2, -length / 2,
+                    -width / 2, height / 2, -length / 2,
+                    -width / 2, height / 2, length / 2,
+                    width / 2, height / 2, length / 2,
+                    width / 2, height / 2, -length / 2,
+                    -width / 2, -height / 2, -length / 2,
+                    width / 2, -height / 2, -length / 2,
+                    width / 2, -height / 2, length / 2,
+                    -width / 2, -height / 2, length / 2,
+                    width / 2, -height / 2, -length / 2,
+                    width / 2, height / 2, -length / 2,
+                    width / 2, height / 2, length / 2,
+                    width / 2, -height / 2, length / 2,
+                    -width / 2, -height / 2, -length / 2,
+                    -width / 2, -height / 2, length / 2,
+                    -width / 2, height / 2, length / 2,
+                    -width / 2, height / 2, -length / 2
+            };
 
-        float texcoords[] = {
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f
-        };
+            float[] texcoords = {
+                    0.0f, 0.0f,
+                    1.0f, 0.0f,
+                    1.0f, 1.0f,
+                    0.0f, 1.0f,
+                    1.0f, 0.0f,
+                    1.0f, 1.0f,
+                    0.0f, 1.0f,
+                    0.0f, 0.0f,
+                    0.0f, 1.0f,
+                    0.0f, 0.0f,
+                    1.0f, 0.0f,
+                    1.0f, 1.0f,
+                    1.0f, 1.0f,
+                    0.0f, 1.0f,
+                    0.0f, 0.0f,
+                    1.0f, 0.0f,
+                    1.0f, 0.0f,
+                    1.0f, 1.0f,
+                    0.0f, 1.0f,
+                    0.0f, 0.0f,
+                    0.0f, 0.0f,
+                    1.0f, 0.0f,
+                    1.0f, 1.0f,
+                    0.0f, 1.0f
+            };
 
-        float normals[] = {
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f,-1.0f,
-                0.0f, 0.0f,-1.0f,
-                0.0f, 0.0f,-1.0f,
-                0.0f, 0.0f,-1.0f,
-                0.0f, 1.0f, 0.0f,
-                0.0f, 1.0f, 0.0f,
-                0.0f, 1.0f, 0.0f,
-                0.0f, 1.0f, 0.0f,
-                0.0f,-1.0f, 0.0f,
-                0.0f,-1.0f, 0.0f,
-                0.0f,-1.0f, 0.0f,
-                0.0f,-1.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f
-        };
+            float[] normals = {
+                    0.0f, 0.0f, 1.0f,
+                    0.0f, 0.0f, 1.0f,
+                    0.0f, 0.0f, 1.0f,
+                    0.0f, 0.0f, 1.0f,
+                    0.0f, 0.0f, -1.0f,
+                    0.0f, 0.0f, -1.0f,
+                    0.0f, 0.0f, -1.0f,
+                    0.0f, 0.0f, -1.0f,
+                    0.0f, 1.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f,
+                    0.0f, -1.0f, 0.0f,
+                    0.0f, -1.0f, 0.0f,
+                    0.0f, -1.0f, 0.0f,
+                    0.0f, -1.0f, 0.0f,
+                    1.0f, 0.0f, 0.0f,
+                    1.0f, 0.0f, 0.0f,
+                    1.0f, 0.0f, 0.0f,
+                    1.0f, 0.0f, 0.0f,
+                    -1.0f, 0.0f, 0.0f,
+                    -1.0f, 0.0f, 0.0f,
+                    -1.0f, 0.0f, 0.0f,
+                    -1.0f, 0.0f, 0.0f
+            };
 
-        mesh.vertices = vertices;
-        mesh.texcoords = texcoords;
-        mesh.normals = normals;
-        mesh.indices = new float[36];
+            mesh.vertices = vertices;
+            mesh.texcoords = texcoords;
+            mesh.normals = normals;
+            mesh.indices = new float[36];
 
-        int k = 0;
+            int k = 0;
 
-        // Indices can be initialized right now
-        for (int i = 0; i < 36; i += 6) {
-            mesh.indices[i] = 4*k;
-            mesh.indices[i + 1] = 4*k + 1;
-            mesh.indices[i + 2] = 4*k + 2;
-            mesh.indices[i + 3] = 4*k;
-            mesh.indices[i + 4] = 4*k + 2;
-            mesh.indices[i + 5] = 4*k + 3;
+            // Indices can be initialized right now
+            for(int i = 0; i < 36; i += 6) {
+                mesh.indices[i] = 4 * k;
+                mesh.indices[i + 1] = 4 * k + 1;
+                mesh.indices[i + 2] = 4 * k + 2;
+                mesh.indices[i + 3] = 4 * k;
+                mesh.indices[i + 4] = 4 * k + 2;
+                mesh.indices[i + 5] = 4 * k + 3;
 
-            k++;
+                k++;
+            }
+
+            mesh.vertexCount = 24;
+            mesh.triangleCount = 12;
         }
+        else {
+            ParShapesMesh cube = ParShapes.par_shapes_create_cube();
+            ParShapes.par_shapes_scale(cube, width, height, length);
+            ParShapes.par_shapes_translate(cube, -width/2, 0.0f, -length/2);
+            ParShapes.par_shapes_compute_normals(cube);
 
-        mesh.vertexCount = 24;
-        mesh.triangleCount = 12;
+            mesh.vertices = new float[cube.ntriangles()*3*3];
+            mesh.texcoords = new float[cube.ntriangles()*3*2];
+            mesh.normals = new float[cube.ntriangles()*3*3];
+
+            mesh.vertexCount = cube.ntriangles()*3;
+            mesh.triangleCount = cube.ntriangles();
+
+            FloatBuffer points = cube.points(cube.ntriangles()*3*3);
+            FloatBuffer normals = cube.normals(cube.ntriangles()*3*3);
+            FloatBuffer tcoords = FloatBuffer.allocate(cube.ntriangles()*3*2);
+            for(int i = 0; i < tcoords.limit(); i++) { tcoords.put(0.0f); }
+            IntBuffer triangles = cube.triangles(cube.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(cube);
+        }
 
         // Upload vertex data to GPU (static mesh)
         UploadMesh(mesh, false);
@@ -1218,6 +1460,793 @@ public class rModels{
         return mesh;
     }
 
+    // Generate sphere mesh (standard sphere)
+    public Mesh GenMeshSphere(float radius, int rings, int slices) {
+        Mesh mesh = new Mesh();
+
+        if ((rings >= 3) && (slices >= 3)) {
+            ParShapesMesh sphere = ParShapes.par_shapes_create_parametric_sphere(slices, rings);
+            ParShapes.par_shapes_scale(sphere, radius, radius, radius);
+            // NOTE: Soft normals are computed internally
+
+            mesh.vertices = new float[sphere.ntriangles()*3*3];
+            mesh.texcoords = new float[sphere.ntriangles()*3*2];
+            mesh.normals = new float[sphere.ntriangles()*3*3];
+
+            mesh.vertexCount = sphere.ntriangles()*3;
+            mesh.triangleCount = sphere.ntriangles();
+
+            FloatBuffer points = sphere.points(sphere.ntriangles()*3*3);
+            FloatBuffer normals = sphere.normals(sphere.ntriangles()*3*3);
+            FloatBuffer tcoords = sphere.tcoords(sphere.ntriangles()*3*2);
+            IntBuffer triangles = sphere.triangles(sphere.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(sphere);
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+        }
+        else {
+            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: sphere");
+        }
+
+        return mesh;
+    }
+
+    // Generate hemi-sphere mesh (half sphere, no bottom cap)
+    public Mesh GenMeshHemiSphere(float radius, int rings, int slices) {
+        Mesh mesh = new Mesh();
+
+        if ((rings >= 3) && (slices >= 3)) {
+            if (radius < 0.0f) {
+                radius = 0.0f;
+            }
+
+            ParShapesMesh sphere = ParShapes.par_shapes_create_hemisphere(slices, rings);
+            ParShapes.par_shapes_scale(sphere, radius, radius, radius);
+            // NOTE: Soft normals are computed internally
+
+            mesh.vertices = new float[sphere.ntriangles()*3*3];
+            mesh.texcoords = new float[sphere.ntriangles()*3*2];
+            mesh.normals = new float[sphere.ntriangles()*3*3];
+
+            mesh.vertexCount = sphere.ntriangles()*3;
+            mesh.triangleCount = sphere.ntriangles();
+
+            FloatBuffer points = sphere.points(sphere.ntriangles()*3*3);
+            FloatBuffer normals = sphere.normals(sphere.ntriangles()*3*3);
+            FloatBuffer tcoords = sphere.tcoords(sphere.ntriangles()*3*2);
+            IntBuffer triangles = sphere.triangles(sphere.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(sphere);
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+        }
+        else {
+            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: hemisphere");
+        }
+
+        return mesh;
+    }
+
+    // Generate cylinder mesh
+    public Mesh GenMeshCylinder(float radius, float height, int slices) {
+        Mesh mesh = new Mesh();
+
+        if (slices >= 3) {
+            // Instance a cylinder that sits on the Z=0 plane using the given tessellation
+            // levels across the UV domain.  Think of "slices" like a number of pizza
+            // slices, and "stacks" like a number of stacked rings.
+            // Height and radius are both 1.0, but they can easily be changed with par_shapes_scale
+            ParShapesMesh cylinder = ParShapes.par_shapes_create_cylinder(slices, 8);
+            ParShapes.par_shapes_scale(cylinder, radius, radius, height);
+            ParShapes.par_shapes_rotate(cylinder, -PI/2.0f, new float[]{ 1, 0, 0 });
+            ParShapes.par_shapes_rotate(cylinder, PI/2.0f, new float[]{ 0, 1, 0 });
+
+            // Generate an orientable disk shape (top cap)
+            ParShapesMesh capTop = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, 1 });
+            ParShapes.par_shapes_rotate(capTop, -PI/2.0f, new float[]{ 1, 0, 0 });
+            ParShapes.par_shapes_translate(capTop, 0, height, 0);
+
+            // Generate an orientable disk shape (bottom cap)
+            ParShapesMesh capBottom = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, -1 });
+            ParShapes.par_shapes_rotate(capBottom, PI/2.0f, new float[]{ 1, 0, 0 });
+
+            ParShapes.par_shapes_merge_and_free(cylinder, capTop);
+            ParShapes.par_shapes_merge_and_free(cylinder, capBottom);
+
+            mesh.vertices = new float[cylinder.ntriangles()*3*3];
+            mesh.texcoords = new float[cylinder.ntriangles()*3*2];
+            mesh.normals = new float[cylinder.ntriangles()*3*3];
+
+            mesh.vertexCount = cylinder.ntriangles()*3;
+            mesh.triangleCount = cylinder.ntriangles();
+
+            FloatBuffer points = cylinder.points(cylinder.ntriangles()*3*3);
+            FloatBuffer normals = cylinder.normals(cylinder.ntriangles()*3*3);
+            FloatBuffer tcoords = cylinder.tcoords(cylinder.ntriangles()*3*2);
+            IntBuffer triangles = cylinder.triangles(cylinder.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(cylinder);
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+        }
+        else {
+            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: cylinder");
+        }
+
+        return mesh;
+    }
+
+    // Generate cone/pyramid mesh
+    public Mesh GenMeshCone(float radius, float height, int slices) {
+        Mesh mesh = new Mesh();
+
+        if (slices >= 3) {
+            // Instance a cone that sits on the Z=0 plane using the given tessellation
+            // levels across the UV domain.  Think of "slices" like a number of pizza
+            // slices, and "stacks" like a number of stacked rings.
+            // Height and radius are both 1.0, but they can easily be changed with par_shapes_scale
+            ParShapesMesh cone = ParShapes.par_shapes_create_cone(slices, 8);
+            ParShapes.par_shapes_scale(cone, radius, radius, height);
+            ParShapes.par_shapes_rotate(cone, -PI/2.0f, new float[]{ 1, 0, 0 });
+            ParShapes.par_shapes_rotate(cone, PI/2.0f, new float[]{ 0, 1, 0 });
+
+            // Generate an orientable disk shape (bottom cap)
+            ParShapesMesh capBottom = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, -1 });
+            ParShapes.par_shapes_rotate(capBottom, PI/2.0f, new float[]{ 1, 0, 0 });
+
+            ParShapes.par_shapes_merge_and_free(cone, capBottom);
+
+            mesh.vertices = new float[cone.ntriangles()*3*3];
+            mesh.texcoords = new float[cone.ntriangles()*3*2];
+            mesh.normals = new float[cone.ntriangles()*3*3];
+
+            mesh.vertexCount = cone.ntriangles()*3;
+            mesh.triangleCount = cone.ntriangles();
+
+            FloatBuffer points = cone.points(cone.ntriangles()*3*3);
+            FloatBuffer normals = cone.normals(cone.ntriangles()*3*3);
+            FloatBuffer tcoords = cone.tcoords(cone.ntriangles()*3*2);
+            IntBuffer triangles = cone.triangles(cone.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(cone);
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+        }
+        else {
+            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: cone");
+        }
+
+        return mesh;
+    }
+
+    // Generate torus mesh
+    public Mesh GenMeshTorus(float radius, float size, int radSeg, int sides) {
+        Mesh mesh = new Mesh();
+
+        if ((sides >= 3) && (radSeg >= 3)) {
+            if (radius > 1.0f) {
+                radius = 1.0f;
+            }
+            else if (radius < 0.1f) {
+                radius = 0.1f;
+            }
+
+            // Create a donut that sits on the Z=0 plane with the specified inner radius
+            // The outer{ 0 } radius can be controlled with par_shapes_scale
+            ParShapesMesh torus = ParShapes.par_shapes_create_torus(radSeg, sides, radius);
+            ParShapes.par_shapes_scale(torus, size/2, size/2, size/2);
+
+            mesh.vertices = new float[torus.ntriangles()*3*3];
+            mesh.texcoords = new float[torus.ntriangles()*3*2];
+            mesh.normals = new float[torus.ntriangles()*3*3];
+
+            mesh.vertexCount = torus.ntriangles()*3;
+            mesh.triangleCount = torus.ntriangles();
+
+            FloatBuffer points = torus.points(torus.ntriangles()*3*3);
+            FloatBuffer normals = torus.normals(torus.ntriangles()*3*3);
+            FloatBuffer tcoords = torus.tcoords(torus.ntriangles()*3*2);
+            IntBuffer triangles = torus.triangles(torus.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(torus);
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+        }
+        else {
+            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: torus");
+        }
+
+        return mesh;
+    }
+
+    // Generate trefoil knot mesh
+    public Mesh GenMeshKnot(float radius, float size, int radSeg, int sides) {
+        Mesh mesh = new Mesh();
+
+        if((sides >= 3) && (radSeg >= 3)) {
+            if(radius > 3.0f) {
+                radius = 3.0f;
+            }
+            else if(radius < 0.5f) {
+                radius = 0.5f;
+            }
+
+            ParShapesMesh knot = ParShapes.par_shapes_create_trefoil_knot(radSeg, sides, radius);
+            ParShapes.par_shapes_scale(knot, size, size, size);
+
+            mesh.vertices = new float[knot.ntriangles() * 3 * 3];
+            mesh.texcoords = new float[knot.ntriangles() * 3 * 2];
+            mesh.normals = new float[knot.ntriangles() * 3 * 3];
+
+            mesh.vertexCount = knot.ntriangles() * 3;
+            mesh.triangleCount = knot.ntriangles();
+
+            FloatBuffer points = knot.points(knot.ntriangles()*3*3);
+            FloatBuffer normals = knot.normals(knot.ntriangles()*3*3);
+            FloatBuffer tcoords = knot.tcoords(knot.ntriangles()*3*2);
+            IntBuffer triangles = knot.triangles(knot.ntriangles()*3*3);
+
+            for (int k = 0; k < mesh.vertexCount; k++) {
+                mesh.vertices[k*3] = points.get(triangles.get(k)*3);
+                mesh.vertices[k*3 + 1] = points.get(triangles.get(k)*3 + 1);
+                mesh.vertices[k*3 + 2] = points.get(triangles.get(k)*3 + 2);
+
+                mesh.normals[k*3] = normals.get(triangles.get(k)*3);
+                mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
+                mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
+
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+            }
+
+            ParShapes.par_shapes_free_mesh(knot);
+
+            // Upload vertex data to GPU (static mesh)
+            UploadMesh(mesh, false);
+        }
+        else {
+            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: knot");
+        }
+
+        return mesh;
+    }
+
+    private float GRAY_VALUE(Color c) {
+        return (float)((c.r+c.g+c.b)/3);
+    }
+
+    // Generate a mesh from heightmap
+    // NOTE: Vertex data is uploaded to GPU
+    public Mesh GenMeshHeightmap(Image heightmap, Vector3 size) {
+        Mesh mesh = new Mesh();
+
+        int mapX = heightmap.width;
+        int mapZ = heightmap.height;
+
+        Color[] pixels = rTextures.LoadImageColors(heightmap);
+
+        // NOTE: One vertex per pixel
+        mesh.triangleCount = (mapX-1)*(mapZ-1)*2;    // One quad every four pixels
+
+        mesh.vertexCount = mesh.triangleCount*3;
+
+        mesh.vertices = new float[mesh.vertexCount*3];
+        mesh.normals = new float[mesh.vertexCount*3];
+        mesh.texcoords = new float[mesh.vertexCount*2];
+        mesh.colors = null;
+
+        int vCounter = 0;       // Used to count vertices float by float
+        int tcCounter = 0;      // Used to count texcoords float by float
+        int nCounter = 0;       // Used to count normals float by float
+
+        int trisCounter = 0;
+
+        Vector3 scaleFactor = new Vector3(size.x/mapX, size.y/255.0f, size.z/mapZ);
+
+        Vector3 vA = new Vector3();
+        Vector3 vB = new Vector3();
+        Vector3 vC = new Vector3();
+        Vector3 vN = new Vector3();
+
+        for (int z = 0; z < mapZ-1; z++) {
+            for (int x = 0; x < mapX-1; x++) {
+                // Fill vertices array with data
+                //----------------------------------------------------------
+
+                // one triangle - 3 vertex
+                mesh.vertices[vCounter] = (float)x*scaleFactor.x;
+                mesh.vertices[vCounter + 1] = (float)GRAY_VALUE(pixels[x + z*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 2] = (float)z*scaleFactor.z;
+
+                mesh.vertices[vCounter + 3] = (float)x*scaleFactor.x;
+                mesh.vertices[vCounter + 4] = (float)GRAY_VALUE(pixels[x + (z + 1)*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 5] = (float)(z + 1)*scaleFactor.z;
+
+                mesh.vertices[vCounter + 6] = (float)(x + 1)*scaleFactor.x;
+                mesh.vertices[vCounter + 7] = (float)GRAY_VALUE(pixels[(x + 1) + z*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 8] = (float)z*scaleFactor.z;
+
+                // another triangle - 3 vertex
+                mesh.vertices[vCounter + 9] = mesh.vertices[vCounter + 6];
+                mesh.vertices[vCounter + 10] = mesh.vertices[vCounter + 7];
+                mesh.vertices[vCounter + 11] = mesh.vertices[vCounter + 8];
+
+                mesh.vertices[vCounter + 12] = mesh.vertices[vCounter + 3];
+                mesh.vertices[vCounter + 13] = mesh.vertices[vCounter + 4];
+                mesh.vertices[vCounter + 14] = mesh.vertices[vCounter + 5];
+
+                mesh.vertices[vCounter + 15] = (float)(x + 1)*scaleFactor.x;
+                mesh.vertices[vCounter + 16] = (float)GRAY_VALUE(pixels[(x + 1) + (z + 1)*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 17] = (float)(z + 1)*scaleFactor.z;
+                vCounter += 18;     // 6 vertex, 18 floats
+
+                // Fill texcoords array with data
+                //--------------------------------------------------------------
+                mesh.texcoords[tcCounter] = (float)x/(mapX - 1);
+                mesh.texcoords[tcCounter + 1] = (float)z/(mapZ - 1);
+
+                mesh.texcoords[tcCounter + 2] = (float)x/(mapX - 1);
+                mesh.texcoords[tcCounter + 3] = (float)(z + 1)/(mapZ - 1);
+
+                mesh.texcoords[tcCounter + 4] = (float)(x + 1)/(mapX - 1);
+                mesh.texcoords[tcCounter + 5] = (float)z/(mapZ - 1);
+
+                mesh.texcoords[tcCounter + 6] = mesh.texcoords[tcCounter + 4];
+                mesh.texcoords[tcCounter + 7] = mesh.texcoords[tcCounter + 5];
+
+                mesh.texcoords[tcCounter + 8] = mesh.texcoords[tcCounter + 2];
+                mesh.texcoords[tcCounter + 9] = mesh.texcoords[tcCounter + 3];
+
+                mesh.texcoords[tcCounter + 10] = (float)(x + 1)/(mapX - 1);
+                mesh.texcoords[tcCounter + 11] = (float)(z + 1)/(mapZ - 1);
+                tcCounter += 12;    // 6 texcoords, 12 floats
+
+                // Fill normals array with data
+                //--------------------------------------------------------------
+                for (int i = 0; i < 18; i += 9) {
+                    vA.x = mesh.vertices[nCounter + i];
+                    vA.y = mesh.vertices[nCounter + i + 1];
+                    vA.z = mesh.vertices[nCounter + i + 2];
+
+                    vB.x = mesh.vertices[nCounter + i + 3];
+                    vB.y = mesh.vertices[nCounter + i + 4];
+                    vB.z = mesh.vertices[nCounter + i + 5];
+
+                    vC.x = mesh.vertices[nCounter + i + 6];
+                    vC.y = mesh.vertices[nCounter + i + 7];
+                    vC.z = mesh.vertices[nCounter + i + 8];
+
+                    vN = Vector3Normalize(Vector3CrossProduct(Vector3Subtract(vB, vA), Vector3Subtract(vC, vA)));
+
+                    mesh.normals[nCounter + i] = vN.x;
+                    mesh.normals[nCounter + i + 1] = vN.y;
+                    mesh.normals[nCounter + i + 2] = vN.z;
+
+                    mesh.normals[nCounter + i + 3] = vN.x;
+                    mesh.normals[nCounter + i + 4] = vN.y;
+                    mesh.normals[nCounter + i + 5] = vN.z;
+
+                    mesh.normals[nCounter + i + 6] = vN.x;
+                    mesh.normals[nCounter + i + 7] = vN.y;
+                    mesh.normals[nCounter + i + 8] = vN.z;
+                }
+
+                nCounter += 18;     // 6 vertex, 18 floats
+                trisCounter += 2;
+            }
+        }
+
+        rTextures.UnloadImageColors(pixels);  // Unload pixels color data
+
+        // Upload vertex data to GPU (static mesh)
+        UploadMesh(mesh, false);
+
+        return mesh;
+    }
+
+    private static boolean COLOR_EQUAL(Color col1, Color col2) {
+        return ((col1.r == col2.r)&&(col1.g == col2.g)&&(col1.b == col2.b)&&(col1.a == col2.a));
+    }
+
+    // Generate a cubes mesh from pixel data
+    // NOTE: Vertex data is uploaded to GPU
+    public Mesh GenMeshCubicmap(Image cubicmap, Vector3 cubeSize) {
+        Mesh mesh = new Mesh();
+
+        Color[] pixels = rTextures.LoadImageColors(cubicmap);
+
+        int mapWidth = cubicmap.width;
+        int mapHeight = cubicmap.height;
+
+        // NOTE: Max possible number of triangles numCubes*(12 triangles by cube)
+        int maxTriangles = cubicmap.width*cubicmap.height*12;
+
+        int vCounter = 0;       // Used to count vertices
+        int tcCounter = 0;      // Used to count texcoords
+        int nCounter = 0;       // Used to count normals
+
+        float w = cubeSize.x;
+        float h = cubeSize.z;
+        float h2 = cubeSize.y;
+
+        Vector3[] mapVertices = new Vector3[maxTriangles*3];
+        Vector2[] mapTexcoords = new Vector2[maxTriangles*3];
+        Vector3[] mapNormals = new Vector3[maxTriangles*3];
+
+        // Define the 6 normals of the cube, we will combine them accordingly later...
+        Vector3 n1 = new Vector3(1.0f, 0.0f, 0.0f);
+        Vector3 n2 = new Vector3(-1.0f, 0.0f, 0.0f);
+        Vector3 n3 = new Vector3(0.0f, 1.0f, 0.0f);
+        Vector3 n4 = new Vector3(0.0f, -1.0f, 0.0f);
+        Vector3 n5 = new Vector3(0.0f, 0.0f, -1.0f);
+        Vector3 n6 = new Vector3(0.0f, 0.0f, 1.0f);
+
+        Rectangle rightTexUV = new Rectangle(0.0f, 0.0f, 0.5f, 0.5f);
+        Rectangle leftTexUV = new Rectangle(0.5f, 0.0f, 0.5f, 0.5f);
+        Rectangle frontTexUV = new Rectangle(0.0f, 0.0f, 0.5f, 0.5f);
+        Rectangle backTexUV = new Rectangle(0.5f, 0.0f, 0.5f, 0.5f);
+        Rectangle topTexUV = new Rectangle(0.0f, 0.5f, 0.5f, 0.5f);
+        Rectangle bottomTexUV = new Rectangle(0.5f, 0.5f, 0.5f, 0.5f);
+
+        for (int z = 0; z < mapHeight; ++z) {
+            for (int x = 0; x < mapWidth; ++x) {
+                // Define the 8 vertex of the cube, we will combine them accordingly later...
+                Vector3 v1 = new Vector3(w*(x - 0.5f), h2, h*(z - 0.5f));
+                Vector3 v2 = new Vector3(w*(x - 0.5f), h2, h*(z + 0.5f));
+                Vector3 v3 = new Vector3(w*(x + 0.5f), h2, h*(z + 0.5f));
+                Vector3 v4 = new Vector3(w*(x + 0.5f), h2, h*(z - 0.5f));
+                Vector3 v5 = new Vector3(w*(x + 0.5f), 0, h*(z - 0.5f));
+                Vector3 v6 = new Vector3(w*(x - 0.5f), 0, h*(z - 0.5f));
+                Vector3 v7 = new Vector3(w*(x - 0.5f), 0, h*(z + 0.5f));
+                Vector3 v8 = new Vector3(w*(x + 0.5f), 0, h*(z + 0.5f));
+
+                // We check pixel color to be WHITE -> draw full cube
+                if (COLOR_EQUAL(pixels[z*cubicmap.width + x], WHITE)) {
+                    // Define triangles and checking collateral cubes
+                    //------------------------------------------------
+
+                    // Define top triangles (2 tris, 6 vertex --> v1-v2-v3, v1-v3-v4)
+                    // WARNING: Not required for a WHITE cubes, created to allow seeing the map from outside
+                    mapVertices[vCounter] = v1;
+                    mapVertices[vCounter + 1] = v2;
+                    mapVertices[vCounter + 2] = v3;
+                    mapVertices[vCounter + 3] = v1;
+                    mapVertices[vCounter + 4] = v3;
+                    mapVertices[vCounter + 5] = v4;
+                    vCounter += 6;
+
+                    mapNormals[nCounter] = n3;
+                    mapNormals[nCounter + 1] = n3;
+                    mapNormals[nCounter + 2] = n3;
+                    mapNormals[nCounter + 3] = n3;
+                    mapNormals[nCounter + 4] = n3;
+                    mapNormals[nCounter + 5] = n3;
+                    nCounter += 6;
+
+                    mapTexcoords[tcCounter] = new Vector2(topTexUV.x, topTexUV.y);
+                    mapTexcoords[tcCounter + 1] = new Vector2(topTexUV.x, topTexUV.y + topTexUV.height);
+                    mapTexcoords[tcCounter + 2] = new Vector2(topTexUV.x + topTexUV.width, topTexUV.y + topTexUV.height);
+                    mapTexcoords[tcCounter + 3] = new Vector2(topTexUV.x, topTexUV.y);
+                    mapTexcoords[tcCounter + 4] = new Vector2(topTexUV.x + topTexUV.width, topTexUV.y + topTexUV.height);
+                    mapTexcoords[tcCounter + 5] = new Vector2(topTexUV.x + topTexUV.width, topTexUV.y);
+                    tcCounter += 6;
+
+                    // Define bottom triangles (2 tris, 6 vertex --> v6-v8-v7, v6-v5-v8)
+                    mapVertices[vCounter] = v6;
+                    mapVertices[vCounter + 1] = v8;
+                    mapVertices[vCounter + 2] = v7;
+                    mapVertices[vCounter + 3] = v6;
+                    mapVertices[vCounter + 4] = v5;
+                    mapVertices[vCounter + 5] = v8;
+                    vCounter += 6;
+
+                    mapNormals[nCounter] = n4;
+                    mapNormals[nCounter + 1] = n4;
+                    mapNormals[nCounter + 2] = n4;
+                    mapNormals[nCounter + 3] = n4;
+                    mapNormals[nCounter + 4] = n4;
+                    mapNormals[nCounter + 5] = n4;
+                    nCounter += 6;
+
+                    mapTexcoords[tcCounter] = new Vector2(bottomTexUV.x + bottomTexUV.width, bottomTexUV.y);
+                    mapTexcoords[tcCounter + 1] = new Vector2(bottomTexUV.x, bottomTexUV.y + bottomTexUV.height);
+                    mapTexcoords[tcCounter + 2] = new Vector2(bottomTexUV.x + bottomTexUV.width, bottomTexUV.y + bottomTexUV.height);
+                    mapTexcoords[tcCounter + 3] = new Vector2(bottomTexUV.x + bottomTexUV.width, bottomTexUV.y);
+                    mapTexcoords[tcCounter + 4] = new Vector2(bottomTexUV.x, bottomTexUV.y);
+                    mapTexcoords[tcCounter + 5] = new Vector2(bottomTexUV.x, bottomTexUV.y + bottomTexUV.height);
+                    tcCounter += 6;
+
+                    // Checking cube on bottom of current cube
+                    if (((z < cubicmap.height - 1) && COLOR_EQUAL(pixels[(z + 1)*cubicmap.width + x], BLACK)) || (z == cubicmap.height - 1)) {
+                        // Define front triangles (2 tris, 6 vertex) --> v2 v7 v3, v3 v7 v8
+                        // NOTE: Collateral occluded faces are not generated
+                        mapVertices[vCounter] = v2;
+                        mapVertices[vCounter + 1] = v7;
+                        mapVertices[vCounter + 2] = v3;
+                        mapVertices[vCounter + 3] = v3;
+                        mapVertices[vCounter + 4] = v7;
+                        mapVertices[vCounter + 5] = v8;
+                        vCounter += 6;
+
+                        mapNormals[nCounter] = n6;
+                        mapNormals[nCounter + 1] = n6;
+                        mapNormals[nCounter + 2] = n6;
+                        mapNormals[nCounter + 3] = n6;
+                        mapNormals[nCounter + 4] = n6;
+                        mapNormals[nCounter + 5] = n6;
+                        nCounter += 6;
+
+                        mapTexcoords[tcCounter] = new Vector2(frontTexUV.x, frontTexUV.y);
+                        mapTexcoords[tcCounter + 1] = new Vector2(frontTexUV.x, frontTexUV.y + frontTexUV.height);
+                        mapTexcoords[tcCounter + 2] = new Vector2(frontTexUV.x + frontTexUV.width, frontTexUV.y);
+                        mapTexcoords[tcCounter + 3] = new Vector2(frontTexUV.x + frontTexUV.width, frontTexUV.y);
+                        mapTexcoords[tcCounter + 4] = new Vector2(frontTexUV.x, frontTexUV.y + frontTexUV.height);
+                        mapTexcoords[tcCounter + 5] = new Vector2(frontTexUV.x + frontTexUV.width, frontTexUV.y + frontTexUV.height);
+                        tcCounter += 6;
+                    }
+
+                    // Checking cube on top of current cube
+                    if (((z > 0) && COLOR_EQUAL(pixels[(z - 1)*cubicmap.width + x], BLACK)) || (z == 0)) {
+                        // Define back triangles (2 tris, 6 vertex) --> v1 v5 v6, v1 v4 v5
+                        // NOTE: Collateral occluded faces are not generated
+                        mapVertices[vCounter] = v1;
+                        mapVertices[vCounter + 1] = v5;
+                        mapVertices[vCounter + 2] = v6;
+                        mapVertices[vCounter + 3] = v1;
+                        mapVertices[vCounter + 4] = v4;
+                        mapVertices[vCounter + 5] = v5;
+                        vCounter += 6;
+
+                        mapNormals[nCounter] = n5;
+                        mapNormals[nCounter + 1] = n5;
+                        mapNormals[nCounter + 2] = n5;
+                        mapNormals[nCounter + 3] = n5;
+                        mapNormals[nCounter + 4] = n5;
+                        mapNormals[nCounter + 5] = n5;
+                        nCounter += 6;
+
+                        mapTexcoords[tcCounter] = new Vector2(backTexUV.x + backTexUV.width, backTexUV.y);
+                        mapTexcoords[tcCounter + 1] = new Vector2(backTexUV.x, backTexUV.y + backTexUV.height);
+                        mapTexcoords[tcCounter + 2] = new Vector2(backTexUV.x + backTexUV.width, backTexUV.y + backTexUV.height);
+                        mapTexcoords[tcCounter + 3] = new Vector2(backTexUV.x + backTexUV.width, backTexUV.y);
+                        mapTexcoords[tcCounter + 4] = new Vector2(backTexUV.x, backTexUV.y);
+                        mapTexcoords[tcCounter + 5] = new Vector2(backTexUV.x, backTexUV.y + backTexUV.height);
+                        tcCounter += 6;
+                    }
+
+                    // Checking cube on right of current cube
+                    if (((x < cubicmap.width - 1) && COLOR_EQUAL(pixels[z*cubicmap.width + (x + 1)], BLACK)) || (x == cubicmap.width - 1)) {
+                        // Define right triangles (2 tris, 6 vertex) --> v3 v8 v4, v4 v8 v5
+                        // NOTE: Collateral occluded faces are not generated
+                        mapVertices[vCounter] = v3;
+                        mapVertices[vCounter + 1] = v8;
+                        mapVertices[vCounter + 2] = v4;
+                        mapVertices[vCounter + 3] = v4;
+                        mapVertices[vCounter + 4] = v8;
+                        mapVertices[vCounter + 5] = v5;
+                        vCounter += 6;
+
+                        mapNormals[nCounter] = n1;
+                        mapNormals[nCounter + 1] = n1;
+                        mapNormals[nCounter + 2] = n1;
+                        mapNormals[nCounter + 3] = n1;
+                        mapNormals[nCounter + 4] = n1;
+                        mapNormals[nCounter + 5] = n1;
+                        nCounter += 6;
+
+                        mapTexcoords[tcCounter] = new Vector2(rightTexUV.x, rightTexUV.y);
+                        mapTexcoords[tcCounter + 1] = new Vector2(rightTexUV.x, rightTexUV.y + rightTexUV.height);
+                        mapTexcoords[tcCounter + 2] = new Vector2(rightTexUV.x + rightTexUV.width, rightTexUV.y);
+                        mapTexcoords[tcCounter + 3] = new Vector2(rightTexUV.x + rightTexUV.width, rightTexUV.y);
+                        mapTexcoords[tcCounter + 4] = new Vector2(rightTexUV.x, rightTexUV.y + rightTexUV.height);
+                        mapTexcoords[tcCounter + 5] = new Vector2(rightTexUV.x + rightTexUV.width, rightTexUV.y + rightTexUV.height);
+                        tcCounter += 6;
+                    }
+
+                    // Checking cube on left of current cube
+                    if (((x > 0) && COLOR_EQUAL(pixels[z*cubicmap.width + (x - 1)], BLACK)) || (x == 0)) {
+                        // Define left triangles (2 tris, 6 vertex) --> v1 v7 v2, v1 v6 v7
+                        // NOTE: Collateral occluded faces are not generated
+                        mapVertices[vCounter] = v1;
+                        mapVertices[vCounter + 1] = v7;
+                        mapVertices[vCounter + 2] = v2;
+                        mapVertices[vCounter + 3] = v1;
+                        mapVertices[vCounter + 4] = v6;
+                        mapVertices[vCounter + 5] = v7;
+                        vCounter += 6;
+
+                        mapNormals[nCounter] = n2;
+                        mapNormals[nCounter + 1] = n2;
+                        mapNormals[nCounter + 2] = n2;
+                        mapNormals[nCounter + 3] = n2;
+                        mapNormals[nCounter + 4] = n2;
+                        mapNormals[nCounter + 5] = n2;
+                        nCounter += 6;
+
+                        mapTexcoords[tcCounter] = new Vector2(leftTexUV.x, leftTexUV.y);
+                        mapTexcoords[tcCounter + 1] = new Vector2(leftTexUV.x + leftTexUV.width, leftTexUV.y + leftTexUV.height);
+                        mapTexcoords[tcCounter + 2] = new Vector2(leftTexUV.x + leftTexUV.width, leftTexUV.y);
+                        mapTexcoords[tcCounter + 3] = new Vector2(leftTexUV.x, leftTexUV.y);
+                        mapTexcoords[tcCounter + 4] = new Vector2(leftTexUV.x, leftTexUV.y + leftTexUV.height);
+                        mapTexcoords[tcCounter + 5] = new Vector2(leftTexUV.x + leftTexUV.width, leftTexUV.y + leftTexUV.height);
+                        tcCounter += 6;
+                    }
+                }
+                // We check pixel color to be BLACK, we will only draw floor and roof
+                else if (COLOR_EQUAL(pixels[z*cubicmap.width + x], BLACK)) {
+                    // Define top triangles (2 tris, 6 vertex --> v1-v2-v3, v1-v3-v4)
+                    mapVertices[vCounter] = v1;
+                    mapVertices[vCounter + 1] = v3;
+                    mapVertices[vCounter + 2] = v2;
+                    mapVertices[vCounter + 3] = v1;
+                    mapVertices[vCounter + 4] = v4;
+                    mapVertices[vCounter + 5] = v3;
+                    vCounter += 6;
+
+                    mapNormals[nCounter] = n4;
+                    mapNormals[nCounter + 1] = n4;
+                    mapNormals[nCounter + 2] = n4;
+                    mapNormals[nCounter + 3] = n4;
+                    mapNormals[nCounter + 4] = n4;
+                    mapNormals[nCounter + 5] = n4;
+                    nCounter += 6;
+
+                    mapTexcoords[tcCounter] = new Vector2(topTexUV.x, topTexUV.y);
+                    mapTexcoords[tcCounter + 2] = new Vector2(topTexUV.x, topTexUV.y + topTexUV.height);
+                    mapTexcoords[tcCounter + 1] = new Vector2(topTexUV.x + topTexUV.width, topTexUV.y + topTexUV.height);
+                    mapTexcoords[tcCounter + 3] = new Vector2(topTexUV.x, topTexUV.y);
+                    mapTexcoords[tcCounter + 4] = new Vector2(topTexUV.x + topTexUV.width, topTexUV.y);
+                    mapTexcoords[tcCounter + 5] = new Vector2(topTexUV.x + topTexUV.width, topTexUV.y + topTexUV.height);
+                    tcCounter += 6;
+
+                    // Define bottom triangles (2 tris, 6 vertex --> v6-v8-v7, v6-v5-v8)
+                    mapVertices[vCounter] = v6;
+                    mapVertices[vCounter + 1] = v7;
+                    mapVertices[vCounter + 2] = v8;
+                    mapVertices[vCounter + 3] = v6;
+                    mapVertices[vCounter + 4] = v8;
+                    mapVertices[vCounter + 5] = v5;
+                    vCounter += 6;
+
+                    mapNormals[nCounter] = n3;
+                    mapNormals[nCounter + 1] = n3;
+                    mapNormals[nCounter + 2] = n3;
+                    mapNormals[nCounter + 3] = n3;
+                    mapNormals[nCounter + 4] = n3;
+                    mapNormals[nCounter + 5] = n3;
+                    nCounter += 6;
+
+                    mapTexcoords[tcCounter] = new Vector2(bottomTexUV.x + bottomTexUV.width, bottomTexUV.y);
+                    mapTexcoords[tcCounter + 1] = new Vector2(bottomTexUV.x + bottomTexUV.width, bottomTexUV.y + bottomTexUV.height);
+                    mapTexcoords[tcCounter + 2] = new Vector2(bottomTexUV.x, bottomTexUV.y + bottomTexUV.height);
+                    mapTexcoords[tcCounter + 3] = new Vector2(bottomTexUV.x + bottomTexUV.width, bottomTexUV.y);
+                    mapTexcoords[tcCounter + 4] = new Vector2(bottomTexUV.x, bottomTexUV.y + bottomTexUV.height);
+                    mapTexcoords[tcCounter + 5] = new Vector2(bottomTexUV.x, bottomTexUV.y);
+                    tcCounter += 6;
+                }
+            }
+        }
+
+        // Move data from mapVertices temp arays to vertices float array
+        mesh.vertexCount = vCounter;
+        mesh.triangleCount = vCounter/3;
+
+        mesh.vertices = new float[mesh.vertexCount*3];
+        mesh.normals = new float[mesh.vertexCount*3];
+        mesh.texcoords = new float[mesh.vertexCount*2];
+        mesh.colors = null;
+
+        int fCounter = 0;
+
+        // Move vertices data
+        for (int i = 0; i < vCounter; i++) {
+            mesh.vertices[fCounter] = mapVertices[i].x;
+            mesh.vertices[fCounter + 1] = mapVertices[i].y;
+            mesh.vertices[fCounter + 2] = mapVertices[i].z;
+            fCounter += 3;
+        }
+
+        fCounter = 0;
+
+        // Move normals data
+        for (int i = 0; i < nCounter; i++) {
+            mesh.normals[fCounter] = mapNormals[i].x;
+            mesh.normals[fCounter + 1] = mapNormals[i].y;
+            mesh.normals[fCounter + 2] = mapNormals[i].z;
+            fCounter += 3;
+        }
+
+        fCounter = 0;
+
+        // Move texcoords data
+        for (int i = 0; i < tcCounter; i++) {
+            mesh.texcoords[fCounter] = mapTexcoords[i].x;
+            mesh.texcoords[fCounter + 1] = mapTexcoords[i].y;
+            fCounter += 2;
+        }
+
+        mapVertices = null;
+        mapNormals = null;
+        mapTexcoords = null;
+
+        rTextures.UnloadImageColors(pixels);   // Unload pixels color data
+
+        // Upload vertex data to GPU (static mesh)
+        UploadMesh(mesh, false);
+
+        return mesh;
+    }
 
     // Unload mesh from memory (RAM and VRAM)
     public void UnloadMesh(Mesh mesh) {
@@ -1235,7 +2264,7 @@ public class rModels{
 
     // Compute mesh bounding box limits
     // NOTE: minVertex and maxVertex should be transformed by model transform matrix
-    BoundingBox GetMeshBoundingBox(Mesh mesh) {
+    public BoundingBox GetMeshBoundingBox(Mesh mesh) {
         // Get min and max vertex to construct bounds (AABB)
         Vector3 minVertex = new Vector3();
         Vector3 maxVertex = new Vector3();
@@ -1356,11 +2385,11 @@ public class rModels{
     // Compute mesh binormals (aka bitangent)
     private void GenMeshBinormals(Mesh mesh) {
         for (int i = 0; i < mesh.vertexCount; i++) {
-            //Vector3 normal = { mesh->normals[i*3 + 0], mesh->normals[i*3 + 1], mesh->normals[i*3 + 2] };
-            //Vector3 tangent = { mesh->tangents[i*4 + 0], mesh->tangents[i*4 + 1], mesh->tangents[i*4 + 2] };
-            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh->tangents[i*4 + 3]);
+            //Vector3 normal = { mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2] };
+            //Vector3 tangent = { mesh.tangents[i*4 + 0], mesh.tangents[i*4 + 1], mesh.tangents[i*4 + 2] };
+            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh.tangents[i*4 + 3]);
 
-            // TODO: Register computed binormal in mesh->binormal?
+            // TODO: Register computed binormal in mesh.binormal?
         }
     }
 
@@ -1535,7 +2564,7 @@ public class rModels{
     }
 
     // Check collision between two spheres
-    boolean CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2)
+    public boolean CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2)
     {
 
         // Simple way to check for collision, just checking distance between two points
@@ -1557,7 +2586,7 @@ public class rModels{
 
     // Check collision between two boxes
     // NOTE: Boxes are defined by two points minimum and maximum
-    boolean CheckCollisionBoxes(BoundingBox box1, BoundingBox box2) {
+    public boolean CheckCollisionBoxes(BoundingBox box1, BoundingBox box2) {
         boolean collision = true;
 
         if ((box1.max.x >= box2.min.x) && (box1.min.x <= box2.max.x)) {
@@ -1576,21 +2605,35 @@ public class rModels{
     }
 
     // Check collision between box and sphere
-    boolean CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius) {
+    public boolean CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius) {
         boolean collision = false;
 
         float dmin = 0;
 
-        if (center.x < box.min.x) dmin += Math.pow(center.x - box.min.x, 2);
-        else if (center.x > box.max.x) dmin += Math.pow(center.x - box.max.x, 2);
+        if (center.x < box.min.x) {
+            dmin += Math.pow(center.x - box.min.x, 2);
+        }
+        else if (center.x > box.max.x) {
+            dmin += Math.pow(center.x - box.max.x, 2);
+        }
 
-        if (center.y < box.min.y) dmin += Math.pow(center.y - box.min.y, 2);
-        else if (center.y > box.max.y) dmin += Math.pow(center.y - box.max.y, 2);
+        if (center.y < box.min.y) {
+            dmin += Math.pow(center.y - box.min.y, 2);
+        }
+        else if (center.y > box.max.y) {
+            dmin += Math.pow(center.y - box.max.y, 2);
+        }
 
-        if (center.z < box.min.z) dmin += Math.pow(center.z - box.min.z, 2);
-        else if (center.z > box.max.z) dmin += Math.pow(center.z - box.max.z, 2);
+        if (center.z < box.min.z) {
+            dmin += Math.pow(center.z - box.min.z, 2);
+        }
+        else if (center.z > box.max.z) {
+            dmin += Math.pow(center.z - box.max.z, 2);
+        }
 
-        if (dmin <= (radius*radius)) collision = true;
+        if (dmin <= (radius*radius)) {
+            collision = true;
+        }
 
         return collision;
     }

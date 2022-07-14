@@ -62,13 +62,11 @@ version!
 
 ---
 
-## Other Libraries
+## Honourable Mentions
 
 Other libraries were used in place of the original libraries to make a lot of this project possible, or at least much easier to develop. 
 Special thanks to the following:
   - [delthas](https://github.com/delthas) for their [JavaMP3 API](https://github.com/delthas/JavaMP3)
-  - [javagl](https://github.com/javagl) for their [Obj file loader](https://github.com/javagl/Obj)
-
 ---
 
 ## Development Status:
