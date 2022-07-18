@@ -703,7 +703,7 @@ public class rModels{
 
         // Unload materials maps
         // NOTE: As the user could be sharing shaders and textures between models,
-        // we don't unload the material but just free it's maps,
+        // we don't unload the material but just free its maps,
         // the user is responsible for freeing models shaders and textures
         for (int i = 0; i < model.materialCount; i++) {
             model.materials[i].maps = null;
@@ -725,7 +725,7 @@ public class rModels{
     public void UnloadModelKeepMeshes(Model model) {
         // Unload materials maps
         // NOTE: As the user could be sharing shaders and textures between models,
-        // we don't unload the material but just free it's maps,
+        // we don't unload the material but just free its maps,
         // the user is responsible for freeing models shaders and textures
         for (int i = 0; i < model.materialCount; i++) {
             model.materials[i].maps = null;
@@ -2566,8 +2566,7 @@ public class rModels{
     }
 
     // Check collision between two spheres
-    public boolean CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2)
-    {
+    public boolean CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2) {
 
         // Simple way to check for collision, just checking distance between two points
         // Unfortunately, sqrtf() is a costly operation, so we avoid it with following solution
@@ -3050,5 +3049,12 @@ public class rModels{
         }
         return model;
     }
+
+    // TODO: Load IQM
+    // TODO: Load Model animations IQM
+    // TODO: Load Image from cgltf image
+    // TODO: Load gltf
+    // TODO: Load vox
+
 
 }

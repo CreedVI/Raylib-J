@@ -82,17 +82,18 @@ public class Camera3D {
         position = new Vector3();
         target = new Vector3();
         up = new Vector3();
+        previousMousePosition = new Vector2();
         this.cameraData = cameraData;
     }
 
-    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type,
-                    CameraData cameraData){
+    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type){
         this.position = position;
         this.target = target;
         this.up = up;
         this.fovy = fovy;
         this.projection = type;
-        this.cameraData = cameraData;
+        previousMousePosition = new Vector2();
+        this.cameraData = new CameraData();
     }
 
     // Update camera depending on selected mode

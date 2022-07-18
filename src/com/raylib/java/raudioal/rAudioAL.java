@@ -1,10 +1,7 @@
 package com.raylib.java.raudioal;
 
 import com.raylib.java.utils.FileIO;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.ALC;
-import org.lwjgl.openal.ALCCapabilities;
-import org.lwjgl.openal.ALCapabilities;
+import org.lwjgl.openal.*;
 import org.lwjgl.stb.STBVorbisInfo;
 import org.lwjgl.system.MemoryStack;
 
@@ -13,15 +10,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.List;
 
 import static com.raylib.java.Config.SUPPORT_FILEFORMAT_MP3;
 import static com.raylib.java.Config.SUPPORT_FILEFORMAT_OGG;
 import static com.raylib.java.core.rCore.IsFileExtension;
-import static com.raylib.java.raudioal.rAudioAL.MusicContextType.*;
+import static com.raylib.java.raudioal.rAudioAL.MusicContextType.MUSIC_AUDIO_OGG;
+import static com.raylib.java.raudioal.rAudioAL.MusicContextType.MUSIC_MODULE_MP3;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
-import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.AL11.*;
+import static org.lwjgl.openal.ALC11.*;
 import static org.lwjgl.stb.STBVorbis.*;
 
 public class rAudioAL {
@@ -127,6 +126,19 @@ public class rAudioAL {
         // Open and initialize a device with default settings
         String defaultDevice = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
         long device = alcOpenDevice(defaultDevice);
+
+        if (device == 0) {
+            Tracelog(LOG_WARNING, "Failed to open default audio device. Trying alternative devices...");
+            List<String> devices = ALUtil.getStringList(0, ALC_ALL_DEVICES_SPECIFIER);
+            System.out.println("Available audio devices: " + devices);
+            for (int i = 0; i < devices.size(); i++) {
+                device = alcOpenDevice(devices.get(i));
+                if (device != 0) {
+                    Tracelog(LOG_INFO, "Fallback device opened. Using " + devices.get(i));
+                    break;
+                }
+            }
+        }
 
         if (device==0) {
             Tracelog(LOG_ERROR, "Audio device could not be opened");
