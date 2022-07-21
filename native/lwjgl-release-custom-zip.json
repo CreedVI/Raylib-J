@@ -7,7 +7,9 @@
     "linux-arm64",
     "linux-arm32",
     "windows",
-    "windows-x86"
+    "windows-x86",
+    "macos",
+    "macos-arm64"
   ],
   "descriptions": false,
   "compact": false,
