@@ -1,6 +1,6 @@
 package com.raylib.java.raymath;
 
-class Float16{
+public class Float16{
     public float v[] = new float[16];
 
     public Float16(){

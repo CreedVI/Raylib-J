@@ -1,5 +1,6 @@
 package com.raylib.java.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -8,6 +9,7 @@ public class OBJLoader {
     /**
      * OB-J Loader v0.1
      * written by CreedVI for use in Raylib-J.
+     * Based on TinyOBJLoader-C by Syoyo https://github.com/syoyo/tinyobjloader-c
      */
     public static class OBJInfo {
         public int totalVertices;
@@ -150,7 +152,6 @@ public class OBJLoader {
 
     public boolean ReadOBJ(String fileText, boolean triangulate) {
         objInfo = new OBJInfo();
-        mtlInfo = new MTLInfo();
         cmds = parseLines(fileText, triangulate);
 
         int numV = 0, numVN = 0, numVT = 0, numF = 0, numFaces = 0;
@@ -322,8 +323,215 @@ public class OBJLoader {
         return true;
     }
 
-    public void ReadMTL(String filetext) {
-        //todo
+    public boolean ReadMTL(String filetext) {
+        mtlInfo = new MTLInfo();
+        String[] token = filetext.split("(\\r\\n|\\r|\\n)");
+        boolean hasPreviousMaterial = false;
+        ArrayList<Material> materials = new ArrayList<>();
+        Material material = new Material();
+        int numMaterials = 0;
+
+        for (int i = 0; i < cmds.length; i++) {
+
+            if (token[i].startsWith("\0")) {
+                continue; /* empty line */
+            }
+
+            if (token[i].startsWith("#")) {
+                continue; /* comment line */
+            }
+
+            /* new mtl */
+            if (token[i].contains("newmtl")) {
+                String name;
+
+                /* flush previous material. */
+                if (hasPreviousMaterial) {
+                    materials.add(material);
+                    numMaterials++;
+                } else {
+                    hasPreviousMaterial = true;
+                }
+
+                /* initial temporary material */
+                material = new Material();
+
+                /* set new mtl name */
+                material.name = token[i].substring(token[i].lastIndexOf("newmtl "));
+
+                continue;
+            }
+
+            /* ambient */
+            if (token[i].startsWith("Ka ")) {
+                String[] tmp = token[i].substring(3).split(" ");
+                String[] rgb = new String[3];
+                for (int k = 0, j = 0; k < tmp.length; k++) {
+                    if (!Objects.equals(tmp[k], "")) {
+                        rgb[j] = tmp[k];
+                        j++;
+                    }
+                }
+
+                material.ambient[0] = Float.parseFloat(rgb[0]);
+                material.ambient[1] = Float.parseFloat(rgb[1]);
+                material.ambient[2] = Float.parseFloat(rgb[2]);
+                continue;
+            }
+
+            /* diffuse */
+            if (token[i].startsWith("Kd ")) {
+                String[] tmp = token[i].substring(3).split(" ");
+                String[] rgb = new String[3];
+                for (int k = 0, j = 0; k < tmp.length; k++) {
+                    if (!Objects.equals(tmp[k], "")) {
+                        rgb[j] = tmp[k];
+                        j++;
+                    }
+                }
+                material.diffuse[0] = Float.parseFloat(rgb[0]);
+                material.diffuse[1] = Float.parseFloat(rgb[1]);
+                material.diffuse[2] = Float.parseFloat(rgb[2]);
+                continue;
+            }
+
+            /* specular */
+            if (token[i].startsWith("Ks ")) {
+                String[] tmp = token[i].substring(3).split(" ");
+                String[] rgb = new String[3];
+                for (int k = 0, j = 0; k < tmp.length; k++) {
+                    if (!Objects.equals(tmp[k], "")) {
+                        rgb[j] = tmp[k];
+                        j++;
+                    }
+                }
+                material.specular[0] = Float.parseFloat(rgb[0]);
+                material.specular[1] = Float.parseFloat(rgb[1]);
+                material.specular[2] = Float.parseFloat(rgb[2]);
+                continue;
+            }
+
+            /* transmittance */
+            if (token[i].startsWith("Kt ")) {
+                String[] tmp = token[i].substring(3).split(" ");
+                String[] rgb = new String[3];
+                for (int k = 0, j = 0; k < tmp.length; k++) {
+                    if (!Objects.equals(tmp[k], "")) {
+                        rgb[j] = tmp[k];
+                        j++;
+                    }
+                }
+                material.transmittance[0] = Float.parseFloat(rgb[0]);
+                material.transmittance[1] = Float.parseFloat(rgb[1]);
+                material.transmittance[2] = Float.parseFloat(rgb[2]);
+                continue;
+            }
+
+            /* ior(index of refraction) */
+            if (token[i].startsWith("Ni ")) {
+                material.ior = Float.parseFloat(token[i].substring(token[i].indexOf("Ni ")));
+                continue;
+            }
+
+            /* emission */
+            if (token[i].startsWith("Ke ")) {
+                String[] tmp = token[i].substring(3).split(" ");
+                String[] rgb = new String[3];
+                for (int k = 0, j = 0; k < tmp.length; k++) {
+                    if (!Objects.equals(tmp[k], "")) {
+                        rgb[j] = tmp[k];
+                        j++;
+                    }
+                }
+                material.emission[0] = Float.parseFloat(rgb[0]);
+                material.emission[1] = Float.parseFloat(rgb[1]);
+                material.emission[2] = Float.parseFloat(rgb[2]);
+                continue;
+            }
+
+            /* shininess */
+            if (token[i].startsWith("Ns ")) {
+                material.shininess = Float.parseFloat(token[i].substring(token[i].indexOf("Ns ")));
+                continue;
+            }
+
+            /* illum model */
+            if (token[i].startsWith("illum ")) {
+                material.illum = Integer.parseInt(token[i].substring(token[i].indexOf("illum ")));
+                continue;
+            }
+
+            /* dissolve */
+            if (token[i].startsWith("d ")) {
+                material.dissolve = Float.parseFloat(token[i].substring(token[i].indexOf("d ")));
+                continue;
+            }
+            if (token[i].startsWith("Tr ")) {
+                /* Invert value of Tr(assume Tr is in range [0, 1]) */
+                material.dissolve = 1.0f - Float.parseFloat(token[i].substring(token[i].indexOf("Tr ")));
+                continue;
+            }
+
+            /* ambient texture */
+            if (token[i].startsWith("map_Ka ")) {
+                material.ambient_texname = token[i].substring(token[i].indexOf("map_Ka "));
+                continue;
+            }
+
+            /* diffuse texture */
+            if (token[i].startsWith("map_Kd ")) {
+                material.diffuse_texname = token[i].substring(token[i].indexOf("map_Kd "));
+                continue;
+            }
+
+            /* specular texture */
+            if (token[i].startsWith("map_Ks ")) {
+                material.specular_texname = token[i].substring(token[i].indexOf("map_Ks "));
+                continue;
+            }
+
+            /* specular highlight texture */
+            if (token[i].startsWith("map_Ns ")) {
+                material.specular_highlight_texname = token[i].substring(token[i].indexOf("map_Ns "));
+                continue;
+            }
+
+            /* bump texture */
+            if (token[i].startsWith("map_bump ")) {
+                material.bump_texname = token[i].substring(token[i].indexOf("map_bump "));
+                continue;
+            }
+
+            /* alpha texture */
+            if (token[i].startsWith("map_d ")) {
+                material.alpha_texname = token[i].substring(token[i].indexOf("map_d "));
+                continue;
+            }
+
+            /* bump texture */
+            if (token[i].startsWith("bump ")) {
+                material.bump_texname = token[i].substring(token[i].indexOf("bump "));
+                continue;
+            }
+
+            /* displacement texture */
+            if (token[i].startsWith("disp ")) {
+                material.displacement_texname = token[i].substring(token[i].indexOf("disp "));
+                continue;
+            }
+
+            /* @todo { unknown parameter } */
+        }
+
+        if (material.name != null) {
+            /* Flush last material element */
+            materials.add(material);
+            numMaterials++;
+        }
+
+        mtlInfo.materials = materials.toArray(new Material[numMaterials]);
+
+        return true;
     }
 
     private Command[] parseLines(String fileText, boolean triangulate) {

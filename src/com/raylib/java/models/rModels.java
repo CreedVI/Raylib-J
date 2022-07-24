@@ -5,10 +5,7 @@ import com.raylib.java.core.rCore;
 import com.raylib.java.core.ray.Ray;
 import com.raylib.java.core.ray.RayCollision;
 import com.raylib.java.core.rcamera.Camera3D;
-import com.raylib.java.raymath.Matrix;
-import com.raylib.java.raymath.Raymath;
-import com.raylib.java.raymath.Vector2;
-import com.raylib.java.raymath.Vector3;
+import com.raylib.java.raymath.*;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.Rectangle;
 import com.raylib.java.textures.Image;
@@ -16,10 +13,14 @@ import com.raylib.java.textures.Texture2D;
 import com.raylib.java.textures.rTextures;
 import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.OBJLoader;
+import me.lignum.jvox.VoxFile;
+import me.lignum.jvox.VoxReader;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -40,7 +41,7 @@ import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 
 public class rModels{
 
-    public class MaterialMapIndex {
+    public static class MaterialMapIndex {
         final static int
                 MATERIAL_MAP_ALBEDO    = 0,     // Albedo material (same as: MATERIAL_MAP_DIFFUSE)
                 MATERIAL_MAP_METALNESS = 1,     // Metalness material (same as: MATERIAL_MAP_SPECULAR)
@@ -69,6 +70,14 @@ public class rModels{
     //----------------------------------------------------------------------------------
     // Module Functions Definition
     //----------------------------------------------------------------------------------
+
+    private float GRAY_VALUE(Color c) {
+        return (float)((c.r+c.g+c.b)/3);
+    }
+
+    private static boolean COLOR_EQUAL(Color col1, Color col2) {
+        return ((col1.r == col2.r)&&(col1.g == col2.g)&&(col1.b == col2.b)&&(col1.a == col2.a));
+    }
 
     // Draw a line in 3D world space
     public void DrawLine3D(Vector3 startPos, Vector3 endPos, Color color){
@@ -413,24 +422,24 @@ public class rModels{
         for (int i = 0; i < (rings + 2); i++){
             for (int j = 0; j < slices; j++){
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
 
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
             }
         }
         RLGL.rlEnd();
@@ -453,25 +462,25 @@ public class rModels{
         for (int i = 0; i < (rings + 2); i++){
             for (int j = 0; j < slices; j++){
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
 
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
 
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
                 RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                                 (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                 (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
             }
         }
         RLGL.rlEnd();
@@ -632,6 +641,9 @@ public class rModels{
         if (rCore.IsFileExtension(fileName, ".obj")) {
             model = LoadOBJ(fileName);
         }
+        else if(rCore.IsFileExtension(fileName, ".vox")) {
+            model = LoadVOX(fileName);
+        }
 
         // Make sure model transform is set to identity matrix!
         model.transform = Raymath.MatrixIdentity();
@@ -768,7 +780,6 @@ public class rModels{
 
         return bounds;
     }
-
 
     // Upload vertex data into a VAO (if supported) and VBO
     public void UploadMesh(Mesh mesh, boolean dynamic) {
@@ -927,10 +938,10 @@ public class rModels{
             // Upload to shader material.colDiffuse
             if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] != -1) {
                 float[] values ={
-                    (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
-                            (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
-                            (float) material.maps[MATERIAL_MAP_DIFFUSE].color.b / 255.0f,
-                            (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
+                        (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
+                        (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
+                        (float) material.maps[MATERIAL_MAP_DIFFUSE].color.b / 255.0f,
+                        (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
                 } ;
 
                 rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE], values, RL_SHADER_UNIFORM_VEC4, 1);
@@ -939,10 +950,10 @@ public class rModels{
             // Upload to shader material.colSpecular (if location available)
             if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR] != -1) {
                 float[] values ={
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.r / 255.0f,
-                            (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.g / 255.0f,
-                            (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.b / 255.0f,
-                            (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.a / 255.0f
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.r / 255.0f,
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.g / 255.0f,
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.b / 255.0f,
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.a / 255.0f
                 } ;
 
                 rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR], values, RL_SHADER_UNIFORM_VEC4, 1);
@@ -1076,7 +1087,7 @@ public class rModels{
 
                 // Draw mesh
                 if (mesh.indices != null ) {
-                    rlDrawVertexArrayElements(0, mesh.triangleCount * 3, new byte[0]);
+                    rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
                 }
                 else {
                     rlDrawVertexArray(0, mesh.vertexCount);
@@ -1110,6 +1121,364 @@ public class rModels{
             rlSetMatrixProjection(matProjection);
         }
     }
+
+    // Draw multiple mesh instances with material and different transforms
+    public void DrawMeshInstanced(Mesh mesh, Material material, Matrix[] transforms, int instances) {
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+            // Instancing required variables
+            float[] instanceTransforms = null;
+            int instancesVboId = 0;
+
+            // Bind shader program
+            rlEnableShader(material.shader.id);
+
+            // Send required data to shader (matrices, values)
+            //-----------------------------------------------------
+            // Upload to shader material.colDiffuse
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] != -1) {
+                float[] values ={
+                    (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
+                    (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
+                    (float) material.maps[MATERIAL_MAP_DIFFUSE].color.b / 255.0f,
+                    (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
+                } ;
+
+                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE], values, RL_SHADER_UNIFORM_VEC4, 1);
+            }
+
+            // Upload to shader material.colSpecular (if location available)
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR] != -1) {
+                float[] values = {
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.r / 255.0f,
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.g / 255.0f,
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.b / 255.0f,
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.a / 255.0f
+                } ;
+
+                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR], values, RL_SHADER_UNIFORM_VEC4, 1);
+            }
+
+            // Get a copy of current matrices to work with,
+            // just in case stereo render is required and we need to modify them
+            // NOTE: At this point the modelview matrix just contains the view matrix (camera)
+            // That's because BeginMode3D() sets it and there is no model-drawing function
+            // that modifies it, all use rlPushMatrix() and rlPopMatrix()
+            Matrix matModel = MatrixIdentity();
+            Matrix matView = rlGetMatrixModelview();
+            Matrix matModelView = MatrixIdentity();
+            Matrix matProjection = rlGetMatrixProjection();
+
+            // Upload view and projection matrices (if locations available)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1)
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW], matView);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1)
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION], matProjection);
+
+            // Create instances buffer
+            instanceTransforms = new float[instances*16];
+
+            // Fill buffer with instances transformations as float16 arrays
+            for (int i = 0; i < instances; i++) {
+                Float16 tmp = MatrixToFloatV(transforms[i]);
+                for (int j = 0; j < tmp.v.length; j++) {
+                    instanceTransforms[i*16 + j] = tmp.v[j];
+                }
+            }
+
+            // Enable mesh VAO to attach new buffer
+            rlEnableVertexArray(mesh.vaoId);
+
+            // This could alternatively use a static VBO and either glMapBuffer() or glBufferSubData().
+            // It isn't clear which would be reliably faster in all cases and on all platforms,
+            // anecdotally glMapBuffer() seems very slow (syncs) while glBufferSubData() seems
+            // no faster, since we're transferring all the transform matrices anyway
+            instancesVboId = rlLoadVertexBuffer(instanceTransforms, false);
+
+            // Instances transformation matrices are send to shader attribute location: SHADER_LOC_MATRIX_MODEL
+            for (int i = 0; i < 4; i++) {
+                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] + i);
+                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] + i, 4, RL_FLOAT, false, 16, i);
+                rlSetVertexAttributeDivisor(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] + i, 1);
+            }
+
+            rlDisableVertexBuffer();
+            rlDisableVertexArray();
+
+            // Accumulate internal matrix transform (push/pop) and view matrix
+            // NOTE: In this case, model instance transformation must be computed in the shader
+            matModelView = MatrixMultiply(rlGetMatrixTransform(), matView);
+
+            // Upload model normal matrix (if locations available)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] != -1)
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL], MatrixTranspose(MatrixInvert(matModel)));
+            //-----------------------------------------------------
+
+            // Bind active texture maps (if available)
+            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if (material.maps[i].texture.id > 0) {
+                    // Select current shader texture slot
+                    rlActiveTextureSlot(i);
+
+                    // Enable texture for active slot
+                    if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
+                        rlEnableTextureCubemap(material.maps[i].texture.id);
+                    }
+                    else {
+                        rlEnableTexture(material.maps[i].texture.id);
+                    }
+
+                    rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE + i],  new float[]{i}, RL_SHADER_UNIFORM_INT, 1);
+                }
+            }
+
+            // Try binding vertex array objects (VAO)
+            // or use VBOs if not possible
+            if (!rlEnableVertexArray(mesh.vaoId)) {
+                // Bind mesh VBO data: vertex position (shader-location = 0)
+                rlEnableVertexBuffer(mesh.vboId[0]);
+                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION], 3, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION]);
+
+                // Bind mesh VBO data: vertex texcoords (shader-location = 1)
+                rlEnableVertexBuffer(mesh.vboId[1]);
+                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01], 2, RL_FLOAT, false, 0, 0);
+                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL] != -1) {
+                    // Bind mesh VBO data: vertex normals (shader-location = 2)
+                    rlEnableVertexBuffer(mesh.vboId[2]);
+                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL], 3, RL_FLOAT, false, 0, 0);
+                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL]);
+                }
+
+                // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR] != -1) {
+                    if (mesh.vboId[3] != 0) {
+                        rlEnableVertexBuffer(mesh.vboId[3]);
+                        rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                        rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                    }
+                    else {
+                        // Set default value for unused attribute
+                        // NOTE: Required when using default shader and no VAO support
+                        float[] value ={
+                            1.0f, 1.0f, 1.0f, 1.0f
+                        };
+                        rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], value, RL_SHADER_ATTRIB_VEC4, 4);
+                        rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                    }
+                }
+
+                // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT] != -1) {
+                    rlEnableVertexBuffer(mesh.vboId[4]);
+                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT], 4, RL_FLOAT, false, 0, 0);
+                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT]);
+                }
+
+                // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] != -1) {
+                    rlEnableVertexBuffer(mesh.vboId[5]);
+                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02], 2, RL_FLOAT, false, 0, 0);
+                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02]);
+                }
+
+                if (mesh.indices != null) {
+                    rlEnableVertexBufferElement(mesh.vboId[6]);
+                }
+            }
+
+            // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
+            if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+
+            int eyeCount = 1;
+            if (RLGL.rlIsStereoRendererEnabled()) {
+                eyeCount = 2;
+            }
+
+            for (int eye = 0; eye < eyeCount; eye++) {
+                // Calculate model-view-projection matrix (MVP)
+                Matrix matModelViewProjection = MatrixIdentity();
+                if (eyeCount == 1) matModelViewProjection = MatrixMultiply(matModelView, matProjection);
+                else {
+                    // Setup current eye viewport (half screen width)
+                    rlViewport(eye * rlGetFramebufferWidth() / 2, 0, rlGetFramebufferWidth() / 2, rlGetFramebufferHeight());
+                    matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, rlGetMatrixViewOffsetStereo(eye)), rlGetMatrixProjectionStereo(eye));
+                }
+
+                // Send combined model-view-projection matrix to shader
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP], matModelViewProjection);
+
+                // Draw mesh instanced
+                if (mesh.indices != null){
+                    rlDrawVertexArrayElementsInstanced(0, mesh.triangleCount * 3, null, instances);
+                }
+                else {
+                    rlDrawVertexArrayInstanced(0, mesh.vertexCount, instances);
+                }
+            }
+
+            // Unbind all binded texture maps
+            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if (material.maps[i].texture.id > 0) {
+                    // Select current shader texture slot
+                    rlActiveTextureSlot(i);
+
+                    // Disable texture for active slot
+                    if ((i == MATERIAL_MAP_IRRADIANCE) ||
+                            (i == MATERIAL_MAP_PREFILTER) ||
+                            (i == MATERIAL_MAP_CUBEMAP)) rlDisableTextureCubemap();
+                    else rlDisableTexture();
+                }
+            }
+
+            // Disable all possible vertex array objects (or VBOs)
+            rlDisableVertexArray();
+            rlDisableVertexBuffer();
+            rlDisableVertexBufferElement();
+
+            // Disable shader program
+            rlDisableShader();
+
+            // Remove instance transforms buffer
+            rlUnloadVertexBuffer(instancesVboId);
+            instanceTransforms = null;
+        }
+    }
+
+    // Unload mesh from memory (RAM and VRAM)
+    public void UnloadMesh(Mesh mesh) {
+        // Unload rlgl mesh vboId data
+        RLGL.rlUnloadVertexArray(mesh.vaoId);
+
+        if (mesh.vboId != null){
+            for (int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
+                RLGL.rlUnloadVertexBuffer(mesh.vboId[i]);
+            }
+        }
+        mesh = null;
+    }
+
+    // TODO: 24/07/2022  ExportMesh(Mesh mesh, String fileName)
+
+    // Load materials from model file
+    public Material[] LoadMaterials(String fileName) {
+        Material[] materials = null;
+        int count = 0;
+
+        // TODO: Support IQM and GLTF for materials parsing
+
+        if(SUPPORT_FILEFORMAT_MTL) {
+            if (rCore.IsFileExtension(fileName, ".mtl")) {
+                OBJLoader loader = new OBJLoader();
+                String fileText;
+                try {
+                    fileText = FileIO.LoadFileText(fileName);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                boolean result = loader.ReadMTL(fileText);
+                if (result != true) {
+                    Tracelog(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
+                }
+
+                // TODO: Process materials to return
+            }
+        }
+        else {
+            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to load material file");
+        }
+
+        // Set materials shader to default (DIFFUSE, SPECULAR, NORMAL)
+        if (materials != null) {
+            for (int i = 0; i < count; i++) {
+                materials[i].shader.id = rlGetShaderIdDefault();
+                materials[i].shader.locs = rlGetShaderLocsDefault();
+            }
+        }
+
+        return materials;
+    }
+
+    // Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
+    public Material LoadMaterialDefault() {
+        Material material = new Material();
+        material.maps = new MaterialMap[MAX_MATERIAL_MAPS];
+        for (int i = 0; i < material.maps.length; i++) {
+            material.maps[i] = new MaterialMap();
+        }
+
+        // Using rlgl default shader
+        material.shader.id = RLGL.rlGetShaderIdDefault();
+        material.shader.locs = RLGL.rlGetShaderLocsDefault();
+
+        // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
+        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        //material.maps[MATERIAL_MAP_NORMAL].texture;         // NOTE: By default, not set
+        //material.maps[MATERIAL_MAP_SPECULAR].texture;       // NOTE: By default, not set
+
+        material.maps[MATERIAL_MAP_DIFFUSE].color = WHITE;    // Diffuse color
+        material.maps[MATERIAL_MAP_SPECULAR].color = WHITE;   // Specular color
+
+        return material;
+    }
+
+    // Unload material from memory
+    public void UnloadMaterial(Material material) {
+        // Unload material shader (avoid unloading default shader, managed by raylib)
+        if (material.shader.id != rlGetShaderIdDefault()) {
+            rCore.UnloadShader(material.shader);
+        }
+
+        // Unload loaded texture maps (avoid unloading default texture, managed by raylib)
+        if (material.maps != null) {
+            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if (material.maps[i].texture.id != rlGetTextureIdDefault()) {
+                    rlUnloadTexture(material.maps[i].texture.id);
+                }
+            }
+        }
+
+        material.maps = null;
+    }
+
+    // Set texture for a material map type (MATERIAL_MAP_DIFFUSE, MATERIAL_MAP_SPECULAR...)
+    // NOTE: Previous texture should be manually unloaded
+    public void SetMaterialTexture(Material material, int mapType, Texture2D texture) {
+        material.maps[mapType].texture = texture;
+    }
+
+    // Set the material for a mesh
+    public void SetModelMeshMaterial(Model model, int meshId, int materialId) {
+        if (meshId >= model.meshCount) {
+            Tracelog(LOG_WARNING, "MESH: Id greater than mesh count");
+        }
+        else if (materialId >= model.materialCount) {
+            Tracelog(LOG_WARNING, "MATERIAL: Id greater than material count");
+        }
+        else {
+            model.meshMaterial[meshId] = materialId;
+        }
+    }
+
+    // TODO: 24/07/2022  LoadModelAnimations
+    // TODO: 24/07/2022  UpdateModelAnimation
+    // TODO: 24/07/2022  UnloadModelAnimations
+    // TODO: 24/07/2022  UnloadModelAnimation
+    // TODO: 24/07/2022  IsModelAnimationValid
+
+    // Compute mesh binormals (aka bitangent)
+    public void GenMeshBinormals(Mesh mesh) {
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            //Vector3 normal = { mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2] };
+            //Vector3 tangent = { mesh.tangents[i*4 + 0], mesh.tangents[i*4 + 1], mesh.tangents[i*4 + 2] };
+            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh.tangents[i*4 + 3]);
+
+            // TODO: Register computed binormal in mesh.binormal?
+        }
+    }
+
+    // MESH GENERATION
 
     // Generate polygonal mesh
     public Mesh GenMeshPoly(int sides, float radius) {
@@ -1264,12 +1633,9 @@ public class rModels{
             }
 
             // Mesh indices array initialization
-            for(int i = 0; i < mesh.triangleCount * 3; i++) mesh.indices[i] = triangles[i];
-
-            vertices = null;
-            normals = null;
-            texcoords = null;
-            triangles = null;
+            for(int i = 0; i < mesh.triangleCount * 3; i++) {
+                mesh.indices[i] = triangles[i];
+            }
         }
         else {       // Use par_shapes library to generate plane mesh
 
@@ -1299,15 +1665,15 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(plane);
         }
 
-            // Upload vertex data to GPU (static mesh)
-            UploadMesh(mesh, false);
+        // Upload vertex data to GPU (static mesh)
+        UploadMesh(mesh, false);
 
         return mesh;
     }
@@ -1436,7 +1802,7 @@ public class rModels{
 
             FloatBuffer points = cube.points(cube.ntriangles()*3*3);
             FloatBuffer normals = cube.normals(cube.ntriangles()*3*3);
-            FloatBuffer tcoords = FloatBuffer.allocate(cube.ntriangles()*3*2);
+            FloatBuffer tcoords = FloatBuffer.allocate(cube.npoints()*2);
             for(int i = 0; i < tcoords.limit(); i++) { tcoords.put(0.0f); }
             IntBuffer triangles = cube.triangles(cube.ntriangles()*3*3);
 
@@ -1449,8 +1815,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(cube);
@@ -1492,8 +1858,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(sphere);
@@ -1542,8 +1908,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(sphere);
@@ -1574,12 +1940,16 @@ public class rModels{
 
             // Generate an orientable disk shape (top cap)
             ParShapesMesh capTop = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, 1 });
+            // TODO: 7/19/22 tcoords?
             ParShapes.par_shapes_rotate(capTop, -PI/2.0f, new float[]{ 1, 0, 0 });
+            ParShapes.par_shapes_rotate(capTop, 90*DEG2RAD, new float[]{ 0, 1, 0 });
             ParShapes.par_shapes_translate(capTop, 0, height, 0);
 
             // Generate an orientable disk shape (bottom cap)
             ParShapesMesh capBottom = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, -1 });
+            // TODO: 7/19/22 tcoords?
             ParShapes.par_shapes_rotate(capBottom, PI/2.0f, new float[]{ 1, 0, 0 });
+            ParShapes.par_shapes_rotate(capBottom, -90*DEG2RAD, new float[]{ 0, 1, 0 });
 
             ParShapes.par_shapes_merge_and_free(cylinder, capTop);
             ParShapes.par_shapes_merge_and_free(cylinder, capBottom);
@@ -1605,8 +1975,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(cylinder);
@@ -1662,8 +2032,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(cone);
@@ -1716,8 +2086,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(torus);
@@ -1768,8 +2138,8 @@ public class rModels{
                 mesh.normals[k*3 + 1] = normals.get(triangles.get(k)*3 + 1);
                 mesh.normals[k*3 + 2] = normals.get(triangles.get(k)*3 + 2);
 
-                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*3);
-                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*3 + 1);
+                mesh.texcoords[k*2] = tcoords.get(triangles.get(k)*2);
+                mesh.texcoords[k*2 + 1] = tcoords.get(triangles.get(k)*2 + 1);
             }
 
             ParShapes.par_shapes_free_mesh(knot);
@@ -1782,10 +2152,6 @@ public class rModels{
         }
 
         return mesh;
-    }
-
-    private float GRAY_VALUE(Color c) {
-        return (float)((c.r+c.g+c.b)/3);
     }
 
     // Generate a mesh from heightmap
@@ -1915,10 +2281,6 @@ public class rModels{
         UploadMesh(mesh, false);
 
         return mesh;
-    }
-
-    private static boolean COLOR_EQUAL(Color col1, Color col2) {
-        return ((col1.r == col2.r)&&(col1.g == col2.g)&&(col1.b == col2.b)&&(col1.a == col2.a));
     }
 
     // Generate a cubes mesh from pixel data
@@ -2250,19 +2612,7 @@ public class rModels{
         return mesh;
     }
 
-    // Unload mesh from memory (RAM and VRAM)
-    public void UnloadMesh(Mesh mesh) {
-        // Unload rlgl mesh vboId data
-        RLGL.rlUnloadVertexArray(mesh.vaoId);
-
-        if (mesh.vboId != null){
-            for (int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
-                RLGL.rlUnloadVertexBuffer(mesh.vboId[i]);
-            }
-        }
-        mesh = null;
-    }
-
+    // END MESH GENERATION
 
     // Compute mesh bounding box limits
     // NOTE: minVertex and maxVertex should be transformed by model transform matrix
@@ -2382,17 +2732,6 @@ public class rModels{
         }
 
         Tracelog(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
-    }
-
-    // Compute mesh binormals (aka bitangent)
-    private void GenMeshBinormals(Mesh mesh) {
-        for (int i = 0; i < mesh.vertexCount; i++) {
-            //Vector3 normal = { mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2] };
-            //Vector3 tangent = { mesh.tangents[i*4 + 0], mesh.tangents[i*4 + 1], mesh.tangents[i*4 + 2] };
-            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh.tangents[i*4 + 3]);
-
-            // TODO: Register computed binormal in mesh.binormal?
-        }
     }
 
     // Draw a model (with texture if set)
@@ -2869,28 +3208,10 @@ public class rModels{
         return collision;
     }
 
-    // Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
-    public Material LoadMaterialDefault() {
-        Material material = new Material();
-        material.maps = new MaterialMap[MAX_MATERIAL_MAPS];
-        for (int i = 0; i < material.maps.length; i++) {
-            material.maps[i] = new MaterialMap();
-        }
+    //----------------------------------------------------------------------------------
+    // Module specific Functions Definition
+    //----------------------------------------------------------------------------------
 
-        // Using rlgl default shader
-        material.shader.id = RLGL.rlGetShaderIdDefault();
-        material.shader.locs = RLGL.rlGetShaderLocsDefault();
-
-        // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
-        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-        //material.maps[MATERIAL_MAP_NORMAL].texture;         // NOTE: By default, not set
-        //material.maps[MATERIAL_MAP_SPECULAR].texture;       // NOTE: By default, not set
-
-        material.maps[MATERIAL_MAP_DIFFUSE].color = WHITE;    // Diffuse color
-        material.maps[MATERIAL_MAP_SPECULAR].color = WHITE;   // Specular color
-
-        return material;
-    }
 
     private Model LoadOBJ(String fileName) {
 
@@ -3050,11 +3371,143 @@ public class rModels{
         return model;
     }
 
+    // TODO: 24/07/2022  LoadIQM
+    // TODO: 24/07/2022  LoadModelAnimatiosnIQM
+    // TODO: 24/07/2022  LoadImageFromCglrfImage
+    // TODO: 24/07/2022  LoadGMTF
+
     // TODO: Load IQM
     // TODO: Load Model animations IQM
     // TODO: Load Image from cgltf image
     // TODO: Load gltf
-    // TODO: Load vox
+    private Model LoadVOX(String fileName) {
+        Model model = new Model();
+
+        // TODO: Load vox
+        int nbvertices = 0;
+        int meshescount = 0;
+
+        // Read vox file into buffer
+        byte[] fileData = new byte[0];
+        try {
+            fileData = FileIO.LoadFileData(fileName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (fileData.length == 0) {
+            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
+            return model;
+        }
+
+        InputStream is = new ByteArrayInputStream(fileData);
+        VoxFile vFile = null;
+
+        try(VoxReader reader = new VoxReader(is)) {
+            vFile = reader.read();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (vFile == null) {
+            // Error
+            FileIO.UnloadFileData(fileData);
+
+            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
+            return model;
+        }
+        else {
+            // Success: Compute meshes count
+            nbvertices = vFile.getModels()[0].getVoxels().length;
+            meshescount = 1 + (nbvertices/65536);
+
+            Tracelog(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/" + meshescount + " meshes");
+        }
+
+        // Build models from meshes
+        model.transform = MatrixIdentity();
+
+        model.meshCount = meshescount;
+        model.meshes = new Mesh[model.meshCount];
+
+        model.meshMaterial = new int[model.meshCount];
+
+        model.materialCount = 1;
+        model.materials = new Material[model.meshCount];
+        model.materials[0] = LoadMaterialDefault();
+
+        // Init model meshes
+        int verticesRemain = vFile.getModels()[0].getVoxels().length;
+        int verticesMax = 65532; // 5461 voxels x 12 vertices per voxel -> 65532 (must be inf 65536)
+
+        // 6*4 = 12 vertices per voxel
+        Vector3[] pvertices = new Vector3[vFile.getModels()[0].getVoxels().length];
+        for (int i = 0; i < pvertices.length; i++) {
+            pvertices[i] = new Vector3();
+            pvertices[i].x = vFile.getModels()[0].getVoxels()[i].getPosition().getX();
+            pvertices[i].y = vFile.getModels()[0].getVoxels()[i].getPosition().getY();
+            pvertices[i].z = vFile.getModels()[0].getVoxels()[i].getPosition().getZ();
+        }
+        Color[] pcolors = new Color[vFile.getPalette().length];
+
+        //float[] pindices = ???;    // 5461*6*6 = 196596 indices max per mesh
+
+        int size = 0;
+
+        for (int i = 0; i < meshescount; i++) {
+            Mesh pmesh = new Mesh();
+
+            // Copy vertices
+            pmesh.vertexCount = Math.min(verticesMax, verticesRemain);
+
+            size = pmesh.vertexCount*3;
+            pmesh.vertices = new float[size];
+            for (int j = 0; j < pmesh.vertexCount; j++) {
+                pmesh.vertices[(3*j)+0] = pvertices[j].x;
+                pmesh.vertices[(3*j)+1] = pvertices[j].y;
+                pmesh.vertices[(3*j)+2] = pvertices[j].z;
+            }
+
+            // Copy indices
+            // TODO: Compute globals indices array
+            /*pmesh.indices = new float[size];
+            for (int j = 0, k = 0; j < pmesh.indices.length; j+=6, k++) {
+                pmesh.indices[j+0] = (k*4) + 0;
+                pmesh.indices[j+1] = (k*4) + 1;
+                pmesh.indices[j+2] = (k*4) + 2;
+                pmesh.indices[j+3] = (k*4) + 0;
+                pmesh.indices[j+4] = (k*4) + 2;
+                pmesh.indices[j+5] = (k*4) + 3;
+                k++;
+            }
+            /*size = voxarray.indices.used*sizeof(unsigned short);
+            pmesh->indices = RL_MALLOC(size);
+            memcpy(pmesh->indices, pindices, size);
+            */
+
+            pmesh.triangleCount = (pmesh.vertexCount/4)*2;
+
+
+            // Copy colors
+            pmesh.colors = new byte[vFile.getPalette().length/4];
+            for (int j = 0; j < pmesh.colors.length; j++) {
+                pmesh.colors[j] = (byte)vFile.getPalette()[j];
+            }
+
+            // First material index
+            model.meshMaterial[i] = 0;
+
+            verticesRemain -= verticesMax;
+            //pvertices += verticesMax;
+            //pcolors += verticesMax;
+            model.meshes[i] = pmesh;
+            model.meshes[i].texcoords = new float[model.meshes[i].vertexCount*3*2];
+        }
+
+        // Free buffers
+        FileIO.UnloadFileData(fileData);
+
+        return model;
+    }
 
 
 }

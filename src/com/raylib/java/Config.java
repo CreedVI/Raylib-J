@@ -230,7 +230,7 @@ public class Config{
     /**
      * Select .mtl to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_MTL = true;
+    public static boolean SUPPORT_FILEFORMAT_MTL = true;
     /**
      * Select .iqm to be supported for loading
      */
@@ -244,8 +244,8 @@ public class Config{
      * NOTE: Some generated meshes DO NOT include generated texture coordinates
      */
     public static boolean SUPPORT_MESH_GENERATION = true;
-    public static boolean SUPPORT_CUSTOM_MESH_GEN_PLANE = false;
-    public static boolean SUPPORT_CUSTOM_MESH_GEN_CUBE = false;
+    public static boolean SUPPORT_CUSTOM_MESH_GEN_PLANE = true;
+    public static boolean SUPPORT_CUSTOM_MESH_GEN_CUBE = true;
 
 
     //------------------------------------------------------------------------------------

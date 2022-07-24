@@ -2857,14 +2857,14 @@ public class RLGL{
     }
 
     // Draw vertex array instanced
-    public void rlDrawVertexArrayInstanced(int offset, int count, int instances) {
+    public static void rlDrawVertexArrayInstanced(int offset, int count, int instances) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDrawArraysInstanced(GL_TRIANGLES, 0, count, instances);
         }
     }
 
     // Draw vertex array elements instanced
-    public void rlDrawVertexArrayElementsInstanced(int offset, int count, int[] buffer, int instances) {
+    public static void rlDrawVertexArrayElementsInstanced(int offset, int count, int[] buffer, int instances) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, buffer.length + offset, instances);
         }
@@ -2942,7 +2942,7 @@ public class RLGL{
     }
 
     // Set vertex attribute divisor
-    public void rlSetVertexAttributeDivisor(int index, int divisor) {
+    public static void rlSetVertexAttributeDivisor(int index, int divisor) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glVertexAttribDivisor(index, divisor);
         }
