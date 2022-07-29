@@ -1346,8 +1346,8 @@ public class rCore{
 
     // Unload shader from GPU memory (VRAM)
     public static void UnloadShader(Shader shader){
-        if (shader.getId() != rlgl.rlGetShaderIdDefault()){
-            rlgl.rlUnloadShaderProgram(shader.getId());
+        if (shader.getId() != rlGetShaderIdDefault()){
+            rlUnloadShaderProgram(shader.getId());
             shader.setLocs(null);
         }
     }

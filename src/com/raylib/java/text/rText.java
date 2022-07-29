@@ -155,7 +155,7 @@ public class rText{
         imFont.setFormat(RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA);
         imFont.setMipmaps(1);
 
-        short[] fontdata = new short[128 * 128];  // 2 bytes per pixel (gray + alpha)
+        short[] fontdata = new short[128 * 128 * 2];  // 2 bytes per pixel (gray + alpha)
 
         //Fill image.data with defaultFontData (convert from bit to pixel!)
         for (int i = 0, counter = 0; i < imFont.getWidth() * imFont.getHeight(); i += 32) {
@@ -176,19 +176,18 @@ public class rText{
 
         defaultFont.texture = rTextures.LoadTextureFromImage(imFont);
 
-        // Reconstruct charSet using charsWidth[], charsHeight, charsDivisor, charsCount
+        // Reconstruct charSet using charsWidth[], charsHeight, charsDivisor, glyphCount
         //------------------------------------------------------------------------------
 
         // Allocate space for our characters info data
-        // NOTE: This memory should be freed at end! --> CloseWindow()
+        // NOTE: This memory must be freed at end! --> Done by CloseWindow()
         defaultFont.glyphs = new GlyphInfo[defaultFont.glyphCount];
-        defaultFont.recs = new Rectangle[defaultFont.glyphCount];
-
-        for (int q = 0; q < defaultFont.glyphs.length; q++) {
-            defaultFont.glyphs[q] = new GlyphInfo();
+        for (int i = 0; i < defaultFont.glyphCount; i++) {
+            defaultFont.glyphs[i] = new GlyphInfo();
         }
-        for (int q = 0; q < defaultFont.recs.length; q++) {
-            defaultFont.recs[q] = new Rectangle();
+        defaultFont.recs = new Rectangle[defaultFont.glyphCount];
+        for (int i = 0; i < defaultFont.glyphCount; i++) {
+            defaultFont.recs[i] = new Rectangle();
         }
 
         int currentLine = 0;
@@ -196,24 +195,25 @@ public class rText{
         int testPosX = charsDivisor;
 
         for (int i = 0; i < defaultFont.glyphCount; i++) {
-            defaultFont.glyphs[i].setValue(32 + i);  // First char is 32
+            defaultFont.glyphs[i].value = 32 + i;  // First char is 32
 
-            defaultFont.recs[i].setX((float) currentPosX);
-            defaultFont.recs[i].setY((float) (charsDivisor + currentLine * (charsHeight + charsDivisor)));
-            defaultFont.recs[i].setWidth((float) charsWidth[i]);
-            defaultFont.recs[i].setHeight((float) charsHeight);
+            defaultFont.recs[i].x = (float)currentPosX;
+            defaultFont.recs[i].y = (float)(charsDivisor + currentLine*(charsHeight + charsDivisor));
+            defaultFont.recs[i].width = (float)charsWidth[i];
+            defaultFont.recs[i].height = (float)charsHeight;
 
-            testPosX += (int) (defaultFont.recs[i].getWidth() + (float) charsDivisor);
+            testPosX += (int)(defaultFont.recs[i].width + (float)charsDivisor);
 
-            if (testPosX >= defaultFont.texture.getWidth()){
+            if (testPosX >= defaultFont.texture.width) {
                 currentLine++;
-                currentPosX = 2 * charsDivisor + charsWidth[i];
+                currentPosX = 2*charsDivisor + charsWidth[i];
                 testPosX = currentPosX;
 
-                defaultFont.recs[i].setX((float) charsDivisor);
-                defaultFont.recs[i].setY((float) (charsDivisor + currentLine * (charsHeight + charsDivisor)));
+                defaultFont.recs[i].x = (float)charsDivisor;
+                defaultFont.recs[i].y = (float)(charsDivisor + currentLine*(charsHeight + charsDivisor));
             }
-            else{
+
+            else {
                 currentPosX = testPosX;
             }
 
@@ -228,9 +228,9 @@ public class rText{
 
         rTextures.UnloadImage(imFont);
 
-        defaultFont.baseSize = (int) defaultFont.recs[0].getHeight();
+        defaultFont.baseSize = (int)defaultFont.recs[0].height;
 
-        Tracelog(LOG_INFO, "FONT: Default font loaded successfully");
+        Tracelog(LOG_INFO, "FONT: Default font loaded successfully (" + defaultFont.glyphCount + " glyphs)");
     }
 
     // Unload raylib default font

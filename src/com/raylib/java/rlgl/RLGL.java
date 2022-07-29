@@ -3144,7 +3144,7 @@ public class RLGL{
     }
 
     // Unload shader program
-    public void rlUnloadShaderProgram(int id) {
+    public static void rlUnloadShaderProgram(int id) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDeleteProgram(id);
 

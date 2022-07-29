@@ -76,8 +76,8 @@ Special thanks to the following:
 [X] rShapes <br>
 [X] rTextures <br>
 [X] rText <br>
-[o] rModels <br>
-[O] rAudio <br>
+[O] rModels <br>
+[o] rAudio <br>
 [X] RLGL <br>
 [X] Raymath <br>
 [X] Physac <br>

@@ -621,8 +621,10 @@ public class rTextures{
         byte[] data = new byte[(int) (rectangle.width*rectangle.height*bytesPerPixel)];
         byte[] srcData = image.getData();
 
-        for(int y = (int) rectangle.y; y < rectangle.height; y++) {
-            System.arraycopy(srcData,((y + (int)rectangle.y)*image.width + (int)rectangle.x)*bytesPerPixel, data, y*(int)rectangle.width*bytesPerPixel, (int)rectangle.width*bytesPerPixel);
+        for(int y = 0; y < rectangle.height; y++) {
+            for (int x = 0; x < rectangle.width*bytesPerPixel; x++) {
+                data[(int) ((y*rectangle.width*bytesPerPixel)+x)] = srcData[(((y + (int)rectangle.y)*image.width + (int)rectangle.x)*bytesPerPixel)+x];
+            }
         }
 
         result.setData(data);

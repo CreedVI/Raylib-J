@@ -1463,9 +1463,43 @@ public class rModels{
 
     // TODO: 24/07/2022  LoadModelAnimations
     // TODO: 24/07/2022  UpdateModelAnimation
-    // TODO: 24/07/2022  UnloadModelAnimations
-    // TODO: 24/07/2022  UnloadModelAnimation
-    // TODO: 24/07/2022  IsModelAnimationValid
+
+    // Unload animation array data
+    public void UnloadModelAnimations(ModelAnimation[] animations, int count) {
+        for (int i = 0; i < count; i++) {
+            UnloadModelAnimation(animations[i]);
+        }
+        animations = null;
+    }
+
+    // Unload animation data
+    public void UnloadModelAnimation(ModelAnimation anim) {
+        for (int i = 0; i < anim.frameCount; i++) {
+            anim.framePoses[i] = null;
+        }
+
+        anim.bones = null;
+        anim.framePoses = null;
+    }
+
+    // Check model animation skeleton match
+    // NOTE: Only number of bones and parent connections are checked
+    boolean IsModelAnimationValid(Model model, ModelAnimation anim) {
+        boolean result = true;
+
+        if (model.boneCount != anim.boneCount) {
+            result = false;
+        }
+        else {
+            for (int i = 0; i < model.boneCount; i++) {
+                if (model.bones[i].parent != anim.bones[i].parent) {
+                    result = false; break;
+                }
+            }
+        }
+
+        return result;
+    }
 
     // Compute mesh binormals (aka bitangent)
     public void GenMeshBinormals(Mesh mesh) {
