@@ -130,7 +130,7 @@ public class Raymath{
      * @param add float to add
      * @return sum of v and add
      */
-    public static Vector2 Vector2Vector2AddValue(Vector2 v, float add){
+    public static Vector2 Vector2AddValue(Vector2 v, float add){
         return new Vector2(v.x + add, v.y + add);
     }
 
