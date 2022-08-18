@@ -33,7 +33,7 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
   * [X] WAV audio
   * [X] OGG audio
 
-* [ ] rModels Module
+* [o] rModels Module
   * [ ] VOX loading
   * [ ] GLTF loading
   * [ ] IQM loading

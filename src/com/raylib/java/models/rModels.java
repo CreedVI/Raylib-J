@@ -13,14 +13,11 @@ import com.raylib.java.textures.Texture2D;
 import com.raylib.java.textures.rTextures;
 import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.OBJLoader;
-import me.lignum.jvox.VoxFile;
-import me.lignum.jvox.VoxReader;
+import com.raylib.java.utils.VoxLoader;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -1359,7 +1356,79 @@ public class rModels{
         mesh = null;
     }
 
-    // TODO: 24/07/2022  ExportMesh(Mesh mesh, String fileName)
+    // Export mesh data to file
+    public boolean ExportMesh(Mesh mesh, String fileName) {
+        boolean success = false;
+
+        if (rCore.IsFileExtension(fileName, ".obj")) {
+            // Estimated data size, it should be enough...
+            int dataSize = mesh.vertexCount * ("v 0000.00f 0000.00f 0000.00f").length() +
+                    (mesh.vertexCount * ("vt 0.000f 0.00f").length()) +
+                    (mesh.vertexCount * ("vn 0.000f 0.00f 0.00f").length()) +
+                    (mesh.triangleCount * ("f 00000/00000/00000 00000/00000/00000 00000/00000/00000").length());
+
+            // NOTE: Text data buffer size is estimated considering mesh data size
+            StringBuilder txtData = new StringBuilder();
+
+            int byteCount = 0;
+            txtData.append( "# //////////////////////////////////////////////////////////////////////////////////\n");
+            txtData.append( "# //                                                                              //\n");
+            txtData.append( "# // rMeshOBJ exporter v1.0 - Mesh exported as triangle faces and not optimized   //\n");
+            txtData.append( "# //                                                                              //\n");
+            txtData.append( "# // more info and bugs-report:  github.com/raysan5/raylib                        //\n");
+            txtData.append( "# // feedback and support:       ray[at]raylib.com                                //\n");
+            txtData.append( "# //                                                                              //\n");
+            txtData.append( "# // Copyright (c) 2018-2022 Ramon Santamaria (@raysan5)                          //\n");
+            txtData.append( "# //                                                                              //\n");
+            txtData.append( "# //////////////////////////////////////////////////////////////////////////////////\n\n");
+            txtData.append( "# Vertex Count:     " + mesh.vertexCount + "\n");
+            txtData.append( "# Triangle Count:   " + mesh.triangleCount + "\n\n");
+
+            txtData.append( "g mesh\n");
+
+            for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
+                txtData.append("v " + String.format(String.valueOf(mesh.vertices[v]), "%.2f") + String.format(String.valueOf(mesh.vertices[v+1]), "%.2f") + String.format(String.valueOf(mesh.vertices[v+2]), "%.2f"));
+            }
+
+            for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 2) {
+                txtData.append("vt " + String.format(String.valueOf(mesh.texcoords[v]), "%.2f") + String.format(String.valueOf(mesh.texcoords[v+1]), "%.2f"));
+
+            }
+
+            for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
+                txtData.append("v " + String.format(String.valueOf(mesh.normals[v]), "%.2f") + String.format(String.valueOf(mesh.normals[v+1]), "%.2f") + String.format(String.valueOf(mesh.normals[v+2]), "%.2f"));
+            }
+
+            if (mesh.indices != null) {
+                for (int i = 0, v = 0; i < mesh.triangleCount; i++, v += 3) {
+                    txtData.append( "f " +
+                            mesh.indices[v] + 1 +"/"+ mesh.indices[v] + 1+"/"+ mesh.indices[v] + 1 +" "+
+                            mesh.indices[v + 1] + 1+"/"+ mesh.indices[v + 1] + 1+"/"+ mesh.indices[v + 1] + 1 +" "+
+                            mesh.indices[v + 2] + 1+"/"+ mesh.indices[v + 2] + 1+"/"+mesh.indices[v + 2] + 1 + "\n");
+                }
+            }
+            else {
+                for (int i = 0, v = 1; i < mesh.triangleCount; i++, v += 3) {
+                    txtData.append( "f " + v+"/"+v+"/"+v+" "+ (v + 1)+"/"+(v + 1)+"/"+(v + 1)+" "+(v + 2)+"/"+(v + 2)+"/"+(v + 2)+"\n");
+                }
+            }
+
+            txtData.append( "\n");
+
+            // NOTE: Text data length exported is determined by '\0' (NULL) character
+            try {
+                success = FileIO.SaveFileText(fileName, txtData.toString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else if (rCore.IsFileExtension(fileName, ".raw")) {
+            // TODO: Support additional file formats to export mesh vertex data
+        }
+
+        return success;
+    }
+
 
     // Load materials from model file
     public Material[] LoadMaterials(String fileName) {
@@ -1718,34 +1787,34 @@ public class rModels{
 
         if(SUPPORT_CUSTOM_MESH_GEN_CUBE) {
             //TODO: Fix this.
-            float[] vertices = {
-                    -width / 2, -height / 2, length / 2,
-                    width / 2, -height / 2, length / 2,
-                    width / 2, height / 2, length / 2,
-                    -width / 2, height / 2, length / 2,
-                    -width / 2, -height / 2, -length / 2,
-                    -width / 2, height / 2, -length / 2,
-                    width / 2, height / 2, -length / 2,
-                    width / 2, -height / 2, -length / 2,
-                    -width / 2, height / 2, -length / 2,
-                    -width / 2, height / 2, length / 2,
-                    width / 2, height / 2, length / 2,
-                    width / 2, height / 2, -length / 2,
-                    -width / 2, -height / 2, -length / 2,
-                    width / 2, -height / 2, -length / 2,
-                    width / 2, -height / 2, length / 2,
-                    -width / 2, -height / 2, length / 2,
-                    width / 2, -height / 2, -length / 2,
-                    width / 2, height / 2, -length / 2,
-                    width / 2, height / 2, length / 2,
-                    width / 2, -height / 2, length / 2,
-                    -width / 2, -height / 2, -length / 2,
-                    -width / 2, -height / 2, length / 2,
-                    -width / 2, height / 2, length / 2,
-                    -width / 2, height / 2, -length / 2
+            mesh.vertices = new float[] {
+                    -width/2, -height/2, length/2,
+                    width/2, -height/2, length/2,
+                    width/2, height/2, length/2,
+                    -width/2, height/2, length/2,
+                    -width/2, -height/2, -length/2,
+                    -width/2, height/2, -length/2,
+                    width/2, height/2, -length/2,
+                    width/2, -height/2, -length/2,
+                    -width/2, height/2, -length/2,
+                    -width/2, height/2, length/2,
+                    width/2, height/2, length/2,
+                    width/2, height/2, -length/2,
+                    -width/2, -height/2, -length/2,
+                    width/2, -height/2, -length/2,
+                    width/2, -height/2, length/2,
+                    -width/2, -height/2, length/2,
+                    width/2, -height/2, -length/2,
+                    width/2, height/2, -length/2,
+                    width/2, height/2, length/2,
+                    width/2, -height/2, length/2,
+                    -width/2, -height/2, -length/2,
+                    -width/2, -height/2, length/2,
+                    -width/2, height/2, length/2,
+                    -width/2, height/2, -length/2
             };
 
-            float[] texcoords = {
+            mesh.texcoords = new float[] {
                     0.0f, 0.0f,
                     1.0f, 0.0f,
                     1.0f, 1.0f,
@@ -1772,7 +1841,7 @@ public class rModels{
                     0.0f, 1.0f
             };
 
-            float[] normals = {
+            mesh.normals = new float[] {
                     0.0f, 0.0f, 1.0f,
                     0.0f, 0.0f, 1.0f,
                     0.0f, 0.0f, 1.0f,
@@ -1799,15 +1868,10 @@ public class rModels{
                     -1.0f, 0.0f, 0.0f
             };
 
-            mesh.vertices = vertices;
-            mesh.texcoords = texcoords;
-            mesh.normals = normals;
             mesh.indices = new float[36];
 
-            int k = 0;
-
             // Indices can be initialized right now
-            for(int i = 0; i < 36; i += 6) {
+            for(int i = 0, k = 0; i < 36; i += 6) {
                 mesh.indices[i] = 4 * k;
                 mesh.indices[i + 1] = 4 * k + 1;
                 mesh.indices[i + 2] = 4 * k + 2;
@@ -3414,35 +3478,33 @@ public class rModels{
     // TODO: Load Model animations IQM
     // TODO: Load Image from cgltf image
     // TODO: Load gltf
-    private Model LoadVOX(String fileName) {
+
+    // Load VOX (MagicaVoxel) mesh data
+    public Model LoadVOX(String fileName) {
         Model model = new Model();
 
-        // TODO: Load vox
         int nbvertices = 0;
         int meshescount = 0;
+        byte[] fileData = null;
 
         // Read vox file into buffer
-        byte[] fileData = new byte[0];
         try {
-            fileData = FileIO.LoadFileData(fileName);
+            String tmp = FileIO.LoadFileText(fileName);
+            fileData = tmp.getBytes();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        if (fileData.length == 0) {
+        if (fileData == null) {
             Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
             return model;
         }
 
-        InputStream is = new ByteArrayInputStream(fileData);
-        VoxFile vFile = null;
+        // Read and build voxarray description
+        VoxLoader voxLoader = new VoxLoader();
+        int ret = voxLoader.Vox_LoadFromMemory(fileData);
+        VoxLoader.VoxArray3D voxarray = voxLoader.pvoxarray;
 
-        try(VoxReader reader = new VoxReader(is)) {
-            vFile = reader.read();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (vFile == null) {
+        if (ret != VoxLoader.VOX_SUCCESS) {
             // Error
             FileIO.UnloadFileData(fileData);
 
@@ -3451,10 +3513,10 @@ public class rModels{
         }
         else {
             // Success: Compute meshes count
-            nbvertices = vFile.getModels()[0].getVoxels().length;
+            nbvertices = voxarray.vertices.used;
             meshescount = 1 + (nbvertices/65536);
 
-            Tracelog(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/" + meshescount + " meshes");
+            Tracelog(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/ " + meshescount + " meshes");
         }
 
         // Build models from meshes
@@ -3466,65 +3528,53 @@ public class rModels{
         model.meshMaterial = new int[model.meshCount];
 
         model.materialCount = 1;
-        model.materials = new Material[model.meshCount];
+        model.materials = new Material[model.materialCount];
         model.materials[0] = LoadMaterialDefault();
 
         // Init model meshes
-        int verticesRemain = vFile.getModels()[0].getVoxels().length;
+        int verticesRemain = voxarray.vertices.used;
         int verticesMax = 65532; // 5461 voxels x 12 vertices per voxel -> 65532 (must be inf 65536)
 
         // 6*4 = 12 vertices per voxel
-        Vector3[] pvertices = new Vector3[vFile.getModels()[0].getVoxels().length];
-        for (int i = 0; i < pvertices.length; i++) {
-            pvertices[i] = new Vector3();
-            pvertices[i].x = vFile.getModels()[0].getVoxels()[i].getPosition().getX();
-            pvertices[i].y = vFile.getModels()[0].getVoxels()[i].getPosition().getY();
-            pvertices[i].z = vFile.getModels()[0].getVoxels()[i].getPosition().getZ();
-        }
-        Color[] pcolors = new Color[vFile.getPalette().length];
+        VoxLoader.VoxVector3[] pvertices = voxarray.vertices.array;
+        VoxLoader.VoxColor[] pcolors = voxarray.colors.array;
 
-        //float[] pindices = ???;    // 5461*6*6 = 196596 indices max per mesh
+        short[] pindices = voxarray.indices.array;    // 5461*6*6 = 196596 indices max per mesh
 
         int size = 0;
 
         for (int i = 0; i < meshescount; i++) {
-            Mesh pmesh = new Mesh();
+            Mesh pmesh = model.meshes[i];
 
             // Copy vertices
             pmesh.vertexCount = Math.min(verticesMax, verticesRemain);
 
             size = pmesh.vertexCount*3;
             pmesh.vertices = new float[size];
-            for (int j = 0; j < pmesh.vertexCount; j++) {
-                pmesh.vertices[(3*j)+0] = pvertices[j].x;
-                pmesh.vertices[(3*j)+1] = pvertices[j].y;
-                pmesh.vertices[(3*j)+2] = pvertices[j].z;
+            for (int j = 0, k = 0; j < pmesh.vertices.length; j+=3, k++) {
+                pmesh.vertices[j] = pvertices[k].x;
+                pmesh.vertices[j+1] = pvertices[k].x;
+                pmesh.vertices[j+2] = pvertices[k].x;
             }
 
             // Copy indices
             // TODO: Compute globals indices array
-            /*pmesh.indices = new float[size];
-            for (int j = 0, k = 0; j < pmesh.indices.length; j+=6, k++) {
-                pmesh.indices[j+0] = (k*4) + 0;
-                pmesh.indices[j+1] = (k*4) + 1;
-                pmesh.indices[j+2] = (k*4) + 2;
-                pmesh.indices[j+3] = (k*4) + 0;
-                pmesh.indices[j+4] = (k*4) + 2;
-                pmesh.indices[j+5] = (k*4) + 3;
-                k++;
+            size = voxarray.indices.used;
+            pmesh.indices = new float[size];
+            for (int j = 0; j < pmesh.vertices.length; j++) {
+                pmesh.indices[j] = pindices[j];
             }
-            /*size = voxarray.indices.used*sizeof(unsigned short);
-            pmesh->indices = RL_MALLOC(size);
-            memcpy(pmesh->indices, pindices, size);
-            */
 
             pmesh.triangleCount = (pmesh.vertexCount/4)*2;
 
-
             // Copy colors
-            pmesh.colors = new byte[vFile.getPalette().length/4];
-            for (int j = 0; j < pmesh.colors.length; j++) {
-                pmesh.colors[j] = (byte)vFile.getPalette()[j];
+            size = pmesh.vertexCount;
+            pmesh.colors = new byte[size];
+            for (int j = 0, k = 0; j < pmesh.vertices.length; j+=4, k++) {
+                pmesh.colors[j] = pcolors[k].r;
+                pmesh.colors[j+1] = pcolors[k].g;
+                pmesh.colors[j+2] = pcolors[k].b;
+                pmesh.colors[j+3] = pcolors[k].a;
             }
 
             // First material index
@@ -3533,11 +3583,10 @@ public class rModels{
             verticesRemain -= verticesMax;
             //pvertices += verticesMax;
             //pcolors += verticesMax;
-            model.meshes[i] = pmesh;
-            model.meshes[i].texcoords = new float[model.meshes[i].vertexCount*3*2];
         }
 
         // Free buffers
+        VoxLoader.Vox_FreeArrays(voxarray);
         FileIO.UnloadFileData(fileData);
 
         return model;

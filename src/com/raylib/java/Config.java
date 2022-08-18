@@ -149,7 +149,7 @@ public class Config{
      * Draw rectangle rShapes using font texture white character instead of default white texture
      * Allows drawing rectangles and text with a single draw call, very useful for GUI systems!
      */
-    static boolean SUPPORT_FONT_TEXTURE = true;
+    public static boolean SUPPORT_FONT_TEXTURE = true;
     /**
      * Use QUADS instead of TRIANGLES for drawing when possible
      * Some lines-based rShapes could still use lines
@@ -181,7 +181,7 @@ public class Config{
     /**
      * Support procedural image generation functionality (gradient, spot, perlin-noise, cellular)
      */
-    static boolean SUPPORT_IMAGE_GENERATION = true;
+    public static boolean SUPPORT_IMAGE_GENERATION = true;
     /**
      * Support multiple image editing functions to scale, adjust colors, flip, draw on images, crop...
      * If not defined, still some functions are supported: ImageFormat(), ImageCrop(), ImageToPOT()
@@ -216,8 +216,8 @@ public class Config{
     //------------------------------------------------------------------------------------
     public final static int MAX_TEXT_BUFFER_LENGTH = 1024;        // Size of internal static buffers used on some functions:
     // TextFormat(), TextSubtext(), TextToUpper(), TextToLower(), TextToPascal(), TextSplit()
-    final static int MAX_TEXT_UNICODE_CHARS = 512;        // Maximum number of unicode codepoints: GetCodepoints()
-    final static int MAX_TEXTSPLIT_COUNT = 128;        // Maximum number of substrings to split: TextSplit()
+    public final static int MAX_TEXT_UNICODE_CHARS = 512;        // Maximum number of unicode codepoints: GetCodepoints()
+    public final static int MAX_TEXTSPLIT_COUNT = 128;        // Maximum number of substrings to split: TextSplit()
 
 
     //------------------------------------------------------------------------------------
@@ -226,7 +226,7 @@ public class Config{
     /**
      * Select .obj to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_OBJ = true;
+    public static boolean SUPPORT_FILEFORMAT_OBJ = true;
     /**
      * Select .mtl to be supported for loading
      */
@@ -234,18 +234,18 @@ public class Config{
     /**
      * Select .iqm to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_IQM = true;
+    public static boolean SUPPORT_FILEFORMAT_IQM = true;
     /**
      * Select .gltf to be supported for loading
      */
-    static boolean SUPPORT_FILEFORMAT_GLTF = true;
+    public static boolean SUPPORT_FILEFORMAT_GLTF = true;
     /**
      * Support procedural mesh generation functions, uses external par_shapes.h library
      * NOTE: Some generated meshes DO NOT include generated texture coordinates
      */
     public static boolean SUPPORT_MESH_GENERATION = true;
-    public static boolean SUPPORT_CUSTOM_MESH_GEN_PLANE = true;
-    public static boolean SUPPORT_CUSTOM_MESH_GEN_CUBE = true;
+    public static boolean SUPPORT_CUSTOM_MESH_GEN_PLANE = false;
+    public static boolean SUPPORT_CUSTOM_MESH_GEN_CUBE = false;
 
 
     //------------------------------------------------------------------------------------
@@ -309,7 +309,7 @@ public class Config{
     public final static boolean COMPUTE_TANGENTS_METHOD_01 = true;
 
     public static class ConfigFlag{
-        public  static final int
+        public static final int
         FLAG_VSYNC_HINT = 0x00000040,   // Set to try enabling V-Sync on GPU
         FLAG_FULLSCREEN_MODE = 0x00000002,   // Set to run program in fullscreen
         FLAG_WINDOW_RESIZABLE = 0x00000004,   // Set to allow resizable window
