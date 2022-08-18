@@ -3479,6 +3479,7 @@ public class rModels{
     // TODO: Load Image from cgltf image
     // TODO: Load gltf
 
+    //TODO: Data is not populating correctly in buffers.
     // Load VOX (MagicaVoxel) mesh data
     public Model LoadVOX(String fileName) {
         Model model = new Model();
@@ -3502,7 +3503,7 @@ public class rModels{
         // Read and build voxarray description
         VoxLoader voxLoader = new VoxLoader();
         int ret = voxLoader.Vox_LoadFromMemory(fileData);
-        VoxLoader.VoxArray3D voxarray = voxLoader.pvoxarray;
+        VoxLoader.VoxArray3D voxarray = voxLoader.pvoxArray;
 
         if (ret != VoxLoader.VOX_SUCCESS) {
             // Error
@@ -3524,6 +3525,9 @@ public class rModels{
 
         model.meshCount = meshescount;
         model.meshes = new Mesh[model.meshCount];
+        for (int i = 0; i < model.meshCount; i++) {
+            model.meshes[i] = new Mesh();
+        }
 
         model.meshMaterial = new int[model.meshCount];
 
@@ -3561,7 +3565,7 @@ public class rModels{
             // TODO: Compute globals indices array
             size = voxarray.indices.used;
             pmesh.indices = new float[size];
-            for (int j = 0; j < pmesh.vertices.length; j++) {
+            for (int j = 0; j < pmesh.indices.length; j++) {
                 pmesh.indices[j] = pindices[j];
             }
 
@@ -3570,7 +3574,7 @@ public class rModels{
             // Copy colors
             size = pmesh.vertexCount;
             pmesh.colors = new byte[size];
-            for (int j = 0, k = 0; j < pmesh.vertices.length; j+=4, k++) {
+            for (int j = 0, k = 0; j < pmesh.colors.length; j+=4, k++) {
                 pmesh.colors[j] = pcolors[k].r;
                 pmesh.colors[j+1] = pcolors[k].g;
                 pmesh.colors[j+2] = pcolors[k].b;

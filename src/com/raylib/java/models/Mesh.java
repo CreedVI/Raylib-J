@@ -25,7 +25,7 @@ public class Mesh {
     public int[] vboId;    // OpenGL Vertex Buffer Objects id (default vertex data)
 
     public Mesh() {
-
+        texcoords = new float[1];
     }
 
 }

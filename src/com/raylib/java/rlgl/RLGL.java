@@ -2744,18 +2744,6 @@ public class RLGL{
         return id;
     }
 
-    public static int rlLoadVertexBufferElement(short[] buffer, boolean dynamic){
-        int id = 0;
-
-        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            id = glGenBuffers();
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-        }
-
-        return id;
-    }
-
     // Enable vertex buffer (VBO)
     public static void rlEnableVertexBuffer(int id) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
