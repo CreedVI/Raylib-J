@@ -13,6 +13,7 @@ public class Mesh {
     public float[] tangents;        // Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
     public byte[] colors;      // Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
     public float[] indices;    // Vertex indices (in case vertex data comes indexed)
+    public short[] indicesS;
 
     // Animation vertex data
     public float[] animVertices;    // Animated vertex positions (after bones transformations)

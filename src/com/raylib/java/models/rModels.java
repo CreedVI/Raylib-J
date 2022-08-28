@@ -872,6 +872,10 @@ public class rModels{
                 mesh.vboId[6] = RLGL.rlLoadVertexBufferElement(mesh.indices, dynamic);
             }
 
+            if (mesh.indicesS != null) {
+                mesh.vboId[6] = RLGL.rlLoadVertexBufferElement(mesh.indicesS, dynamic);
+            }
+
             if (mesh.vaoId > 0) {
                 Tracelog(LOG_INFO, "VAO: [ID "+mesh.vaoId+"] Mesh uploaded successfully to VRAM (GPU)");
             }
@@ -3322,7 +3326,7 @@ public class rModels{
             boolean success = loader.ReadOBJ(filetext, true);
 
             if(success) {
-                Tracelog(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.totalMaterials+" meshes/"+loader.objInfo.totalMaterials+" materials");
+                Tracelog(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
             }
             else {
                 Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] Failed to load OBJ data");
@@ -3474,11 +3478,6 @@ public class rModels{
     // TODO: 24/07/2022  LoadImageFromCglrfImage
     // TODO: 24/07/2022  LoadGMTF
 
-    // TODO: Load IQM
-    // TODO: Load Model animations IQM
-    // TODO: Load Image from cgltf image
-    // TODO: Load gltf
-
     //TODO: Data is not populating correctly in buffers.
     // Load VOX (MagicaVoxel) mesh data
     public Model LoadVOX(String fileName) {
@@ -3557,16 +3556,16 @@ public class rModels{
             pmesh.vertices = new float[size];
             for (int j = 0, k = 0; j < pmesh.vertices.length; j+=3, k++) {
                 pmesh.vertices[j] = pvertices[k].x;
-                pmesh.vertices[j+1] = pvertices[k].x;
-                pmesh.vertices[j+2] = pvertices[k].x;
+                pmesh.vertices[j+1] = pvertices[k].y;
+                pmesh.vertices[j+2] = pvertices[k].z;
             }
 
             // Copy indices
             // TODO: Compute globals indices array
             size = voxarray.indices.used;
-            pmesh.indices = new float[size];
-            for (int j = 0; j < pmesh.indices.length; j++) {
-                pmesh.indices[j] = pindices[j];
+            pmesh.indicesS = new short[size];
+            for (int j = 0; j < pmesh.indicesS.length; j++) {
+                pmesh.indicesS[j] = pindices[j];
             }
 
             pmesh.triangleCount = (pmesh.vertexCount/4)*2;

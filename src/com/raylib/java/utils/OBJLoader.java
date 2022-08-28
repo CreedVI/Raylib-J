@@ -1,5 +1,6 @@
 package com.raylib.java.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -27,6 +28,7 @@ public class OBJLoader {
         public int[] numVPerLine;
         public int[] materialIds;
 
+        public OBJShape[] shapes;
     }
 
     public static class OBJVertexIndex {
@@ -93,7 +95,7 @@ public class OBJLoader {
 
             for (i = 0; i < 3; i++) {
                 ambient[i] = 0.f;
-                diffuse[i] = 0.f;
+                diffuse[i] = 1.0f;
                 specular[i] = 0.f;
                 transmittance[i] = 0.f;
                 emission[i] = 0.f;
@@ -119,6 +121,7 @@ public class OBJLoader {
         String groupName;
         String objectName;
         String materialName;
+        String mtllibName;
 
         CommandType type;
 
@@ -155,7 +158,7 @@ public class OBJLoader {
         cmds = parseLines(fileText, triangulate);
 
         int numV = 0, numVN = 0, numVT = 0, numF = 0, numFaces = 0;
-        int mtlbLineIndex = -1;
+        int mtllibLineIndex = -1;
 
         for (int i = 0; i < cmds.length; i++) {
             switch (cmds[i].type) {
@@ -173,11 +176,22 @@ public class OBJLoader {
                     numFaces += cmds[i].numFNumVerts;
                     break;
                 case COMMAND_MTLLIB:
-                    mtlbLineIndex = i;
+                    mtllibLineIndex = i;
             }
         }
 
-        // todo: load materialFile
+        /* Load material(if exits) */
+        if (mtllibLineIndex >= 0 && cmds[mtllibLineIndex].mtllibName != null && cmds[mtllibLineIndex].mtllibName.length() > 0) {
+            String filename = cmds[mtllibLineIndex].mtllibName;
+
+            boolean ret = ReadMTL(filename);
+
+            if (!ret) {
+                /* warning. */
+                System.out.println("OB-J: Failed to parse material file " + filename);
+            }
+
+        }
 
         objInfo.totalVertices = numV;
         objInfo.totalNormals = numVN;
@@ -237,12 +251,24 @@ public class OBJLoader {
                     fCount += cmds[i].numF;
                     faceCount += cmds[i].fNumVerts[k];
                     break;
+                case COMMAND_USEMTL:
+                    if (cmds[i].materialName != null && cmds[i].materialName.length() > 0) {
+                        for (int j = 0; j < mtlInfo.materials.length; j++) {
+                            if (mtlInfo.materials[j].name.equals(cmds[i].materialName)) {
+                                materialID = j;
+                                break;
+                            }
+                            else {
+                                materialID= -1;
+                            }
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
         }
 
-        // TODO: 6/30/22 construct shape info
         faceCount = 0;
         i = 0;
         int n = 0;
@@ -277,7 +303,8 @@ public class OBJLoader {
                     prevShapeName = shapeName;
                     prevShapeFaceOffset = faceCount;
                     prevFaceOffset = faceCount;
-                } else {
+                }
+                else {
                     if (shapeIndex == 0) {
                         shapes[shapeIndex].name = prevShapeName;
                         shapes[shapeIndex].faceOffset = prevShape.faceOffset;
@@ -285,7 +312,8 @@ public class OBJLoader {
 
                         shapeIndex++;
                         prevFaceOffset = faceCount;
-                    } else {
+                    }
+                    else {
                         if ((faceCount - prevFaceOffset) > 0) {
                             shapes[shapeIndex].name = prevShapeName;
                             shapes[shapeIndex].faceOffset = prevFaceOffset;
@@ -318,6 +346,9 @@ public class OBJLoader {
             /* Guess no 'v' line occurrence after 'o' or 'g', so discards current
              * shape information. */
         }
+        objInfo.shapes = shapes;
+
+        objInfo.totalMaterials = mtlInfo.numberOfMaterials;
 
         cmds = null;
         return true;
@@ -325,13 +356,18 @@ public class OBJLoader {
 
     public boolean ReadMTL(String filetext) {
         mtlInfo = new MTLInfo();
-        String[] token = filetext.split("(\\r\\n|\\r|\\n)");
+        String[] token;
+        try {
+            token = FileIO.LoadFileText(filetext).split("(\\r\\n|\\r|\\n)");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         boolean hasPreviousMaterial = false;
         ArrayList<Material> materials = new ArrayList<>();
         Material material = new Material();
         int numMaterials = 0;
 
-        for (int i = 0; i < cmds.length; i++) {
+        for (int i = 0; i < token.length; i++) {
 
             if (token[i].startsWith("\0")) {
                 continue; /* empty line */
@@ -342,7 +378,7 @@ public class OBJLoader {
             }
 
             /* new mtl */
-            if (token[i].contains("newmtl")) {
+            if (token[i].startsWith("newmtl ")) {
                 String name;
 
                 /* flush previous material. */
@@ -357,7 +393,7 @@ public class OBJLoader {
                 material = new Material();
 
                 /* set new mtl name */
-                material.name = token[i].substring(token[i].lastIndexOf("newmtl "));
+                material.name = token[i].substring(7);
 
                 continue;
             }
@@ -451,72 +487,72 @@ public class OBJLoader {
 
             /* shininess */
             if (token[i].startsWith("Ns ")) {
-                material.shininess = Float.parseFloat(token[i].substring(token[i].indexOf("Ns ")));
+                material.shininess = Float.parseFloat(token[i].substring(3));
                 continue;
             }
 
             /* illum model */
             if (token[i].startsWith("illum ")) {
-                material.illum = Integer.parseInt(token[i].substring(token[i].indexOf("illum ")));
+                material.illum = Integer.parseInt(token[i].substring(6));
                 continue;
             }
 
             /* dissolve */
             if (token[i].startsWith("d ")) {
-                material.dissolve = Float.parseFloat(token[i].substring(token[i].indexOf("d ")));
+                material.dissolve = Float.parseFloat(token[i].substring(2));
                 continue;
             }
             if (token[i].startsWith("Tr ")) {
                 /* Invert value of Tr(assume Tr is in range [0, 1]) */
-                material.dissolve = 1.0f - Float.parseFloat(token[i].substring(token[i].indexOf("Tr ")));
+                material.dissolve = 1.0f - Float.parseFloat(token[i].substring(3));
                 continue;
             }
 
             /* ambient texture */
             if (token[i].startsWith("map_Ka ")) {
-                material.ambient_texname = token[i].substring(token[i].indexOf("map_Ka "));
+                material.ambient_texname = token[i].substring(7);
                 continue;
             }
 
             /* diffuse texture */
             if (token[i].startsWith("map_Kd ")) {
-                material.diffuse_texname = token[i].substring(token[i].indexOf("map_Kd "));
+                material.diffuse_texname = token[i].substring(7);
                 continue;
             }
 
             /* specular texture */
             if (token[i].startsWith("map_Ks ")) {
-                material.specular_texname = token[i].substring(token[i].indexOf("map_Ks "));
+                material.specular_texname = token[i].substring(7);
                 continue;
             }
 
             /* specular highlight texture */
             if (token[i].startsWith("map_Ns ")) {
-                material.specular_highlight_texname = token[i].substring(token[i].indexOf("map_Ns "));
+                material.specular_highlight_texname = token[i].substring(7);
                 continue;
             }
 
             /* bump texture */
             if (token[i].startsWith("map_bump ")) {
-                material.bump_texname = token[i].substring(token[i].indexOf("map_bump "));
+                material.bump_texname = token[i].substring(8);
                 continue;
             }
 
             /* alpha texture */
             if (token[i].startsWith("map_d ")) {
-                material.alpha_texname = token[i].substring(token[i].indexOf("map_d "));
+                material.alpha_texname = token[i].substring(6);
                 continue;
             }
 
             /* bump texture */
             if (token[i].startsWith("bump ")) {
-                material.bump_texname = token[i].substring(token[i].indexOf("bump "));
+                material.bump_texname = token[i].substring(5);
                 continue;
             }
 
             /* displacement texture */
             if (token[i].startsWith("disp ")) {
-                material.displacement_texname = token[i].substring(token[i].indexOf("disp "));
+                material.displacement_texname = token[i].substring(5);
                 continue;
             }
 
@@ -529,7 +565,8 @@ public class OBJLoader {
             numMaterials++;
         }
 
-        mtlInfo.materials = materials.toArray(new Material[numMaterials]);
+        mtlInfo.materials = materials.toArray(new Material[materials.size()]);
+        mtlInfo.numberOfMaterials = mtlInfo.materials.length;
 
         return true;
     }
@@ -544,9 +581,7 @@ public class OBJLoader {
             cmds[i] = new Command();
         }
 
-        for (String l :
-                lines) {
-            //System.out.println("Line "+line+": " + l);
+        for (String l : lines) {
             if(l.startsWith("v ")){
                 cmds[line].type = CommandType.COMMAND_V;
                 String[] tmp = l.substring(2).split(" ");
@@ -645,25 +680,24 @@ public class OBJLoader {
                     cmds[line].fNumVerts[0] = numF;
                     cmds[line].numFNumVerts = 1;
                 }
-                //numF += cmds[line].numF;
-                //num_faces += cmds[line].numFNumVerts;
-            }
-            else if(l.startsWith("g ")) {
-                cmds[line].type = CommandType.COMMAND_G;
-                cmds[line].materialName = l.substring(2);
-                numG++;
-            }
-            else if(l.startsWith("o ")) {
-                cmds[line].type = CommandType.COMMAND_O;
-                cmds[line].materialName = l.substring(2);
-                numO++;
             }
             else if (l.startsWith("usemtl ")) {
                 cmds[line].type = CommandType.COMMAND_USEMTL;
                 cmds[line].materialName = l.substring(7);
-                numM++;
             }
-            else if(l.startsWith("#") || l.length() < 2) {
+            else if (l.startsWith("mtllib ")) {
+                cmds[line].mtllibName = l.substring(7);
+                cmds[line].type = CommandType.COMMAND_MTLLIB;
+            }
+            else if(l.startsWith("g ")) {
+                cmds[line].type = CommandType.COMMAND_G;
+                cmds[line].groupName = l.substring(2);
+            }
+            else if(l.startsWith("o ")) {
+                cmds[line].type = CommandType.COMMAND_O;
+                cmds[line].objectName = l.substring(2);
+            }
+            else {
                 cmds[line].type = CommandType.COMMAND_EMPTY;
             }
             line++;

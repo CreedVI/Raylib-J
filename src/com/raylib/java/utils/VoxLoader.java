@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 /**
+ *
+ *    Vox-J translated by CreedVI for use within Raylib-J
+ *
  *    The MIT License (MIT)
  *
  *    Copyright (c) 2021 Johann Nadalutti.
@@ -32,7 +35,7 @@ import java.util.Arrays;
 public class VoxLoader {
 
     // VoxColor, 4 components, R8G8B8A8 (32bit)
-    public class VoxColor {
+    public static class VoxColor {
         public byte r, g, b, a;
 
         public VoxColor(byte r, byte g, byte b, byte a) {
@@ -44,17 +47,23 @@ public class VoxLoader {
     }
 
     // VoxVector3, 3 components
-    public class VoxVector3 {
+    public static class VoxVector3 {
         public float x, y, z;
 
-        public VoxVector3(int x, int y, int z) {
+        public VoxVector3(float x, float y, float z) {
             this.x = x;
             this.y = y;
             this.z = z;
         }
+
+        public VoxVector3() {
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+        }
     }
 
-    public class ArrayVector3 {
+    public static class ArrayVector3 {
         public VoxVector3[] array;
         public int used, size;
 
@@ -86,7 +95,7 @@ public class VoxLoader {
         }
     }
 
-    public class ArrayColor {
+    public static class ArrayColor {
         public VoxColor[] array;
         public int used, size;
 
@@ -116,7 +125,7 @@ public class VoxLoader {
         }
     }
 
-    public class ArrayUShort {
+    public static class ArrayUShort {
         public short[] array;
         public int used, size;
 
@@ -149,14 +158,14 @@ public class VoxLoader {
     }
 
     // A chunk that contain voxels
-    public class CubeChunk3D{
+    public static class CubeChunk3D{
         byte[] m_array; //If Sparse != null
         int arraySize; //Size for m_array in bytes (DEBUG ONLY)
     }
 
     // Array for voxels
     // Array is divised into chunks of CHUNKSIZE*CHUNKSIZE*CHUNKSIZE voxels size
-    public class VoxArray3D {
+    public static class VoxArray3D {
         // Array size in voxels
         int sizeX;
         int sizeY;
@@ -181,7 +190,7 @@ public class VoxLoader {
         public ArrayColor colors;
 
         //Palette for voxels
-        public VoxColor palette[]; //default size 256
+        public VoxColor[] palette; //default size 256
 
         public VoxArray3D() {
             vertices = new ArrayVector3();
@@ -297,7 +306,7 @@ public class VoxLoader {
     public VoxArray3D pvoxArray;
 
     public VoxLoader() {
-        pvoxArray = Vox_AllocArray(256,256,256);
+        this.pvoxArray = Vox_AllocArray(256,256,256);
     }
 
     // Allocated VoxArray3D size
@@ -342,19 +351,19 @@ public class VoxLoader {
     }
 
     // Set voxel ID from its position into VoxArray3D
-    private void Vox_SetVoxel(VoxArray3D pvoxarray, int x, int y, int z, byte id) {
+    private void Vox_SetVoxel(int x, int y, int z, byte id) {
         // Get chunk from array pos
         int chX = x >> CHUNKSIZE_OPSHIFT; //x / CHUNKSIZE;
         int chY = y >> CHUNKSIZE_OPSHIFT; //y / CHUNKSIZE;
         int chZ = z >> CHUNKSIZE_OPSHIFT; //z / CHUNKSIZE;
-        int offset = (chX * pvoxarray.ChunkFlattenOffset) + (chZ * pvoxarray.chunksSizeY) + chY;
+        int offset = (chX * this.pvoxArray.ChunkFlattenOffset) + (chZ * this.pvoxArray.chunksSizeY) + chY;
 
         //if (offset > voxarray.arrayChunksSize)
         //{
         //	TraceLog(LOG_ERROR, "Out of array");
         //}
 
-        CubeChunk3D chunk = pvoxarray.m_arrayChunks[offset];
+        CubeChunk3D chunk = this.pvoxArray.m_arrayChunks[offset];
 
         // Set Chunk
         chX = x - (chX << CHUNKSIZE_OPSHIFT); //x - (bx * CHUNKSIZE);
@@ -367,7 +376,7 @@ public class VoxLoader {
             chunk.arraySize = size;
             Arrays.fill(chunk.m_array, 0, size, (byte) 0);
 
-            pvoxarray.chunksAllocated++;
+            this.pvoxArray.chunksAllocated++;
         }
 
         offset = (chX << CHUNK_FLATTENOFFSET_OPSHIFT) + (chZ << CHUNKSIZE_OPSHIFT) + chY;
@@ -381,23 +390,23 @@ public class VoxLoader {
     }
 
     // Get voxel ID from its position into VoxArray3D
-    private byte Vox_GetVoxel(VoxArray3D pvoxarray, int x, int y, int z) {
+    private byte Vox_GetVoxel(int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0) return 0;
 
-        if (x >= pvoxarray.sizeX || y >= pvoxarray.sizeY || z >= pvoxarray.sizeZ) return 0;
+        if (x >= this.pvoxArray.sizeX || y >= this.pvoxArray.sizeY || z >= this.pvoxArray.sizeZ) return 0;
 
         // Get chunk from array pos
         int chX = x >> CHUNKSIZE_OPSHIFT; //x / CHUNKSIZE;
         int chY = y >> CHUNKSIZE_OPSHIFT; //y / CHUNKSIZE;
         int chZ = z >> CHUNKSIZE_OPSHIFT; //z / CHUNKSIZE;
-        int offset = (chX * pvoxarray.ChunkFlattenOffset) + (chZ * pvoxarray.chunksSizeY) + chY;
+        int offset = (chX * this.pvoxArray.ChunkFlattenOffset) + (chZ * this.pvoxArray.chunksSizeY) + chY;
 
         //if (offset > voxarray.arrayChunksSize)
         //{
         //	TraceLog(LOG_ERROR, "Out of array");
         //}
 
-        CubeChunk3D chunk = pvoxarray.m_arrayChunks[offset];
+        CubeChunk3D chunk = this.pvoxArray.m_arrayChunks[offset];
 
         // Set Chunk
         chX = x - (chX << CHUNKSIZE_OPSHIFT); //x - (bx * CHUNKSIZE);
@@ -419,15 +428,15 @@ public class VoxLoader {
     }
 
     // Calc visibles faces from a voxel position
-    private byte Vox_CalcFacesVisible(VoxArray3D pvoxArray, int cx, int cy, int cz) {
-        byte idXm1 = Vox_GetVoxel(pvoxArray, cx - 1, cy, cz);
-        byte idXp1 = Vox_GetVoxel(pvoxArray, cx + 1, cy, cz);
+    private byte Vox_CalcFacesVisible(int cx, int cy, int cz) {
+        byte idXp1 = Vox_GetVoxel(cx + 1, cy, cz);
+        byte idXm1 = Vox_GetVoxel(cx - 1, cy, cz);
 
-        byte idYm1 = Vox_GetVoxel(pvoxArray, cx, cy - 1, cz);
-        byte idYp1 = Vox_GetVoxel(pvoxArray, cx, cy + 1, cz);
+        byte idYm1 = Vox_GetVoxel(cx, cy - 1, cz);
+        byte idYp1 = Vox_GetVoxel(cx, cy + 1, cz);
 
-        byte idZm1 = Vox_GetVoxel(pvoxArray, cx, cy, cz - 1);
-        byte idZp1 = Vox_GetVoxel(pvoxArray, cx, cy, cz + 1);
+        byte idZm1 = Vox_GetVoxel(cx, cy, cz - 1);
+        byte idZp1 = Vox_GetVoxel(cx, cy, cz + 1);
 
         byte byVFMask = 0;
 
@@ -465,30 +474,27 @@ public class VoxLoader {
     }
 
     // Build a voxel vertices/colors/indices
-    private VoxArray3D Vox_Build_Voxel(int x, int y, int z, int matID) {
+    private void Vox_Build_Voxel(int x, int y, int z, int matID) {
 
-        byte byVFMask = Vox_CalcFacesVisible(pvoxArray, x, y, z);
+        byte byVFMask = Vox_CalcFacesVisible(x, y, z);
 
         if (byVFMask == 0) {
-            return null;
+            return;
         }
 
         int i, j;
         VoxVector3[] vertComputed = new VoxVector3[8];
         int[] bVertexComputed = new int[8];
-        Arrays.fill(vertComputed, new VoxVector3(0,0,0));
+        Arrays.fill(vertComputed, new VoxVector3(0, 0, 0));
         Arrays.fill(bVertexComputed, 0);
 
+        //TODO: Something about this loop is causing the values in the vertex array to change. need fix
         //For each Cube's faces
-        for (i = 0; i < 6; i++) // 6 faces
-        {
-            if ((byVFMask & (1 << i)) != 0)	//If face is visible
-            {
-                for (j = 0; j < 4; j++)   // 4 corners
-                {
+        for (i = 0; i < 6; i++) { // 6 faces
+            if ((byVFMask & (1 << i)) != 0) {	//If face is visible
+                for (j = 0; j < 4; j++) {  // 4 corners
                     int  nNumVertex = fv[i][j];  //Face,Corner
-                    if (bVertexComputed[nNumVertex] == 0) //if never calc
-                    {
+                    if (bVertexComputed[nNumVertex] == 0) { //if never calc
                         bVertexComputed[nNumVertex] = 1;
                         vertComputed[nNumVertex] = Vox_GetVertexPosition(x, y, z, nNumVertex);
                     }
@@ -499,8 +505,9 @@ public class VoxLoader {
         //Add face
         for (i = 0; i < 6; i++) { // 6 faces
 
-            if ((byVFMask & (1 << i)) == 0)
+            if ((byVFMask & (1 << i)) == 0) {
                 continue; //Face invisible
+            }
 
             int v0 = fv[i][0];  //Face, Corner
             int v1 = fv[i][1];  //Face, Corner
@@ -508,31 +515,30 @@ public class VoxLoader {
             int v3 = fv[i][3];  //Face, Corner
 
             //Arrays
-            int idx = pvoxArray.vertices.used;
-            pvoxArray.vertices.insertArrayVector3(vertComputed[v0]);
-            pvoxArray.vertices.insertArrayVector3(vertComputed[v1]);
-            pvoxArray.vertices.insertArrayVector3(vertComputed[v2]);
-            pvoxArray.vertices.insertArrayVector3(vertComputed[v3]);
+            int idx = this.pvoxArray.vertices.used;
+            this.pvoxArray.vertices.insertArrayVector3(vertComputed[v0]);
+            this.pvoxArray.vertices.insertArrayVector3(vertComputed[v1]);
+            this.pvoxArray.vertices.insertArrayVector3(vertComputed[v2]);
+            this.pvoxArray.vertices.insertArrayVector3(vertComputed[v3]);
 
-            VoxColor col = pvoxArray.palette[matID];
+            VoxColor col = this.pvoxArray.palette[matID];
 
-            pvoxArray.colors.insertArrayColor(col);
-            pvoxArray.colors.insertArrayColor(col);
-            pvoxArray.colors.insertArrayColor(col);
-            pvoxArray.colors.insertArrayColor(col);
+            this.pvoxArray.colors.insertArrayColor(col);
+            this.pvoxArray.colors.insertArrayColor(col);
+            this.pvoxArray.colors.insertArrayColor(col);
+            this.pvoxArray.colors.insertArrayColor(col);
 
 
             //v0 - v1 - v2, v0 - v2 - v3
-            pvoxArray.indices.insertArrayUShort((short) (idx + 0));
-            pvoxArray.indices.insertArrayUShort((short) (idx + 2));
-            pvoxArray.indices.insertArrayUShort((short) (idx + 1));
+            this.pvoxArray.indices.insertArrayUShort((short) (idx + 0));
+            this.pvoxArray.indices.insertArrayUShort((short) (idx + 2));
+            this.pvoxArray.indices.insertArrayUShort((short) (idx + 1));
 
-            pvoxArray.indices.insertArrayUShort((short) (idx + 0));
-            pvoxArray.indices.insertArrayUShort((short) (idx + 3));
-            pvoxArray.indices.insertArrayUShort((short) (idx + 2));
+            this.pvoxArray.indices.insertArrayUShort((short) (idx + 0));
+            this.pvoxArray.indices.insertArrayUShort((short) (idx + 3));
+            this.pvoxArray.indices.insertArrayUShort((short) (idx + 2));
         }
 
-        return pvoxArray;
     }
 
     // MagicaVoxel *.vox file format Loader
@@ -550,7 +556,6 @@ public class VoxLoader {
         try(InputStream fileData = new ByteArrayInputStream(pvoxData)) {
             byte[] signature = new byte[4];
             int fileDataPtr = 0;
-            int endfileDataPtr = voxDataSize;
 
             fileData.read(signature);
             fileDataPtr += 4;
@@ -589,13 +594,12 @@ public class VoxLoader {
             //{ child chunk 0 }
             //{ child chunk 1 }
             int sizeX, sizeY, sizeZ;
-            sizeX = sizeY = sizeZ = 0;
-            int numVoxels = 0;
+            int numVoxels;
 
             // TODO: 12/08/2022 parse that shit.
             // I have no idea what is going on with the file contents here.
 
-            while (fileDataPtr < endfileDataPtr) {
+            while (fileDataPtr < voxDataSize) {
                 byte[] szChunkName = new byte[4];
                 fileData.read(szChunkName);
                 fileDataPtr += 4;
@@ -670,7 +674,7 @@ public class VoxLoader {
                         vz = Byte.toUnsignedInt(v[2]); fileDataPtr++;
                         vi = Byte.toUnsignedInt(v[3]); fileDataPtr++;
 
-                        Vox_SetVoxel(pvoxArray, vx, vz, pvoxArray.sizeZ - vy - 1, (byte) vi); //Reverse Y<>Z for left to right handed system
+                        Vox_SetVoxel(vx, vz, this.pvoxArray.sizeZ - vy - 1, (byte) vi); //Reverse Y<>Z for left to right handed system
 
                         numVoxels--;
                     }
@@ -687,7 +691,7 @@ public class VoxLoader {
                         col.b = v[2]; fileDataPtr++;
                         col.a = v[3]; fileDataPtr++;
 
-                        pvoxArray.palette[i + 1] = col;
+                        this.pvoxArray.palette[i + 1] = col;
                     }
 
                 }
@@ -701,19 +705,20 @@ public class VoxLoader {
             //   TODO compute globals indices array
 
             // Init Arrays
-            pvoxArray.vertices.initArrayVector3(3 * 1024);
-            pvoxArray.indices.initArrayUShort(3 * 1024);
-            pvoxArray.colors.initArrayColor(3 * 1024);
+            this.pvoxArray.vertices.initArrayVector3(3 * 1024);
+            this.pvoxArray.indices.initArrayUShort(3 * 1024);
+            this.pvoxArray.colors.initArrayColor(3 * 1024);
 
             // Create vertices and indices buffers
             int x, y, z;
 
-            for (x = 0; x <= pvoxArray.sizeX; x++) {
-                for (z = 0; z <= pvoxArray.sizeZ; z++) {
-                    for (y = 0; y <= pvoxArray.sizeY; y++) {
-                        byte matID = Vox_GetVoxel(pvoxArray, x, y, z);
-                        if (matID != 0)
+            for (x = 0; x <= this.pvoxArray.sizeX; x++) {
+                for (z = 0; z <= this.pvoxArray.sizeZ; z++) {
+                    for (y = 0; y <= this.pvoxArray.sizeY; y++) {
+                        byte matID = Vox_GetVoxel(x, y, z);
+                        if (matID != 0) {
                             Vox_Build_Voxel(x, y, z, Byte.toUnsignedInt(matID));
+                        }
                     }
                 }
             }
