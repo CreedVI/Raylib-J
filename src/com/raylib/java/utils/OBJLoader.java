@@ -8,7 +8,7 @@ import java.util.Objects;
 public class OBJLoader {
 
     /**
-     * OB-J Loader v0.1
+     * OB-J Loader v1.0
      * written by CreedVI for use in Raylib-J.
      * Based on TinyOBJLoader-C by Syoyo https://github.com/syoyo/tinyobjloader-c
      */
@@ -245,11 +245,11 @@ public class OBJLoader {
 
                     for (k = 0; k < cmds[i].numFNumVerts; k++) {
                         objInfo.materialIds[faceCount + k] = materialID;
-                        objInfo.numVPerLine[faceCount + k] = cmds[i].fNumVerts[k];
+                        objInfo.numVPerLine[faceCount + k] = cmds[i].numFNumVerts;
                     }
                     
                     fCount += cmds[i].numF;
-                    faceCount += cmds[i].fNumVerts[k];
+                    faceCount += cmds[i].numFNumVerts;
                     break;
                 case COMMAND_USEMTL:
                     if (cmds[i].materialName != null && cmds[i].materialName.length() > 0) {
@@ -328,7 +328,7 @@ public class OBJLoader {
                     prevShapeFaceOffset = faceCount;
                 }
             }
-            if (cmds[i].type == CommandType.COMMAND_F) {
+            else if (cmds[i].type == CommandType.COMMAND_F) {
                 faceCount++;
             }
         }
