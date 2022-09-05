@@ -1088,7 +1088,7 @@ public class rModels{
 
                 // Draw mesh
                 if (mesh.indices != null ) {
-                    rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
+                    rlDrawVertexArrayElements(0, mesh.triangleCount * 3, new float[0]);
                 }
                 else {
                     rlDrawVertexArray(0, mesh.vertexCount);
@@ -2868,8 +2868,10 @@ public class rModels{
             model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
             DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], model.transform);
             model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
-            model.transform = Raymath.MatrixIdentity();
+            //model.transform = Raymath.MatrixIdentity();
         }
+
+        model.transform = Raymath.MatrixIdentity();
     }
 
     // Draw a model wires (with texture if set)

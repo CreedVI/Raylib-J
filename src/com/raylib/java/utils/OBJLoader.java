@@ -465,7 +465,7 @@ public class OBJLoader {
 
             /* ior(index of refraction) */
             if (token[i].startsWith("Ni ")) {
-                material.ior = Float.parseFloat(token[i].substring(token[i].indexOf("Ni ")));
+                material.ior = Float.parseFloat(token[i].substring(3));
                 continue;
             }
 

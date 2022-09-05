@@ -959,9 +959,8 @@ public class RLGL{
             DataBuffer pixels = new DataBufferByte(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255}, 4);
             rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
 
-            if(rlglData.getState().getDefaultTextureId() != 0){
-                Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId()
-                        + "] Default texture loaded successfully");
+            if(rlglData.getState().getDefaultTextureId() != 0) {
+                Tracelog(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Default texture loaded successfully");
             }
             else{
                 Tracelog(LOG_WARNING, "TEXTURE: Failed to load default texture");
