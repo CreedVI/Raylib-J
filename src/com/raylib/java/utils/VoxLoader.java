@@ -2,7 +2,6 @@ package com.raylib.java.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -197,55 +196,6 @@ public class VoxLoader {
             indices = new ArrayUShort();
             colors = new ArrayColor();
             palette = new VoxColor[256];
-
-            String[] hexPalette = {
-                    "0x00000000", "0xffffffff", "0xffccffff", "0xff99ffff", "0xff66ffff", "0xff33ffff", "0xff00ffff",
-                    "0xffffccff", "0xffccccff", "0xff99ccff", "0xff66ccff", "0xff33ccff", "0xff00ccff", "0xffff99ff",
-                    "0xffcc99ff", "0xff9999ff", "0xff6699ff", "0xff3399ff", "0xff0099ff", "0xffff66ff", "0xffcc66ff",
-                    "0xff9966ff", "0xff6666ff", "0xff3366ff", "0xff0066ff", "0xffff33ff", "0xffcc33ff", "0xff9933ff",
-                    "0xff6633ff", "0xff3333ff", "0xff0033ff", "0xffff00ff", "0xffcc00ff", "0xff9900ff", "0xff6600ff",
-                    "0xff3300ff", "0xff0000ff", "0xffffffcc", "0xffccffcc", "0xff99ffcc", "0xff66ffcc", "0xff33ffcc",
-                    "0xff00ffcc", "0xffffcccc", "0xffcccccc", "0xff99cccc", "0xff66cccc", "0xff33cccc", "0xff00cccc",
-                    "0xffff99cc", "0xffcc99cc", "0xff9999cc", "0xff6699cc", "0xff3399cc", "0xff0099cc", "0xffff66cc",
-                    "0xffcc66cc", "0xff9966cc", "0xff6666cc", "0xff3366cc", "0xff0066cc", "0xffff33cc", "0xffcc33cc",
-                    "0xff9933cc", "0xff6633cc", "0xff3333cc", "0xff0033cc", "0xffff00cc", "0xffcc00cc", "0xff9900cc",
-                    "0xff6600cc", "0xff3300cc", "0xff0000cc", "0xffffff99", "0xffccff99", "0xff99ff99", "0xff66ff99",
-                    "0xff33ff99", "0xff00ff99", "0xffffcc99", "0xffcccc99", "0xff99cc99", "0xff66cc99", "0xff33cc99",
-                    "0xff00cc99", "0xffff9999", "0xffcc9999", "0xff999999", "0xff669999", "0xff339999", "0xff009999",
-                    "0xffff6699", "0xffcc6699", "0xff996699", "0xff666699", "0xff336699", "0xff006699", "0xffff3399",
-                    "0xffcc3399", "0xff993399", "0xff663399", "0xff333399", "0xff003399", "0xffff0099", "0xffcc0099",
-                    "0xff990099", "0xff660099", "0xff330099", "0xff000099", "0xffffff66", "0xffccff66", "0xff99ff66",
-                    "0xff66ff66", "0xff33ff66", "0xff00ff66", "0xffffcc66", "0xffcccc66", "0xff99cc66", "0xff66cc66",
-                    "0xff33cc66", "0xff00cc66", "0xffff9966", "0xffcc9966", "0xff999966", "0xff669966", "0xff339966",
-                    "0xff009966", "0xffff6666", "0xffcc6666", "0xff996666", "0xff666666", "0xff336666", "0xff006666",
-                    "0xffff3366", "0xffcc3366", "0xff993366", "0xff663366", "0xff333366", "0xff003366", "0xffff0066",
-                    "0xffcc0066", "0xff990066", "0xff660066", "0xff330066", "0xff000066", "0xffffff33", "0xffccff33",
-                    "0xff99ff33", "0xff66ff33", "0xff33ff33", "0xff00ff33", "0xffffcc33", "0xffcccc33", "0xff99cc33",
-                    "0xff66cc33", "0xff33cc33", "0xff00cc33", "0xffff9933", "0xffcc9933", "0xff999933", "0xff669933",
-                    "0xff339933", "0xff009933", "0xffff6633", "0xffcc6633", "0xff996633", "0xff666633", "0xff336633",
-                    "0xff006633", "0xffff3333", "0xffcc3333", "0xff993333", "0xff663333", "0xff333333", "0xff003333",
-                    "0xffff0033", "0xffcc0033", "0xff990033", "0xff660033", "0xff330033", "0xff000033", "0xffffff00",
-                    "0xffccff00", "0xff99ff00", "0xff66ff00", "0xff33ff00", "0xff00ff00", "0xffffcc00", "0xffcccc00",
-                    "0xff99cc00", "0xff66cc00", "0xff33cc00", "0xff00cc00", "0xffff9900", "0xffcc9900", "0xff999900",
-                    "0xff669900", "0xff339900", "0xff009900", "0xffff6600", "0xffcc6600", "0xff996600", "0xff666600",
-                    "0xff336600", "0xff006600", "0xffff3300", "0xffcc3300", "0xff993300", "0xff663300", "0xff333300",
-                    "0xff003300", "0xffff0000", "0xffcc0000", "0xff990000", "0xff660000", "0xff330000", "0xff0000ee",
-                    "0xff0000dd", "0xff0000bb", "0xff0000aa", "0xff000088", "0xff000077", "0xff000055", "0xff000044",
-                    "0xff000022", "0xff000011", "0xff00ee00", "0xff00dd00", "0xff00bb00", "0xff00aa00", "0xff008800",
-                    "0xff007700", "0xff005500", "0xff004400", "0xff002200", "0xff001100", "0xffee0000", "0xffdd0000",
-                    "0xffbb0000", "0xffaa0000", "0xff880000", "0xff770000", "0xff550000", "0xff440000", "0xff220000",
-                    "0xff110000", "0xffeeeeee", "0xffdddddd", "0xffbbbbbb", "0xffaaaaaa", "0xff888888", "0xff777777",
-                    "0xff555555", "0xff444444", "0xff222222", "0xff111111"
-            };
-
-            for (int i = 0; i < palette.length; i++) {
-                byte r,g,b,a;
-                r = (byte) Integer.parseInt(hexPalette[i].substring(2,3), 16);
-                g = (byte) Integer.parseInt(hexPalette[i].substring(4,5), 16);
-                b = (byte) Integer.parseInt(hexPalette[i].substring(6,7), 16);
-                a = (byte) Integer.parseInt(hexPalette[i].substring(8,9), 16);
-                palette[i] = new VoxColor(r,g,b,a);
-            }
         }
 
     }
@@ -351,7 +301,7 @@ public class VoxLoader {
     }
 
     // Set voxel ID from its position into VoxArray3D
-    private void Vox_SetVoxel(int x, int y, int z, byte id) {
+    private void Vox_SetVoxel(int x, int y, int z, int id) {
         // Get chunk from array pos
         int chX = x >> CHUNKSIZE_OPSHIFT; //x / CHUNKSIZE;
         int chY = y >> CHUNKSIZE_OPSHIFT; //y / CHUNKSIZE;
@@ -386,7 +336,7 @@ public class VoxLoader {
         //	TraceLog(LOG_ERROR, "Out of array");
         //}
 
-        chunk.m_array[offset] = id;
+        chunk.m_array[offset] = (byte) id;
     }
 
     // Get voxel ID from its position into VoxArray3D
@@ -465,10 +415,11 @@ public class VoxLoader {
     private VoxVector3 Vox_GetVertexPosition(int _wcx, int _wcy, int _wcz, int _nNumVertex) {
         float scale = 0.25f;
 
-        VoxVector3 vtx = SolidVertex[_nNumVertex];
-        vtx.x = (vtx.x + _wcx) * scale;
-        vtx.y = (vtx.y + _wcy) * scale;
-        vtx.z = (vtx.z + _wcz) * scale;
+        VoxVector3 vtx = new VoxVector3();
+        
+        vtx.x = (SolidVertex[_nNumVertex].x + _wcx) * scale;
+        vtx.y = (SolidVertex[_nNumVertex].y + _wcy) * scale;
+        vtx.z = (SolidVertex[_nNumVertex].z + _wcz) * scale;
 
         return vtx;
     }
@@ -476,7 +427,7 @@ public class VoxLoader {
     // Build a voxel vertices/colors/indices
     private void Vox_Build_Voxel(int x, int y, int z, int matID) {
 
-        byte byVFMask = Vox_CalcFacesVisible(x, y, z);
+        int byVFMask = Byte.toUnsignedInt(Vox_CalcFacesVisible(x, y, z));
 
         if (byVFMask == 0) {
             return;
@@ -488,7 +439,6 @@ public class VoxLoader {
         Arrays.fill(vertComputed, new VoxVector3(0, 0, 0));
         Arrays.fill(bVertexComputed, 0);
 
-        //TODO: Something about this loop is causing the values in the vertex array to change. need fix
         //For each Cube's faces
         for (i = 0; i < 6; i++) { // 6 faces
             if ((byVFMask & (1 << i)) != 0) {	//If face is visible
@@ -543,7 +493,6 @@ public class VoxLoader {
 
     // MagicaVoxel *.vox file format Loader
     public int Vox_LoadFromMemory(byte[] pvoxData) {
-        // TODO: 12/08/2022 I have no idea how the hell. Like what the h*ck. How do you read this file. I need booze and jesus.
         int voxDataSize = pvoxData.length;
         //////////////////////////////////////////////////
         // Read VOX file
@@ -553,34 +502,26 @@ public class VoxLoader {
         // @raysan5: Reviewed (unsigned long) -> (unsigned int), possible issue with Ubuntu 18.04 64bit
 
         // @raysan5: reviewed signature loading
-        try(InputStream fileData = new ByteArrayInputStream(pvoxData)) {
+        try(ByteArrayInputStream fileData = new ByteArrayInputStream(pvoxData)) {
             byte[] signature = new byte[4];
             int fileDataPtr = 0;
 
             fileData.read(signature);
             fileDataPtr += 4;
 
-            if ((signature[0] != 'V') && (signature[0] != 'O') && (signature[0] != 'X') && (signature[0] != ' ')) {
+            if ((signature[0] != 'V') && (signature[1] != 'O') && (signature[3] != 'X') && (signature[4] != ' ')) {
                 return VOX_ERROR_INVALID_FORMAT; //"Not an MagicaVoxel File format"
             }
 
             // @raysan5: reviewed version loading
-            int version = 0;
-            byte[] tmp = new byte[4];
+            byte[] tmp = new byte[Integer.BYTES];
             fileData.read(tmp);
-            for (byte b : tmp) {
-                version += Byte.toUnsignedInt(b);
-            }
+            int version = Vox_toInt(tmp);
             fileDataPtr += 4;
 
-            if (version < 150) {
+            if (Integer.compareUnsigned(version, 150) < 0) {
                 return VOX_ERROR_FILE_VERSION_TOO_OLD; //"MagicaVoxel version too old"
             }
-            //tmp
-            fileData.read();
-            fileData.read();
-            fileDataPtr += 2;
-
 
             // header
             //4 bytes: chunk id
@@ -596,26 +537,17 @@ public class VoxLoader {
             int sizeX, sizeY, sizeZ;
             int numVoxels;
 
-            // TODO: 12/08/2022 parse that shit.
-            // I have no idea what is going on with the file contents here.
-
             while (fileDataPtr < voxDataSize) {
                 byte[] szChunkName = new byte[4];
                 fileData.read(szChunkName);
                 fileDataPtr += 4;
 
-                tmp = new byte[Integer.BYTES];
                 fileData.read(tmp);
-                int chunkSize = 0;
-                for (byte b : tmp) {
-                    chunkSize += Byte.toUnsignedInt(b);
-                }
+                int chunkSize = Vox_toInt(tmp);
                 fileDataPtr += Integer.BYTES;
 
                 //unsigned long chunkTotalChildSize = *((unsigned long*)fileDataPtr);
-                for (int i = 0; i < Integer.BYTES; i++) {
-                    fileData.read();
-                }
+                fileData.read(tmp);
                 fileDataPtr += Integer.BYTES;
                 String chunk = "";
                 for (byte b : szChunkName) {
@@ -624,29 +556,16 @@ public class VoxLoader {
 
                 if (chunk.equals("SIZE")) {
                     //(4 bytes x 3 : x, y, z )
-                    byte[] intBytes = new byte[Integer.BYTES];
-                    fileData.read(intBytes);
-                    int tmpInt = 0;
-                    for (byte b : intBytes) {
-                        tmpInt += Byte.toUnsignedInt(b);
-                    }
-                    sizeX = tmpInt;
+                    fileData.read(tmp);
+                    sizeX = Vox_toInt(tmp);
                     fileDataPtr += Integer.BYTES;
 
-                    tmpInt = 0;
-                    for (byte b : intBytes) {
-                        tmpInt += Byte.toUnsignedInt(b);
-                    }
-                    fileData.read(intBytes);
-                    sizeY = tmpInt;
+                    fileData.read(tmp);
+                    sizeY = Vox_toInt(tmp);
                     fileDataPtr += Integer.BYTES;
 
-                    tmpInt = 0;
-                    for (byte b : intBytes) {
-                        tmpInt += Byte.toUnsignedInt(b);
-                    }
-                    fileData.read(intBytes);
-                    sizeZ = tmpInt;
+                    fileData.read(tmp);
+                    sizeZ = Vox_toInt(tmp);
                     fileDataPtr += Integer.BYTES;
 
                     //Alloc vox array
@@ -657,45 +576,37 @@ public class VoxLoader {
 
                     //(numVoxels : 4 bytes )
                     //(each voxel: 1 byte x 4 : x, y, z, colorIndex ) x numVoxels
-                    byte[] intBytes = new byte[Integer.BYTES];
-                    fileData.read(intBytes);
-                    int tmpInt = 0;
-                    for (byte b : intBytes) {
-                        tmpInt += Byte.toUnsignedInt(b);
-                    }
-                    numVoxels = tmpInt;
+                    fileData.read(tmp);
+                    numVoxels  = Vox_toInt(tmp);
                     fileDataPtr += Integer.BYTES;
 
                     while (numVoxels > 0) {
-                        byte[] v = new byte[4];
-                        fileData.read(v);
-                        vx = Byte.toUnsignedInt(v[0]); fileDataPtr++;
-                        vy = Byte.toUnsignedInt(v[1]); fileDataPtr++;
-                        vz = Byte.toUnsignedInt(v[2]); fileDataPtr++;
-                        vi = Byte.toUnsignedInt(v[3]); fileDataPtr++;
+                        vx = fileData.read(); fileDataPtr++;
+                        vy = fileData.read(); fileDataPtr++;
+                        vz = fileData.read(); fileDataPtr++;
+                        vi = fileData.read(); fileDataPtr++;
 
-                        Vox_SetVoxel(vx, vz, this.pvoxArray.sizeZ - vy - 1, (byte) vi); //Reverse Y<>Z for left to right handed system
+                        Vox_SetVoxel(vx, vz, this.pvoxArray.sizeZ - vy - 1, vi); //Reverse Y<>Z for left to right handed system
 
                         numVoxels--;
                     }
                 }
                 else if (chunk.equals("RGBA")) {
-                    VoxColor col = new VoxColor((byte) 0, (byte) 0, (byte) 0, (byte) 0);
-
                     //(each pixel: 1 byte x 4 : r, g, b, a ) x 256
                     for (int i = 0; i < 256 - 1; i++) {
-                        byte[] v = new byte[4];
-                        fileData.read(v);
-                        col.r = v[0]; fileDataPtr++;
-                        col.g = v[1]; fileDataPtr++;
-                        col.b = v[2]; fileDataPtr++;
-                        col.a = v[3]; fileDataPtr++;
+                        VoxColor col = new VoxColor((byte) 0, (byte) 0, (byte) 0, (byte) 0);
+                        col.r = (byte) fileData.read(); fileDataPtr++;
+                        col.g = (byte) fileData.read(); fileDataPtr++;
+                        col.b = (byte) fileData.read(); fileDataPtr++;
+                        col.a = (byte) fileData.read(); fileDataPtr++;
 
                         this.pvoxArray.palette[i + 1] = col;
                     }
 
                 }
                 else {
+                    //move ahead in the data...
+                    fileData.skip(chunkSize);
                     fileDataPtr += chunkSize;
                 }
             }
@@ -755,5 +666,22 @@ public class VoxLoader {
         voxarray.vertices = null;
         voxarray.indices = null;
         voxarray.colors = null;
+    }
+
+    // Convert array of four bytes to int
+    private static int Vox_toInt(byte[] bytes) {
+        int ret = 0;
+        // flip the bytes because .vox file format...
+        byte[] tmp = new byte[bytes.length];
+        System.arraycopy(bytes, 0, tmp, 0, bytes.length);
+        for (int i = 0, k = bytes.length-1; i < bytes.length; i++, k--) {
+            bytes[k] = tmp [i];
+        }
+
+        for (int i=0; i<4; i++) {
+            ret <<= 8;
+            ret |= (int)bytes[i] & 0xFF;
+        }
+        return ret;
     }
 }

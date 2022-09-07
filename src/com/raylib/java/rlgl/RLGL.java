@@ -2730,6 +2730,21 @@ public class RLGL{
         return id;
     }
 
+    public static int rlLoadVertexBuffer(byte[] buffer, boolean dynamic){
+        int id = 0;
+
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length);
+            bb.put(buffer).flip();
+
+            id = glGenBuffers();
+            glBindBuffer(GL_ARRAY_BUFFER, id);
+            glBufferData(GL_ARRAY_BUFFER, bb, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+
+        return id;
+    }
+
     // Load a new attributes element buffer
     public static int rlLoadVertexBufferElement(float[] buffer, boolean dynamic){
         int id = 0;

@@ -20,6 +20,7 @@ import org.lwjgl.util.par.ParShapesMesh;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.Color.BLACK;
@@ -830,11 +831,7 @@ public class rModels{
 
             if (mesh.colors != null) {
                 // Enable vertex attribute: color (shader-location = 3)
-                float[] tmpColours = new float[mesh.colors.length];
-                for (int i = 0; i < tmpColours.length; i++) {
-                    tmpColours[i] = (float) mesh.colors[i]/255;
-                }
-                mesh.vboId[3] = rlLoadVertexBuffer(tmpColours, dynamic);
+                mesh.vboId[3] = rlLoadVertexBuffer(mesh.colors, dynamic);
                 rlSetVertexAttribute(3, 4, RL_UNSIGNED_BYTE, true, 0, 0);
                 rlEnableVertexAttribute(3);
             } else {
@@ -3491,8 +3488,7 @@ public class rModels{
 
         // Read vox file into buffer
         try {
-            String tmp = FileIO.LoadFileText(fileName);
-            fileData = tmp.getBytes();
+            fileData = FileIO.LoadFileData(fileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -3541,26 +3537,34 @@ public class rModels{
         int verticesMax = 65532; // 5461 voxels x 12 vertices per voxel -> 65532 (must be inf 65536)
 
         // 6*4 = 12 vertices per voxel
-        VoxLoader.VoxVector3[] pvertices = voxarray.vertices.array;
-        VoxLoader.VoxColor[] pcolors = voxarray.colors.array;
+        VoxLoader.VoxVector3[] pvertices = new VoxLoader.VoxVector3[voxarray.vertices.array.length];
+        System.arraycopy(voxarray.vertices.array, 0, pvertices, 0 , pvertices.length);
+        VoxLoader.VoxColor[] pcolors = new VoxLoader.VoxColor[voxarray.colors.array.length];
+        System.arraycopy(voxarray.colors.array, 0, pcolors, 0 , pvertices.length);
 
-        short[] pindices = voxarray.indices.array;    // 5461*6*6 = 196596 indices max per mesh
+        short[] pindices = new short[voxarray.indices.array.length];    // 5461*6*6 = 196596 indices max per mesh
+        System.arraycopy(voxarray.indices.array, 0, pindices, 0, pindices.length);
+
+        int pverticesPointer = 0, pcolorsPointer = 0, pindicesPointer = 0;
 
         int size = 0;
 
         for (int i = 0; i < meshescount; i++) {
-            Mesh pmesh = model.meshes[i];
+            Mesh pmesh = new Mesh();
 
             // Copy vertices
             pmesh.vertexCount = Math.min(verticesMax, verticesRemain);
 
             size = pmesh.vertexCount*3;
             pmesh.vertices = new float[size];
-            for (int j = 0, k = 0; j < pmesh.vertices.length; j+=3, k++) {
+            for (int j = 0, k = pverticesPointer; j < pmesh.vertices.length; j+=3, k++) {
                 pmesh.vertices[j] = pvertices[k].x;
                 pmesh.vertices[j+1] = pvertices[k].y;
                 pmesh.vertices[j+2] = pvertices[k].z;
             }
+
+            pmesh.texcoords = new float[(size/3)*2];
+            Arrays.fill(pmesh.texcoords, 0f);
 
             // Copy indices
             // TODO: Compute globals indices array
@@ -3573,10 +3577,10 @@ public class rModels{
             pmesh.triangleCount = (pmesh.vertexCount/4)*2;
 
             // Copy colors
-            size = pmesh.vertexCount;
+            size = pmesh.vertexCount*4;
             pmesh.colors = new byte[size];
-            for (int j = 0, k = 0; j < pmesh.colors.length; j+=4, k++) {
-                pmesh.colors[j] = pcolors[k].r;
+            for (int j = 0, k = pcolorsPointer; j < pmesh.colors.length; j+=4, k++) {
+                pmesh.colors[j]   = pcolors[k].r;
                 pmesh.colors[j+1] = pcolors[k].g;
                 pmesh.colors[j+2] = pcolors[k].b;
                 pmesh.colors[j+3] = pcolors[k].a;
@@ -3586,8 +3590,10 @@ public class rModels{
             model.meshMaterial[i] = 0;
 
             verticesRemain -= verticesMax;
-            //pvertices += verticesMax;
-            //pcolors += verticesMax;
+            pverticesPointer += verticesMax;
+            pcolorsPointer += verticesMax;
+
+            model.meshes[i] = pmesh;
         }
 
         // Free buffers
