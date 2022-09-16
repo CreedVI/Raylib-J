@@ -478,7 +478,6 @@ public class VoxLoader {
             this.pvoxArray.colors.insertArrayColor(col);
             this.pvoxArray.colors.insertArrayColor(col);
 
-
             //v0 - v1 - v2, v0 - v2 - v3
             this.pvoxArray.indices.insertArrayUShort((short) (idx + 0));
             this.pvoxArray.indices.insertArrayUShort((short) (idx + 2));

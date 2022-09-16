@@ -402,7 +402,7 @@ public class OBJLoader {
             if (token[i].startsWith("Ka ")) {
                 String[] tmp = token[i].substring(3).split(" ");
                 String[] rgb = new String[3];
-                for (int k = 0, j = 0; k < tmp.length; k++) {
+                for (int k = 0, j = 0; k < rgb.length; k++) {
                     if (!Objects.equals(tmp[k], "")) {
                         rgb[j] = tmp[k];
                         j++;
@@ -419,7 +419,7 @@ public class OBJLoader {
             if (token[i].startsWith("Kd ")) {
                 String[] tmp = token[i].substring(3).split(" ");
                 String[] rgb = new String[3];
-                for (int k = 0, j = 0; k < tmp.length; k++) {
+                for (int k = 0, j = 0; k < rgb.length; k++) {
                     if (!Objects.equals(tmp[k], "")) {
                         rgb[j] = tmp[k];
                         j++;
@@ -435,7 +435,7 @@ public class OBJLoader {
             if (token[i].startsWith("Ks ")) {
                 String[] tmp = token[i].substring(3).split(" ");
                 String[] rgb = new String[3];
-                for (int k = 0, j = 0; k < tmp.length; k++) {
+                for (int k = 0, j = 0; k < rgb.length; k++) {
                     if (!Objects.equals(tmp[k], "")) {
                         rgb[j] = tmp[k];
                         j++;
@@ -451,7 +451,7 @@ public class OBJLoader {
             if (token[i].startsWith("Kt ")) {
                 String[] tmp = token[i].substring(3).split(" ");
                 String[] rgb = new String[3];
-                for (int k = 0, j = 0; k < tmp.length; k++) {
+                for (int k = 0, j = 0; k < rgb.length; k++) {
                     if (!Objects.equals(tmp[k], "")) {
                         rgb[j] = tmp[k];
                         j++;
@@ -473,7 +473,7 @@ public class OBJLoader {
             if (token[i].startsWith("Ke ")) {
                 String[] tmp = token[i].substring(3).split(" ");
                 String[] rgb = new String[3];
-                for (int k = 0, j = 0; k < tmp.length; k++) {
+                for (int k = 0, j = 0; k < rgb.length; k++) {
                     if (!Objects.equals(tmp[k], "")) {
                         rgb[j] = tmp[k];
                         j++;

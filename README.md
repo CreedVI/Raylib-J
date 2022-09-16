@@ -67,7 +67,6 @@ version!
 Other libraries were used in place of the original libraries to make a lot of this project possible, or at least much easier to develop. 
 Special thanks to the following:
   - [delthas](https://github.com/delthas) for their [JavaMP3 API](https://github.com/delthas/JavaMP3)
-  - [Lignum](https://github.com/lignum) for their [JVox Vox file reader](https://github.com/lignum/JVox)
 ---
 
 ## Development Status:
