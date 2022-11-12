@@ -5,6 +5,7 @@ import com.raylib.java.core.rCore;
 import com.raylib.java.core.ray.Ray;
 import com.raylib.java.core.ray.RayCollision;
 import com.raylib.java.core.rcamera.Camera3D;
+import com.raylib.java.models.iqm.*;
 import com.raylib.java.raymath.*;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.Rectangle;
@@ -17,6 +18,7 @@ import com.raylib.java.utils.VoxLoader;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -34,8 +36,7 @@ import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
 import static com.raylib.java.utils.Tracelog.Tracelog;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
+import static com.raylib.java.utils.Tracelog.TracelogType.*;
 
 public class rModels{
 
@@ -641,6 +642,9 @@ public class rModels{
         }
         else if(rCore.IsFileExtension(fileName, ".vox")) {
             model = LoadVOX(fileName);
+        }
+        else if (rCore.IsFileExtension(fileName, ".iqm")) {
+            model = LoadIQM(fileName);
         }
 
         // Make sure model transform is set to identity matrix!
@@ -3472,7 +3476,347 @@ public class rModels{
         return model;
     }
 
+    // Convert array of four bytes to int
+    private static int IQM_toInt(byte[] bytes) {
+        int ret = 0;
+        byte[] tmp = new byte[bytes.length];
+        System.arraycopy(bytes, 0, tmp, 0, bytes.length);
+        for (int i = 0, k = bytes.length-1; i < bytes.length; i++, k--) {
+            bytes[k] = tmp [i];
+        }
+
+        for (int i=0; i<4; i++) {
+            ret <<= 8;
+            ret |= (int)bytes[i] & 0xFF;
+        }
+        return ret;
+    }
+
     // TODO: 24/07/2022  LoadIQM
+    public Model LoadIQM(String fileName) {
+        final String IQM_MAGIC = "INTERQUAKEMODEL\0";
+        final int IQM_VERSION = 2;
+
+        final int BONE_NAME_LENGTH = 32;
+        final int MESH_NAME_LENGTH = 32;
+        final int MATERIAL_NAME_LENGTH = 32;
+
+        int fileDataPtr = 0;
+
+        Model model = new Model();
+
+        try (ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))){
+
+            IQMMesh[] imesh;
+            IQMTriangle[] tri;
+            IQMVertexArray[] va;
+            IQMJoint[] joint;
+            IQMHeader header = new IQMHeader();
+
+            float[] vertex;
+            float[] normal;
+            float[] text;
+            String blendi;
+            byte[] blendw;
+            byte[] color;
+            byte[] intbuffer = new byte[Integer.BYTES];
+            byte[] tmpMagic = new byte[header.magic.length];
+
+            if (fileData == null) {
+                return model;
+            }
+
+            // Read IQM Header
+            fileDataPtr += fileData.read(tmpMagic);
+            for (int i = 0; i < header.magic.length; i++) {
+                header.magic[i] = (char) tmpMagic[i];
+            }
+            fileDataPtr += fileData.read(intbuffer);
+            header.version = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.filesize = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.flags = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_text = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_text = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_meshes = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_meshes = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_vertexarrays = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_vertexes = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_vertexarrays = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_triangles = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_triangles = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_adjacency = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_joints = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_joints = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_poses = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_poses = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_anims = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_anims = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_frames = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_framechannels = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_frames = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_bounds = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_comment = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_comment = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.num_extensions = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            header.ofs_extensions = IQM_toInt(intbuffer);
+
+            if (!IQM_MAGIC.equals(String.valueOf(header.magic))) {
+                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
+            }
+            if (IQM_VERSION != header.version) {
+                Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+header.version+")");
+            }
+
+            imesh = new IQMMesh[header.num_meshes];
+            Arrays.fill(imesh, new IQMMesh());
+            // TODO: 12/11/2022 memcpy(imesh, fileDataPtr + iqmHeader->ofs_meshes, iqmHeader->num_meshes*sizeof(IQMMesh));
+            int off = 0;
+            for (int i = 0; i < imesh.length; i++) {
+                fileData.skip(header.ofs_meshes + off);
+                fileData.read(intbuffer);
+                imesh[i].name = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                imesh[i].material = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                imesh[i].first_vertex = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                imesh[i].num_vertexes = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                imesh[i].first_triangle = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                imesh[i].num_triangles = Integer.toUnsignedLong(IQM_toInt(intbuffer));
+                off += 24;
+            }
+            fileData.reset();
+            fileData.skip(fileDataPtr);
+
+            model.meshCount = header.num_meshes;
+            model.meshes = new Mesh[model.meshCount];
+
+            model.materialCount = model.meshCount;
+            model.materials = new Material[model.materialCount];
+            Arrays.fill(model.materials, new Material());
+
+            char[] name = new char[MESH_NAME_LENGTH];
+            byte[] tmpName = new byte[MESH_NAME_LENGTH];
+            char[] material = new char[MATERIAL_NAME_LENGTH];
+            byte[] tmpMaterial = new byte[MATERIAL_NAME_LENGTH];
+
+            for (int i = 0; i < model.meshCount; i++) {
+                // Copy mesh name
+                fileDataPtr += fileData.read(tmpName);
+                for (int j = 0; j < MESH_NAME_LENGTH; j++) {
+                    name[j] = (char) tmpName[j];
+                }
+
+                // Copy mesh material
+                fileDataPtr += fileData.read(tmpMaterial);
+                for (int j = 0; j < MESH_NAME_LENGTH; j++) {
+                    material[j] = (char) tmpMaterial[j];
+                }
+
+                model.materials[i] = LoadMaterialDefault();
+
+                Tracelog(LOG_DEBUG, "MODEL: [" + fileName + "] mesh name (" + String.valueOf(name) + "), material (" + String.valueOf(material) + ")");
+
+                model.meshes[i].vertexCount = imesh[i].num_vertexes;
+
+                model.meshes[i].vertices = new float[model.meshes[i].vertexCount*3];
+                model.meshes[i].normals = new float[model.meshes[i].vertexCount*3];
+                model.meshes[i].texcoords = new float[model.meshes[i].vertexCount*2];
+
+                model.meshes[i].boneIds = new byte[model.meshes[i].vertexCount*4];
+                model.meshes[i].boneWeights = new float[model.meshes[i].vertexCount*4];
+
+                model.meshes[i].triangleCount = Math.toIntExact(imesh[i].num_triangles);
+                model.meshes[i].indices = new float[model.meshes[i].triangleCount*3];
+
+                // Animated verted data, what we actually process for rendering
+                // NOTE: Animated vertex should be re-uploaded to GPU (if not using GPU skinning)
+                model.meshes[i].animVertices = new float[model.meshes[i].vertexCount*3];
+                model.meshes[i].animNormals = new float[model.meshes[i].vertexCount*3];
+            }
+
+            // Triangles data processing
+            tri = new IQMTriangle[header.num_triangles];
+            Arrays.fill(tri, new IQMTriangle());
+            // TODO: 12/11/2022 memcpy(tri, fileDataPtr + iqmHeader->ofs_triangles, iqmHeader->num_triangles*sizeof(IQMTriangle));
+
+            for (int m = 0; m < model.meshCount; m++) {
+                int tcounter = 0;
+
+                for (int i = Math.toIntExact(imesh[m].first_triangle); i < (imesh[m].first_triangle + imesh[m].num_triangles); i++) {
+                    // IQM triangles indexes are stored in counter-clockwise, but raylib processes the index in linear order,
+                    // expecting they point to the counter-clockwise vertex triangle, so we need to reverse triangle indexes
+                    // NOTE: raylib renders vertex data in counter-clockwise order (standard convention) by default
+                    model.meshes[m].indices[tcounter + 2] = tri[i].vertex[0] - imesh[m].first_vertex;
+                    model.meshes[m].indices[tcounter + 1] = tri[i].vertex[1] - imesh[m].first_vertex;
+                    model.meshes[m].indices[tcounter] = tri[i].vertex[2] - imesh[m].first_vertex;
+                    tcounter += 3;
+                }
+            }
+
+            // Vertex arrays data processing
+            va = new IQMVertexArray[header.num_vertexarrays];
+            Arrays.fill(va, new IQMVertexArray());
+            // TODO: 12/11/2022 memcpy(va, fileDataPtr + iqmHeader->ofs_vertexarrays, iqmHeader->num_vertexarrays*sizeof(IQMVertexArray));
+
+            for (int i = 0; i < header.num_vertexarrays; i++) {
+                switch (va[i].type) {
+                    case IQM_POSITION: {
+                        vertex = new float[header.num_vertexes*3];
+                        // TODO: 12/11/2022 memcpy(vertex, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*3*sizeof(float));
+
+                        for (int m = 0; m < header.num_meshes; m++) {
+                            int vCounter = 0;
+                            for (int j = imesh[m].first_vertex*3; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*3; j++) {
+                                model.meshes[m].vertices[vCounter] = vertex[j];
+                                model.meshes[m].animVertices[vCounter] = vertex[j];
+                                vCounter++;
+                            }
+                        }
+                    } break;
+                    case IQM_TEXCOORD: {
+                        text = new float[header.num_vertexes*2];
+                        // TODO: 12/11/2022 memcpy(text, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*2*sizeof(float));
+
+                        for (int m = 0; m < header.num_meshes; m++) {
+                            int vCounter = 0;
+
+                            for (int j = imesh[m].first_vertex*2; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*2; j++){
+                                model.meshes[m].texcoords[vCounter] = text[j];
+                                vCounter++;
+                            }
+                        }
+                    } break;
+                    case IQM_NORMAL: {
+                        normal = new float[header.num_vertexes*3];
+                        // TODO: 12/11/2022 memcpy(normal, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*3*sizeof(float));
+
+                        for (int m = 0; m < header.num_meshes; m++) {
+                            int vCounter = 0;
+                            for (int j = imesh[m].first_vertex*3; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*3; j++){
+                                model.meshes[m].normals[vCounter] = normal[j];
+                                model.meshes[m].animNormals[vCounter] = normal[j];
+                                vCounter++;
+                            }
+                        }
+                    } break;
+                    case IQM_BLENDINDEXES: {
+                        // TODO: 12/11/2022 blendi = new ?[header.num_vertexes*4];
+                        // TODO: 12/11/2022 memcpy(blendi, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*4*sizeof(char));
+
+                        for (int m = 0; m < header.num_meshes; m++) {
+                            int boneCounter = 0;
+                            for (int j = imesh[m].first_vertex*4; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*4; j++) {
+                                //model.meshes[m].boneIds[boneCounter] = blendi[j];
+                                boneCounter++;
+                            }
+                        }
+                    } break;
+                    case IQM_BLENDWEIGHTS: {
+                        blendw = new byte[header.num_vertexes*4];
+                        // TODO: 12/11/2022  memcpy(blendw, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*4*sizeof(unsigned char));
+
+                        for (int m = 0; m < header.num_meshes; m++) {
+                            int boneCounter = 0;
+                            for (int j = imesh[m].first_vertex*4; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*4; j++) {
+                                model.meshes[m].boneWeights[boneCounter] = blendw[j]/255.0f;
+                                boneCounter++;
+                            }
+                        }
+                    } break;
+                    case IQM_COLOR: {
+                        color = new byte[header.num_vertexes*4];
+                        // TODO: 12/11/2022  memcpy(color, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*4*sizeof(unsigned char));
+
+                        for (int m = 0; m < header.num_meshes; m++) {
+                            model.meshes[m].colors = new byte[model.meshes[m].vertexCount*4];
+
+                            int vCounter = 0;
+                            for (int j = imesh[m].first_vertex*4; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*4; j++) {
+                                model.meshes[m].colors[vCounter] = color[j];
+                                vCounter++;
+                            }
+                        }
+                    } break;
+                    case IQM_CUSTOM: {
+                    } break;
+                }
+            }
+
+            // Bones (joints) data processing
+            joint = new IQMJoint[header.num_joints];
+            Arrays.fill(joint, new IQMJoint());
+            // TODO: 12/11/2022 memcpy(ijoint, fileDataPtr + iqmHeader->ofs_joints, iqmHeader->num_joints*sizeof(IQMJoint));
+
+            model.boneCount = header.num_joints;
+            model.bones = new BoneInfo[header.num_joints];
+            model.bindPose = new Transform[header.num_joints];
+
+            for (int i = 0; i < header.num_joints; i++) {
+                // Bones
+                model.bones[i].parent = joint[i].parent;
+                // TODO: 12/11/2022 memcpy(model.bones[i].name, fileDataPtr + header.ofs_text + joint[i].name, BONE_NAME_LENGTH*sizeof(char));
+
+                // Bind pose (base pose)
+                model.bindPose[i].translation.x = joint[i].translate[0];
+                model.bindPose[i].translation.y = joint[i].translate[1];
+                model.bindPose[i].translation.z = joint[i].translate[2];
+
+                model.bindPose[i].rotation.x = joint[i].rotate[0];
+                model.bindPose[i].rotation.y = joint[i].rotate[1];
+                model.bindPose[i].rotation.z = joint[i].rotate[2];
+                model.bindPose[i].rotation.w = joint[i].rotate[3];
+
+                model.bindPose[i].scale.x = joint[i].scale[0];
+                model.bindPose[i].scale.y = joint[i].scale[1];
+                model.bindPose[i].scale.z = joint[i].scale[2];
+            }
+
+            // Build bind pose from parent joints
+            for (int i = 0; i < model.boneCount; i++) {
+                if (model.bones[i].parent >= 0) {
+                    model.bindPose[i].rotation = QuaternionMultiply(model.bindPose[model.bones[i].parent].rotation, model.bindPose[i].rotation);
+                    model.bindPose[i].translation = Vector3RotateByQuaternion(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].rotation);
+                    model.bindPose[i].translation = Vector3Add(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation);
+                    model.bindPose[i].scale = Vector3Multiply(model.bindPose[i].scale, model.bindPose[model.bones[i].parent].scale);
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return model;
+    }
+
     // TODO: 24/07/2022  LoadModelAnimatiosnIQM
     // TODO: 24/07/2022  LoadImageFromCglrfImage
     // TODO: 24/07/2022  LoadGMTF

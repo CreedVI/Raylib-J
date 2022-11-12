@@ -33,12 +33,12 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
   * [X] WAV audio
   * [X] OGG audio
 
-* [o] rModels Module
-  * [ ] VOX loading
+* [O] rModels Module
+  * [X] VOX loading
   * [ ] GLTF loading
   * [ ] IQM loading
   * [X] OBJ loading
-  * [ ] MTL loading
+  * [X] MTL loading
 
 * [X] 3D Camera
 * [X] FileIO overhaul

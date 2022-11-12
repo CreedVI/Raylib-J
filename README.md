@@ -60,16 +60,37 @@ see the wiki for additional documentation and elaboration!
 At the current moment Raylib-J is only available as a .jar file. Check the releases page to download the most up-to-date 
 version! 
 
+Raylib-J is split between the following modules:
+ * Core: Contains all basic Raylib functions.
+ * Models: Load and render models and render 3D Geometry
+ * Audio: Load, manipulate, and play audio
+ * RLGL: Raylib's OpenGL abstraction layer. 
+ * Shapes: Need to draw 2D shapes and check collision between them? Look no further.
+ * Text: Manipulate and render text using the default Raylib font, or import your own!
+ * Textures: All your texture and image needs.
+ * Utils: A Raylib-J specific module that contains things like `rLights`, `FileIO`, and `rEasings`
+
+Check the [Raylib Cheatsheet](https://www.raylib.com/cheatsheet/cheatsheet.html) to see each module's available methods!
+
+
 ---
 
 ## Honourable Mentions
 
-Other libraries were used in place of the original libraries to make a lot of this project possible, or at least much easier to develop. 
+Other people helped with this process! Whether that was opening an issue or making a library that was used in place of the original libraries to make a lot of this project possible, or at least much easier to develop. 
 Special thanks to the following:
   - [delthas](https://github.com/delthas) for their [JavaMP3 API](https://github.com/delthas/JavaMP3)
+  - [brammie15](https://github.com/brammie15) for catching an error that made it into production for an embarrassingly long time
+  - [elias94](https://github.com/elias94) for helping get this library running on OSX
+  - [mateoox600](https://github.com/mateoox600) for catching a number of issues and helping update the [Examples Repo](https://github.com/CreedVI/Raylib-J-Examples)
+  - Everyone in the Raylib discord!
 ---
 
 ## Development Status:
+
+Want to see what's cooking or where you can help push the library towards the next release? Check the [Roadmap!](https://github.com/CreedVI/Raylib-J/blob/main/ROADMAP.md)
+
+Otherwise here's the quick list:
 
 [X] rCore <br>
 [X] rShapes <br>
@@ -80,9 +101,7 @@ Special thanks to the following:
 [X] RLGL <br>
 [X] Raymath <br>
 [X] Physac <br>
-[ ] raygui+ricons <br>
 [X] easings <br>
-[p] rGestures - Will look into reimplementing later on (08/03/21) <br>
 [X] rLights <br>
 
 <b>Key:</b>
