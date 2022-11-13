@@ -20,6 +20,8 @@ import org.lwjgl.util.par.ParShapesMesh;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
@@ -977,7 +979,7 @@ public class rModels{
             if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1)
                 rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION], matProjection);
 
-            // Model transformation matrix is send to shader uniform location: SHADER_LOC_MATRIX_MODEL
+            // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
             if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] != -1)
                 rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL], transform);
 
@@ -3492,20 +3494,26 @@ public class rModels{
         return ret;
     }
 
+    private static float IQM_toFloat(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+    }
+
     // TODO: 24/07/2022  LoadIQM
     public Model LoadIQM(String fileName) {
-        final String IQM_MAGIC = "INTERQUAKEMODEL\0";
-        final int IQM_VERSION = 2;
-
-        final int BONE_NAME_LENGTH = 32;
-        final int MESH_NAME_LENGTH = 32;
-        final int MATERIAL_NAME_LENGTH = 32;
-
-        int fileDataPtr = 0;
-
         Model model = new Model();
 
         try (ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))){
+
+            int dataSize = fileData.available();
+
+            final String IQM_MAGIC = "INTERQUAKEMODEL\0";
+            final int IQM_VERSION = 2;
+
+            final int BONE_NAME_LENGTH = 32;
+            final int MESH_NAME_LENGTH = 32;
+            final int MATERIAL_NAME_LENGTH = 32;
+
+            int fileDataPtr = 0;
 
             IQMMesh[] imesh;
             IQMTriangle[] tri;
@@ -3516,15 +3524,12 @@ public class rModels{
             float[] vertex;
             float[] normal;
             float[] text;
-            String blendi;
+            byte[] blendi;
             byte[] blendw;
             byte[] color;
             byte[] intbuffer = new byte[Integer.BYTES];
+            byte[] floatBuffer = new byte[Float.BYTES];
             byte[] tmpMagic = new byte[header.magic.length];
-
-            if (fileData == null) {
-                return model;
-            }
 
             // Read IQM Header
             fileDataPtr += fileData.read(tmpMagic);
@@ -3594,11 +3599,11 @@ public class rModels{
             }
 
             imesh = new IQMMesh[header.num_meshes];
-            Arrays.fill(imesh, new IQMMesh());
-            // TODO: 12/11/2022 memcpy(imesh, fileDataPtr + iqmHeader->ofs_meshes, iqmHeader->num_meshes*sizeof(IQMMesh));
             int off = 0;
             for (int i = 0; i < imesh.length; i++) {
-                fileData.skip(header.ofs_meshes + off);
+                imesh[i] = new IQMMesh();
+                fileData.reset();
+                fileData.skip( header.ofs_meshes + off);
                 fileData.read(intbuffer);
                 imesh[i].name = IQM_toInt(intbuffer);
                 fileData.read(intbuffer);
@@ -3610,7 +3615,7 @@ public class rModels{
                 fileData.read(intbuffer);
                 imesh[i].first_triangle = IQM_toInt(intbuffer);
                 fileData.read(intbuffer);
-                imesh[i].num_triangles = Integer.toUnsignedLong(IQM_toInt(intbuffer));
+                imesh[i].num_triangles = IQM_toInt(intbuffer);
                 off += 24;
             }
             fileData.reset();
@@ -3621,7 +3626,6 @@ public class rModels{
 
             model.materialCount = model.meshCount;
             model.materials = new Material[model.materialCount];
-            Arrays.fill(model.materials, new Material());
 
             char[] name = new char[MESH_NAME_LENGTH];
             byte[] tmpName = new byte[MESH_NAME_LENGTH];
@@ -3630,17 +3634,22 @@ public class rModels{
 
             for (int i = 0; i < model.meshCount; i++) {
                 // Copy mesh name
-                fileDataPtr += fileData.read(tmpName);
+                fileData.reset();
+                fileData.skip(header.ofs_text + imesh[i].name);
+                fileData.read(tmpName);
                 for (int j = 0; j < MESH_NAME_LENGTH; j++) {
                     name[j] = (char) tmpName[j];
                 }
 
                 // Copy mesh material
-                fileDataPtr += fileData.read(tmpMaterial);
+                fileData.reset();
+                fileData.skip( header.ofs_text + imesh[i].material);
+                fileData.read(tmpMaterial);
                 for (int j = 0; j < MESH_NAME_LENGTH; j++) {
                     material[j] = (char) tmpMaterial[j];
                 }
 
+                model.meshes[i] = new Mesh();
                 model.materials[i] = LoadMaterialDefault();
 
                 Tracelog(LOG_DEBUG, "MODEL: [" + fileName + "] mesh name (" + String.valueOf(name) + "), material (" + String.valueOf(material) + ")");
@@ -3654,8 +3663,8 @@ public class rModels{
                 model.meshes[i].boneIds = new byte[model.meshes[i].vertexCount*4];
                 model.meshes[i].boneWeights = new float[model.meshes[i].vertexCount*4];
 
-                model.meshes[i].triangleCount = Math.toIntExact(imesh[i].num_triangles);
-                model.meshes[i].indices = new float[model.meshes[i].triangleCount*3];
+                model.meshes[i].triangleCount = imesh[i].num_triangles;
+                model.meshes[i].indicesS = new short[model.meshes[i].triangleCount*3];
 
                 // Animated verted data, what we actually process for rendering
                 // NOTE: Animated vertex should be re-uploaded to GPU (if not using GPU skinning)
@@ -3665,33 +3674,58 @@ public class rModels{
 
             // Triangles data processing
             tri = new IQMTriangle[header.num_triangles];
-            Arrays.fill(tri, new IQMTriangle());
-            // TODO: 12/11/2022 memcpy(tri, fileDataPtr + iqmHeader->ofs_triangles, iqmHeader->num_triangles*sizeof(IQMTriangle));
+            fileData.reset();
+            fileData.skip(header.ofs_triangles);
+            for (int i = 0; i < tri.length; i++) {
+                tri[i] = new IQMTriangle();
+                for (int j = 0; j < tri[i].vertex.length; j++) {
+                    fileData.read(intbuffer);
+                    tri[i].vertex[j] = IQM_toInt(intbuffer);
+                }
+            }
 
             for (int m = 0; m < model.meshCount; m++) {
                 int tcounter = 0;
 
-                for (int i = Math.toIntExact(imesh[m].first_triangle); i < (imesh[m].first_triangle + imesh[m].num_triangles); i++) {
+                for (int i = imesh[m].first_triangle; i < (imesh[m].first_triangle + imesh[m].num_triangles); i++) {
                     // IQM triangles indexes are stored in counter-clockwise, but raylib processes the index in linear order,
                     // expecting they point to the counter-clockwise vertex triangle, so we need to reverse triangle indexes
                     // NOTE: raylib renders vertex data in counter-clockwise order (standard convention) by default
-                    model.meshes[m].indices[tcounter + 2] = tri[i].vertex[0] - imesh[m].first_vertex;
-                    model.meshes[m].indices[tcounter + 1] = tri[i].vertex[1] - imesh[m].first_vertex;
-                    model.meshes[m].indices[tcounter] = tri[i].vertex[2] - imesh[m].first_vertex;
+                    model.meshes[m].indicesS[tcounter + 2] = (short) (tri[i].vertex[0] - imesh[m].first_vertex);
+                    model.meshes[m].indicesS[tcounter + 1] = (short) (tri[i].vertex[1] - imesh[m].first_vertex);
+                    model.meshes[m].indicesS[tcounter] = (short) (tri[i].vertex[2] - imesh[m].first_vertex);
                     tcounter += 3;
                 }
             }
 
             // Vertex arrays data processing
             va = new IQMVertexArray[header.num_vertexarrays];
-            Arrays.fill(va, new IQMVertexArray());
-            // TODO: 12/11/2022 memcpy(va, fileDataPtr + iqmHeader->ofs_vertexarrays, iqmHeader->num_vertexarrays*sizeof(IQMVertexArray));
-
+            fileData.reset();
+            fileData.skip(header.ofs_vertexarrays);
+            for (int i = 0; i < va.length; i++) {
+                va[i] = new IQMVertexArray();
+                fileData.read(intbuffer);
+                va[i].type = IQMVertexDataType.values()[IQM_toInt(intbuffer)];
+                fileData.read(intbuffer);
+                va[i].flags = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                va[i].format = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                va[i].size = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                va[i].offset = IQM_toInt(intbuffer);
+            }
+            
             for (int i = 0; i < header.num_vertexarrays; i++) {
                 switch (va[i].type) {
                     case IQM_POSITION: {
                         vertex = new float[header.num_vertexes*3];
-                        // TODO: 12/11/2022 memcpy(vertex, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*3*sizeof(float));
+                        fileData.reset();
+                        fileData.skip(va[i].offset);
+                        for (int j = 0; j < vertex.length; j++) {
+                            fileData.read(floatBuffer);
+                            vertex[j] = IQM_toFloat(floatBuffer);
+                        }
 
                         for (int m = 0; m < header.num_meshes; m++) {
                             int vCounter = 0;
@@ -3704,7 +3738,12 @@ public class rModels{
                     } break;
                     case IQM_TEXCOORD: {
                         text = new float[header.num_vertexes*2];
-                        // TODO: 12/11/2022 memcpy(text, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*2*sizeof(float));
+                        fileData.reset();
+                        fileData.skip(va[i].offset);
+                        for (int j = 0; j < text.length; j++) {
+                            fileData.read(floatBuffer);
+                            text[j] = IQM_toFloat(floatBuffer);
+                        }
 
                         for (int m = 0; m < header.num_meshes; m++) {
                             int vCounter = 0;
@@ -3717,7 +3756,12 @@ public class rModels{
                     } break;
                     case IQM_NORMAL: {
                         normal = new float[header.num_vertexes*3];
-                        // TODO: 12/11/2022 memcpy(normal, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*3*sizeof(float));
+                        fileData.reset();
+                        fileData.skip(va[i].offset);
+                        for (int j = 0; j < normal.length; j++) {
+                            fileData.read(floatBuffer);
+                            normal[j] = IQM_toFloat(floatBuffer);
+                        }
 
                         for (int m = 0; m < header.num_meshes; m++) {
                             int vCounter = 0;
@@ -3729,32 +3773,38 @@ public class rModels{
                         }
                     } break;
                     case IQM_BLENDINDEXES: {
-                        // TODO: 12/11/2022 blendi = new ?[header.num_vertexes*4];
-                        // TODO: 12/11/2022 memcpy(blendi, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*4*sizeof(char));
+                        blendi = new byte[header.num_vertexes*4];
+                        fileData.reset();
+                        fileData.skip(va[i].offset);
+                        fileData.read(blendi);
 
                         for (int m = 0; m < header.num_meshes; m++) {
                             int boneCounter = 0;
                             for (int j = imesh[m].first_vertex*4; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*4; j++) {
-                                //model.meshes[m].boneIds[boneCounter] = blendi[j];
+                                model.meshes[m].boneIds[boneCounter] = blendi[j];
                                 boneCounter++;
                             }
                         }
                     } break;
                     case IQM_BLENDWEIGHTS: {
                         blendw = new byte[header.num_vertexes*4];
-                        // TODO: 12/11/2022  memcpy(blendw, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*4*sizeof(unsigned char));
+                        fileData.reset();
+                        fileData.skip(va[i].offset);
+                        fileData.read(blendw);
 
                         for (int m = 0; m < header.num_meshes; m++) {
                             int boneCounter = 0;
                             for (int j = imesh[m].first_vertex*4; j < (imesh[m].first_vertex + imesh[m].num_vertexes)*4; j++) {
-                                model.meshes[m].boneWeights[boneCounter] = blendw[j]/255.0f;
+                                model.meshes[m].boneWeights[boneCounter] = Byte.toUnsignedInt(blendw[j])/255.0f;
                                 boneCounter++;
                             }
                         }
                     } break;
                     case IQM_COLOR: {
                         color = new byte[header.num_vertexes*4];
-                        // TODO: 12/11/2022  memcpy(color, fileDataPtr + va[i].offset, iqmHeader->num_vertexes*4*sizeof(unsigned char));
+                        fileData.reset();
+                        fileData.skip(va[i].offset);
+                        fileData.read(color);
 
                         for (int m = 0; m < header.num_meshes; m++) {
                             model.meshes[m].colors = new byte[model.meshes[m].vertexCount*4];
@@ -3773,8 +3823,27 @@ public class rModels{
 
             // Bones (joints) data processing
             joint = new IQMJoint[header.num_joints];
-            Arrays.fill(joint, new IQMJoint());
-            // TODO: 12/11/2022 memcpy(ijoint, fileDataPtr + iqmHeader->ofs_joints, iqmHeader->num_joints*sizeof(IQMJoint));
+            fileData.reset();
+            fileData.skip(header.ofs_joints);
+            for (int i = 0; i < joint.length; i++) {
+                joint[i] = new IQMJoint();
+                fileData.read(intbuffer);
+                joint[i].name = IQM_toInt(intbuffer);
+                fileData.read(intbuffer);
+                joint[i].parent = IQM_toInt(intbuffer);
+                for (int j = 0; j < joint[i].translate.length; j++) {
+                    fileData.read(floatBuffer);
+                    joint[i].translate[j] = IQM_toFloat(floatBuffer);
+                }
+                for (int j = 0; j < joint[i].rotate.length; j++) {
+                    fileData.read(floatBuffer);
+                    joint[i].rotate[j] = IQM_toFloat(floatBuffer);
+                }
+                for (int j = 0; j < joint[i].scale.length; j++) {
+                    fileData.read(floatBuffer);
+                    joint[i].scale[j] = IQM_toFloat(floatBuffer);
+                }
+            }
 
             model.boneCount = header.num_joints;
             model.bones = new BoneInfo[header.num_joints];
@@ -3782,10 +3851,20 @@ public class rModels{
 
             for (int i = 0; i < header.num_joints; i++) {
                 // Bones
+                model.bones[i] = new BoneInfo();
                 model.bones[i].parent = joint[i].parent;
-                // TODO: 12/11/2022 memcpy(model.bones[i].name, fileDataPtr + header.ofs_text + joint[i].name, BONE_NAME_LENGTH*sizeof(char));
+                byte[] tmp = new byte[BONE_NAME_LENGTH];
+                char[] bonetmp = new char[BONE_NAME_LENGTH];
+                fileData.reset();
+                fileData.skip(header.ofs_text + joint[i].name);
+                fileData.read(tmp);
+                for (int j = 0; j < BONE_NAME_LENGTH; j++) {
+                    bonetmp[j] = (char) tmp[j];
+                }
+                model.bones[i].name = bonetmp.toString();
 
                 // Bind pose (base pose)
+                model.bindPose[i] = new Transform();
                 model.bindPose[i].translation.x = joint[i].translate[0];
                 model.bindPose[i].translation.y = joint[i].translate[1];
                 model.bindPose[i].translation.z = joint[i].translate[2];
@@ -3821,7 +3900,6 @@ public class rModels{
     // TODO: 24/07/2022  LoadImageFromCglrfImage
     // TODO: 24/07/2022  LoadGMTF
 
-    //TODO: Data is not populating correctly in buffers.
     // Load VOX (MagicaVoxel) mesh data
     public Model LoadVOX(String fileName) {
         Model model = new Model();
@@ -3946,6 +4024,5 @@ public class rModels{
 
         return model;
     }
-
 
 }
