@@ -64,8 +64,7 @@ public class Camera3D {
     public Vector3 target;
     private Vector2 previousMousePosition;
     public float fovy;                      // rCamera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
-    public int projection;                  // rCamera type, defines projection type: CAMERA_PERSPECTIVE or
-                                            // CAMERA_ORTHOGRAPHIC
+    public int projection;                  // rCamera projection, defines projection projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
     CameraData cameraData;
 
     public Camera3D(){
@@ -86,12 +85,12 @@ public class Camera3D {
         this.cameraData = cameraData;
     }
 
-    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int type){
+    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int projection){
         this.position = position;
         this.target = target;
         this.up = up;
         this.fovy = fovy;
-        this.projection = type;
+        this.projection = projection;
         previousMousePosition = new Vector2();
         this.cameraData = new CameraData();
     }
@@ -419,8 +418,12 @@ public class Camera3D {
         return fovy;
     }
 
-    public int getType(){
+    public int getProjection(){
         return projection;
+    }
+
+    public int getCameraMode() {
+        return cameraData.mode;
     }
 
     public void setTarget(Vector3 target){
@@ -435,8 +438,8 @@ public class Camera3D {
         this.position = position;
     }
 
-    public void setType(int type){
-        this.projection = type;
+    public void setprojection(int projection){
+        this.projection = projection;
     }
 
     public void setUp(Vector3 up){

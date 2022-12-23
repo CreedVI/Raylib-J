@@ -20,10 +20,7 @@ import org.lwjgl.util.par.ParShapesMesh;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.*;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
@@ -974,14 +971,17 @@ public class rModels{
             Matrix matProjection = RLGL.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1) {
                 rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW], matView);
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1)
+            }
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1) {
                 rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION], matProjection);
+            }
 
             // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] != -1)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] != -1) {
                 rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL], transform);
+            }
 
             // Accumulate several model transformations:
             //    transform: model transformation provided (includes DrawModel() params combined with model.transform)
@@ -1538,8 +1538,115 @@ public class rModels{
         }
     }
 
-    // TODO: 24/07/2022  LoadModelAnimations
-    // TODO: 24/07/2022  UpdateModelAnimation
+    // Load model animations from file
+    public ModelAnimation[] LoadModelAnimations(String fileName) {
+        ModelAnimation[] animations = null;
+
+        if(SUPPORT_FILEFORMAT_IQM) {
+            if (rCore.IsFileExtension(fileName, ".iqm")) {
+                animations = LoadModelAnimationsIQM(fileName);
+            }
+        }
+        if(SUPPORT_FILEFORMAT_GLTF) {
+            //if (IsFileExtension(fileName, ".gltf;.glb")) animations = LoadModelAnimationGLTF(fileName, animCount);
+        }
+
+        return animations;
+    }
+
+    // Update model animated vertex data (positions and normals) for a given frame
+    // NOTE: Updated data is uploaded to GPU
+    public void UpdateModelAnimation(Model model, ModelAnimation anim, int frame) {
+        if ((anim.frameCount > 0) && (anim.bones != null) && (anim.framePoses != null)) {
+            if (frame >= anim.frameCount) {
+                frame = frame%anim.frameCount;
+            }
+
+            for (int m = 0; m < model.meshCount; m++) {
+                Mesh mesh = model.meshes[m];
+                if (mesh.boneIds == null || mesh.boneWeights == null) {
+                    Tracelog(LOG_WARNING, "MODEL: UpdateModelAnimation Mesh " + m + " has no connection to bones");
+                    continue;
+                }
+
+                boolean updated = false; // set to true when anim vertex information is updated
+                Vector3 animVertex = new Vector3();
+                Vector3 animNormal = new Vector3();
+
+                Vector3 inTranslation = new Vector3();
+                Quaternion inRotation = new Quaternion();
+                // Vector3 inScale = { 0 };
+
+                Vector3 outTranslation = new Vector3();
+                Quaternion outRotation = new Quaternion();
+                Vector3 outScale = new Vector3();
+
+                int boneId = 0;
+                int boneCounter = 0;
+                float boneWeight = 0.0f;
+
+                int vValues = mesh.vertexCount*3;
+                for (int vCounter = 0; vCounter < vValues; vCounter+=3) {
+                    mesh.animVertices[vCounter] = 0;
+                    mesh.animVertices[vCounter + 1] = 0;
+                    mesh.animVertices[vCounter + 2] = 0;
+
+                    if (mesh.animNormals != null) {
+                        mesh.animNormals[vCounter] = 0;
+                        mesh.animNormals[vCounter + 1] = 0;
+                        mesh.animNormals[vCounter + 2] = 0;
+                    }
+
+                    // Iterates over 4 bones per vertex
+                    for (int j = 0; j < 4; j++, boneCounter++) {
+                        boneWeight = mesh.boneWeights[boneCounter];
+                        // early stop when no transformation will be applied
+                        if (boneWeight == 0.0f) {
+                            continue;
+                        }
+                        boneId = mesh.boneIds[boneCounter];
+                        //int boneIdParent = model.bones[boneId].parent;
+                        inTranslation = model.bindPose[boneId].translation;
+                        inRotation = model.bindPose[boneId].rotation;
+                        // inScale = model.bindPose[boneId].scale;
+                        outTranslation = anim.framePoses[frame][boneId].translation;
+                        outRotation = anim.framePoses[frame][boneId].rotation;
+                        outScale = anim.framePoses[frame][boneId].scale;
+
+                        // Vertices processing
+                        // NOTE: We use meshes.vertices (default vertex position) to calculate meshes.animVertices (animated vertex position)
+                        animVertex = new Vector3(mesh.vertices[vCounter], mesh.vertices[vCounter + 1], mesh.vertices[vCounter + 2]);
+                        animVertex = Vector3Multiply(animVertex, outScale);
+                        animVertex = Vector3Subtract(animVertex, inTranslation);
+                        animVertex = Vector3RotateByQuaternion(animVertex, QuaternionMultiply(outRotation, QuaternionInvert(inRotation)));
+                        animVertex = Vector3Add(animVertex, outTranslation);
+                        // animVertex = Vector3Transform(animVertex, model.transform);
+                        mesh.animVertices[vCounter] += animVertex.x*boneWeight;
+                        mesh.animVertices[vCounter + 1] += animVertex.y*boneWeight;
+                        mesh.animVertices[vCounter + 2] += animVertex.z*boneWeight;
+                        updated = true;
+
+                        // Normals processing
+                        // NOTE: We use meshes.baseNormals (default normal) to calculate meshes.normals (animated normals)
+                        if (mesh.normals != null) {
+                            animNormal = new Vector3(mesh.normals[vCounter], mesh.normals[vCounter + 1], mesh.normals[vCounter + 2]);
+                            animNormal = Vector3RotateByQuaternion(animNormal, QuaternionMultiply(outRotation, QuaternionInvert(inRotation)));
+                            mesh.animNormals[vCounter] += animNormal.x*boneWeight;
+                            mesh.animNormals[vCounter + 1] += animNormal.y*boneWeight;
+                            mesh.animNormals[vCounter + 2] += animNormal.z*boneWeight;
+                        }
+                    }
+                }
+
+                // Upload new vertex data to GPU for model drawing
+                // Only update data when values changed.
+                if (updated){
+                    rlUpdateVertexBuffer(mesh.vboId[0], mesh.animVertices, 0);    // Update vertex position
+                    rlUpdateVertexBuffer(mesh.vboId[2], mesh.animNormals, 0);     // Update vertex normals
+                }
+            }
+        }
+    }
 
     // Unload animation array data
     public void UnloadModelAnimations(ModelAnimation[] animations, int count) {
@@ -2856,9 +2963,8 @@ public class rModels{
         Matrix matRotation = Raymath.MatrixRotate(rotationAxis, rotationAngle*Raymath.DEG2RAD);
         Matrix matTranslation = Raymath.MatrixTranslate(position.x, position.y, position.z);
         Matrix matTransform = Raymath.MatrixMultiply(Raymath.MatrixMultiply(matScale, matRotation), matTranslation);
-        Matrix modTransform = model.transform;
         // Combine model transformation matrix (model.transform) with matrix generated by function parameters (matTransform)
-        model.transform = Raymath.MatrixMultiply(model.transform, matTransform);
+        Matrix modTransform = Raymath.MatrixMultiply(model.transform, matTransform);
 
         for (int i = 0; i < model.meshCount; i++) {
             Color color = model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
@@ -2870,11 +2976,10 @@ public class rModels{
             colorTint.a = (int) (((color.a/255.0f)*(tint.a/255.0f))*255.0f);
 
             model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
-            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], model.transform);
+            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], modTransform);
             model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
         }
 
-        model.transform = modTransform;
     }
 
     // Draw a model wires (with texture if set)
@@ -3480,25 +3585,17 @@ public class rModels{
 
     // Convert array of four bytes to int
     private static int IQM_toInt(byte[] bytes) {
-        int ret = 0;
-        byte[] tmp = new byte[bytes.length];
-        System.arraycopy(bytes, 0, tmp, 0, bytes.length);
-        for (int i = 0, k = bytes.length-1; i < bytes.length; i++, k--) {
-            bytes[k] = tmp [i];
-        }
-
-        for (int i=0; i<4; i++) {
-            ret <<= 8;
-            ret |= (int)bytes[i] & 0xFF;
-        }
-        return ret;
+        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
     }
 
     private static float IQM_toFloat(byte[] bytes) {
         return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
     }
 
-    // TODO: 24/07/2022  LoadIQM
+    private static short IQM_toShort(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+    }
+
     public Model LoadIQM(String fileName) {
         Model model = new Model();
 
@@ -3896,7 +3993,270 @@ public class rModels{
         return model;
     }
 
-    // TODO: 24/07/2022  LoadModelAnimatiosnIQM
+    public ModelAnimation[] LoadModelAnimationsIQM(String fileName) {
+        final String IQM_MAGIC = "INTERQUAKEMODEL\0"; //IQM file magic number
+        final int IQM_VERSION = 2;                    //only IQM version 2 supported
+
+        int fileSize = 0;
+        int fileDataPtr = 0;
+        int animCount;
+
+        ModelAnimation[] animations;
+
+        try (ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))) {
+            fileSize = fileData.available();
+
+            IQMHeader iqmHeader = new IQMHeader();
+            
+            byte[] intbuffer = new byte[Integer.BYTES];
+            byte[] floatBuffer = new byte[Float.BYTES];
+            byte[] shortbuffer = new byte[Short.BYTES];
+            byte[] tmpMagic = new byte[iqmHeader.magic.length];
+
+            // Read IQM Header
+            fileDataPtr += fileData.read(tmpMagic);
+            for (int i = 0; i < iqmHeader.magic.length; i++) {
+                iqmHeader.magic[i] = (char) tmpMagic[i];
+            }
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.version = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.filesize = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.flags = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_text = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_text = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_meshes = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_meshes = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_vertexarrays = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_vertexes = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_vertexarrays = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_triangles = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_triangles = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_adjacency = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_joints = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_joints = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_poses = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_poses = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_anims = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_anims = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_frames = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_framechannels = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_frames = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_bounds = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_comment = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_comment = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.num_extensions = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intbuffer);
+            iqmHeader.ofs_extensions = IQM_toInt(intbuffer);
+
+            if (!IQM_MAGIC.equals(String.valueOf(iqmHeader.magic))) {
+                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
+            }
+            if (IQM_VERSION != iqmHeader.version) {
+                Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+iqmHeader.version+")");
+            }
+
+            // Get bones data
+            IQMPose[] poses = new IQMPose[iqmHeader.num_poses];
+            fileData.reset();
+            fileData.skip(iqmHeader.ofs_poses);
+            fileDataPtr = iqmHeader.ofs_poses;
+            for (int i = 0; i < poses.length; i++) {
+                poses[i] = new IQMPose();
+                fileDataPtr += fileData.read(intbuffer);
+                poses[i].parent = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(intbuffer);
+                poses[i].mask = IQM_toInt(intbuffer);
+                for (int j = 0; j < poses[i].channeloffset.length; j++) {
+                    fileDataPtr += fileData.read(floatBuffer);
+                    poses[i].channeloffset[j] = IQM_toFloat(floatBuffer);
+                }
+                for (int j = 0; j < poses[i].channelscale.length; j++) {
+                    fileDataPtr += fileData.read(floatBuffer);
+                    poses[i].channelscale[j] = IQM_toFloat(floatBuffer);
+                }
+
+            }
+
+
+            // Get animations data
+            animCount = iqmHeader.num_anims;
+            IQMAnim[] anim = new IQMAnim[animCount];
+            fileData.reset();
+            fileData.skip(iqmHeader.ofs_anims);
+            fileDataPtr = iqmHeader.ofs_anims;
+            for (int i = 0; i < anim.length; i++) {
+                anim[i] = new IQMAnim();
+                fileDataPtr += fileData.read(intbuffer);
+                anim[i].name = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(intbuffer);
+                anim[i].first_frame = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(intbuffer);
+                anim[i].num_frames = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(floatBuffer);
+                anim[i].framerate = IQM_toFloat(floatBuffer);
+                fileDataPtr += fileData.read(intbuffer);
+                anim[i].flags = IQM_toInt(intbuffer);
+            }
+
+            animations = new ModelAnimation[iqmHeader.num_anims];
+
+            // frameposes
+            int[] framedata = new int[iqmHeader.num_frames* iqmHeader.num_framechannels];
+            fileData.reset();
+            fileData.skip(iqmHeader.ofs_frames);
+            fileDataPtr = iqmHeader.ofs_frames;
+
+            for (int i = 0; i < framedata.length; i++) {
+                fileDataPtr += fileData.read(shortbuffer);
+                framedata[i] = Short.toUnsignedInt(IQM_toShort(shortbuffer));
+            }
+
+            for (int a = 0; a < iqmHeader.num_anims; a++) {
+                animations[a] = new ModelAnimation();
+                animations[a].frameCount = anim[a].num_frames;
+                animations[a].boneCount = iqmHeader.num_poses;
+                animations[a].bones = new BoneInfo[iqmHeader.num_poses];
+                animations[a].framePoses = new Transform[anim[a].num_frames][];
+                // animations[a].framerate = anim.framerate;     // TODO: Use framerate?
+
+                for (int j = 0; j < iqmHeader.num_poses; j++) {
+                    animations[a].bones[j] = new BoneInfo();
+                    animations[a].bones[j].name = "ANIMJOINTNAME";
+                    animations[a].bones[j].parent = poses[j].parent;
+                }
+
+                for (int j = 0; j < anim[a].num_frames; j++) {
+                    animations[a].framePoses[j] = new Transform[iqmHeader.num_poses];
+                    for (int i = 0; i < iqmHeader.num_poses; i++) {
+                        animations[a].framePoses[j][i] = new Transform();
+                    }
+                }
+
+                int dcounter = anim[a].first_frame*iqmHeader.num_framechannels;
+
+                for (int frame = 0; frame < anim[a].num_frames; frame++){
+                    for (int i = 0; i < iqmHeader.num_poses; i++){
+                        animations[a].framePoses[frame][i].translation.x = poses[i].channeloffset[0];
+
+                        if ((poses[i].mask & 0x01) == 1) {
+                            animations[a].framePoses[frame][i].translation.x += framedata[dcounter]*poses[i].channelscale[0];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].translation.y = poses[i].channeloffset[1];
+
+                        if ((poses[i].mask & 0x02) == 2) {
+                            animations[a].framePoses[frame][i].translation.y += framedata[dcounter]*poses[i].channelscale[1];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].translation.z = poses[i].channeloffset[2];
+
+                        if ((poses[i].mask & 0x04) == 4) {
+                            animations[a].framePoses[frame][i].translation.z += framedata[dcounter]*poses[i].channelscale[2];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].rotation.x = poses[i].channeloffset[3];
+
+                        if ((poses[i].mask & 0x08) == 8) {
+                            animations[a].framePoses[frame][i].rotation.x += framedata[dcounter]*poses[i].channelscale[3];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].rotation.y = poses[i].channeloffset[4];
+
+                        if ((poses[i].mask & 0x10) == 16) {
+                            animations[a].framePoses[frame][i].rotation.y += framedata[dcounter]*poses[i].channelscale[4];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].rotation.z = poses[i].channeloffset[5];
+
+                        if ((poses[i].mask & 0x20) == 32) {
+                            animations[a].framePoses[frame][i].rotation.z += framedata[dcounter]*poses[i].channelscale[5];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].rotation.w = poses[i].channeloffset[6];
+
+                        if ((poses[i].mask & 0x40) == 64) {
+                            animations[a].framePoses[frame][i].rotation.w += framedata[dcounter]*poses[i].channelscale[6];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].scale.x = poses[i].channeloffset[7];
+
+                        if ((poses[i].mask & 0x80) == 128) {
+                            animations[a].framePoses[frame][i].scale.x += framedata[dcounter]*poses[i].channelscale[7];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].scale.y = poses[i].channeloffset[8];
+
+                        if ((poses[i].mask & 0x100) == 256) {
+                            animations[a].framePoses[frame][i].scale.y += framedata[dcounter]*poses[i].channelscale[8];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].scale.z = poses[i].channeloffset[9];
+
+                        if ((poses[i].mask & 0x200) == 512) {
+                            animations[a].framePoses[frame][i].scale.z += framedata[dcounter]*poses[i].channelscale[9];
+                            dcounter++;
+                        }
+
+                        animations[a].framePoses[frame][i].rotation = QuaternionNormalize(animations[a].framePoses[frame][i].rotation);
+                    }
+                }
+
+                // Build frameposes
+                for (int frame = 0; frame < anim[a].num_frames; frame++) {
+                    for (int i = 0; i < animations[a].boneCount; i++) {
+                        if (animations[a].bones[i].parent >= 0) {
+                            animations[a].framePoses[frame][i].rotation = QuaternionMultiply(animations[a].framePoses[frame][animations[a].bones[i].parent].rotation, animations[a].framePoses[frame][i].rotation);
+                            animations[a].framePoses[frame][i].translation = Vector3RotateByQuaternion(animations[a].framePoses[frame][i].translation, animations[a].framePoses[frame][animations[a].bones[i].parent].rotation);
+                            animations[a].framePoses[frame][i].translation = Vector3Add(animations[a].framePoses[frame][i].translation, animations[a].framePoses[frame][animations[a].bones[i].parent].translation);
+                            animations[a].framePoses[frame][i].scale = Vector3Multiply(animations[a].framePoses[frame][i].scale, animations[a].framePoses[frame][animations[a].bones[i].parent].scale);
+                        }
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        return animations;
+    }
+
+
     // TODO: 24/07/2022  LoadImageFromCglrfImage
     // TODO: 24/07/2022  LoadGMTF
 
