@@ -2823,13 +2823,13 @@ public class RLGL{
 
     // Update vertex buffer elements with new data
     // NOTE: dataSize and offset must be provided in bytes
-    public void rlUpdateVertexBufferElements(int id, byte[] data, int dataSize, int offset) {
+    public void rlUpdateVertexBufferElements(int id, byte[] data, int offset) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            ByteBuffer subdata = ByteBuffer.allocateDirect(data.length);
-            subdata.put(data).flip();
+            ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
+            dataBuffer.put(data).flip();
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, subdata);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, dataBuffer);
         }
     }
 
