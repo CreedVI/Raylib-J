@@ -639,16 +639,19 @@ public class rModels{
 
         Model model = new Model();
 
-        if (rCore.IsFileExtension(fileName, ".obj")) {
+
+        if (SUPPORT_FILEFORMAT_OBJ && rCore.IsFileExtension(fileName, ".obj")) {
             model = LoadOBJ(fileName);
         }
-        else if(rCore.IsFileExtension(fileName, ".vox")) {
-            model = LoadVOX(fileName);
-        }
-        else if (rCore.IsFileExtension(fileName, ".iqm")) {
+        else if (SUPPORT_FILEFORMAT_IQM && rCore.IsFileExtension(fileName, ".iqm")) {
             model = LoadIQM(fileName);
         }
-
+        else if (SUPPORT_FILEFORMAT_GLTF && rCore.IsFileExtension(fileName, ".gltf;.glb")) {
+            model = LoadGLTF(fileName);
+        }
+        else if(SUPPORT_FILEFORMAT_VOX && rCore.IsFileExtension(fileName, ".vox")) {
+            model = LoadVOX(fileName);
+        }
         // Make sure model transform is set to identity matrix!
         model.transform = Raymath.MatrixIdentity();
 
@@ -3590,15 +3593,15 @@ public class rModels{
 
     // Convert array of four bytes to int
     private static int IQM_toInt(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
+        return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getInt();
     }
 
     private static float IQM_toFloat(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getFloat();
     }
 
     private static short IQM_toShort(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+        return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getShort();
     }
 
     public Model LoadIQM(String fileName) {
@@ -4257,7 +4260,6 @@ public class rModels{
             throw new RuntimeException(e);
         }
 
-
         return animations;
     }
 
@@ -4265,8 +4267,49 @@ public class rModels{
     // TODO: 24/07/2022  LoadImageFromCglrfImage
     // TODO: 24/07/2022  LoadGMTF
 
+    // Load glTF file into model struct, .gltf and .glb supported
+    private Model LoadGLTF(String fileName) {
+
+        /*********************************************************************************************
+
+         Function written by Wilhem Barbier(@wbrbr), with modifications by Tyler Bezera(@gamerfiend)
+         Reviewed by Ramon Santamaria (@raysan5)
+
+         FEATURES:
+         - Supports .gltf and .glb files
+         - Supports embedded (base64) or external textures
+         - Supports PBR metallic/roughness flow, loads material textures, values and colors
+         PBR specular/glossiness flow and extended texture flows not supported
+         - Supports multiple meshes per model (every primitive is loaded as a separate mesh)
+
+         RESTRICTIONS:
+         - Only triangle meshes supported
+         - Vertex attibute types and formats supported:
+         > Vertices (position): vec3: float
+         > Normals: vec3: float
+         > Texcoords: vec2: float
+         > Colors: vec4: u8, u16, f32 (normalized)
+         > Indices: u16, u32 (truncated to u16)
+         - Node hierarchies or transforms not supported
+
+         ***********************************************************************************************/
+
+        Model model = new Model();
+        int dataSize;
+
+        try(ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))) {
+
+            dataSize = fileData.available();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return model;
+    }
+
     // Load VOX (MagicaVoxel) mesh data
-    public Model LoadVOX(String fileName) {
+    private Model LoadVOX(String fileName) {
         Model model = new Model();
 
         int nbvertices = 0;

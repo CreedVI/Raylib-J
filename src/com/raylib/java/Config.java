@@ -223,22 +223,32 @@ public class Config{
     //------------------------------------------------------------------------------------
     // Module: models - Configuration Flags
     //------------------------------------------------------------------------------------
+
     /**
      * Select .obj to be supported for loading
      */
     public static boolean SUPPORT_FILEFORMAT_OBJ = true;
+
     /**
      * Select .mtl to be supported for loading
      */
     public static boolean SUPPORT_FILEFORMAT_MTL = true;
+
     /**
      * Select .iqm to be supported for loading
      */
     public static boolean SUPPORT_FILEFORMAT_IQM = true;
+
     /**
      * Select .gltf to be supported for loading
      */
     public static boolean SUPPORT_FILEFORMAT_GLTF = true;
+
+    /**
+     * Select .vox to be supported for loading
+     */
+    public static boolean SUPPORT_FILEFORMAT_VOX = true;
+
     /**
      * Support procedural mesh generation functions, uses external par_shapes.h library
      * NOTE: Some generated meshes DO NOT include generated texture coordinates

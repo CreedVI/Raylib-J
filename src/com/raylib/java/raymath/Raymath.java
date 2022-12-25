@@ -296,7 +296,7 @@ public class Raymath{
     }
 
     public static Vector3 Vector3Multiply(Vector3 v1, Vector3 v2){
-        return new Vector3(v1.x * v2.x, v2.x * v2.y, v1.z * v2.z);
+        return new Vector3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
     }
 
     public static Vector3 Vector3CrossProduct(Vector3 v1, Vector3 v2){
@@ -393,9 +393,9 @@ public class Raymath{
     public static Vector3 Vector3RotateByQuaternion(Vector3 v, Quaternion q){
         Vector3 result = new Vector3();
 
-        result.x = v.x * (q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z) + v.y * (2 * q.x * q.y - 2 * q.w * q.z) + v.z * (2 * q.x * q.z + 2 * q.w * q.y);
-        result.y = v.x * (2 * q.w * q.z + 2 * q.x * q.y) + v.y * (q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z) + v.z * (-2 * q.w * q.x + 2 * q.y * q.z);
-        result.z = v.x * (-2 * q.w * q.y + 2 * q.x * q.z) + v.y * (2 * q.w * q.x + 2 * q.y * q.z) + v.z * (q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+        result.x = v.x*(q.x*q.x + q.w*q.w - q.y*q.y - q.z*q.z) + v.y*(2*q.x*q.y - 2*q.w*q.z) + v.z*(2*q.x*q.z + 2*q.w*q.y);
+        result.y = v.x*(2*q.w*q.z + 2*q.x*q.y) + v.y*(q.w*q.w - q.x*q.x + q.y*q.y - q.z*q.z) + v.z*(-2*q.w*q.x + 2*q.y*q.z);
+        result.z = v.x*(-2*q.w*q.y + 2*q.x*q.z) + v.y*(2*q.w*q.x + 2*q.y*q.z)+ v.z*(q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z);
 
         return result;
     }
@@ -1013,12 +1013,12 @@ public class Raymath{
         float lengthSq = length * length;
 
         if (lengthSq != 0.0){
-            float i = 1.0f / lengthSq;
+            float invLength = 1.0f/lengthSq;
 
-            result.x *= -i;
-            result.y *= -i;
-            result.z *= -i;
-            result.w *= i;
+            result.x *= -invLength;
+            result.y *= -invLength;
+            result.z *= -invLength;
+            result.w *= invLength;
         }
 
         return result;

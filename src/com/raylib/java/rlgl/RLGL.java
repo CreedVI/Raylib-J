@@ -11,6 +11,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -21,7 +22,8 @@ import static com.raylib.java.rlgl.RLGL.rlGlVersion.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
-import static com.raylib.java.utils.Tracelog.TracelogType.*;
+import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
+import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -2814,8 +2816,12 @@ public class RLGL{
     // NOTE: dataSize and offset must be provided in bytes
     public static void rlUpdateVertexBuffer(int id, float[] data, int offset) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            FloatBuffer dataBuffer = FloatBuffer.allocate(data.length);
-            dataBuffer.put(data).flip();
+            ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length*Float.BYTES);
+            for (float datum : data) {
+                dataBuffer.putFloat(datum).order(ByteOrder.nativeOrder());
+            }
+            dataBuffer.flip();
+
             glBindBuffer(GL_ARRAY_BUFFER, id);
             glBufferSubData(GL_ARRAY_BUFFER, offset, dataBuffer);
         }
