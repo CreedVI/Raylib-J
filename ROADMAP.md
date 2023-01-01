@@ -36,7 +36,8 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 * [O] rModels Module
   * [X] VOX loading
   * [ ] GLTF loading
-  * [ ] IQM loading
+  * [X] IQM loading
+    * [X] IQM animations
   * [X] OBJ loading
   * [X] MTL loading
 

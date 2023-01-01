@@ -1581,7 +1581,7 @@ public class rModels{
 
                 Vector3 inTranslation = new Vector3();
                 Quaternion inRotation = new Quaternion();
-                // Vector3 inScale = { 0 };
+                // Vector3 inScale = new Vector3();
 
                 Vector3 outTranslation = new Vector3();
                 Quaternion outRotation = new Quaternion();

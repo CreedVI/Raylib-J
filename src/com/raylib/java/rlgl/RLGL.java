@@ -2816,9 +2816,9 @@ public class RLGL{
     // NOTE: dataSize and offset must be provided in bytes
     public static void rlUpdateVertexBuffer(int id, float[] data, int offset) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length*Float.BYTES);
+            ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length*Float.BYTES).order(ByteOrder.nativeOrder());
             for (float datum : data) {
-                dataBuffer.putFloat(datum).order(ByteOrder.nativeOrder());
+                dataBuffer.putFloat(datum);
             }
             dataBuffer.flip();
 
