@@ -1,10 +1,10 @@
 package com.raylib.java.core;
 
 import com.raylib.java.Config;
-import com.raylib.java.core.rcamera.Camera2D;
-import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.core.input.Input;
 import com.raylib.java.core.ray.Ray;
+import com.raylib.java.core.rcamera.Camera2D;
+import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.raymath.Matrix;
 import com.raylib.java.raymath.Quaternion;
 import com.raylib.java.raymath.Vector2;
@@ -30,9 +30,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
@@ -65,6 +69,9 @@ public class rCore{
     static Window window;
     static Input input;
     static Time time;
+
+    String[] dirFilesPath;
+    int dirFileCount;
 
     public static int screenshotCounter;
 
@@ -542,18 +549,21 @@ public class rCore{
     // NOTE: Image must be in RGBA format, 8bit per channel
     public void SetWindowIcon(Image image){
         if (image.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
-            GLFWImage[] icon = new GLFWImage[1];
+            byte[] imgData = image.getData();
+            GLFWImage.Buffer iconBuffer = GLFWImage.malloc(1);
+            GLFWImage icon = GLFWImage.malloc();
+            ByteBuffer bb = ByteBuffer.allocateDirect(imgData.length);
+            bb.put(imgData).flip();
+            icon.set(image.width, image.height, bb);
 
-            icon[0].width(image.getWidth());
-            icon[0].height(image.getHeight());
-            byte[] data = image.getData();
-            ByteBuffer bb = ByteBuffer.allocateDirect(data.length);
-            bb.put(data).flip();
-            icon[0].pixels(bb);
+            iconBuffer.put(icon);
+            icon.free();
+            iconBuffer.position(0);
 
             // NOTE 1: We only support one image icon
             // NOTE 2: The specified image data is copied before this function returns
-            nglfwSetWindowIcon(window.handle, 1, Arrays.stream(icon).count());
+            glfwSetWindowIcon(window.handle, iconBuffer);
+            iconBuffer.free();
         }
         else{
             Tracelog(LOG_WARNING, "GLFW: window icon image must be in R8G8B8A8 pixel format");
@@ -684,9 +694,10 @@ public class rCore{
         PointerBuffer monitors = glfwGetMonitors();
         monitorCount = monitors.sizeof();
         if ((monitor >= 0) && (monitor < monitorCount)){
-            int x = 0, y = 0;
-            nglfwGetMonitorPos(monitor, x, y);
-            return new Vector2((float) x, (float) y);
+            IntBuffer x = IntBuffer.allocate(1);
+            IntBuffer y = IntBuffer.allocate(1);
+            glfwGetMonitorPos(monitor, x, y);
+            return new Vector2(x.get(0), y.get(0));
         }
         else{
             Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
@@ -702,7 +713,8 @@ public class rCore{
 
         if ((monitor >= 0) && (monitor < monitorCount)){
             int count = 0;
-            GLFWVidMode.Buffer modes = glfwGetVideoModes(monitor);
+            GLFWVidMode.Buffer modes = glfwGetVideoModes(monitors.get(monitor));
+            count = modes.sizeof();
 
             // We return the maximum resolution available, the last one in the modes array
             if (count > 0){
@@ -726,7 +738,8 @@ public class rCore{
 
         if ((monitor >= 0) && (monitor < monitorCount)){
             int count = 0;
-            GLFWVidMode.Buffer modes = glfwGetVideoModes(monitor);
+            GLFWVidMode.Buffer modes = glfwGetVideoModes(monitors.get(monitor));
+            count = modes.sizeof();
 
             // We return the maximum resolution available, the last one in the modes array
             if (count > 0){
@@ -1657,12 +1670,8 @@ public class rCore{
         return (int) (Math.random() * (max - min + 1) + min);
     }
 
-    void SetRandomSeed(int seed){
-        //TODO
-    }
-
     // Check if the file exists
-    boolean FileExists(String fileName){
+    public boolean FileExists(String fileName){
         File file = new File(fileName);
 
         return file.exists();
@@ -1691,7 +1700,12 @@ public class rCore{
     public String GetFileName(String filePath){
         filePath = filePath.replace('\\', '/');
 
-        return filePath.substring(filePath.lastIndexOf('/'));
+        if (filePath.contains("/")) {
+            return filePath.substring(filePath.lastIndexOf('/'));
+        }
+        else {
+            return filePath;
+        }
     }
 
     // Get filename string without extension (uses static string)
@@ -1702,12 +1716,72 @@ public class rCore{
         return filePath.substring(filePath.lastIndexOf('/'), filePath.lastIndexOf('.'));
     }
 
-    //TODO:
-    // GetDirectoryPath
-    // GetPrevDirectoryPath
-    // GetWorkingDirectory
-    // GetDirectoryFiles
-    // ClearDirectoryFiles
+    // Get directory for a given filePath
+    public String GetDirectoryPath(String filePath) {
+        String dirPath = "";
+
+        if (filePath.contains("\\")) {
+            dirPath = filePath.substring(0, filePath.lastIndexOf("\\"));
+        }
+        else if (filePath.contains("/")) {
+            dirPath = filePath.substring(0, filePath.lastIndexOf("/"));
+        }
+
+        return dirPath;
+    }
+
+    // Get previous directory path for a given path
+    public String GetPrevDirectoryPath(String dirPath) {
+        String prevDirPath = "";
+
+        if (dirPath.contains("\\")) {
+            prevDirPath = dirPath.substring(0, dirPath.lastIndexOf("\\"));
+        }
+        else if (dirPath.contains("/")) {
+            prevDirPath = dirPath.substring(0, dirPath.lastIndexOf("/"));
+        }
+
+        return prevDirPath;
+    }
+
+    /**
+     * Get current working directory
+     * @return Current working directory
+     */
+    public String GetWorkingDirectory() {
+        return Paths.get("").toAbsolutePath() + "/";
+    }
+
+    // Get filenames in a directory path (max 512 files)
+    public String[] GetDirectoryFiles(String dirPath) {
+
+        final int MAX_DIRECTORY_FILES = 512;
+
+        ClearDirectoryFiles();
+
+        Set<String> files = Stream.of(new File(dirPath).listFiles())
+                .filter(file -> !file.isDirectory())
+                .map(File::getName)
+                .collect(Collectors.toSet());
+
+        dirFileCount = (files.size() < MAX_DIRECTORY_FILES ? files.size() : MAX_DIRECTORY_FILES);
+        dirFilesPath = new String[dirFileCount];
+
+        for (int i = 0; i < dirFileCount; i++) {
+            dirFilesPath[i] = (String) files.toArray()[i];
+        }
+
+        return dirFilesPath;
+    }
+
+    // Clear directory files paths buffers
+    public void ClearDirectoryFiles() {
+        if (dirFileCount > 0) {
+            dirFilesPath = null;
+            dirFileCount = 0;
+        }
+    }
+
     // ChangeDirectory
 
     // Check if a file has been dropped into window
@@ -1756,13 +1830,13 @@ public class rCore{
     // Encode data to Base64 string
     public byte[] EncodeDataBase64(byte[] data, int dataLength, int outputLength)
     {
-        char base64encodeTable[] = {
+        char[] base64encodeTable = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
             'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
             'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
         };
 
-        int modTable[] = { 0, 2, 1 };
+        int[] modTable = { 0, 2, 1 };
 
         outputLength = 4*((dataLength + 2)/3);
 

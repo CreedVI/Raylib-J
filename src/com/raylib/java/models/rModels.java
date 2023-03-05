@@ -4265,7 +4265,11 @@ public class rModels{
 
 
     // TODO: 24/07/2022  LoadImageFromCglrfImage
-    // TODO: 24/07/2022  LoadGMTF
+    private Image LoadImageFromCgltfImage() {
+        return null;
+    }
+
+    // TODO: 24/07/2022  LoadGLTF
 
     // Load glTF file into model struct, .gltf and .glb supported
     private Model LoadGLTF(String fileName) {

@@ -12,6 +12,7 @@ public class OBJLoader {
      * written by CreedVI for use in Raylib-J.
      * Based on TinyOBJLoader-C by Syoyo https://github.com/syoyo/tinyobjloader-c
      */
+
     public static class OBJInfo {
         public int totalVertices;
         public int totalNormals;
