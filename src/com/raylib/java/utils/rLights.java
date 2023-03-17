@@ -104,18 +104,13 @@ public class rLights{
             // TODO: Below code doesn't look good to me,
             // it assumes a specific shader naming and structure
             // Probably this implementation could be improved
-            String enabledName = "lights[x].enabled";
-            String typeName = "lights[x].type";
-            String posName = "lights[x].position";
-            String targetName = "lights[x].target";
-            String colorName = "lights[x].color";
 
             // Set location name [x] depending on lights count
-            enabledName = enabledName.replace('x', (char) lightsCount);
-            typeName = typeName.replace('x', (char) lightsCount);
-            posName = posName.replace('x', (char) lightsCount);
-            targetName = targetName.replace('x', (char) lightsCount);
-            colorName = colorName.replace('x', (char) lightsCount);
+            String enabledName = "lights[" + lightsCount + "].enabled";
+            String typeName = "lights[" + lightsCount + "].type";
+            String posName = "lights[" + lightsCount + "].position";
+            String targetName = "lights[" + lightsCount + "].target";
+            String colorName = "lights[" + lightsCount + "].color";
 
             light.enabledLoc = rCore.GetShaderLocation(shader, enabledName);
             light.typeLoc = rCore.GetShaderLocation(shader, typeName);
@@ -135,7 +130,7 @@ public class rLights{
     // NOTE: Light shader locations should be available
     public static void UpdateLightValues(Shader shader, Light light){
         // Send to shader light enabled state and type
-        rCore.SetShaderValue(shader, light.enabledLoc, new float[]{1}, RL_SHADER_UNIFORM_INT);
+        rCore.SetShaderValue(shader, light.enabledLoc, new float[]{(light.enabled ? 1 : 0)}, RL_SHADER_UNIFORM_INT);
         rCore.SetShaderValue(shader, light.typeLoc, new float[]{light.type}, RL_SHADER_UNIFORM_INT);
 
         // Send to shader light position values
