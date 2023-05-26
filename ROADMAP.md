@@ -23,7 +23,7 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 ## 0.5.2 
 <hr>
 
-* [ ] Raylib 4.2 update
+* [ ] Raylib 4.5 update
 
 ## 0.5 - The Next Dimension Update <-{We are here!}
 <hr>

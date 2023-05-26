@@ -2,7 +2,6 @@ package com.raylib.java.rlgl;
 
 import com.raylib.java.raymath.Matrix;
 import com.raylib.java.rlgl.data.rlglData;
-import com.raylib.java.rlgl.shader.Shader;
 import com.raylib.java.textures.Texture2D;
 import com.raylib.java.utils.Tracelog;
 import org.lwjgl.opengl.GL11;
@@ -1054,7 +1053,7 @@ public class RLGL{
                 //if (!gladLoadGLLoader((GLADloadproc) loader))
                 //    Tracelog(LOG_WARNING, "GLAD: Cannot load OpenGL extensions");
                 //else
-                Tracelog(LOG_INFO, "GLAD: OpenGL extensions loaded successfully");
+                //Tracelog(LOG_INFO, "GLAD: OpenGL extensions loaded successfully");
             }
 
             // Get number of supported extensions
@@ -1073,8 +1072,6 @@ public class RLGL{
                 extList = null;       // Free extensions pointers
             }
 
-            // Register supported extensions flags
-            // OpenGL 3.3 extensions supported by default (core)
             // Register supported extensions flags
             // OpenGL 3.3 extensions supported by default (core)
             rlglData.getExtSupported().vao = true;
@@ -3200,17 +3197,17 @@ public class RLGL{
     }
 
     // Get shader attribute location
-    public int rlGetLocationAttrib(Shader shader, String attribName){
+    public static int rlGetLocationAttrib(int shaderId, String attribName){
         int location = -1;
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            location = glGetAttribLocation(shader.getId(), attribName);
+            location = glGetAttribLocation(shaderId, attribName);
 
             if (location == -1){
                 Tracelog(LOG_WARNING,
-                                  "SHADER: [ID " + shader.getId() + "] Failed to find shader attribute: " + attribName);
+                                  "SHADER: [ID " + shaderId + "] Failed to find shader attribute: " + attribName);
             }
             else{
-                Tracelog(LOG_INFO, "SHADER: [ID " + shader.getId() + "] Shader attribute (" + attribName + ") set at " +
+                Tracelog(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader attribute (" + attribName + ") set at " +
                         "location: " + location);
             }
         }

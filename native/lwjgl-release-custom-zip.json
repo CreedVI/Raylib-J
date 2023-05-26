@@ -6,10 +6,11 @@
     "linux",
     "linux-arm64",
     "linux-arm32",
+    "macos",
+    "macos-arm64",
     "windows",
     "windows-x86",
-    "macos",
-    "macos-arm64"
+    "windows-arm64"
   ],
   "descriptions": false,
   "compact": false,
@@ -26,8 +27,9 @@
     "lwjgl-openal",
     "lwjgl-opengl",
     "lwjgl-opengles",
-    "lwjgl-stb"
+    "lwjgl-stb",
+    "lwjgl-par"
   ],
-  "version": "3.2.3",
-  "versionLatest": "3.2.3"
+  "version": "3.3.2",
+  "versionLatest": "3.3.2"
 }

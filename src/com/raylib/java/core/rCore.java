@@ -53,6 +53,7 @@ import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERS
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.shapes.rShapes.SetShapesTexture;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
@@ -1236,10 +1237,6 @@ public class rCore{
 
     public Shader LoadShader(String vsFileName, String fsFileName){
         Shader shader = new Shader();
-        shader.locs = new int[RLGL.MAX_SHADER_LOCATIONS];
-
-        // NOTE: All locations must be reseted to -1 (no location)
-        for (int i = 0; i < RLGL.MAX_SHADER_LOCATIONS; i++) shader.locs[i] = -1;
 
         String vShaderStr = null;
         String fShaderStr = null;
@@ -1260,46 +1257,7 @@ public class rCore{
             }
         }
 
-        shader.setId(rlgl.rlLoadShaderCode(vShaderStr, fShaderStr));
-
-        // After shader loading, we TRY to set default location names
-        if (shader.getId() > 0){
-            // Default shader attrib locations have been fixed before linking:
-            //          vertex position location    = 0
-            //          vertex texcoord location    = 1
-            //          vertex normal location      = 2
-            //          vertex color location       = 3
-            //          vertex tangent location     = 4
-            //          vertex texcoord2 location   = 5
-
-            // NOTE: If any location is not found, loc point becomes -1
-
-            // Get handles to GLSL input attibute locations
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                        RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                      RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                       RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                     RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
-
-            // Get handles to GLSL uniform locations (vertex shader)
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.getId(), "mvp");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.getId(), "view");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.getId(), "projection");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_NORMAL] = rlGetLocationUniform(shader.getId(), "matNormal");
-
-            // Get handles to GLSL uniform locations (fragment shader)
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.getId(), "colDiffuse");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.getId(), "texture0");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.getId(), "texture1");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.getId(), "texture2");
-        }
+        shader = LoadShaderFromMemory(vShaderStr, fShaderStr);
 
         return shader;
     }
@@ -1308,6 +1266,9 @@ public class rCore{
     public Shader LoadShaderFromMemory(String vsCode, String fsCode){
         Shader shader = new Shader();
         shader.locs = new int[RLGL.MAX_SHADER_LOCATIONS];
+
+        // NOTE: All locations must be reseted to -1 (no location)
+        for (int i = 0; i < RL_MAX_SHADER_LOCATIONS; i++) shader.locs[i] = -1;
 
         shader.setId(rlgl.rlLoadShaderCode(vsCode, fsCode));
 
@@ -1324,34 +1285,25 @@ public class rCore{
             // NOTE: If any location is not found, loc point becomes -1
 
             // Get handles to GLSL input attibute locations
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_POSITION] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                        RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                          RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_NORMAL] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                      RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                       RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_COLOR] = rlgl.rlGetLocationAttrib(shader,
-                                                                                                     RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
+            shader.locs[RL_SHADER_LOC_VERTEX_POSITION] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
+            shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
+            shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
+            shader.locs[RL_SHADER_LOC_VERTEX_NORMAL] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
+            shader.locs[RL_SHADER_LOC_VERTEX_TANGENT] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
+            shader.locs[RL_SHADER_LOC_VERTEX_COLOR] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
 
             // Get handles to GLSL uniform locations (vertex shader)
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.getId(), "mvp");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.getId(),
-                                                                                                      "projection");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.getId(), "view");
+            shader.locs[RL_SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MVP);
+            shader.locs[RL_SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW);
+            shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION);
+            shader.locs[RL_SHADER_LOC_MATRIX_MODEL] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL);
+            shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL);
 
             // Get handles to GLSL uniform locations (fragment shader)
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.getId(),
-                                                                                                  "colDiffuse");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.getId(),
-                                                                                             "texture0");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.getId(),
-                                                                                              "texture1");
-            shader.locs[rlShaderLocationIndex.RL_SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.getId(),
-                                                                                               "texture2");
+            shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR);
+            shader.locs[RL_SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0);  // SHADER_LOC_MAP_ALBEDO
+            shader.locs[RL_SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1); // SHADER_LOC_MAP_METALNESS
+            shader.locs[RL_SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2);
         }
 
         return shader;
@@ -1372,7 +1324,7 @@ public class rCore{
 
     // Get shader attribute location
     public int GetShaderLocationAttrib(Shader shader, String attribName){
-        return rlgl.rlGetLocationAttrib(shader, attribName);
+        return rlgl.rlGetLocationAttrib(shader.id, attribName);
     }
 
     // Set shader uniform value
