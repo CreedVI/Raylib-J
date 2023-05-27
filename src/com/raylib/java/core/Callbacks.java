@@ -163,7 +163,8 @@ public class Callbacks{
         @Override
         public void invoke(long window, double xpos, double ypos){
             Tracelog(LOG_DEBUG, "Cursor Position Callback Triggered");
-            rCore.getInput().mouse.setPreviousPosition(rCore.getInput().mouse.currentPosition);
+            rCore.getInput().mouse.previousPosition.x = rCore.getInput().mouse.currentPosition.x;
+            rCore.getInput().mouse.previousPosition.y = rCore.getInput().mouse.currentPosition.y;
             rCore.getInput().mouse.currentPosition.x = (float) xpos;
             rCore.getInput().mouse.currentPosition.y = (float) ypos;
         }
