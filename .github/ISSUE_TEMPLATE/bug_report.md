@@ -20,6 +20,9 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
+**Code**
+Please provide an excerpt of your code, or an example in a code block.
+
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
