@@ -5,11 +5,25 @@
   </component>
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="Raylib-J_DEV-0.5:jar" />
+      <artifact name="Raylib-J:test" />
     </artifacts-to-build>
   </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="d7118e07-dbb8-4d33-b477-43ae871d21a7" name="Default Changelist" comment="0.4 wip" />
+    <list default="true" id="d7118e07-dbb8-4d33-b477-43ae871d21a7" name="Default Changelist" comment="0.4 wip">
+      <change afterPath="$PROJECT_DIR$/native/gltf-j.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/Material.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/Material.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/MaterialMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/MaterialMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/Mesh.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/Mesh.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/Model.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/Model.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/rModels.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/rModels.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,6 +58,10 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 5
+}</component>
   <component name="ProjectId" id="1wXkYpvloJvuv3LgUyZeItG9r7r" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -56,12 +74,13 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/creedvi/Documents/Java/Raylib-J/tests/com/raylib/java&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/creedvi/Documents/Java/Raylib-J/tests/com/raylib/java/resources&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.rainbow.brackets&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Java&quot;
   },
   &quot;keyToStringList&quot;: {
     &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
@@ -71,11 +90,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources/models/models/gltf" />
+      <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources/models" />
       <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources" />
       <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources/models/models/obj" />
       <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources/models/twinleaf" />
-      <recent name="$PROJECT_DIR$/native" />
-      <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources/models" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/com/raylib/java/raudio" />
@@ -92,7 +111,7 @@
       <recent name="com.raylib.java.Audio" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Core2DCameraMouseZoom">
+  <component name="RunManager" selected="Application.gltf load">
     <configuration name="AudioTest" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.raylib.java.Audio.AudioTest" />
       <module name="Raylib-J" />
@@ -234,6 +253,14 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="gltf load" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.raylib.java.models.ModelLoading_glTF" />
+      <module name="Raylib-J" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/com/raylib/java/resources/" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="light" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.raylib.java.shaders.light" />
       <module name="Raylib-J" />
@@ -320,6 +347,7 @@
       <item itemvalue="Application.JarMainForTesting" />
       <item itemvalue="Application.OBJLoad" />
       <item itemvalue="Application.SoundTest" />
+      <item itemvalue="Application.gltf load" />
       <item itemvalue="Application.light" />
       <item itemvalue="Application.multi" />
       <item itemvalue="Application.sdf" />
@@ -334,10 +362,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.IQMAnimation" />
         <item itemvalue="Application.Core2DCameraMouseZoom" />
         <item itemvalue="Application.WindowIcon" />
         <item itemvalue="Application.MonitorProperties" />
-        <item itemvalue="Application.IQMAnimation" />
         <item itemvalue="Application.MeshGen" />
       </list>
     </recent_temporary>
@@ -518,12 +546,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/com/raylib/java/models/rModels.java</url>
-          <line>1649</line>
+          <line>1653</line>
           <option name="timeStamp" value="414" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/com/raylib/java/models/rModels.java</url>
-          <line>1615</line>
+          <line>1619</line>
           <option name="timeStamp" value="415" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -536,12 +564,29 @@
           <line>2218</line>
           <option name="timeStamp" value="419" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/tests/com/raylib/java/models/IQMLoad.java</url>
+          <line>75</line>
+          <option name="timeStamp" value="472" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/raylib/java/models/rModels.java</url>
+          <line>4705</line>
+          <option name="timeStamp" value="494" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/raylib/java/models/rModels.java</url>
+          <line>4686</line>
+          <option name="timeStamp" value="495" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="com.raylib.java.models.Mesh" memberName="vertices" />
         <PinnedItemInfo parentTag="com.raylib.java.utils.VoxLoader" memberName="pvoxArray" />
+        <PinnedItemInfo parentTag="com.raylib.java.models.Material" memberName="maps" />
+        <PinnedItemInfo parentTag="com.raylib.java.models.MaterialMap" memberName="color" />
         <PinnedItemInfo parentTag="java.awt.image.DataBufferByte" memberName="data" />
         <PinnedItemInfo parentTag="com.raylib.java.models.Model" memberName="transform" />
       </pinned-members>

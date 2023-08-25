@@ -1,5 +1,8 @@
 package com.raylib.java.models;
 
+import com.creedvi.utils.gltfj.gltf.*;
+import com.creedvi.utils.gltfj.gltf.mesh.gltfj_Primitive;
+import com.creedvi.utils.gltfj.gltfj;
 import com.raylib.java.core.Color;
 import com.raylib.java.core.rCore;
 import com.raylib.java.core.ray.Ray;
@@ -25,6 +28,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+import java.util.Base64;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.Color.BLACK;
@@ -646,7 +650,7 @@ public class rModels{
         else if (SUPPORT_FILEFORMAT_IQM && rCore.IsFileExtension(fileName, ".iqm")) {
             model = LoadIQM(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_GLTF && rCore.IsFileExtension(fileName, ".gltf;.glb")) {
+        else if (SUPPORT_FILEFORMAT_GLTF && ((rCore.IsFileExtension(fileName, ".gltf") || rCore.IsFileExtension(fileName, ".glb"))))  {
             model = LoadGLTF(fileName);
         }
         else if(SUPPORT_FILEFORMAT_VOX && rCore.IsFileExtension(fileName, ".vox")) {
@@ -869,7 +873,7 @@ public class rModels{
                 rlEnableVertexAttribute(5);
             } else {
                 // Default texcoord2 vertex attribute
-                float[] value ={0.0f, 0.0f} ;
+                float[] value = {0.0f, 0.0f} ;
                 rlSetVertexAttributeDefault(5, value, RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
                 rlDisableVertexAttribute(5);
             }
@@ -2781,7 +2785,7 @@ public class rModels{
             }
         }
 
-        // Move data from mapVertices temp arays to vertices float array
+        // Move data from mapVertices temp arrays to vertices float array
         mesh.vertexCount = vCounter;
         mesh.triangleCount = vCounter/3;
 
@@ -4263,14 +4267,65 @@ public class rModels{
         return animations;
     }
 
+    private Image LoadImageFromCgltfImage(gltfj_glTF gltf, int img, int bv, String texPath) {
+        Image image = new Image();
+        gltfj_Image gltfjImage = gltf.images.get(img);
+        gltfj_BufferView bufferView = gltf.bufferViews.get(bv);
+        gltfj_Buffer imgBuffer = gltf.buffers.get(bufferView.buffer);
 
-    // TODO: 24/07/2022  LoadImageFromCglrfImage
-    private Image LoadImageFromCgltfImage() {
-        return null;
+        if (gltfjImage.uri != null) {
+            if (gltfjImage.uri.length() > 5 && gltfjImage.uri.startsWith("data:")) {
+                int i = 0;
+                while ((gltfjImage.uri.charAt(i) != ',') && (i != gltfjImage.uri.length())) {
+                    i++;
+                }
+
+                if (i == gltfjImage.uri.length()) {
+                    Tracelog(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
+                }
+                else {
+                    int b64Size = gltfjImage.uri.length() + i + 1;
+                    int outSize = 3*(b64Size/4);
+
+                    String uri = gltfjImage.uri;
+                    String encoded = uri.substring(uri.lastIndexOf(",") + 1);
+                    byte[] data = Base64.getDecoder().decode(encoded);
+
+                    if (data != null) {
+                        image = rTextures.LoadImageFromMemory(".png", data, outSize);
+                    }
+
+                }
+            }
+            else {
+                image = rTextures.LoadImage(texPath + "/" + gltfjImage.uri);
+            }
+        }
+        else if (imgBuffer.data != null) {
+            byte[] data = new byte[bufferView.size];
+            int offset = bufferView.offset;
+            int stride = (bufferView.stride > 0) ? bufferView.stride : 1;
+
+            for (int i = 0; i < bufferView.size; i++) {
+                data[i] = imgBuffer.data[offset];
+                offset += stride;
+            }
+
+            if (gltfjImage.mimeType.equals("image\\/png") || gltfjImage.mimeType.equals("image/png")) {
+                image = rTextures.LoadImageFromMemory(".png", data, bufferView.size);
+            }
+            else if (gltfjImage.mimeType.equals("image\\/jpeg") || gltfjImage.mimeType.equals("image/jpeg")) {
+                image = rTextures.LoadImageFromMemory(".jpg", data, bufferView.size);
+            }
+            else {
+                Tracelog(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + gltfjImage.mimeType + ")");
+            }
+        }
+
+        return image;
     }
 
     // TODO: 24/07/2022  LoadGLTF
-
     // Load glTF file into model struct, .gltf and .glb supported
     private Model LoadGLTF(String fileName) {
 
@@ -4301,12 +4356,397 @@ public class rModels{
         Model model = new Model();
         int dataSize;
 
-        try(ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))) {
+        gltfj_glTF gltf = gltfj.Read(fileName);
 
-            dataSize = fileData.available();
+        if (gltf.result == gltfj_glTF.ResultType.SUCCESS) {
+            if (gltf.fileType == gltfj_glTF.FileType.GLB) {
+                Tracelog(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
+            }
+            else if (gltf.fileType == gltfj_glTF.FileType.GLTF) {
+                Tracelog(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
+            }
+            else {
+                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Model format not recognized");
+                return model;
+            }
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            Tracelog(LOG_INFO, "    > Meshes count: " + gltf.meshCount);
+            Tracelog(LOG_INFO, "    > Materials count: " + gltf.materialCount + " (+1 default)");
+            Tracelog(LOG_DEBUG, "    > Buffers count: " + gltf.bufferCount);
+            Tracelog(LOG_DEBUG, "    > Images count: " + gltf.imageCount);
+            Tracelog(LOG_DEBUG, "    > Textures count: " + gltf.textureCount);
+
+            int primitivesCount = 0;
+            // NOTE: We will load every primitive in the glTF as a separate raylib mesh
+            for (int i = 0; i < gltf.meshCount; i++) {
+                primitivesCount += gltf.meshes.get(i).primitivesCount;
+            }
+
+            // Load our model data: meshes and materials
+            model.meshCount = primitivesCount;
+            model.meshes = new Mesh[model.meshCount];
+            for (int i = 0; i < model.meshCount; i++) {
+                model.meshes[i] = new Mesh();
+                model.meshes[i].vboId = new int[MAX_MESH_VERTEX_BUFFERS];
+            }
+
+            // NOTE: We keep an extra slot for default material, in case some mesh requires it
+            model.materialCount = gltf.materialCount + 1;
+            model.materials = new Material[model.materialCount];
+            model.materials[0] = LoadMaterialDefault();
+
+            // Load mesh-material indices, by default all meshes are mapped to material index: 0
+            model.meshMaterial = new int[model.meshCount];
+
+            // Load materials data
+            //----------------------------------------------------------------------------------------------------
+            for (int i = 0, j = 1; i < gltf.materialCount; i++, j++) {
+                model.materials[j] = LoadMaterialDefault();
+                String texPath = rCore.GetDirectoryPath(fileName);
+
+                // Check glTF material flow: PBR metallic/roughness flow
+                // NOTE: Alternatively, materials can follow PBR specular/glossiness flow
+                if (gltf.materials.get(i).hasMetallicRoughness) {
+
+                    // Load base color texture (albedo)
+                    if (gltf.materials.get(i).metallicRoughness.baseColorTexture.texture >= 0) {
+                        Image imAlbedo = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).metallicRoughness.baseColorTexture.texture).image,
+                                gltf.images.get(gltf.materials.get(i).metallicRoughness.baseColorTexture.texture).bufferView,  texPath);
+                        if (imAlbedo.getData() != null) {
+                            model.materials[j].maps[MATERIAL_MAP_ALBEDO].texture = rTextures.LoadTextureFromImage(imAlbedo);
+                        }
+
+                        //Load base colour factor (tint)
+                        Color c = new Color();
+                        c.r = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[0]*255);
+                        c.g = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[1]*255);
+                        c.b = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[2]*255);
+                        c.a = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[3]*255);
+                        model.materials[j].maps[MATERIAL_MAP_ALBEDO].color = c;
+                    }
+
+                    //Load metallic/roughness texture
+                    if (gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture > 0) {
+                        Image imMetallicRoughness = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture).image,
+                                gltf.images.get(gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture).bufferView,  texPath);
+                        if (imMetallicRoughness.getData() != null) {
+                            model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].texture = rTextures.LoadTextureFromImage(imMetallicRoughness);
+                        }
+
+                        // Load metallic/roughness material properties
+                        float roughness = (float) gltf.materials.get(i).metallicRoughness.roughnessFactor;
+                        model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].value = roughness;
+
+                        float metallic = (float) gltf.materials.get(i).metallicRoughness.metallicFactor;
+                        model.materials[j].maps[MATERIAL_MAP_METALNESS].value = metallic;
+                    }
+
+                    //Load normal texture
+                    if (gltf.materials.get(i).normalTexture.texture > 0) {
+                        Image imNormal = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).normalTexture.texture).image,
+                                gltf.images.get(gltf.materials.get(i).normalTexture.texture).bufferView,  texPath);
+                        if (imNormal.getData() != null) {
+                            model.materials[j].maps[MATERIAL_MAP_NORMAL].texture = rTextures.LoadTextureFromImage(imNormal);
+                        }
+                    }
+
+                    //Load ambient occlusion texture
+                    if (gltf.materials.get(i).occlusionTexture.texture > 0) {
+                        Image imOcclusion = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).occlusionTexture.texture).image,
+                                gltf.images.get(gltf.materials.get(i).occlusionTexture.texture).bufferView,  texPath);
+                        if (imOcclusion.getData() != null) {
+                            model.materials[j].maps[MATERIAL_MAP_OCCLUSION].texture = rTextures.LoadTextureFromImage(imOcclusion);
+                        }
+                    }
+
+                    if (gltf.materials.get(i).emissiveTexture.texture > 0) {
+                        Image imEmissive = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).emissiveTexture.texture).image,
+                                gltf.images.get(gltf.materials.get(i).emissiveTexture.texture).bufferView,  texPath);
+                        if (imEmissive.getData() != null) {
+                            model.materials[j].maps[MATERIAL_MAP_EMISSION].texture = rTextures.LoadTextureFromImage(imEmissive);
+                        }
+
+                        //Load base colour factor (tint)
+                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.r = (int) (gltf.materials.get(i).emissiveFactor[0]*255);
+                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.g = (int) (gltf.materials.get(i).emissiveFactor[1]*255);
+                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.b = (int) (gltf.materials.get(i).emissiveFactor[2]*255);
+                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.a = (int) (gltf.materials.get(i).emissiveFactor[3]*255);
+                    }
+                }
+
+                // Other possible materials not supported by raylib pipeline:
+                // has_clearcoat, has_transmission, has_volume, has_ior, has specular, has_sheen
+            }
+
+            // Load meshes data
+            //----------------------------------------------------------------------------------------------------
+            for (int i = 0, meshIndex = 0; i < gltf.meshCount; i++) {
+                // NOTE: meshIndex accumulates primitives
+
+                for (int p = 0; p < gltf.meshes.get(i).primitivesCount; p++) {
+                    // NOTE: We only support primitives defined by triangles
+                    // Other alternatives: points, lines, line_strip, triangle_strip
+                    if (gltf.meshes.get(i).primitives.get(p).type != gltfj_Primitive.PrimitiveType.TRIANGLES) {
+                        continue;
+                    }
+
+                    // NOTE: Attributes data could be provided in several data formats (8, 8u, 16u, 32...),
+                    // Only some formats for each attribute type are supported, read info at the top of this function!
+
+                    for (int j = 0; j < gltf.meshes.get(i).primitives.get(p).attributesCount; j++) {
+                        // Check the different attributes for every primitive
+                        //int attribDataPtr = gltf.meshes.get(i).primitives.get(p).attributes.get(j).index;
+                        // POSITION
+                        if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.POSITION) {
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+
+                            // WARNING: SPECS: POSITION accessor MUST have its min and max properties defined.
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC3)) {
+                                // Init raylib mesh vertices to copy glTF attribute data
+                                model.meshes[meshIndex].vertexCount = attribute.count;
+                                model.meshes[meshIndex].vertices = new float[attribute.count*3];
+
+                                // Load 3 components of float data type into mesh.vertices
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                byte[] fBuffer = new byte[Float.BYTES];
+
+                                for (int v = 0, vo = 0; v < model.meshes[meshIndex].vertices.length; v++, vo+=Float.BYTES) {
+                                    for (int f = 0; f < fBuffer.length; f++) {
+                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + vo + f];
+                                    }
+                                    model.meshes[meshIndex].vertices[v] = glFT_ByteArrayToFloat(fBuffer);
+                                }
+                            }
+                            else {
+                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Vertices attribute data format not supported, use vec3 float");
+                            }
+                        }
+                        // NORMAL
+                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.NORMAL) {
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC3)) {
+                                // Init raylib mesh normals to copy glTF attribute data
+                                model.meshes[meshIndex].normals = new float[attribute.count*3];
+
+                                // Load 3 components of float data type into mesh.normals
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                byte[] fBuffer = new byte[Float.BYTES];
+
+                                for (int n = 0, no = 0; n < model.meshes[meshIndex].normals.length; n++, no+=Float.BYTES) {
+                                    for (int f = 0; f < fBuffer.length; f++) {
+                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + no + f];
+                                    }
+                                    model.meshes[meshIndex].normals[n] = glFT_ByteArrayToFloat(fBuffer);
+                                }
+                            }
+                            else {
+                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Normal attribute data format not supported, use vec3 float");
+                            }
+                        }
+                        // TANGENT
+                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.TANGENT) {
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                                // Init raylib mesh tangent to copy glTF attribute data
+                                model.meshes[meshIndex].tangents = new float[attribute.count*4];
+
+                                // Load 4 components of float data type into mesh.tangents
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                byte[] fBuffer = new byte[Float.BYTES];
+
+                                for (int t = 0, to = 0; t < model.meshes[meshIndex].tangents.length; t++, to += Float.BYTES) {
+                                    for (int f = 0; f < fBuffer.length; f++) {
+                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + to + f];
+                                    }
+                                    model.meshes[meshIndex].tangents[t] = glFT_ByteArrayToFloat(fBuffer);
+                                }
+                            }
+                            else {
+                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Tangent attribute data format not supported, use vec4 float");
+                            }
+                        }
+                        // TEXCOORD_0
+                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.TEXCOORD) {
+                            // TODO: Support additional texture coordinates: TEXCOORD_1 -> mesh.texcoords2
+
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC2)) {
+                                // Init raylib mesh texcoords to copy glTF attribute data
+                                model.meshes[meshIndex].texcoords = new float[attribute.count*2];
+
+                                // Load 2 components of float data type into mesh.texcoords
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                byte[] fBuffer = new byte[Float.BYTES];
+
+                                for (int t = 0, to = 0; t < model.meshes[meshIndex].texcoords.length; t++, to += Float.BYTES) {
+                                    for (int f = 0; f < fBuffer.length; f++) {
+                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + to + f];
+                                    }
+                                    model.meshes[meshIndex].texcoords[t] = glFT_ByteArrayToFloat(fBuffer);
+                                }
+                            }
+                            else {
+                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported, use vec2 float");
+                            }
+                        }
+                        // COLOR_0
+                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.COLOR) {
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+
+                            // WARNING: SPECS: All components of each COLOR_n accessor element MUST be clamped to [0.0, 1.0] range.
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_BYTE) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                                // Init raylib mesh color to copy glTF attribute data
+                                model.meshes[meshIndex].colors = new byte[attribute.count*4];
+
+                                // Load 4 components of unsigned char data type into mesh.colors
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+
+                                for (int c = 0; c < model.meshes[meshIndex].vertices.length; c++) {
+                                    model.meshes[meshIndex].colors[c] = buffer.data[bufferView.offset + attribute.byteOffset + c];
+                                }
+
+                            }
+                            else if ((attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_SHORT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                                // Init raylib mesh color to copy glTF attribute data
+                                model.meshes[meshIndex].colors = new byte[attribute.count*4];
+
+                                // Load data into a temp buffer to be converted to raylib data type
+                                short[] temp = new short[attribute.count*4];
+
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                byte[] sBuffer = new byte[Short.BYTES];
+
+                                for (int c = 0, co = 0; c < temp.length; c++, co += Short.BYTES) {
+                                    for (int f = 0; f < sBuffer.length; f++) {
+                                        sBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + co + f];
+                                    }
+                                    temp[c] = glFT_ByteArrayToShort(sBuffer);
+                                }
+
+                                // Convert data to raylib color data type (4 bytes)
+                                for (int c = 0; c < attribute.count * 4; c++) {
+                                    model.meshes[meshIndex].colors[c] = (byte)(temp[c]);
+
+                                }
+
+                            }
+                            else if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                                // Init raylib mesh color to copy glTF attribute data
+                                model.meshes[meshIndex].colors = new byte[attribute.count * 4];
+
+                                // Load data into a temp buffer to be converted to raylib data type
+                                float[] temp = new float[attribute.count*4];
+
+                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                byte[] fBuffer = new byte[Float.BYTES];
+
+                                for (int c = 0, co = 0; c < temp.length; c++, co+=Float.BYTES) {
+                                    for (int f = 0; f < fBuffer.length; f++) {
+                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + co + f];
+                                    }
+                                    temp[c] = glFT_ByteArrayToFloat(fBuffer);
+                                }
+
+                                // Convert data to raylib color data type (4 bytes), we expect the color data normalized
+                                for (int c = 0; c < attribute.count * 4; c++) {
+                                    model.meshes[meshIndex].colors[c] = (byte)(temp[c] * 255.0f);
+                                }
+
+                            }
+                            else {
+                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
+                            }
+                        }
+                    }
+
+                    // Load primitive indices data (if provided)
+                    if (gltf.meshes.get(i).primitives.get(p).indices != -1) {
+                        gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).indices);
+
+                        model.meshes[meshIndex].triangleCount = attribute.count/3;
+
+                        if (attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_SHORT) {
+                            // Init raylib mesh indices to copy glTF attribute data
+                            model.meshes[meshIndex].indicesS = new short[attribute.count];
+
+                            // Load unsigned short data type into mesh.indices
+                            gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                            gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                            byte[] sBuffer = new byte[Short.BYTES];
+
+                            for (int is = 0, iso = 0; is < model.meshes[meshIndex].indicesS.length; is++, iso += Short.BYTES) {
+                                for (int s = 0; s < sBuffer.length; s++) {
+                                    sBuffer[s] = buffer.data[bufferView.offset + attribute.byteOffset + iso + s];
+                                }
+                                model.meshes[meshIndex].indicesS[is] = glFT_ByteArrayToShort(sBuffer);
+                            }
+
+                        }
+                        else if (attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_INT) {
+                            // Init raylib mesh indices to copy glTF attribute data
+                            model.meshes[meshIndex].indicesS = new short[attribute.count];
+
+                            // Load data into a temp buffer to be converted to raylib data type
+                            int[] temp = new int[attribute.count];
+
+                            gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
+                            gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                            byte[] iBuffer = new byte[Integer.BYTES];
+
+                            for (int in = 0, ino = 0; in < temp.length; in++, ino += Integer.BYTES) {
+                                for (int ib = 0; ib < iBuffer.length; ib++) {
+                                    iBuffer[ib] = buffer.data[bufferView.offset + attribute.byteOffset + ino + ib];
+                                }
+                                temp[in] = glFT_ByteArrayToInt(iBuffer);
+                            }
+                            // Convert data to raylib indices data type (unsigned short)
+                            for (int d = 0; d < attribute.count; d++) {
+                                model.meshes[meshIndex].indicesS[d] = (short)temp[d];
+                            }
+
+                            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Indices data converted from u32 to u16, possible loss of data");
+
+                        }
+                        else {
+                            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Indices data format not supported, use u16");
+                        }
+                    }
+                    else {
+                        model.meshes[meshIndex].triangleCount = model.meshes[meshIndex].vertexCount/3;    // Unindexed mesh
+                    }
+
+                    // Assign to the primitive mesh the corresponding material index
+                    // NOTE: If no material defined, mesh uses the already assigned default material (index: 0)
+                    for (int m = 0; m < gltf.materialCount; m++) {
+                        // The primitive actually keeps the pointer to the corresponding material,
+                        // raylib instead assigns to the mesh the by its index, as loaded in model.materials array
+                        // To get the index, we check if material pointers match and we assign the corresponding index,
+                        // skipping index 0, the default material
+                        if (gltf.materials.get(m) == gltf.materials.get(gltf.meshes.get(i).primitives.get(p).material)){
+                            model.meshMaterial[meshIndex] = m + 1;
+                            break;
+                        }
+                    }
+
+                    meshIndex++;       // Move to next mesh
+                }
+            }
+
+        }
+        else {
+            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] failed to load glTF data");
         }
 
         return model;
@@ -4437,4 +4877,9 @@ public class rModels{
         return model;
     }
 
+    private float glFT_ByteArrayToFloat(byte[] floatBuffer) { return ByteBuffer.wrap(floatBuffer).order(ByteOrder.LITTLE_ENDIAN).getFloat(); }
+
+    private short glFT_ByteArrayToShort(byte[] shortBuffer) { return ByteBuffer.wrap(shortBuffer).order(ByteOrder.LITTLE_ENDIAN).getShort(); }
+
+    private int glFT_ByteArrayToInt(byte[] intBuffer) { return ByteBuffer.wrap(intBuffer).order(ByteOrder.LITTLE_ENDIAN).getInt(); }
 }

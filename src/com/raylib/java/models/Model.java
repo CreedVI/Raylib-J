@@ -21,11 +21,23 @@ public class Model {
         transform = new Matrix();
 
         meshes = new Mesh[16];
+        for (int i = 0; i < meshes.length; i++) {
+            meshes[i] = new Mesh();
+        }
         materials = new Material[16];
+        for (int i = 0; i < materials.length; i++) {
+            materials[i] = new Material();
+        }
         meshMaterial = new int[16];
 
         bones = new BoneInfo[64];
+        for (int i = 0; i < bones.length; i++) {
+            bones[i] = new BoneInfo();
+        }
         bindPose = new Transform[64];
+        for (int i = 0; i < bindPose.length; i++) {
+            bindPose[i] = new Transform();
+        }
     }
 
 }

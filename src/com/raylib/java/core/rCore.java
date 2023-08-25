@@ -1669,7 +1669,7 @@ public class rCore{
     }
 
     // Get directory for a given filePath
-    public String GetDirectoryPath(String filePath) {
+    public static String GetDirectoryPath(String filePath) {
         String dirPath = "";
 
         if (filePath.contains("\\")) {

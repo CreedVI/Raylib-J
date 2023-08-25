@@ -13,6 +13,9 @@ public class Material {
     public Material(){
         shader = new Shader();
         maps = new MaterialMap[MAX_MATERIAL_MAPS];
+        for (int i = 0; i < maps.length; i++) {
+            maps[i] = new MaterialMap();
+        }
         params = new float[4];
     }
 

@@ -3,9 +3,7 @@
 *.iml
 .idea/
 logo/rlj_old.png
-src/com/raylib/java/JarMainForTesting.java
 out/
 tests/
-.scrapped/
 META-INF/
 *.txt

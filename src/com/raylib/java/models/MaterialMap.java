@@ -12,7 +12,7 @@ public class MaterialMap {
     public MaterialMap(){
         texture = new Texture2D();
         color = new Color();
-        value = 0;
+        value = 0f;
     }
 
 }
