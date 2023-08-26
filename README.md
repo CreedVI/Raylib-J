@@ -96,7 +96,7 @@ Otherwise here's the quick list:
 [X] rShapes <br>
 [X] rTextures <br>
 [X] rText <br>
-[O] rModels <br>
+[X] rModels <br>
 [o] rAudio <br>
 [X] RLGL <br>
 [X] Raymath <br>

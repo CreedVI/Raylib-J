@@ -5,7 +5,7 @@
   </component>
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="Raylib-J:test" />
+      <artifact name="Raylib-J:jar" />
     </artifacts-to-build>
   </component>
   <component name="AutoImportSettings">
@@ -13,16 +13,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d7118e07-dbb8-4d33-b477-43ae871d21a7" name="Default Changelist" comment="0.4 wip">
-      <change afterPath="$PROJECT_DIR$/native/gltf-j.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/Material.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/Material.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/MaterialMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/MaterialMap.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/Mesh.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/Mesh.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/Model.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/Model.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/models/rModels.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/models/rModels.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROADMAP.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROADMAP.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/native/gltf-j.jar" beforeDir="false" afterPath="$PROJECT_DIR$/native/gltf-j.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/utils/FileIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/utils/FileIO.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,24 +66,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/creedvi/Documents/Java/Raylib-J/tests/com/raylib/java/resources&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Java&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/home/creedvi/Documents/Java/Raylib-J/tests/com/raylib/java/resources",
+    "project.structure.last.edited": "Global Libraries",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "preferences.sourceCode.Java"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
-      &quot;C++&quot;
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "C++"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tests/com/raylib/java/resources/models/models/gltf" />
@@ -568,16 +564,6 @@
           <url>file://$PROJECT_DIR$/tests/com/raylib/java/models/IQMLoad.java</url>
           <line>75</line>
           <option name="timeStamp" value="472" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/com/raylib/java/models/rModels.java</url>
-          <line>4705</line>
-          <option name="timeStamp" value="494" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/com/raylib/java/models/rModels.java</url>
-          <line>4686</line>
-          <option name="timeStamp" value="495" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

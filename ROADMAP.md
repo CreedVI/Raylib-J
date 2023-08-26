@@ -20,12 +20,12 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 * [ ] rAudio Module
   * Complete overhaul of what's been dubbed "rAudioAL" to match audio functionality of the original rAudio
 
-## 0.5.2 
+## 0.5.2 <-{We are here!}
 <hr>
 
 * [ ] Raylib 4.5 update
 
-## 0.5 - The Next Dimension Update <-{We are here!}
+## 0.5 - The Next Dimension Update 
 <hr>
 
 * [X] rAudioAL Module
@@ -33,9 +33,9 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
   * [X] WAV audio
   * [X] OGG audio
 
-* [O] rModels Module
+* [X] rModels Module
   * [X] VOX loading
-  * [ ] GLTF loading
+  * [X] GLTF loading
   * [X] IQM loading
     * [X] IQM animations
   * [X] OBJ loading

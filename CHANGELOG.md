@@ -1,3 +1,32 @@
+# Release: Raylib-J v0.5
+## The Next Dimension
+
+<hr>
+
+* Support for rModels is complete!
+  * Load all your favourite  `.obj`, `.iqm`, `.gltf`, and `.glb` models!
+  * Animations for `.iqm` models!
+  * Mesh Generation!
+* Improved FileIO!
+  * Depending on JRE/JDK previous implementation would not stream all data before returning. This has been fixed.
+* Overhaul on GLFW wrapped methods!
+  * In previous versions methods that rely on GLFW to report system info, manage window, etc. did not function properly. All these should be fixed.
+    * Setting a custom icon for your app works now, too. 
+* Various fixes to improve the developer experience.
+
+<hr>
+
+This update has been a long time in the works. Life's done its best to keep me from getting this done - I've started a new job with far too many hours in a work day, moved halfway across the world, and all the other standard life drama.  
+
+I'm gonna take a weekend to relax before getting to work on the next stop on the [Roadmap](https://github.com/CreedVI/Raylib-J/blob/main/ROADMAP.md)!
+
+See y'all in the Discord, or in the next release!
+
+-Creed
+
+<hr>
+
+
 # Release: Raylib-J v0.4
 ## The Action Update
 

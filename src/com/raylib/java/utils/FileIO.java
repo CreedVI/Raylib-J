@@ -1,9 +1,6 @@
 package com.raylib.java.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,7 +16,7 @@ public class FileIO{
     //TODO: FIGURE OUT THIS MESS
     //Load data from file into a buffer
     public static byte[] LoadFileData(String fileName) throws IOException{
-        byte[] data = null;
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         if (SUPPORT_STANDARD_FILEIO){
 
@@ -36,19 +33,25 @@ public class FileIO{
             }
 
             if (inputStream != null) {
-                try{
-                    data = new byte[inputStream.available()];
-                    inputStream.read(data);
-                } catch (Exception e){
-                    e.printStackTrace();
+                try {
+                    int read;
+                    byte[] input = new byte[4096];
+                    while (-1 != (read = inputStream.read(input))) {
+                        buffer.write(input, 0, read);
+                    }
                 }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return buffer.toByteArray();
             }
         }
         else{
             Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
         }
 
-        return data;
+        return null;
     }
 
     // Unload file data allocated by LoadFileData()
