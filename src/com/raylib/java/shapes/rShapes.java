@@ -4,19 +4,19 @@ import com.raylib.java.core.Color;
 import com.raylib.java.raymath.Vector2;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.textures.Texture2D;
+import org.jetbrains.annotations.Contract;
 
 import static com.raylib.java.Config.SUPPORT_QUADS_DRAW_MODE;
 import static com.raylib.java.raymath.Raymath.DEG2RAD;
 import static com.raylib.java.raymath.Raymath.PI;
 import static com.raylib.java.rlgl.RLGL.*;
-import static com.raylib.java.utils.Easings.EaseCubicInOut;
 
 public class rShapes{
 
 
     /**
      * Error rate to calculate how many segments we need to draw a smooth circle,
-     * taken from https://stackoverflow.com/a/2244088
+     * taken from <a href="https://stackoverflow.com/a/2244088">https://stackoverflow.com/a/2244088</a>
      */
     final static float SMOOTH_CIRCLE_ERROR_RATE = 0.5f;
 
@@ -26,7 +26,7 @@ public class rShapes{
     int BEZIER_LINE_DIVISIONS = 24;
 
     static Texture2D texShapes = new Texture2D(1, 1, 1, 1, 7);        // Texture used on rShapes drawing (usually a white pixel)
-    static Rectangle texShapesRec = new Rectangle(0, 0, 1, 1);        // Texture source rectangle used on rShapes drawing
+    static Rectangle texShapesRec = new Rectangle(0f, 0f, 1f, 1f);        // Texture source rectangle used on rShapes drawing
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition
@@ -36,8 +36,8 @@ public class rShapes{
      * NOTE: It can be useful when using basic rShapes and one single font,
      * defining a font char white rectangle would allow drawing everything in a single draw call
      *
-     * @param texture
-     * @param source 
+     * @param texture New default shape texture
+     * @param source Defined area of default texture
      */
     public static void SetShapesTexture(Texture2D texture, Rectangle source) {
         texShapes = texture;
@@ -220,7 +220,6 @@ public class rShapes{
      * @param pointCount number of points in array
      * @param color       color to draw lines
      */
-    //TODO: replace pointsCount with points.length?
     public void DrawLineStrip(Vector2[] points, int pointCount, Color color) {
         if(pointCount >= 2) {
             rlCheckRenderBatchLimit(pointCount);
@@ -351,7 +350,7 @@ public class rShapes{
     }
 
     /**
-     * Draw a piece of a circle (lines)
+     * Draw a piece of a circle outlines
      *
      * @param center     X, Y coordinate of circle center
      * @param radius     length of circle radius
@@ -889,34 +888,25 @@ public class rShapes{
     // Draw a gradient-filled rectangle
     // NOTE: Colors refer to corners, starting at top-lef corner and counter-clockwise
     public void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4) {
+        rlCheckRenderBatchLimit(4);
         RLGL.rlSetTexture(texShapes.getId());
 
-        rlPushMatrix();
         rlBegin(RL_QUADS);
         rlNormal3f(0.0f, 0.0f, 1.0f);
-
         // NOTE: Default raylib font character 95 is a white square
         rlColor4ub(col1.r, col1.g, col1.b, col1.a);
-        rlTexCoord2f(texShapesRec.x / texShapes.width,
-                texShapesRec.y / texShapes.height);
+        rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
         rlVertex2f(rec.x, rec.y);
-
         rlColor4ub(col2.r, col2.g, col2.b, col2.a);
-        rlTexCoord2f(texShapesRec.x / texShapes.width,
-                (texShapesRec.y + texShapesRec.height) / texShapes.height);
+        rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
         rlVertex2f(rec.x, rec.y + rec.height);
-
         rlColor4ub(col3.r, col3.g, col3.b, col3.a);
-        rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width,
-                (texShapesRec.y + texShapesRec.height) / texShapes.height);
+        rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
         rlVertex2f(rec.x + rec.width, rec.y + rec.height);
-
         rlColor4ub(col4.r, col4.g, col4.b, col4.a);
-        rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width,
-                texShapesRec.y / texShapes.height);
+        rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
         rlVertex2f(rec.x + rec.width, rec.y);
-        rlEnd();
-        rlPopMatrix();
+
 
         rlSetTexture(0);
     }
@@ -1508,9 +1498,10 @@ public class rShapes{
      * @param color color to draw triangle
      */
     public void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color) {
-        rlCheckRenderBatchLimit(4);
 
         if(SUPPORT_QUADS_DRAW_MODE) {
+            rlCheckRenderBatchLimit(4);
+
             RLGL.rlSetTexture(texShapes.getId());
 
             rlBegin(RL_QUADS);
@@ -1532,6 +1523,8 @@ public class rShapes{
             rlSetTexture(0);
         }
         else{
+            rlCheckRenderBatchLimit(3);
+
             rlBegin(RL_TRIANGLES);
             rlColor4ub(color.r, color.g, color.b, color.a);
             rlVertex2f(v1.x, v1.y);
@@ -1816,7 +1809,11 @@ public class rShapes{
      * @return Is point inside circle
      */
     public boolean CheckCollisionPointCircle(Vector2 point, Vector2 center, float radius) {
-        return CheckCollisionCircles(point, 0, center, radius);
+        boolean collision = false;
+
+        collision = CheckCollisionCircles(point, 0, center, radius);
+
+        return collision;
     }
 
     /**
@@ -1896,6 +1893,8 @@ public class rShapes{
      * @return Are circle and rectangle colliding
      */
     public boolean CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec) {
+        boolean collision = false;
+
         int recCenterX = (int) (rec.x + rec.width / 2.0f);
         int recCenterY = (int) (rec.y + rec.height / 2.0f);
 
@@ -1919,7 +1918,9 @@ public class rShapes{
         float cornerDistanceSq = (dx - rec.width / 2.0f) * (dx - rec.width / 2.0f) +
                 (dy - rec.height / 2.0f) * (dy - rec.height / 2.0f);
 
-        return (cornerDistanceSq <= (radius * radius));
+        collision = (cornerDistanceSq <= (radius * radius));
+
+        return collision;
     }
 
     /**
@@ -1929,101 +1930,35 @@ public class rShapes{
      * @param endPos1   X, Y coordinate for final endpoint of line 1
      * @param startPos2 X, Y coordinate for initial endpoint of line 2
      * @param endPos2   X, Y coordinate for final endpoint of line 2
-     * @return if lines intersect
-     */
-    public boolean CheckCollisionLine(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2) {
-        float div = (endPos2.y - startPos2.y) * (endPos1.x - startPos1.x) - (endPos2.x - startPos2.x) * (endPos1.y - startPos1.y);
-
-        if(div == 0.0f) {
-            return false;      // WARNING: This check could not work due to float precision rounding issues...
-        }
-
-        float xi = ((startPos2.x - endPos2.x) * (startPos1.x * endPos1.y - startPos1.y * endPos1.x) - (startPos1.x - endPos1.x) * (startPos2.x * endPos2.y - startPos2.y * endPos2.x)) / div;
-        float yi = ((startPos2.y - endPos2.y) * (startPos1.x * endPos1.y - startPos1.y * endPos1.x) - (startPos1.y - endPos1.y) * (startPos2.x * endPos2.y - startPos2.y * endPos2.x)) / div;
-
-        if(xi < Math.min(startPos1.x, endPos1.x) || xi > Math.max(startPos1.x, endPos1.x)) {
-            return false;
-        }
-        if(xi < Math.min(startPos2.x, endPos2.x) || xi > Math.max(startPos2.x, endPos2.x)) {
-            return false;
-        }
-        if(yi < Math.min(startPos1.y, endPos1.y) || yi > Math.max(startPos1.y, endPos1.y)) {
-            return false;
-        }
-        if(yi < Math.min(startPos2.y, endPos2.y) || yi > Math.max(startPos2.y, endPos2.y)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Check the collision between two lines defined by two points each
-     *
-     * @param startPos1 X, Y coordinate for initial endpoint of line 1
-     * @param endPos1   X, Y coordinate for final endpoint of line 1
-     * @param startPos2 X, Y coordinate for initial endpoint of line 2
-     * @param endPos2   X, Y coordinate for final endpoint of line 2
+     * @param collisionPoint X, Y coordinate for location of collision
      * @return true if lines collide
      */
-    public boolean CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2) {
-        float div = (endPos2.y - startPos2.y) * (endPos1.x - startPos1.x) - (endPos2.x - startPos2.x) * (endPos1.y - startPos1.y);
+    @Contract(mutates = "param5")
+    public boolean CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2, Vector2 collisionPoint) {
+        boolean collision = false;
 
-        if(Math.abs(div) < Float.MIN_VALUE) {
-            return false;
-        }
+        float div = (endPos2.y - startPos2.y)*(endPos1.x - startPos1.x) - (endPos2.x - startPos2.x)*(endPos1.y - startPos1.y);
 
-        float xi = ((startPos2.x - endPos2.x) * (startPos1.x * endPos1.y - startPos1.y * endPos1.x) - (startPos1.x - endPos1.x) * (startPos2.x * endPos2.y - startPos2.y * endPos2.x)) / div;
-        float yi = ((startPos2.y - endPos2.y) * (startPos1.x * endPos1.y - startPos1.y * endPos1.x) - (startPos1.y - endPos1.y) * (startPos2.x * endPos2.y - startPos2.y * endPos2.x)) / div;
+        if (Math.abs(div) >= Float.MIN_VALUE) {
+            collision = true;
 
-        if (Math.abs(startPos1.x - endPos1.x) > Float.MIN_VALUE && (xi < Math.min(startPos1.x, endPos1.x) || xi > Math.max(startPos1.x, endPos1.x))) {            return false;
-        }
-        if (Math.abs(startPos2.x - endPos2.x) > Float.MIN_VALUE && (xi < Math.min(startPos2.x, endPos2.x) || xi > Math.max(startPos2.x, endPos2.x))) {
-            return false;
-        }
-        if (Math.abs(startPos1.y - endPos1.y) > Float.MIN_VALUE && (yi < Math.min(startPos1.y, endPos1.y) || yi > Math.max(startPos1.y, endPos1.y))) {
-            return false;
-        }
-        if (Math.abs(startPos2.y - endPos2.y) > Float.MIN_VALUE && (yi < Math.min(startPos2.y, endPos2.y) || yi > Math.max(startPos2.y, endPos2.y))) {
-            return false;
-        }
+            float xi = ((startPos2.x - endPos2.x)*(startPos1.x*endPos1.y - startPos1.y*endPos1.x) - (startPos1.x - endPos1.x)*(startPos2.x*endPos2.y - startPos2.y*endPos2.x))/div;
+            float yi = ((startPos2.y - endPos2.y)*(startPos1.x*endPos1.y - startPos1.y*endPos1.x) - (startPos1.y - endPos1.y)*(startPos2.x*endPos2.y - startPos2.y*endPos2.x))/div;
 
-        return true;
-    }
+            if (((Math.abs(startPos1.x - endPos1.x) > Float.MIN_VALUE) && (xi < Math.min(startPos1.x, endPos1.x) || (xi > Math.max(startPos1.x, endPos1.x)))) ||
+                    ((Math.abs(startPos2.x - endPos2.x) > Float.MIN_VALUE) && (xi < Math.min(startPos2.x, endPos2.x) || (xi > Math.max(startPos2.x, endPos2.x)))) ||
+                    ((Math.abs(startPos1.y - endPos1.y) > Float.MIN_VALUE) && (yi < Math.min(startPos1.y, endPos1.y) || (yi > Math.max(startPos1.y, endPos1.y)))) ||
+                    ((Math.abs(startPos2.y - endPos2.y) > Float.MIN_VALUE) && (yi < Math.min(startPos2.y, endPos2.y) || (yi > Math.max(startPos2.y, endPos2.y))))) {
+                collision = false;
+            }
 
-    /**
-     * Check the collision between two lines defined by two points each, returns collision point
-     *
-     * @param startPos1 X, Y coordinate for initial endpoint of line 1
-     * @param endPos1   X, Y coordinate for final endpoint of line 1
-     * @param startPos2 X, Y coordinate for initial endpoint of line 2
-     * @param endPos2   X, Y coordinate for final endpoint of line 2
-     * @return Vector2 where lines intersect, null if intersection does not occur
-     */
-    public Vector2 CheckCollisionLinesPoint(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2) {
-        float div = (endPos2.y - startPos2.y) * (endPos1.x - startPos1.x) - (endPos2.x - startPos2.x) * (endPos1.y - startPos1.y);
-
-        if(Math.abs(div) < Float.MIN_VALUE) {
-            return null;
+            if (collision && (collisionPoint != null)) {
+                collisionPoint.x = xi;
+                collisionPoint.y = yi;
+            }
         }
 
-        float xi = ((startPos2.x - endPos2.x) * (startPos1.x * endPos1.y - startPos1.y * endPos1.x) - (startPos1.x - endPos1.x) * (startPos2.x * endPos2.y - startPos2.y * endPos2.x)) / div;
-        float yi = ((startPos2.y - endPos2.y) * (startPos1.x * endPos1.y - startPos1.y * endPos1.x) - (startPos1.y - endPos1.y) * (startPos2.x * endPos2.y - startPos2.y * endPos2.x)) / div;
-
-        if(xi < Math.min(startPos1.x, endPos1.x) || xi > Math.max(startPos1.x, endPos1.x)) {
-            return null;
-        }
-        if(xi < Math.min(startPos2.x, endPos2.x) || xi > Math.max(startPos2.x, endPos2.x)) {
-            return null;
-        }
-        if(yi < Math.min(startPos1.y, endPos1.y) || yi > Math.max(startPos1.y, endPos1.y)) {
-            return null;
-        }
-        if(yi < Math.min(startPos2.y, endPos2.y) || yi > Math.max(startPos2.y, endPos2.y)) {
-            return null;
-        }
-
-        return new Vector2(xi, yi);
+        return collision;
     }
 
     // Check if point belongs to line created between two points [p1] and [p2] with defined margin in pixels [threshold]
@@ -2106,5 +2041,19 @@ public class rShapes{
         }
 
         return rec;
+    }
+
+    //----------------------------------------------------------------------------------
+    // Module specific Functions Definition
+    //----------------------------------------------------------------------------------
+
+    // Cubic easing in-out
+    // NOTE: Used by DrawLineBezier() only
+    private float EaseCubicInOut(float t, float b, float c, float d) {
+        if ((t /= 0.5f*d) < 1) return 0.5f*c*t*t*t + b;
+
+        t -= 2;
+
+        return 0.5f*c*(t*t*t + 2.0f) + b;
     }
 }

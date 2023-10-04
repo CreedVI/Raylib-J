@@ -13,10 +13,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d7118e07-dbb8-4d33-b477-43ae871d21a7" name="Default Changelist" comment="0.4 wip">
+      <change afterPath="$PROJECT_DIR$/native/annotations-24.0.1.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/core/input/Gamepad.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/core/input/Gamepad.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/text/Font.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/text/Font.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/shapes/rShapes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/shapes/rShapes.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
