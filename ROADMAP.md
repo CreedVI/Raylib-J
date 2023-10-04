@@ -20,7 +20,7 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 * [ ] rAudio Module
   * Complete overhaul of what's been dubbed "rAudioAL" to match audio functionality of the original rAudio
 
-## 0.5.2 <-{We are here!}
+## 0.5.5 <-{We are here!}
 <hr>
 
 * [ ] Raylib 4.5 update

@@ -16,6 +16,7 @@ public class Font{
         baseSize = 0;
         glyphCount = 0;
         glyphPadding = 0;
+        texture = new Texture2D();
         recs = new Rectangle[256];
         glyphs = new GlyphInfo[256];
     }

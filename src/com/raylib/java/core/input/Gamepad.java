@@ -2,7 +2,7 @@ package com.raylib.java.core.input;
 
 public class Gamepad{
 
-    int lastButtonPressed;          // Register last gamepad button pressed
+    public int lastButtonPressed;          // Register last gamepad button pressed
     int axisCount;                  // Register number of available gamepad axis
     public boolean[] ready;// Flag to know if gamepad is ready
     public float[][] axisState;// Gamepad axis state

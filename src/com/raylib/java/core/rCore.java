@@ -2073,11 +2073,11 @@ public class rCore{
     }
 
     // Detect if a gamepad button has been pressed once
-    boolean IsGamepadButtonPressed(int gamepad, int button){
+    public boolean IsGamepadButtonPressed(int gamepad, int button){
         boolean pressed = false;
 
-        pressed = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getPreviousButtonState()[gamepad][button] == 0) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 1);
+        pressed = (gamepad < MAX_GAMEPADS) && input.gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad.previousButtonState[gamepad][button] == 0) && (input.gamepad.currentButtonState[gamepad][button] == 1);
 
         return pressed;
     }
@@ -2091,7 +2091,7 @@ public class rCore{
     }
 
     // Detect if a gamepad button has NOT been pressed once
-    boolean IsGamepadButtonReleased(int gamepad, int button){
+    public boolean IsGamepadButtonReleased(int gamepad, int button){
         boolean released = false;
 
         released = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
@@ -2101,7 +2101,7 @@ public class rCore{
     }
 
     // Detect if a mouse button is NOT being pressed
-    boolean IsGamepadButtonUp(int gamepad, int button){
+    public boolean IsGamepadButtonUp(int gamepad, int button){
         boolean result = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
                 (input.gamepad.getCurrentButtonState()[gamepad][button] == 0);
 
@@ -2114,7 +2114,7 @@ public class rCore{
     }
 
     // Set internal gamepad mappings
-    boolean SetGamepadMappings(byte[] mappings){
+    public boolean SetGamepadMappings(byte[] mappings){
         boolean result = false;
 
         ByteBuffer mappingsBuffer = ByteBuffer.allocateDirect(mappings.length);
@@ -2801,9 +2801,9 @@ public class rCore{
 
         // Register gamepads buttons events
         for (int i = 0; i < MAX_GAMEPADS; i++){
-            if (input.gamepad.getReady()[i]){     // Check if gamepad is available
+            if (input.gamepad.getReady()[i]) {     // Check if gamepad is available
                 // Register previous gamepad states
-                input.gamepad.setPreviousButtonState(input.gamepad.getCurrentButtonState());
+                System.arraycopy(input.gamepad.currentButtonState[i], 0, input.gamepad.previousButtonState[i], 0, input.gamepad.currentButtonState[i].length);
 
                 // Get current gamepad state
                 // NOTE: There is no callback available, so we get it manually
@@ -2817,7 +2817,7 @@ public class rCore{
                 for (int k = 0; (buttons != null) && (k < GLFW_GAMEPAD_BUTTON_DPAD_LEFT + 1) && (k < MAX_GAMEPAD_BUTTONS); k++){
                     int button = -1;
 
-                    switch (k){
+                    switch (k) {
                         case GLFW_GAMEPAD_BUTTON_Y:
                             button = GAMEPAD_BUTTON_RIGHT_FACE_UP;
                             break;
@@ -2871,14 +2871,13 @@ public class rCore{
                             break;
                     }
 
-                    if (button != -1)   // Check for valid button
-                    {
-                        if (buttons.get(k) == GLFW_PRESS){
-                            input.gamepad.getCurrentButtonState()[i][button] = 1;
-                            input.gamepad.setLastButtonPressed(button);
+                    if (button != -1) {  // Check for valid button
+                        if (buttons.get(k) == GLFW_PRESS) {
+                            input.gamepad.currentButtonState[i][button] = 1;
+                            input.gamepad.lastButtonPressed = button;
                         }
-                        else{
-                            input.gamepad.getCurrentButtonState()[i][button] = 0;
+                        else {
+                            input.gamepad.currentButtonState[i][button] = 0;
                         }
                     }
                 }
