@@ -238,8 +238,6 @@ public class rCore{
             return window.isShouldClose();
         }
         else{
-            CloseWindow();
-
             return true;
         }
     }

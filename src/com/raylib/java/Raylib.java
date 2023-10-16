@@ -2,7 +2,7 @@ package com.raylib.java;
 
 import com.raylib.java.core.rCore;
 import com.raylib.java.models.rModels;
-import com.raylib.java.physac.Physac;
+import com.raylib.java.extras.physac.Physac;
 import com.raylib.java.raudioal.rAudioAL;
 import com.raylib.java.shapes.rShapes;
 import com.raylib.java.text.rText;

@@ -1,4 +1,4 @@
-package com.raylib.java.physac;
+package com.raylib.java.extras.physac;
 
 public class Matrix2x2{
 

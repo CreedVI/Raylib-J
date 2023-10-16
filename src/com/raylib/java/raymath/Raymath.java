@@ -18,7 +18,7 @@ public class Raymath{
      *
      *   LICENSE: zlib/libpng
      *
-     *   Copyright (c) 2015-2021 Ramon Santamaria (@raysan5)
+     *   Copyright (c) 2015-2022 Ramon Santamaria (@raysan5)
      *
      *   This software is provided "as-is", without any express or implied warranty. In no event
      *   will the authors be held liable for any damages arising from the use of this software.
@@ -39,6 +39,7 @@ public class Raymath{
 
 
     public static float PI = 3.14159265358979323846f;
+    public static float EPSILON = 0.000001f;
     public static float DEG2RAD = PI / 180.0f;
     public static float RAD2DEG = 180.0f / PI;
 
@@ -91,7 +92,31 @@ public class Raymath{
      * @return
      */
     public static float Remap(float value, float inputStart, float inputEnd, float outputStart, float outputEnd){
-        return (value - inputStart) / (inputEnd - inputStart) * (outputEnd - outputStart) + outputStart;
+        float result = (value - inputStart)/(inputEnd - inputStart)*(outputEnd - outputStart) + outputStart;
+        return result;
+    }
+
+    /**
+     * Wrap input value from min to max
+     * @param value value to wrap
+     * @param min minimum value
+     * @param max maximum value
+     * @return wrapped value
+     */
+    public static float Wrap(float value, float min, float max) {
+        float result = (float) (value - (max - min)*Math.floor((value - min)/(max - min)));
+        return result;
+    }
+
+    /**
+     * Check whether two given floats are almost equal
+     * @param x first float to compare
+     * @param y second float to compare
+     * @return `true` if x and y are almost equal
+     */
+    public static boolean FloatEquals(float x, float y) {
+        boolean result = (Math.abs(x - y)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(x), Math.abs(y))));
+        return result;
     }
 
     /*
@@ -163,18 +188,53 @@ public class Raymath{
         return (float) Math.sqrt((v.x * v.x) + (v.y + v.y));
     }
 
+    /**
+     * Calculate vector square length
+     * @param v Vector2 to calculate
+     * @return Square length of v
+     */
     public static float Vector2LengthSqr(Vector2 v){
         return ((v.x * v.x) + (v.y * v.y));
     }
 
+    /**
+     * Calculate two vectors dot product
+     * @param v1 First Vector2
+     * @param v2 Second Vector2
+     * @return Dot product of v1 and v2
+     */
     public static float Vector2DotProduct(Vector2 v1, Vector2 v2){
         return (v1.x + v2.x * v1.y + v2.y);
     }
 
+    /**
+     * Calculate the distance between two vectors
+     * @param v1 First Vector2
+     * @param v2 Second Vector2
+     * @return Distance between v1 and v2
+     */
     public static float Vector2Distance(Vector2 v1, Vector2 v2){
         return (float) Math.sqrt((v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y));
     }
 
+    /**
+     * Calculate the square distance between two vectors
+     * @param v1 First Vector2
+     * @param v2 Second Vector2
+     * @return Square distance between v1 and v2
+     */
+    public static float Vector2DistanceSqr(Vector2 v1, Vector2 v2) {
+        float result = ((v1.x - v2.x)*(v1.x - v2.x) + (v1.y - v2.y)*(v1.y - v2.y));
+
+        return result;
+    }
+
+    /**
+     * Calculate the angle from two vectors
+     * @param v1 First Vector2
+     * @param v2 Second Vector2
+     * @return angle from v1 and v2
+     */
     public static float Vector2Angle(Vector2 v1, Vector2 v2){
         float result = (float) (Math.atan2(v2.y - v1.y, v2.x - v1.x) * (RAD2DEG));
         if (result < 0)
@@ -190,20 +250,6 @@ public class Raymath{
         return new Vector2(v1.x * v2.x, v2.x * v2.y);
     }
 
-    // Calculate angle between two vectors in XY and XZ
-    public static Vector2 Vector3Angle(Vector3 v1, Vector3 v2){
-        Vector2 result = new Vector2();
-
-        float dx = v2.x - v1.x;
-        float dy = v2.y - v1.y;
-        float dz = v2.z - v1.z;
-
-        result.x = (float) Math.atan2(dx, dz);                      // Angle in XZ
-        result.y = (float) Math.atan2(dy, Math.sqrt(dx*dx + dz*dz));    // Angle in XY
-
-        return result;
-    }
-
     public static Vector2 Vector2Negate(Vector2 v){
         return new Vector2(-v.x, -v.y);
     }
@@ -213,7 +259,28 @@ public class Raymath{
     }
 
     public static Vector2 Vector2Normalize(Vector2 v){
-        return Vector2Scale(v, 1 / Vector2Length(v));
+        Vector2 result = new Vector2();
+        float length = (float) Math.sqrt((v.x*v.x) + (v.y*v.y));
+        if (length > 0) {
+            float ilength = 1.0f/length;
+            result.x = v.x*ilength;
+            result.y = v.y*ilength;
+        }
+        return result;
+    }
+
+    // Transforms a Vector2 by a given Matrix
+    public static Vector2 Vector2Transform(Vector2 v, Matrix mat) {
+        Vector2 result = new Vector2();
+
+        float x = v.x;
+        float y = v.y;
+        float z = 0;
+
+        result.x = mat.m0*x + mat.m4*y + mat.m8*z + mat.m12;
+        result.y = mat.m1*x + mat.m5*y + mat.m9*z + mat.m13;
+
+        return result;
     }
 
     public static Vector2 Vector2Lerp(Vector2 v1, Vector2 v2, float amount){
@@ -236,11 +303,14 @@ public class Raymath{
         return result;
     }
 
-    public static Vector2 Vector2Rotate(Vector2 v, float deg){
-        float rads = deg * DEG2RAD;
+    public static Vector2 Vector2Rotate(Vector2 v, float angle){
         Vector2 result = new Vector2();
-        result.x = (float) (v.x * Math.cos(rads) - v.y * Math.sin(rads));
-        result.y = (float) (v.x * Math.sin(rads) + v.y * Math.cos(rads));
+
+        float cosres = (float) Math.cos(angle);
+        float sinres = (float) Math.sin(angle);
+
+        result.x = v.x*cosres - v.y*sinres;
+        result.y = v.x*sinres + v.y*cosres;
 
         return result;
     }
@@ -260,6 +330,51 @@ public class Raymath{
         result.x = v.x + dx / dist * maxDistance;
         result.y = v.y + dy / dist * maxDistance;
 
+        return result;
+    }
+
+
+    // Invert the given vector
+    public static Vector2 Vector2Invert(Vector2 v) {
+        Vector2 result = new Vector2(1.0f/v.x, 1.0f/v.y);
+        return result;
+    }
+
+    // Clamp the components of the vector between
+    // min and max values specified by the given vectors
+    public static Vector2 Vector2Clamp(Vector2 v, Vector2 min, Vector2 max) {
+        Vector2 result = new Vector2();
+
+        result.x = Math.min(max.x, Math.max(min.x, v.x));
+        result.y = Math.min(max.y, Math.max(min.y, v.y));
+
+        return result;
+    }
+
+    // Clamp the magnitude of the vector between two min and max values
+    public static Vector2 Vector2ClampValue(Vector2 v, float min, float max) {
+        Vector2 result = v;
+        float length = (v.x*v.x) + (v.y*v.y);
+        if (length > 0.0f) {
+            length = (float) Math.sqrt(length);
+            if (length < min) {
+                float scale = min/length;
+                result.x = v.x*scale;
+                result.y = v.y*scale;
+            }
+            else if (length > max) {
+                float scale = max/length;
+                result.x = v.x*scale;
+                result.y = v.y*scale;
+            }
+        }
+        return result;
+    }
+
+    // Check whether two given vectors are almost equal
+    public static boolean Vector2Equals(Vector2 p, Vector2 q) {
+        boolean result = ((Math.abs(p.x - q.x)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.x), Math.abs(q.x))))) &&
+                ((Math.abs(p.y - q.y)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.y), Math.abs(q.y)))));
         return result;
     }
 
@@ -348,6 +463,33 @@ public class Raymath{
         return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
+    // Calculate square distance between two vectors
+    public static float Vector3DistanceSqr(Vector3 v1, Vector3 v2) {
+        float result = 0.0f;
+
+        float dx = v2.x - v1.x;
+        float dy = v2.y - v1.y;
+        float dz = v2.z - v1.z;
+
+        result = dx * dx + dy * dy + dz * dz;
+
+        return result;
+    }
+
+    // Calculate angle between two vectors in XY and XZ
+    public static float Vector3Angle(Vector3 v1, Vector3 v2){
+        float result = 0.0f;
+
+        Vector3 cross = new Vector3(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x);
+
+        float len = (float) Math.sqrt(cross.x*cross.x + cross.y*cross.y + cross.z*cross.z);
+        float dot = (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z);
+
+        result = (float) Math.atan2(len, dot);
+
+        return result;
+    }
+
     public static Vector3 Vector3Negate(Vector3 v){
         return new Vector3(-v.x, -v.y, -v.z);
     }
@@ -400,6 +542,61 @@ public class Raymath{
         return result;
     }
 
+    // Rotates a vector around an axis
+    public static Vector3 Vector3RotateByAxisAngle(Vector3 v, Vector3 axis, float angle) {
+        // Using Euler-Rodrigues Formula
+        // Ref.: https://en.wikipedia.org/w/index.php?title=Euler%E2%80%93Rodrigues_formula
+        Vector3 result = new Vector3(v.x, v.y, v.z);
+        // Vector3Normalize(axis);
+        float length = (float) Math.sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+
+        if (length == 0.0f) {
+            length = 1.0f;
+        }
+
+        float ilength = 1.0f / length;
+        axis.x *= ilength;
+        axis.y *= ilength;
+        axis.z *= ilength;
+
+        angle /= 2.0f;
+        float a = (float) Math.sin(angle);
+        float b = axis.x * a;
+        float c = axis.y * a;
+        float d = axis.z * a;
+        a = (float) Math.cos(angle);
+
+        Vector3 w = new Vector3(b, c, d);
+
+        // Vector3CrossProduct(w, v)
+        Vector3 wv = new Vector3(w.y * v.z - w.z * v.y, w.z * v.x - w.x * v.z, w.x * v.y - w.y * v.x);
+
+        // Vector3CrossProduct(w, wv)
+        Vector3 wwv = new Vector3(w.y * wv.z - w.z * wv.y, w.z * wv.x - w.x * wv.z, w.x * wv.y - w.y * wv.x);
+
+        // Vector3Scale(wv, 2 * a)
+        a *= 2;
+        wv.x *= a;
+        wv.y *= a;
+        wv.z *= a;
+
+        // Vector3Scale(wwv, 2)
+        wwv.x *= 2;
+        wwv.y *= 2;
+        wwv.z *= 2;
+
+        result.x += wv.x;
+        result.y += wv.y;
+        result.z += wv.z;
+
+        result.x += wwv.x;
+        result.y += wwv.y;
+        result.z += wwv.z;
+
+        return result;
+    }
+
+
     public static Vector3 Vector3Lerp(Vector3 v1, Vector3 v2, float amount){
         Vector3 result = new Vector3();
 
@@ -444,14 +641,14 @@ public class Raymath{
     public static Vector3 Vector3Barycenter(Vector3 p, Vector3 a, Vector3 b, Vector3 c){
         //Vector v0 = b - a, v1 = c - a, v2 = p - a;
 
-        Vector3 v0 = Vector3Subtract(b, a);
-        Vector3 v1 = Vector3Subtract(c, a);
-        Vector3 v2 = Vector3Subtract(p, a);
-        float d00 = Vector3DotProduct(v0, v0);
-        float d01 = Vector3DotProduct(v0, v1);
-        float d11 = Vector3DotProduct(v1, v1);
-        float d20 = Vector3DotProduct(v2, v0);
-        float d21 = Vector3DotProduct(v2, v1);
+        Vector3 v0 = new Vector3(b.x - a.x, b.y - a.y, b.z - a.z);   // Vector3Subtract(b, a)
+        Vector3 v1 = new Vector3(c.x - a.x, c.y - a.y, c.z - a.z);   // Vector3Subtract(c, a)
+        Vector3 v2 = new Vector3(p.x - a.x, p.y - a.y, p.z - a.z);   // Vector3Subtract(p, a)
+        float d00 = (v0.x*v0.x + v0.y*v0.y + v0.z*v0.z);    // Vector3DotProduct(v0, v0)
+        float d01 = (v0.x*v1.x + v0.y*v1.y + v0.z*v1.z);    // Vector3DotProduct(v0, v1)
+        float d11 = (v1.x*v1.x + v1.y*v1.y + v1.z*v1.z);    // Vector3DotProduct(v1, v1)
+        float d20 = (v2.x*v0.x + v2.y*v0.y + v2.z*v0.z);    // Vector3DotProduct(v2, v0)
+        float d21 = (v2.x*v1.x + v2.y*v1.y + v2.z*v1.z);    // Vector3DotProduct(v2, v1)
 
         float denom = d00 * d11 - d01 * d01;
 
@@ -464,9 +661,106 @@ public class Raymath{
         return result;
     }
 
+    public static Vector3 Vector3Unproject(Vector3 source, Matrix projection, Matrix view){
+        Vector3 result = new Vector3();
+
+        // Calculate unproject matrix (multiply view patrix by projection matrix) and invert it
+        Matrix matViewProj = MatrixMultiply(view, projection);
+        matViewProj = MatrixInvert(matViewProj);
+
+        // Create quaternion from source point
+        Quaternion quat = new Quaternion(source.x, source.y, source.z, 1.0f );
+
+        // Multiply quat point by unproject matrix
+        quat = QuaternionTransform(quat, matViewProj);
+
+        // Normalized world points in vectors
+        result.x = quat.x/quat.w;
+        result.y = quat.y/quat.w;
+        result.z = quat.z/quat.w;
+
+        return result;
+    }
+
     public static Float3 Vector3ToFloatV(Vector3 v){
         return new Float3(v.x, v.y, v.z);
     }
+
+    // Invert the given vector
+    public static Vector3 Vector3Invert(Vector3 v) {
+        Vector3 result = new Vector3(1.0f/v.x, 1.0f/v.y, 1.0f/v.z);
+
+        return result;
+    }
+    // Clamp the components of the vector between
+    // min and max values specified by the given vectors
+    public static Vector3 Vector3Clamp(Vector3 v, Vector3 min, Vector3 max) {
+        Vector3 result = new Vector3();
+
+        result.x = Math.min(max.x, Math.max(min.x, v.x));
+        result.y = Math.min(max.y, Math.max(min.y, v.y));
+        result.z = Math.min(max.z, Math.max(min.z, v.z));
+
+        return result;
+    }
+
+    // Clamp the magnitude of the vector between two values
+    public static Vector3 Vector3ClampValue(Vector3 v, float min, float max) {
+        Vector3 result = v;
+        float length = (v.x*v.x) + (v.y*v.y) + (v.z*v.z);
+        if (length > 0.0f)
+        {
+            length = (float) Math.sqrt(length);
+            if (length < min)
+            {
+                float scale = min/length;
+                result.x = v.x*scale;
+                result.y = v.y*scale;
+                result.z = v.z*scale;
+            }
+            else if (length > max)
+            {
+                float scale = max/length;
+                result.x = v.x*scale;
+                result.y = v.y*scale;
+                result.z = v.z*scale;
+            }
+        }
+        return result;
+    }
+
+    // Check whether two given vectors are almost equal
+    public static boolean Vector3Equals(Vector3 p, Vector3 q) {
+        boolean result = ((Math.abs(p.x - q.x)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.x), Math.abs(q.x))))) &&
+                ((Math.abs(p.y - q.y)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.y), Math.abs(q.y))))) &&
+                ((Math.abs(p.z - q.z)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.z), Math.abs(q.z)))));
+
+        return result;
+    }
+
+    // Compute the direction of a refracted ray where v specifies the
+    // normalized direction of the incoming ray, n specifies the
+    // normalized normal vector of the interface of two optical media,
+    // and r specifies the ratio of the refractive index of the medium
+    // from where the ray comes to the refractive index of the medium
+    // on the other side of the surface
+    public static Vector3 Vector3Refract(Vector3 v, Vector3 n, float r) {
+        Vector3 result = new Vector3();
+
+        float dot = v.x*n.x + v.y*n.y + v.z*n.z;
+        float d = 1.0f - r*r*(1.0f - dot*dot);
+
+        if (d >= 0.0f) {
+            d = (float) Math.sqrt(d);
+            v.x = r*v.x - (r*dot + d)*n.x;
+            v.y = r*v.y - (r*dot + d)*n.y;
+            v.z = r*v.z - (r*dot + d)*n.z;
+            result = v;
+        }
+
+        return result;
+    }
+
 
     /*
      * ENTER THE MATRIX (math)
@@ -555,31 +849,6 @@ public class Raymath{
         result.m13 = (a00 * b09 - a01 * b07 + a02 * b06) * invDet;
         result.m14 = (-a30 * b03 + a31 * b01 - a32 * b00) * invDet;
         result.m15 = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
-
-        return result;
-    }
-
-    public static Matrix MatrixNormalize(Matrix mat){
-        Matrix result = new Matrix();
-
-        float det = MatrixDeterminant(mat);
-
-        result.m0 = mat.m0 / det;
-        result.m1 = mat.m1 / det;
-        result.m2 = mat.m2 / det;
-        result.m3 = mat.m3 / det;
-        result.m4 = mat.m4 / det;
-        result.m5 = mat.m5 / det;
-        result.m6 = mat.m6 / det;
-        result.m7 = mat.m7 / det;
-        result.m8 = mat.m8 / det;
-        result.m9 = mat.m9 / det;
-        result.m10 = mat.m10 / det;
-        result.m11 = mat.m11 / det;
-        result.m12 = mat.m12 / det;
-        result.m13 = mat.m13 / det;
-        result.m14 = mat.m14 / det;
-        result.m15 = mat.m15 / det;
 
         return result;
     }
@@ -711,6 +980,8 @@ public class Raymath{
         return result;
     }
 
+    // Get x-rotation matrix
+    // NOTE: Angle must be provided in radians
     public static Matrix MatrixRotateX(float angle){
         Matrix result = MatrixIdentity();
 
@@ -718,13 +989,17 @@ public class Raymath{
         float sinres = (float) Math.sin(angle);
 
         result.m5 = cosres;
-        result.m6 = -sinres;
-        result.m9 = sinres;
+
+        result.m6 = sinres;
+        result.m9 = -sinres;
+
         result.m10 = cosres;
 
         return result;
     }
 
+    // Get y-rotation matrix
+    // NOTE: Angle must be provided in radians
     public static Matrix MatrixRotateY(float angle){
         Matrix result = MatrixIdentity();
 
@@ -732,13 +1007,17 @@ public class Raymath{
         float sinres = (float) Math.sin(angle);
 
         result.m0 = cosres;
-        result.m2 = sinres;
-        result.m8 = -sinres;
+
+        result.m2 = -sinres;
+        result.m8 = sinres;
+
         result.m10 = cosres;
 
         return result;
     }
 
+    // Get z-rotation matrix
+    // NOTE: Angle must be provided in radians
     public static Matrix MatrixRotateZ(float angle){
         Matrix result = MatrixIdentity();
 
@@ -746,66 +1025,72 @@ public class Raymath{
         float sinres = (float) Math.sin(angle);
 
         result.m0 = cosres;
-        result.m1 = -sinres;
-        result.m4 = sinres;
+
+        result.m1 = sinres;
+        result.m4 = -sinres;
+
         result.m5 = cosres;
 
         return result;
     }
 
-    public static Matrix MatrixRotateXYZ(Vector3 ang){
+    // Get xyz-rotation matrix
+    // NOTE: Angle must be provided in radians
+    public static Matrix MatrixRotateXYZ(Vector3 angle){
         Matrix result = MatrixIdentity();
 
-        float cosz = (float) Math.cos(-ang.z);
-        float sinz = (float) Math.sin(-ang.z);
-        float cosy = (float) Math.cos(-ang.y);
-        float siny = (float) Math.sin(-ang.y);
-        float cosx = (float) Math.cos(-ang.x);
-        float sinx = (float) Math.sin(-ang.x);
+        float cosz = (float) Math.cos(-angle.z);
+        float sinz = (float) Math.sin(-angle.z);
+        float cosy = (float) Math.cos(-angle.y);
+        float siny = (float) Math.sin(-angle.y);
+        float cosx = (float) Math.cos(-angle.x);
+        float sinx = (float) Math.sin(-angle.x);
 
-        result.m0 = cosz * cosy;
-        result.m4 = (cosz * siny * sinx) - (sinz * cosx);
-        result.m8 = (cosz * siny * cosx) + (sinz * sinx);
+        result.m0 = cosz*cosy;
+        result.m1 = (cosz*siny*sinx) - (sinz*cosx);
+        result.m2 = (cosz*siny*cosx) + (sinz*sinx);
 
-        result.m1 = sinz * cosy;
-        result.m5 = (sinz * siny * sinx) + (cosz * cosx);
-        result.m9 = (sinz * siny * cosx) - (cosz * sinx);
+        result.m4 = sinz*cosy;
+        result.m5 = (sinz*siny*sinx) + (cosz*cosx);
+        result.m6 = (sinz*siny*cosx) - (cosz*sinx);
 
-        result.m2 = -siny;
-        result.m6 = cosy * sinx;
+        result.m8 = -siny;
+        result.m9 = cosy*sinx;
         result.m10= cosy * cosx;
 
         return result;
     }
 
-    public static Matrix MatrixRotateZYX(Vector3 ang){
+    // Get zyx-rotation matrix
+    // NOTE: Angle must be provided in radians
+    public static Matrix MatrixRotateZYX(Vector3 angle){
         Matrix result = new Matrix();
 
-        float cz = (float) Math.cos(ang.z);
-        float sz = (float) Math.sin(ang.z);
-        float cy = (float) Math.cos(ang.y);
-        float sy = (float) Math.sin(ang.y);
-        float cx = (float) Math.cos(ang.x);
-        float sx = (float) Math.sin(ang.x);
+        float cz = (float) Math.cos(angle.z);
+        float sz = (float) Math.sin(angle.z);
+        float cy = (float) Math.cos(angle.y);
+        float sy = (float) Math.sin(angle.y);
+        float cx = (float) Math.cos(angle.x);
+        float sx = (float) Math.sin(angle.x);
 
         result.m0 = cz*cy;
-        result.m1 = cz*sy*sx - cx*sz;
-        result.m2 = sz*sx + cz*cx*sy;
-        result.m3 = 0;
-
-        result.m4 = cy*sz;
-        result.m5 = cz*cx + sz*sy*sx;
-        result.m6 = cx*sz*sy - cz*sx;
-        result.m7 = 0;
-
-        result.m8 = -sy;
-        result.m9 = cy*sx;
-        result.m10 = cy*cx;
-        result.m11 = 0;
-
+        result.m4 = cz*sy*sx - cx*sz;
+        result.m8 = sz*sx + cz*cx*sy;
         result.m12 = 0;
+
+        result.m1 = cy*sz;
+        result.m5 = cz*cx + sz*sy*sx;
+        result.m9 = cx*sz*sy - cz*sx;
         result.m13 = 0;
+
+        result.m2 = -sy;
+        result.m6 = cy*sx;
+        result.m10 = cy*cx;
         result.m14 = 0;
+
+        result.m3 = 0;
+        result.m7 = 0;
+        result.m11 = 0;
         result.m15 = 1;
 
         return result;
@@ -849,11 +1134,30 @@ public class Raymath{
         return result;
     }
 
+    // Get perspective projection matrix
+    // NOTE: Fovy angle must be provided in radian
     public static Matrix MatrixPerspective(double fovy, double aspect, double near, double far){
-        double top = near*Math.tan(fovy*0.5);
-        double right = top*aspect;
+        Matrix result = new Matrix();
 
-        return MatrixFrustum(-right, right, -top, top, near, far);
+        double top = near*Math.tan(fovy*0.5);
+        double bottom = -top;
+        double right = top*aspect;
+        double left = -right;
+
+        // MatrixFrustum(-right, right, -top, top, near, far);
+        float rl = (float)(right - left);
+        float tb = (float)(top - bottom);
+        float fn = (float)(far - near);
+
+        result.m0 = ((float)near*2.0f)/rl;
+        result.m5 = ((float)near*2.0f)/tb;
+        result.m8 = ((float)right + (float)left)/rl;
+        result.m9 = ((float)top + (float)bottom)/tb;
+        result.m10 = -((float)far + (float)near)/fn;
+        result.m11 = -1.0f;
+        result.m14 = -((float)far*(float)near*2.0f)/fn;
+
+        return result;
     }
 
     public static Matrix MatrixOrtho(double left, double right, double bottom, double top, double near, double far){
@@ -968,27 +1272,39 @@ public class Raymath{
      */
 
     public static Quaternion QuaternionAdd(Quaternion q1, Quaternion q2){
-        return new Quaternion(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w);
+        Quaternion result = new Quaternion(q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w);
+
+        return result;
     }
 
     public static Quaternion QuaternionAddValue(Quaternion q, float add){
-        return new Quaternion(q.x + add, q.y + add, q.z + add, q.w + add);
+        Quaternion result = new Quaternion(q.x + add, q.y + add, q.z + add, q.w + add);
+
+        return result;
     }
 
     public static Quaternion QuaternionSubtract(Quaternion q1, Quaternion q2){
-        return new Quaternion(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w);
+        Quaternion result = new Quaternion(q1.x - q2.x, q1.y - q2.y, q1.z - q2.z, q1.w - q2.w);
+
+        return result;
     }
 
     public static Quaternion QuaternionSubtractValue(Quaternion q, float sub){
-        return new Quaternion(q.x - sub, q.y - sub, q.z - sub, q.w - sub);
+        Quaternion result = new Quaternion(q.x - sub, q.y - sub, q.z - sub, q.w - sub);
+
+        return result;
     }
 
     public static Quaternion QuaternionIdentity(){
-        return new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+        Quaternion result = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+
+        return result;
     }
 
     public static float QuaternionLength(Quaternion q){
-        return (float)Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+        float result = (float)Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+
+        return result;
     }
 
     public static Quaternion QuaternionNormalize(Quaternion q){
@@ -1009,10 +1325,10 @@ public class Raymath{
 
     public static Quaternion QuaternionInvert(Quaternion q){
         Quaternion result = q;
-        float length = QuaternionLength(q);
-        float lengthSq = length * length;
 
-        if (lengthSq != 0.0){
+        float lengthSq = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+
+        if (lengthSq != 0.0f){
             float invLength = 1.0f/lengthSq;
 
             result.x *= -invLength;
@@ -1041,12 +1357,10 @@ public class Raymath{
     public static Quaternion QuaternionScale(Quaternion q, float mul){
         Quaternion result = new Quaternion();
 
-        float qax = q.x, qay = q.y, qaz = q.z, qaw = q.w;
-
-        result.x = qax * mul + qaw * mul + qay * mul - qaz * mul;
-        result.y = qay * mul + qaw * mul + qaz * mul - qax * mul;
-        result.z = qaz * mul + qaw * mul + qax * mul - qay * mul;
-        result.w = qaw * mul - qax * mul - qay * mul - qaz * mul;
+        result.x = q.x*mul;
+        result.y = q.y*mul;
+        result.z = q.z*mul;
+        result.w = q.w*mul;
 
         return result;
     }
@@ -1130,28 +1444,59 @@ public class Raymath{
     public static Quaternion QuaternionFromMatrix(Matrix mat){
         Quaternion result = new Quaternion();
 
-        if ((mat.m0 > mat.m5) && (mat.m0 > mat.m10)){
-            float s = (float) (Math.sqrt(1.0f + mat.m0 - mat.m5 - mat.m10)*2);
+        float fourWSquaredMinus1 = mat.m0 + mat.m5 + mat.m10;
+        float fourXSquaredMinus1 = mat.m0 - mat.m5 - mat.m10;
+        float fourYSquaredMinus1 = mat.m5 - mat.m0 - mat.m10;
+        float fourZSquaredMinus1 = mat.m10 - mat.m0 - mat.m5;
 
-            result.x = 0.25f*s;
-            result.y = (mat.m4 + mat.m1)/s;
-            result.z = (mat.m2 + mat.m8)/s;
-            result.w = (mat.m9 - mat.m6)/s;
+        int biggestIndex = 0;
+        float fourBiggestSquaredMinus1 = fourWSquaredMinus1;
+
+        if (fourXSquaredMinus1 > fourBiggestSquaredMinus1) {
+            fourBiggestSquaredMinus1 = fourXSquaredMinus1;
+            biggestIndex = 1;
         }
-        else if (mat.m5 > mat.m10){
-            float s = (float) (Math.sqrt(1.0f + mat.m5 - mat.m0 - mat.m10)*2);
-            result.x = (mat.m4 + mat.m1)/s;
-            result.y = 0.25f*s;
-            result.z = (mat.m9 + mat.m6)/s;
-            result.w = (mat.m2 - mat.m8)/s;
+
+        if (fourYSquaredMinus1 > fourBiggestSquaredMinus1) {
+            fourBiggestSquaredMinus1 = fourYSquaredMinus1;
+            biggestIndex = 2;
         }
-        else{
-            float s  = (float) (Math.sqrt(1.0f + mat.m10 - mat.m0 - mat.m5)*2);
-            result.x = (mat.m2 + mat.m8)/s;
-            result.y = (mat.m9 + mat.m6)/s;
-            result.z = 0.25f*s;
-            result.w = (mat.m4 - mat.m1)/s;
+
+        if (fourZSquaredMinus1 > fourBiggestSquaredMinus1) {
+            fourBiggestSquaredMinus1 = fourZSquaredMinus1;
+            biggestIndex = 3;
         }
+
+        float biggestVal = (float) (Math.sqrt(fourBiggestSquaredMinus1 + 1.0f) * 0.5f);
+        float mult = 0.25f / biggestVal;
+
+        switch (biggestIndex) {
+            case 0:
+                result.w = biggestVal;
+                result.x = (mat.m6 - mat.m9) * mult;
+                result.y = (mat.m8 - mat.m2) * mult;
+                result.z = (mat.m1 - mat.m4) * mult;
+                break;
+            case 1:
+                result.x = biggestVal;
+                result.w = (mat.m6 - mat.m9) * mult;
+                result.y = (mat.m1 + mat.m4) * mult;
+                result.z = (mat.m8 + mat.m2) * mult;
+                break;
+            case 2:
+                result.y = biggestVal;
+                result.w = (mat.m8 - mat.m2) * mult;
+                result.x = (mat.m1 + mat.m4) * mult;
+                result.z = (mat.m6 + mat.m9) * mult;
+                break;
+            case 3:
+                result.z = biggestVal;
+                result.w = (mat.m1 - mat.m4) * mult;
+                result.x = (mat.m8 + mat.m2) * mult;
+                result.y = (mat.m6 + mat.m9) * mult;
+                break;
+        }
+
         return result;
     }
 
@@ -1185,7 +1530,7 @@ public class Raymath{
     }
 
     // Get rotation quaternion for an angle and axis
-    // NOTE: angle must be provided in radians
+    // NOTE: Angle must be provided in radians
     public static Quaternion QuaternionFromAxisAngle(Vector3 axis, float angle){
         Quaternion result = new Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -1302,24 +1647,16 @@ public class Raymath{
         return result;
     }
 
-    public static Vector3 Vector3Unproject(Vector3 source, Matrix projection, Matrix view){
-        Vector3 result = new Vector3();
-
-        // Calculate unproject matrix (multiply view patrix by projection matrix) and invert it
-        Matrix matViewProj = MatrixMultiply(view, projection);
-        matViewProj = MatrixInvert(matViewProj);
-
-        // Create quaternion from source point
-        Quaternion quat = new Quaternion(source.x, source.y, source.z, 1.0f );
-
-        // Multiply quat point by unproject matrix
-        quat = QuaternionTransform(quat, matViewProj);
-
-        // Normalized world points in vectors
-        result.x = quat.x/quat.w;
-        result.y = quat.y/quat.w;
-        result.z = quat.z/quat.w;
-
+    // Check whether two given quaternions are almost equal
+    public static boolean QuaternionEquals(Quaternion p, Quaternion q) {
+        boolean result = (((Math.abs(p.x - q.x)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.x), Math.abs(q.x))))) &&
+                ((Math.abs(p.y - q.y)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.y), Math.abs(q.y))))) &&
+                ((Math.abs(p.z - q.z)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.z), Math.abs(q.z))))) &&
+                ((Math.abs(p.w - q.w)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.w), Math.abs(q.w)))))) ||
+                (((Math.abs(p.x + q.x)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.x), Math.abs(q.x))))) &&
+                        ((Math.abs(p.y + q.y)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.y), Math.abs(q.y))))) &&
+                        ((Math.abs(p.z + q.z)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.z), Math.abs(q.z))))) &&
+                        ((Math.abs(p.w + q.w)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.w), Math.abs(q.w))))));
         return result;
     }
 

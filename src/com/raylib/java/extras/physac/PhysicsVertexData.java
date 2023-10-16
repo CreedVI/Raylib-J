@@ -1,4 +1,4 @@
-package com.raylib.java.physac;
+package com.raylib.java.extras.physac;
 
 import com.raylib.java.raymath.Vector2;
 

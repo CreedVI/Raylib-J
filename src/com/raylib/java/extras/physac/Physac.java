@@ -1,9 +1,9 @@
-package com.raylib.java.physac;
+package com.raylib.java.extras.physac;
 
 import com.raylib.java.raymath.Vector2;
 
-import static com.raylib.java.physac.Physac.PhysicsShapeType.PHYSICS_CIRCLE;
-import static com.raylib.java.physac.Physac.PhysicsShapeType.PHYSICS_POLYGON;
+import static com.raylib.java.extras.physac.Physac.PhysicsShapeType.PHYSICS_CIRCLE;
+import static com.raylib.java.extras.physac.Physac.PhysicsShapeType.PHYSICS_POLYGON;
 
 public class Physac{
 
