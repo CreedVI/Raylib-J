@@ -14,16 +14,6 @@
   <component name="ChangeListManager">
     <list default="true" id="d7118e07-dbb8-4d33-b477-43ae871d21a7" name="Default Changelist" comment="0.4 wip">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/Raylib.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/Raylib.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/core/rCore.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/physac/Matrix2x2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/physac/Matrix2x2.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/physac/Physac.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/physac/Physac.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/physac/PhysicsBody.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/physac/PhysicsBody.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/physac/PhysicsManifoldData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/physac/PhysicsManifoldData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/physac/PhysicsShape.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/physac/PhysicsShape.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/physac/PhysicsVertexData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/physac/PhysicsVertexData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/raymath/Raymath.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/raymath/Raymath.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/raylib/java/utils/Easings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/raylib/java/extras/Easings.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +102,7 @@
       <recent name="com.raylib.java.Audio" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.WindowIcon">
+  <component name="RunManager" selected="Application.IQMLoad">
     <configuration name="AudioTest" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.raylib.java.Audio.AudioTest" />
       <module name="Raylib-J" />

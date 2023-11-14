@@ -23,11 +23,63 @@ import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
+import static com.raylib.java.textures.rTextures.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 
 public class rText{
+
+    /**********************************************************************************************
+     *
+     *   rtext - Basic functions to load fonts and draw text
+     *
+     *   CONFIGURATION:
+     *
+     *   #define SUPPORT_MODULE_RTEXT
+     *       rtext module is included in the build
+     *
+     *   #define SUPPORT_FILEFORMAT_FNT
+     *   #define SUPPORT_FILEFORMAT_TTF
+     *       Selected desired fileformats to be supported for loading. Some of those formats are
+     *       supported by default, to remove support, just comment unrequired #define in this module
+     *
+     *   #define SUPPORT_DEFAULT_FONT
+     *       Load default raylib font on initialization to be used by DrawText() and MeasureText().
+     *       If no default font loaded, DrawTextEx() and MeasureTextEx() are required.
+     *
+     *   #define TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH
+     *       TextSplit() function static buffer max size
+     *
+     *   #define MAX_TEXTSPLIT_COUNT
+     *       TextSplit() function static substrings pointers array (pointing to static buffer)
+     *
+     *
+     *   DEPENDENCIES:
+     *       stb_truetype  - Load TTF file and rasterize characters data
+     *       stb_rect_pack - Rectangles packing algorithms, required for font atlas generation
+     *
+     *
+     *   LICENSE: zlib/libpng
+     *
+     *   Copyright (c) 2013-2022 Ramon Santamaria (@raysan5)
+     *
+     *   This software is provided "as-is", without any express or implied warranty. In no event
+     *   will the authors be held liable for any damages arising from the use of this software.
+     *
+     *   Permission is granted to anyone to use this software for any purpose, including commercial
+     *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+     *
+     *     1. The origin of this software must not be misrepresented; you must not claim that you
+     *     wrote the original software. If you use this software in a product, an acknowledgment
+     *     in the product documentation would be appreciated but is not required.
+     *
+     *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+     *     as being the original software.
+     *
+     *     3. This notice may not be removed or altered from any source distribution.
+     *
+     **********************************************************************************************/
 
     public static class FontType{ // Font type, defines generation method
 
@@ -226,7 +278,7 @@ public class rText{
             defaultFont.glyphs[i].image = rTextures.ImageFromImage(imFont, defaultFont.recs[i]);
         }
 
-        rTextures.UnloadImage(imFont);
+        UnloadImage(imFont);
 
         defaultFont.baseSize = (int)defaultFont.recs[0].height;
 
@@ -236,7 +288,7 @@ public class rText{
     // Unload raylib default font
     public static void UnloadFontDefault() {
         for (int i = 0; i < defaultFont.glyphCount; i++) {
-            defaultFont.glyphs[i].image = rTextures.UnloadImage(defaultFont.glyphs[i].image);
+            defaultFont.glyphs[i].image = UnloadImage(defaultFont.glyphs[i].image);
         }
         defaultFont.texture = null;
         defaultFont.glyphs = null;
@@ -258,12 +310,12 @@ public class rText{
         Font font = null;
 
         if (SUPPORT_FILEFORMAT_TTF) {
-            if (rCore.IsFileExtension(fileName, ".ttf") || rCore.IsFileExtension(fileName, ".otf")){
+            if (rCore.IsFileExtension(fileName, ".ttf") || rCore.IsFileExtension(fileName, ".otf")) {
                 font = LoadFontEx(fileName, FONT_TTF_DEFAULT_SIZE, null, FONT_TTF_DEFAULT_NUMCHARS);
             }
         }
         if (SUPPORT_FILEFORMAT_FNT) {
-            if (rCore.IsFileExtension(fileName, ".fnt")){
+            if (rCore.IsFileExtension(fileName, ".fnt")) {
                 font = LoadBMFont(fileName);
             }
         }
@@ -272,7 +324,7 @@ public class rText{
             if (image.getData() != null) {
                 font = LoadFontFromImage(image, Color.MAGENTA, FONT_TTF_DEFAULT_FIRST_CHAR);
             }
-            rTextures.UnloadImage(image);
+            UnloadImage(image);
         }
 
         if (font.texture.getId() == 0) {
@@ -280,7 +332,8 @@ public class rText{
             font = GetFontDefault();
         }
         else{
-            rTextures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT); //By default, we set point filter (best performance)
+            rTextures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT); // By default we set point filter (best performance)
+            Tracelog(LOG_INFO, "FONT: Data loaded successfully (" + FONT_TTF_DEFAULT_SIZE + " pixel size | " + FONT_TTF_DEFAULT_NUMCHARS + " glyphs)");
         }
 
         return font;
@@ -434,7 +487,7 @@ public class rText{
             font.glyphs[i].image = rTextures.ImageFromImage(fontClear, tempCharRecs[i]);
         }
 
-        rTextures.UnloadImage(fontClear);     // Unload processed image once converted to texture
+        UnloadImage(fontClear);     // Unload processed image once converted to texture
 
         font.baseSize = (int) font.recs[0].height;
 
@@ -462,20 +515,22 @@ public class rText{
 
                     // Update chars[i].image to use alpha, required to be used on ImageDrawText()
                     for (int i = 0; i < font.glyphCount; i++) {
-                        rTextures.UnloadImage(font.glyphs[i].image);
+                        UnloadImage(font.glyphs[i].image);
                         font.glyphs[i].image = rTextures.ImageFromImage(atlas, font.recs[i]);
                     }
 
-                    rTextures.UnloadImage(atlas);
+                    UnloadImage(atlas);
+                    Tracelog(LOG_INFO, "FONT: Data loaded successfully (" + font.baseSize + " pixel size | " + font.glyphCount + " glyphs)");
                 }
-                else{
+                else {
                     font = GetFontDefault();
                 }
             }
         }
-        else{
+        else {
             font = GetFontDefault();
         }
+
         return font;
     }
 
@@ -683,9 +738,9 @@ public class rText{
             // so image size would result bigger than default font type
             float requiredArea = 0;
             for (int i = 0; i < font.glyphCount; i++) {
-                requiredArea += ((font.glyphs[i].image.getWidth() + 2 * font.glyphPadding) * (font.glyphs[i].image.getHeight() + 2 * font.glyphPadding));
+                requiredArea += ((font.glyphs[i].image.width + 2*font.glyphPadding)*(font.baseSize + 2*font.glyphPadding));
             }
-            float guessSize = (float) (Math.sqrt(requiredArea) * 1.3f);
+            float guessSize = (float) (Math.sqrt(requiredArea) * 1.4f);
             int imageSize = (int) Math.pow(2, Math.ceil(Math.log(guessSize) / Math.log(2)));  // Calculate next POT
 
             atlas.setWidth(imageSize);  // Atlas bitmap width
@@ -724,7 +779,7 @@ public class rText{
                     // Move atlas position X for next character drawing
                     offsetX += (font.glyphs[i].image.getWidth() + 2 * font.glyphPadding);
 
-                    if (offsetX >= (atlas.getWidth() - font.glyphs[i].image.getWidth() - 2 * font.glyphPadding)){
+                    if (offsetX >= (atlas.getWidth() - font.glyphs[i].image.getWidth() - 2 * font.glyphPadding)) {
                         offsetX = font.glyphPadding;
 
                         // NOTE: Be careful on offsetY for SDF fonts, by default SDF
@@ -732,11 +787,21 @@ public class rText{
                         // height is bigger than fontSize, it could be up to (fontSize + 8)
                         offsetY += (font.baseSize + 2 * font.glyphPadding);
 
-                        if (offsetY > (atlas.getHeight() - font.baseSize - font.glyphPadding)) break;
+                        if (offsetY > (atlas.height - font.baseSize - font.glyphPadding)) {
+                            for (int j = i + 1; j < font.glyphCount; j++) {
+                                Tracelog(LOG_WARNING, "FONT: Failed to package character (" + j + ")");
+                                // make sure remaining recs contain valid data
+                                recs[j].x = 0;
+                                recs[j].y = 0;
+                                recs[j].width = 0;
+                                recs[j].height = 0;
+                            }
+                            break;
+                        }
                     }
                 }
             }
-            else if (packMethod == 1) { // Use Skyline rect packing algorythm (stb_pack_rect)
+            else if (packMethod == 1) { // Use Skyline rect packing algorithm (stb_pack_rect)
                 STBRPContext context = STBRPContext.create();
 
                 ByteBuffer nBB = ByteBuffer.allocateDirect(font.glyphCount * STBRPNode.SIZEOF);
@@ -791,7 +856,6 @@ public class rText{
             // Convert image data from GRAYSCALE to GRAY_ALPHA
             byte[] dataGrayAlpha = new byte[atlas.width * atlas.height * 2]; // Two channels
             for (int i = 0, k = 0; i < atlas.width * atlas.height; i++, k += 2) {
-
                 dataGrayAlpha[k] = (byte) 255;
                 dataGrayAlpha[k + 1] = atlasData[i];
             }
@@ -808,13 +872,181 @@ public class rText{
     // Unload font chars info data (RAM)
     public static void UnloadFontData(GlyphInfo[] chars, int charsCount) {
         for (int i = 0; i < charsCount; i++) {
-            rTextures.UnloadImage(chars[i].image);
+            UnloadImage(chars[i].image);
         }
     }
 
     // Unload Font from GPU memory (VRAM)
     public static void UnloadFont(Font f) {
         f = null;
+    }
+
+    // Export font as code file, returns true on success
+    public boolean ExportFontAsCode(Font font, String fileName) {
+        boolean success = false;
+
+        int TEXT_BYTES_PER_LINE = 20;
+        int MAX_FONT_DATA_SIZE = 1024*1024;
+
+        // Get file name from path
+        String fileNamePascal = TextToPascal(rCore.GetFileNameWithoutExt(fileName));
+
+        // NOTE: Text data buffer size is estimated considering image data size in bytes
+        // and requiring 6 char bytes for every byte: "0x00, "
+        StringBuilder txtData = new StringBuilder(MAX_FONT_DATA_SIZE);
+
+        int byteCount = 0;
+        txtData.append("////////////////////////////////////////////////////////////////////////////////////////\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// FontAsCode exporter v1.0 - Font data exported as an array of bytes                 //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// more info and bugs-report:  github.com/raysan5/raylib                              //\n");
+        txtData.append("// feedback and support:       ray[at]raylib.com                                      //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// Copyright (c) 2018-2022 Ramon Santamaria (@raysan5)                                //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// ---------------------------------------------------------------------------------- //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// TODO: Fill the information and license of the exported font here:                  //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// Font name:    ....                                                                 //\n");
+        txtData.append("// Font creator: ....                                                                 //\n");
+        txtData.append("// Font LICENSE: ....                                                                 //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("////////////////////////////////////////////////////////////////////////////////////////\n\n");
+        byteCount = txtData.length();
+
+        // Support font export and initialization
+        // NOTE: This mechanism is highly coupled to raylib
+        Image image = LoadImageFromTexture(font.texture);
+        if (image.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
+            Tracelog(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
+        }
+        int imageDataSize = GetPixelDataSize(image.width, image.height, image.format);
+
+        // Image data is usually GRAYSCALE + ALPHA and can be reduced to GRAYSCALE
+        //ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
+
+        boolean SUPPORT_COMPRESSED_FONT_ATLAS = true;
+
+        if (SUPPORT_COMPRESSED_FONT_ATLAS) {
+            // WARNING: Data is compressed using raylib CompressData() DEFLATE,
+            // it requires to be decompressed with raylib DecompressData(), that requires
+            // compiling raylib with SUPPORT_COMPRESSION_API config flag enabled
+
+            // Compress font image data
+            int compDataSize = 0;
+            // TODO: 11/14/23 rCore CompressData
+            //    byte[] compData = rCore.CompressData(image.getData(), imageDataSize);
+            byte[] compData = new byte[0];
+
+            // Save font image data (compressed)
+            txtData.append("#define COMPRESSED_DATA_SIZE_FONT_" + TextToUpper(fileNamePascal) + " compDataSize" + "\n\n");
+            txtData.append("// Font image pixels data compressed (DEFLATE)\n");
+            txtData.append("// NOTE: Original pixel data simplified to GRAYSCALE\n");
+            txtData.append("static unsigned char fontData_" + fileNamePascal + "[COMPRESSED_DATA_SIZE_FONT_" + TextToUpper(fileNamePascal) + "] = { ");
+
+            for (int i = 0; i < compDataSize - 1; i++) {
+                txtData.append ((i % TEXT_BYTES_PER_LINE == 0) ? "0x" + String.format( "%02x", compData[i]) + ",\n    " : "0x" + String.format( "%02x", compData[i]) + ", ");
+            }
+
+            txtData.append( "0x" + compData[compDataSize - 1] + " };\n\n");
+        }
+        else {
+            // Save font image data (uncompressed)
+            txtData.append("// Font image pixels data\n");
+            txtData.append("// NOTE: 2 bytes per pixel, GRAY + ALPHA channels\n");
+            txtData.append("static unsigned char fontImageData_" + fileNamePascal + "[" + imageDataSize + "] = { ");
+            for (int i = 0; i < imageDataSize - 1; i++) {
+                txtData.append ((i % TEXT_BYTES_PER_LINE == 0) ? "0x" + String.format( "%02x", image.getData()[i]) + ",\n    " : "0x" + String.format( "%02x", image.getData()[i]) + ", ");
+            }
+            txtData.append("0x" + String.format( "%02x", image.getData()[imageDataSize - 1]) + " };\n\n");
+        }
+
+        // Save font recs data
+        txtData.append("// Font characters rectangles data\n");
+        txtData.append("static const Rectangle fontRecs_" + fileNamePascal + "[" + font.glyphCount + "] = {\n");
+        for (int i = 0; i < font.glyphCount; i++) {
+            txtData.append("    { " + String.format("%1.0f", font.recs[i].x) + ", " + String.format("%1.0f", font.recs[i].y) + ", " + String.format("%1.0f", font.recs[i].width) + " , " + String.format("%1.0f", font.recs[i].height) + " },\n");
+        }
+        txtData.append("};\n\n");
+
+        // Save font glyphs data
+        // NOTE: Glyphs image data not saved (grayscale pixels),
+        // it could be generated from image and recs
+        txtData.append("// Font glyphs info data\n");
+        txtData.append("// NOTE: No glyphs.image data provided\n");
+        txtData.append("static const GlyphInfo fontGlyphs_" + fileNamePascal + "[" + font.glyphCount + "] = {\n");
+        for (int i = 0; i < font.glyphCount; i++) {
+            txtData.append("    { " + font.glyphs[i].value + ", " + font.glyphs[i].offsetX + ", " + font.glyphs[i].offsetY + ", " + font.glyphs[i].advanceX + ", { 0 }},\n");
+        }
+        txtData.append("};\n\n");
+
+        // Custom font loading function
+        txtData.append("// Font loading function: " + fileNamePascal + "\n");
+        txtData.append("static Font LoadFont_" + fileNamePascal + "(void)\n{\n");
+        txtData.append("    Font font = { 0 };\n\n");
+        txtData.append("    font.baseSize = " + font.baseSize + ";\n");
+        txtData.append("    font.glyphCount = " + font.glyphCount + ";\n");
+        txtData.append("    font.glyphPadding = " + font.glyphPadding + ";\n\n");
+        txtData.append("    // Custom font loading\n");
+        if(SUPPORT_COMPRESSED_FONT_ATLAS) {
+            txtData.append("    // NOTE: Compressed font image data (DEFLATE), it requires DecompressData() function\n");
+            txtData.append("    int fontDataSize_" + fileNamePascal + " = 0;\n");
+            txtData.append("    unsigned char *data = DecompressData(fontData_" + fileNamePascal + ", COMPRESSED_DATA_SIZE_FONT_" + TextToUpper(fileNamePascal) + ", &fontDataSize_" + fileNamePascal + ");\n");
+            txtData.append("    Image imFont = { data, " + image.width + ", " + image.height + ", 1, " + image.format + " };\n\n");
+        }
+        else {
+            txtData.append("    Image imFont = { fontImageData_" + fileName + ", " + image.width + ", " + image.height + ", 1, " + image.format + " };\n\n");
+        }
+
+        txtData.append("    // Load texture from image\n");
+        txtData.append("    font.texture = LoadTextureFromImage(imFont);\n");
+
+        if(SUPPORT_COMPRESSED_FONT_ATLAS) {
+            txtData.append("    UnloadImage(imFont);  // Uncompressed data can be unloaded from memory\n\n");
+        }
+
+        // We have two possible mechanisms to assign font.recs and font.glyphs data,
+        // that data is already available as global arrays, we two options to assign that data:
+        //  - 1. Data copy. This option consumes more memory and Font MUST be unloaded by user, requiring additional code.
+        //  - 2. Data assignment. This option consumes less memory and Font MUST NOT be unloaded by user because data is on protected DATA segment
+        boolean SUPPORT_FONT_DATA_COPY = false;
+
+        if(SUPPORT_FONT_DATA_COPY) {
+            txtData.append("    // Copy glyph recs data from global fontRecs\n");
+            txtData.append("    // NOTE: Required to avoid issues if trying to free font\n");
+            txtData.append("    font.recs = (Rectangle *)malloc(font.glyphCount*sizeof(Rectangle));\n");
+            txtData.append("    memcpy(font.recs, fontRecs_" + fileNamePascal + ", font.glyphCount*sizeof(Rectangle));\n\n");
+
+            txtData.append("    // Copy font glyph info data from global fontChars\n");
+            txtData.append("    // NOTE: Required to avoid issues if trying to free font\n");
+            txtData.append("    font.glyphs = (GlyphInfo *)malloc(font.glyphCount*sizeof(GlyphInfo));\n");
+            txtData.append("    memcpy(font.glyphs, fontGlyphs_" + fileNamePascal + ", font.glyphCount*sizeof(GlyphInfo));\n\n");
+        }
+        else {
+            txtData.append("    // Assign glyph recs and info data directly\n");
+            txtData.append("    // WARNING: This font data must not be unloaded\n");
+            txtData.append("    font.recs = fontRecs_" + fileNamePascal + ";\n");
+            txtData.append("    font.glyphs = fontGlyphs_" + fileNamePascal + ";\n\n");
+        }
+
+        txtData.append("    return font;\n");
+        txtData.append("}\n");
+
+        UnloadImage(image);
+
+        // NOTE: Text data size exported is determined by '\0' (NULL) character
+        try {
+            success = FileIO.SaveFileText(fileName, txtData.toString());
+            Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
+        }
+        catch (IOException e) {
+            success = false;
+            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export font as code");
+        }
+
+        return success;
     }
 
     public static int getCPBC() {
@@ -824,13 +1056,15 @@ public class rText{
     // Draw current FPS
     // NOTE: Uses default font
     public void DrawFPS(int posX, int posY) {
-        Color color = Color.LIME; // good fps
+        Color color = Color.LIME; // Good fps
         int fps = rCore.GetFPS();
 
         if (fps < 30 && fps >= 15) {
-            color = Color.ORANGE;  // warning FPS
+            color = Color.ORANGE;  // Warning FPS
         }
-        else if (fps < 15) color = Color.RED;    // bad FPS
+        else if (fps < 15) {
+            color = Color.RED;    // Low FPS
+        }
 
         DrawText(fps + " + FPS", posX, posY, 20, color);
     }
@@ -886,7 +1120,7 @@ public class rText{
             if (codepoint == '\n') {
                 // NOTE: Fixed line spacing of 1.5 line-height
                 // TODO: Support custom line spacing defined by user
-                textOffsetY += (int) ((font.baseSize + font.baseSize / 2) * scaleFactor);
+                textOffsetY += (int)((font.baseSize + font.baseSize/2.0f)*scaleFactor);
                 textOffsetX = 0.0f;
             }
             else{
@@ -946,6 +1180,35 @@ public class rText{
 
         // Draw the character texture on the screen
         rTextures.DrawTexturePro(font.texture, srcRec, dstRec, new Vector2(), 0.0f, tint);
+    }
+
+    // Draw multiple characters (codepoints)
+    public void DrawTextCodepoints(Font font, int[] codepoints, Vector2 position, float fontSize, float spacing, Color tint) {
+        int textOffsetY = 0;            // Offset between lines (on line break '\n')
+        float textOffsetX = 0.0f;       // Offset X to next character to draw
+        float scaleFactor = fontSize/font.baseSize;         // Character quad scaling factor
+
+        for (int i = 0; i < codepoints.length; i++) {
+            int index = GetGlyphIndex(font, codepoints[i]);
+            if (codepoints[i] == '\n') {
+                // NOTE: Fixed line spacing of 1.5 line-height
+                // TODO: Support custom line spacing defined by user
+                textOffsetY += (int)((font.baseSize + font.baseSize/2.0f)*scaleFactor);
+                textOffsetX = 0.0f;
+            }
+            else {
+                if ((codepoints[i] != ' ') && (codepoints[i] != '\t')) {
+                    DrawTextCodepoint(font, codepoints[i], new Vector2(position.x + textOffsetX, position.y + textOffsetY), fontSize, tint);
+                }
+
+                if (font.glyphs[index].advanceX == 0) {
+                    textOffsetX += ((float)font.recs[index].width*scaleFactor + spacing);
+                }
+                else {
+                    textOffsetX += ((float)font.glyphs[index].advanceX*scaleFactor + spacing);
+                }
+            }
+        }
     }
 
     // Measure string width for default font
@@ -1337,7 +1600,7 @@ public class rText{
                 return code;
             }
 
-            if ((octet >= 0xe0) && (0 <= 0xef)){
+            if ((octet >= 0xe0) && (octet <= 0xef)){
                 code = ((octet & 0xf) << 12) | ((octet1 & 0x3f) << 6) | (octet2 & 0x3f);
                 bytesProcessed = 3;
             }
@@ -1469,7 +1732,7 @@ public class rText{
             imFontAlpha.format = RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
             imFontAlpha.mipmaps = 1;
 
-            rTextures.UnloadImage(imFont);
+            UnloadImage(imFont);
             imFont = imFontAlpha;
         }
 
@@ -1544,7 +1807,7 @@ public class rText{
             }
         }
 
-        rTextures.UnloadImage(imFont);
+        UnloadImage(imFont);
 
         if (font.texture.getId() == 0){
             UnloadFont(font);
