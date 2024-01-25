@@ -499,10 +499,13 @@ public class Raymath{
     }
 
     public static Vector3 Vector3Normalize(Vector3 v){
-        Vector3 result = v;
+        Vector3 result = new Vector3();
+        result.x = v.x;
+        result.y= v.y;
+        result.z = v.z;
 
         float length, ilength;
-        length = Vector3Length(v);
+        length = Vector3Length(result);
         if (length == 0.0f) length = 1.0f;
         ilength = 1.0f / length;
 

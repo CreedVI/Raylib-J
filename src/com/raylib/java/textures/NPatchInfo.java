@@ -4,12 +4,12 @@ import com.raylib.java.shapes.Rectangle;
 
 public class NPatchInfo{
 
-    Rectangle source;   // Region in the texture
-    int left;              // left border offset
-    int top;               // top border offset
-    int right;             // right border offset
-    int bottom;            // bottom border offset
-    int type;              // layout of the n-patch: 3x3, 1x3 or 3x1
+    public Rectangle source;   // Region in the texture
+    public int left;              // left border offset
+    public int top;               // top border offset
+    public int right;             // right border offset
+    public int bottom;            // bottom border offset
+    public int type;              // layout of the n-patch: 3x3, 1x3 or 3x1
 
     public static class NPatchType{
         public static final int

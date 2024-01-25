@@ -59,6 +59,7 @@ public class rTextures{
                 CUBEMAP_PANORAMA = 5;               // Layout is defined by a panorama image (equirectangular map)
     }
 
+    // Load image to memory
     public static Image LoadImage(String fileName) {
         Image image = new Image();
         // Loading file to memory
@@ -182,16 +183,15 @@ public class rTextures{
 
 
     // Load image from memory buffer, fileType refers to extension: i.e. ".png"
-    public static Image LoadImageFromMemory(String fileName, byte[] fileData, int dataSize) {
+    // WARNING: File extension must be provided in lower-case
+    public static Image LoadImageFromMemory(String fileType, byte[] fileData, int dataSize) {
         Image image = new Image();
-
-        String fileExtLower = rCore.GetFileExtension(fileName).toLowerCase();
 
         if (SUPPORT_FILEFORMAT_PNG || SUPPORT_FILEFORMAT_BMP || SUPPORT_FILEFORMAT_TGA || SUPPORT_FILEFORMAT_JPG ||
                 SUPPORT_FILEFORMAT_GIF || SUPPORT_FILEFORMAT_PIC || SUPPORT_FILEFORMAT_PSD) {
-            if (fileExtLower.equals(".png") || fileExtLower.equals(".bmp") || fileExtLower.equals(".tga") ||
-                    (fileExtLower.equals(".jpeg") || fileExtLower.equals(".jpg")) || fileExtLower.equals(".gif") ||
-                    fileExtLower.equals(".pic") || fileExtLower.equals(".psd")) {
+            if (fileType.equals(".png") || fileType.equals(".bmp") || fileType.equals(".tga") ||
+                    (fileType.equals(".jpeg") || fileType.equals(".jpg")) || fileType.equals(".gif") ||
+                    fileType.equals(".pic") || fileType.equals(".psd")) {
 
                 if (fileData != null) {
                     int comp = 0;
@@ -206,7 +206,7 @@ public class rTextures{
                         ByteBuffer imgBuffer = STBImage.stbi_load_from_memory(fileDataBuffer, widthBuffer,
                                                                               heightBuffer, compBuffer, 0);
                         if (imgBuffer == null) {
-                            Tracelog(LOG_WARNING, "Failed to load image: " + fileName + "\t" + STBImage.stbi_failure_reason());
+                            Tracelog(LOG_WARNING, "Failed to load image: " + fileType + "\t" + STBImage.stbi_failure_reason());
                         }
                         image.width = widthBuffer.get();
                         image.height = heightBuffer.get();
@@ -240,8 +240,8 @@ public class rTextures{
                 }
             }
         }
-        if(SUPPORT_FILEFORMAT_HDR) {
-            if (fileExtLower.equals(".hdr")) {
+        else if(SUPPORT_FILEFORMAT_HDR) {
+            if (fileType.equals(".hdr")) {
                 if (fileData != null) {
                     int comp = 0;
                     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -255,7 +255,7 @@ public class rTextures{
                         ByteBuffer imgBuffer = STBImage.stbi_load_from_memory(fileDataBuffer, widthBuffer,
                                                                               heightBuffer, compBuffer, 0);
                         if (imgBuffer == null) {
-                            Tracelog(LOG_WARNING, "Failed to load image " + fileName + "\n\t" + STBImage.stbi_failure_reason());
+                            Tracelog(LOG_WARNING, "Failed to load image " + fileType + "\n\t" + STBImage.stbi_failure_reason());
                         }
                         image.width = widthBuffer.get();
                         image.height = heightBuffer.get();
@@ -274,15 +274,41 @@ public class rTextures{
 
                     image.mipmaps = 1;
 
-                    if (comp == 1) image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32;
-                    else if (comp == 3) image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32;
-                    else if (comp == 4) image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32;
-                    else{
+                    if (comp == 1) {
+                        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32;
+                    }
+                    else if (comp == 3) {
+                        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32;
+                    }
+                    else if (comp == 4) {
+                        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32;
+                    }
+                    else {
                         Tracelog(LOG_WARNING, "IMAGE: HDR file format not supported");
                         UnloadImage(image);
                     }
                 }
             }
+        }
+        /*
+            TODO:
+                * QOI
+                * DDS
+                * PKM
+                * KTX
+                * PVR
+                * ASTC
+            */
+        else {
+            Tracelog(LOG_WARNING, "IMAGE: Data format not supported");
+        }
+
+        if (image.data != null) {
+            Tracelog(LOG_INFO, "IMAGE: Data loaded successfully (" + image.width + "x" + image.height + " | " +
+                    rlGetPixelFormatName(image.format) + " | " + image.mipmaps + " mipmaps)");
+        }
+        else {
+            Tracelog(LOG_WARNING, "IMAGE: Failed to load image data");
         }
 
         return image;
@@ -352,13 +378,19 @@ public class rTextures{
                 }
             }
             if (SUPPORT_FILEFORMAT_JPG) {
-                if (rCore.IsFileExtension(fileName, ".jpg")) {
+                if (rCore.IsFileExtension(fileName, ".jpeg")) {
                     success = STBImageWrite.stbi_write_jpg(fileName, image.width, image.height, channels, imgBuffer, 90);  // JPG quality: between 1 and 100
                 }
             }
-            /*if(SUPPORT_FILEFORMAT_KTX) {
-                if (rCore.IsFileExtension(fileSequence, ".ktx")) success = SaveKTX(image, fileName);
-            }*/
+            /*
+            TODO:
+                * QOI
+                * DDS
+                * PKM
+                * KTX
+                * PVR
+                * ASTC
+            */
             else if (rCore.IsFileExtension(fileName, ".raw")) {
                 // Export raw pixel data (without header)
                 // NOTE: It's up to the user to track image parameters
@@ -385,7 +417,74 @@ public class rTextures{
         return success;
     }
 
-    //ExportImageAsCode
+    // Export image as code file (.h) defining an array of bytes
+    public boolean ExportImageAsCode(Image image, String fileName) {
+        boolean success = false;
+
+        if(SUPPORT_IMAGE_EXPORT) {
+
+            int TEXT_BYTES_PER_LINE = 20;
+
+            int dataSize = GetPixelDataSize(image.width, image.height, image.format);
+
+            // NOTE: Text data buffer size is estimated considering image data size in bytes
+            // and requiring 6 char bytes for every byte: "0x00, "
+            String txtData = "";
+
+            int byteCount = 0;
+            txtData += "////////////////////////////////////////////////////////////////////////////////////////\n";
+            txtData += "//                                                                                    //\n";
+            txtData += "// ImageAsCode exporter v1.0 - Image pixel data exported as an array of bytes         //\n";
+            txtData += "//                                                                                    //\n";
+            txtData += "// more info and bugs-report:  github.com/raysan5/raylib                              //\n";
+            txtData += "// feedback and support:       ray[at]raylib.com                                      //\n";
+            txtData += "//                                                                                    //\n";
+            txtData += "// Copyright (c) 2018-2022 Ramon Santamaria (@raysan5)                                //\n";
+            txtData += "//                                                                                    //\n";
+            txtData += "////////////////////////////////////////////////////////////////////////////////////////\n\n";
+            byteCount = txtData.length();
+
+            // Get file name from path and convert variable name to uppercase
+            String varFileName = fileName.substring(0, fileName.lastIndexOf(".")).toUpperCase();
+
+
+            // Add image information
+            txtData += "// Image data information\n";
+            txtData += "#define " + varFileName + "_WIDTH    " + image.width + "\n";
+            txtData += "#define " + varFileName + "_HEIGHT   " + image.height + "\n";
+            txtData += "#define " + varFileName + "_FORMAT   " + image.format + "          // raylib internal pixel format\n\n";
+
+            txtData += "static unsigned char " + varFileName + "_DATA[" + dataSize + "] = { ";
+            byte[] imgData = image.getData();
+            for (int i = 0; i < dataSize - 1; i++) {
+                if (i % TEXT_BYTES_PER_LINE == 0) {
+                    txtData += "0x" + String.format("h", imgData[i]) + "\n";
+                }
+                else {
+                    txtData += "0x" + String.format("h", imgData[i]) + ", ";
+                }
+            }
+            txtData += "0x" + String.format("h", imgData[dataSize - 1]) + " };\n";
+
+            // NOTE: Text data size exported is determined by '\0' (NULL) character
+            try {
+                success = FileIO.SaveFileText(fileName, txtData);
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }     // SUPPORT_IMAGE_EXPORT
+
+        if (success) {
+            Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Image as code exported successfully");
+        }
+        else {
+            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export image as code");
+        }
+
+        return success;
+    }
 
     //------------------------------------------------------------------------------------
     // Image generation functions
@@ -538,7 +637,7 @@ public class rTextures{
             for (int x = 0; x < width; x++) {
                 int tileX = x / tileSize;
 
-                float minDistance = Integer.MAX_VALUE;
+                float minDistance = 65536.0f;
 
                 // Check all adjacent tiles
                 for (int i = -1; i < 2; i++) {
@@ -587,8 +686,7 @@ public class rTextures{
             // Security check for NPOT textures
             if (width < 1) {
                 width = 1;
-            }
-            if (height < 1) {
+            }            if (height < 1) {
                 height = 1;
             }
         }
@@ -1628,10 +1726,10 @@ public class rTextures{
                 byte b = (byte) (((float) pixels[index].b / 255 * cB) * 255.0f);
                 byte a = (byte) (((float) pixels[index].a / 255 * cA) * 255.0f);
 
-                pixels[y * image.width + x].r = r;
-                pixels[y * image.width + x].g = g;
-                pixels[y * image.width + x].b = b;
-                pixels[y * image.width + x].a = a;
+                pixels[index].r = r;
+                pixels[index].g = g;
+                pixels[index].b = b;
+                pixels[index].a = a;
             }
         }
 
@@ -1688,25 +1786,25 @@ public class rTextures{
         for (int y = 0; y < image.height; y++) {
             for (int x = 0; x < image.width; x++) {
                 float pR = pixels[y * image.width + x].r / 255.0f;
-                pR -= 0.5;
+                pR -= 0.5f;
                 pR *= contrast;
-                pR += 0.5;
+                pR += 0.5f;
                 pR *= 255;
                 if (pR < 0) pR = 0;
                 if (pR > 255) pR = 255;
 
                 float pG = pixels[y * image.width + x].g / 255.0f;
-                pG -= 0.5;
+                pG -= 0.5f;
                 pG *= contrast;
-                pG += 0.5;
+                pG += 0.5f;
                 pG *= 255;
                 if (pG < 0) pG = 0;
                 if (pG > 255) pG = 255;
 
                 float pB = pixels[y * image.width + x].b / 255.0f;
-                pB -= 0.5;
+                pB -= 0.5f;
                 pB *= contrast;
-                pB += 0.5;
+                pB += 0.5f;
                 pB *= 255;
                 if (pB < 0) pB = 0;
                 if (pB > 255) pB = 255;
@@ -2220,6 +2318,12 @@ public class rTextures{
     //IMAGE DRAWING FUNCTIONS
 
     void ImageClearBackground(Image dst, Color color) {
+
+        // Security check to avoid program crash
+        if ((dst.data == null) || (dst.width == 0) || (dst.height == 0)) {
+            return;
+        }
+
         for (int i = 0; i < dst.width * dst.height; ++i) {
             ImageDrawPixel(dst, i % dst.width, i / dst.width, color);
         }
@@ -2947,6 +3051,7 @@ public class rTextures{
     public void SetTextureWrap(Texture2D texture, int wrapMode) {
         switch (wrapMode) {
             case RL_TEXTURE_WRAP_REPEAT:{
+                // NOTE: It only works if NPOT textures are supported, i.e. OpenGL ES 2.0 could not support it
                 rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_REPEAT);
                 rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_REPEAT);
             }
@@ -3007,6 +3112,8 @@ public class rTextures{
     // NOTE: Tiling and offset should be provided considering normalized texture values [0..1]
     // i.e tiling = { 1.0f, 1.0f } refers to all texture, offset = { 0.5f, 0.5f } moves texture origin to center
     public void DrawTextureQuad(Texture2D texture, Vector2 tiling, Vector2 offset, Rectangle quad, Color tint) {
+        // WARNING: This solution only works if TEXTURE_WRAP_REPEAT is supported,
+        // NPOT textures supported is required and OpenGL ES 2.0 could not support it
         Rectangle source = new Rectangle(offset.x * texture.getWidth(), offset.y * texture.getHeight(),
                                          tiling.x * texture.getWidth(), tiling.y * texture.getHeight());
         Vector2 origin = new Vector2(0.0f, 0.0f);
@@ -3017,7 +3124,8 @@ public class rTextures{
     // Draw part of a texture (defined by a rectangle) with rotation and scale tiled into dest.
     // NOTE: For tilling a whole texture DrawTextureQuad() is better
     public void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint) {
-        if ((texture.id <= 0) || (scale <= 0.0f)) return;  // Wanna see a infinite loop?!...just delete this line!
+        if ((texture.id <= 0) || (scale <= 0.0f)) return;  // Wanna see an infinite loop?!...just delete this line!
+        if ((source.width == 0) || (source.height == 0)) return;
 
         int tileWidth = (int) (source.width * scale), tileHeight = (int) (source.height * scale);
         if ((dest.width < tileWidth) && (dest.height < tileHeight)) {
@@ -3256,6 +3364,8 @@ public class rTextures{
             coordC = new Vector2((nPatchInfo.source.x + nPatchInfo.source.width - rightBorder) / width, (nPatchInfo.source.y + nPatchInfo.source.height - bottomBorder) / height);
             coordD = new Vector2((nPatchInfo.source.x + nPatchInfo.source.width) / width, (nPatchInfo.source.y + nPatchInfo.source.height) / height);
 
+            rlCheckRenderBatchLimit(9 * 3 * 2);         // Maxium number of verts that could happen
+
             RLGL.rlSetTexture(texture.id);
 
             rlPushMatrix();
@@ -3454,7 +3564,7 @@ public class rTextures{
 
         RLGL.rlSetTexture(texture.id);
 
-        // Texturing is only supported on QUADs
+        // Texturing is only supported on RL_QUADs
         rlBegin(RL_QUADS);
 
         rlColor4ub(tint.r, tint.g, tint.b, tint.a);
@@ -3611,10 +3721,10 @@ public class rTextures{
         Color out = Color.WHITE;
 
         // Apply color tint to source color
-        src.setR((byte) ((src.r * tint.getR()) >> 8));
-        src.setG((byte) ((src.g * tint.getG()) >> 8));
-        src.setB((byte) ((src.b * tint.getB()) >> 8));
-        src.setA((byte) ((src.a * tint.getA()) >> 8));
+        src.setR((byte) ((src.r * tint.r + 1) >> 8));
+        src.setG((byte) ((src.g * tint.g + 1) >> 8));
+        src.setB((byte) ((src.b * tint.b + 1) >> 8));
+        src.setA((byte) ((src.a * tint.a + 1) >> 8));
 
         boolean COLORALPHABLEND_FLOAT = false;
         boolean COLORALPHABLEND_INTEGERS = true;
@@ -3674,53 +3784,77 @@ public class rTextures{
 
     // Get color from a pixel from certain format
     public Color GetPixelColor(byte[] srcPtr, int format) {
-        Color col = new Color();
+        Color color = new Color();
 
         switch (format) {
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
-                col = new Color(srcPtr[0], srcPtr[0], srcPtr[0], 255);
+                color = new Color(srcPtr[0], srcPtr[0], srcPtr[0], 255);
                 break;
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
-                col = new Color(srcPtr[0], srcPtr[0], srcPtr[0], srcPtr[1]);
+                color = new Color(srcPtr[0], srcPtr[0], srcPtr[0], srcPtr[1]);
                 break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5:{
-                col.setR((byte) ((srcPtr[0] >> 11) * 255 / 31));
-                col.setG((byte) (((srcPtr[0] >> 5) & 0b0000000000111111) * 255 / 63));
-                col.setB((byte) ((srcPtr[0] & 0b0000000000011111) * 255 / 31));
-                col.setA((byte) 255);
+                color.setR((byte) ((srcPtr[0] >> 11) * 255 / 31));
+                color.setG((byte) (((srcPtr[0] >> 5) & 0b0000000000111111) * 255 / 63));
+                color.setB((byte) ((srcPtr[0] & 0b0000000000011111) * 255 / 31));
+                color.setA((byte) 255);
 
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:{
-                col.setR((byte) ((srcPtr[0] >> 11) * 255 / 31));
-                col.setG((byte) (((srcPtr[0] >> 6) & 0b0000000000011111) * 255 / 31));
-                col.setB((byte) ((srcPtr[0] & 0b0000000000011111) * 255 / 31));
-                col.setA((byte) ((srcPtr[0] & 0b0000000000000001) == 1 ? 255 : 0));
+                color.setR((byte) ((srcPtr[0] >> 11) * 255 / 31));
+                color.setG((byte) (((srcPtr[0] >> 6) & 0b0000000000011111) * 255 / 31));
+                color.setB((byte) ((srcPtr[0] & 0b0000000000011111) * 255 / 31));
+                color.setA((byte) ((srcPtr[0] & 0b0000000000000001) == 1 ? 255 : 0));
 
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:{
-                col.setR((byte) ((srcPtr[0] >> 11) * 255 / 15));
-                col.setG((byte) (((srcPtr[0] >> 8) & 0b0000000000001111) * 255 / 15));
-                col.setB((byte) (((srcPtr[0] >> 4) & 0b0000000000001111) * 255 / 15));
-                col.setA((byte) ((srcPtr[0] & 0b0000000000001111) * 255 / 15));
+                color.setR((byte) ((srcPtr[0] >> 11) * 255 / 15));
+                color.setG((byte) (((srcPtr[0] >> 8) & 0b0000000000001111) * 255 / 15));
+                color.setB((byte) (((srcPtr[0] >> 4) & 0b0000000000001111) * 255 / 15));
+                color.setA((byte) ((srcPtr[0] & 0b0000000000001111) * 255 / 15));
 
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
-                col = new Color(srcPtr[0], srcPtr[1], srcPtr[2], srcPtr[3]);
+                color = new Color(srcPtr[0], srcPtr[1], srcPtr[2], srcPtr[3]);
                 break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:
-                col = new Color(srcPtr[0], srcPtr[1], srcPtr[2], 255);
+                color = new Color(srcPtr[0], srcPtr[1], srcPtr[2], 255);
                 break;
-            // TODO: case UNCOMPRESSED_R32: break;
-            // TODO: case UNCOMPRESSED_R32G32B32: break;
-            // TODO: case UNCOMPRESSED_R32G32B32A32: break;
+            case RL_PIXELFORMAT_UNCOMPRESSED_R32:
+            {
+                // NOTE: Pixel normalized float value is converted to [0..255]
+                color.r = (int) (srcPtr[0]*255.0f);
+                color.g = (int) (srcPtr[0]*255.0f);
+                color.b = (int) (srcPtr[0]*255.0f);
+                color.a = 255;
+
+            } break;
+            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32:
+            {
+                // NOTE: Pixel normalized float value is converted to [0..255]
+                color.r = (int)(srcPtr[0]*255.0f);
+                color.g = (int)(srcPtr[1]*255.0f);
+                color.b = (int)(srcPtr[2]*255.0f);
+                color.a = 255;
+
+            } break;
+            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:
+            {
+                // NOTE: Pixel normalized float value is converted to [0..255]
+                color.r = (int)(srcPtr[0]*255.0f);
+                color.g = (int)(srcPtr[1]*255.0f);
+                color.b = (int)(srcPtr[2]*255.0f);
+                color.a = (int)(srcPtr[3]*255.0f);
+
+            } break;
             default:
                 break;
         }
 
-        return col;
+        return color;
     }
 
     //Set pixel color formatted into destination pointer
