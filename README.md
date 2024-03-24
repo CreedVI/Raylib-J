@@ -83,6 +83,7 @@ Special thanks to the following:
   - [brammie15](https://github.com/brammie15) for catching an error that made it into production for an embarrassingly long time
   - [elias94](https://github.com/elias94) for helping get this library running on OSX
   - [mateoox600](https://github.com/mateoox600) for catching a number of issues and helping update the [Examples Repo](https://github.com/CreedVI/Raylib-J-Examples)
+  - [Irgendwer01](https://github.com/Irgendwer01) for converting the project to use the Gradle build system.
   - Everyone in the Raylib discord!
 ---
 

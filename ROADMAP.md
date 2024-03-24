@@ -11,8 +11,7 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 * [ ] Change versioning to match Raylib's (it's simpler that way)
 * [ ] Convert method comments to JavaDoc comments
 * [ ] Code cleanup
-* [ ] Support .jar and Gradle
-* [ ] Expose methods inline with Raylib Cheatsheet
+* [ ] Expose methods inline with Raylib Cheatsheet 
 
 ## 0.6 - The Hertz Update
 <hr>
@@ -23,7 +22,8 @@ would be an excellent way to do so. Otherwise, consider helping out with bug hun
 ## 0.5.5 <-{We are here!}
 <hr>
 
-* [ ] Raylib 4.5 update
+* [ ] Raylib 5.0 update
+* [X] Gradle conversion 
 
 ## 0.5 - The Next Dimension Update 
 <hr>
