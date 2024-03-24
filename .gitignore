@@ -7,3 +7,5 @@ out/
 tests/
 META-INF/
 *.txt
+.gradle/
+build/
