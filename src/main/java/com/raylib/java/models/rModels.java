@@ -133,7 +133,7 @@ public class rModels{
 
     // Draw a color-filled triangle (vertex in counter-clockwise order!)
     public void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color){
-        RLGL.rlCheckRenderBatchLimit(3);
+        RLGL.rlCheckRenderBatchLimit(8);
 
         RLGL.rlBegin(RLGL.RL_TRIANGLES);
         RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
@@ -1025,8 +1025,10 @@ public class rModels{
                 }
             }
 
-            // Try binding vertex array objects (VAO)
-            // or use VBOs if not possible
+            // Try binding vertex array objects (VAO) or use VBOs if not possible
+            // WARNING: UploadMesh() enables all vertex attributes available in mesh and sets default attribute values
+            // for shader expected vertex attributes that are not provided by the mesh (i.e. colors)
+            // This could be a dangerous approach because different meshes with different shaders can enable/disable some attributes
             if (!rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
                 rlEnableVertexBuffer(mesh.vboId[0]);
@@ -1053,8 +1055,8 @@ public class rModels{
                         rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
                     }
                     else {
-                        // Set default value for unused attribute
-                        // NOTE: Required when using default shader and no VAO support
+                        // Set default value for defined vertex attribute in shader but not provided by mesh
+                        // WARNING: It could result in GPU undefined behaviour
                         float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
                         rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], value, RL_SHADER_ATTRIB_VEC4, 4);
                         rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
@@ -1079,6 +1081,9 @@ public class rModels{
                     RLGL.rlEnableVertexBufferElement(mesh.vboId[6]);
                 }
             }
+
+            // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
+            if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
 
             int eyeCount = 1;
             if (RLGL.rlIsStereoRendererEnabled()) {
@@ -1109,7 +1114,7 @@ public class rModels{
                 }
             }
 
-            // Unbind all binded texture maps
+            // Unbind all bound texture maps
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 // Select current shader texture slot
                 RLGL.rlActiveTextureSlot(i);
