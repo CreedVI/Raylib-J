@@ -77,7 +77,7 @@ public class rModels{
     //----------------------------------------------------------------------------------
 
     private float GRAY_VALUE(Color c) {
-        return (float)((c.r+c.g+c.b)/3);
+        return (float)((c.r+c.g+c.b)/3f);
     }
 
     private static boolean COLOR_EQUAL(Color col1, Color col2) {
@@ -1309,7 +1309,9 @@ public class rModels{
             }
 
             // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
-            if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+            if (mesh.vboId[3] == 0) {
+                rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+            }
 
             int eyeCount = 1;
             if (RLGL.rlIsStereoRendererEnabled()) {
@@ -1347,8 +1349,12 @@ public class rModels{
                     // Disable texture for active slot
                     if ((i == MATERIAL_MAP_IRRADIANCE) ||
                             (i == MATERIAL_MAP_PREFILTER) ||
-                            (i == MATERIAL_MAP_CUBEMAP)) rlDisableTextureCubemap();
-                    else rlDisableTexture();
+                            (i == MATERIAL_MAP_CUBEMAP)) {
+                        rlDisableTextureCubemap();
+                    }
+                    else {
+                        rlDisableTexture();
+                    }
                 }
             }
 
@@ -1698,17 +1704,6 @@ public class rModels{
         }
 
         return result;
-    }
-
-    // Compute mesh binormals (aka bitangent)
-    public void GenMeshBinormals(Mesh mesh) {
-        for (int i = 0; i < mesh.vertexCount; i++) {
-            //Vector3 normal = { mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2] };
-            //Vector3 tangent = { mesh.tangents[i*4 + 0], mesh.tangents[i*4 + 1], mesh.tangents[i*4 + 2] };
-            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh.tangents[i*4 + 3]);
-
-            // TODO: Register computed binormal in mesh.binormal?
-        }
     }
 
     // MESH GENERATION
@@ -2164,7 +2159,6 @@ public class rModels{
             ParShapesMesh cylinder = ParShapes.par_shapes_create_cylinder(slices, 8);
             ParShapes.par_shapes_scale(cylinder, radius, radius, height);
             ParShapes.par_shapes_rotate(cylinder, -PI/2.0f, new float[]{ 1, 0, 0 });
-            ParShapes.par_shapes_rotate(cylinder, PI/2.0f, new float[]{ 0, 1, 0 });
 
             // Generate an orientable disk shape (top cap)
             ParShapesMesh capTop = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, 1 });
@@ -2406,8 +2400,6 @@ public class rModels{
         int tcCounter = 0;      // Used to count texcoords float by float
         int nCounter = 0;       // Used to count normals float by float
 
-        int trisCounter = 0;
-
         Vector3 scaleFactor = new Vector3(size.x/mapX, size.y/255.0f, size.z/mapZ);
 
         Vector3 vA = new Vector3();
@@ -2422,15 +2414,15 @@ public class rModels{
 
                 // one triangle - 3 vertex
                 mesh.vertices[vCounter] = (float)x*scaleFactor.x;
-                mesh.vertices[vCounter + 1] = (float)GRAY_VALUE(pixels[x + z*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 1] = GRAY_VALUE(pixels[x + z*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 2] = (float)z*scaleFactor.z;
 
                 mesh.vertices[vCounter + 3] = (float)x*scaleFactor.x;
-                mesh.vertices[vCounter + 4] = (float)GRAY_VALUE(pixels[x + (z + 1)*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 4] = GRAY_VALUE(pixels[x + (z + 1)*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 5] = (float)(z + 1)*scaleFactor.z;
 
                 mesh.vertices[vCounter + 6] = (float)(x + 1)*scaleFactor.x;
-                mesh.vertices[vCounter + 7] = (float)GRAY_VALUE(pixels[(x + 1) + z*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 7] = GRAY_VALUE(pixels[(x + 1) + z*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 8] = (float)z*scaleFactor.z;
 
                 // another triangle - 3 vertex
@@ -2443,7 +2435,7 @@ public class rModels{
                 mesh.vertices[vCounter + 14] = mesh.vertices[vCounter + 5];
 
                 mesh.vertices[vCounter + 15] = (float)(x + 1)*scaleFactor.x;
-                mesh.vertices[vCounter + 16] = (float)GRAY_VALUE(pixels[(x + 1) + (z + 1)*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 16] = GRAY_VALUE(pixels[(x + 1) + (z + 1)*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 17] = (float)(z + 1)*scaleFactor.z;
                 vCounter += 18;     // 6 vertex, 18 floats
 
@@ -2499,7 +2491,6 @@ public class rModels{
                 }
 
                 nCounter += 18;     // 6 vertex, 18 floats
-                trisCounter += 2;
             }
         }
 
@@ -3034,7 +3025,7 @@ public class rModels{
 
     public void DrawBillboardPro(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint) {
         // NOTE: Billboard size will maintain source rectangle aspect ratio, size will represent billboard width
-        Vector2 sizeRatio = new Vector2(size.y,size.x*source.height/source.width);
+        Vector2 sizeRatio = new Vector2(size.x*source.width/source.height, size.y );
 
         Matrix matView = Raymath.MatrixLookAt(camera.position, camera.target, camera.up);
 
@@ -3093,7 +3084,7 @@ public class rModels{
         bottomRight = Raymath.Vector3Add(bottomRight, position);
         bottomLeft = Raymath.Vector3Add(bottomLeft, position);
 
-        RLGL.rlCheckRenderBatchLimit(4);
+        RLGL.rlCheckRenderBatchLimit(8);
 
         RLGL.rlSetTexture(texture.id);
 
@@ -3337,22 +3328,6 @@ public class rModels{
                     // Save the closest hit triangle
                     if ((!collision.hit) || (collision.distance > triHitInfo.distance)) collision = triHitInfo;
                 }
-            }
-        }
-
-        return collision;
-    }
-
-    // Get collision info between ray and model
-    public RayCollision GetRayCollisionModel(Ray ray, Model model) {
-        RayCollision collision = new RayCollision();
-
-        for (int m = 0; m < model.meshCount; m++) {
-            RayCollision meshHitInfo = GetRayCollisionMesh(ray, model.meshes[m], model.transform);
-
-            if (meshHitInfo.hit) {
-                // Save the closest hit mesh
-                if ((!collision.hit) || (collision.distance > meshHitInfo.distance)) collision = meshHitInfo;
             }
         }
 
@@ -4330,7 +4305,6 @@ public class rModels{
         return image;
     }
 
-    // TODO: 24/07/2022  LoadGLTF
     // Load glTF file into model struct, .gltf and .glb supported
     private Model LoadGLTF(String fileName) {
 
@@ -4392,7 +4366,6 @@ public class rModels{
             model.meshes = new Mesh[model.meshCount];
             for (int i = 0; i < model.meshCount; i++) {
                 model.meshes[i] = new Mesh();
-                model.meshes[i].vboId = new int[MAX_MESH_VERTEX_BUFFERS];
             }
 
             // NOTE: We keep an extra slot for default material, in case some mesh requires it
@@ -4748,6 +4721,8 @@ public class rModels{
                     meshIndex++;       // Move to next mesh
                 }
             }
+
+            //todo: Load glTF meshes animation data
 
         }
         else {
