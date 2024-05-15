@@ -34,6 +34,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -573,6 +574,35 @@ public class rCore{
         }
     }
 
+    @SuppressWarnings("resource") // Reason: Buffer is explicitly allocated and freed
+    public void SetWindowIcons(List<Image> images){
+        int count = images.size();
+
+        if (images.isEmpty()){
+            glfwSetWindowIcon(window.handle, null);
+        } else{
+            GLFWImage.Buffer icons = GLFWImage.malloc(count);
+
+            for (int i = 0; i < count; i++){
+                Image image = images.get(i);
+
+                if (image.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
+                    icons.get(i).set(
+                            image.width,
+                            image.height,
+                            ByteBuffer.wrap(image.getData())
+                    );
+                } else{
+                    Tracelog(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
+                }
+            }
+            // NOTE: Images data is copied internally before this function returns
+            glfwSetWindowIcon(window.handle, icons);
+
+            icons.free();
+        }
+    }
+
     // Set title for window (only PLATFORM_DESKTOP)
     public void SetWindowTitle(String title){
         window.title = title;
@@ -882,6 +912,16 @@ public class rCore{
             Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return "";
+    }
+
+    // Get window position XY on monitor
+    public Vector2 GetWindowPosition(){
+        int x = 0;
+        int y = 0;
+
+        glfwGetWindowPos(window.handle, new int[]{x}, new int[]{y});
+
+        return new Vector2(x, y);
     }
 
     // Get clipboard text content
@@ -1434,6 +1474,70 @@ public class rCore{
         rlEnableShader(shader.getId());
         rlgl.rlSetUniformSampler(locIndex, texture.getId());
         //rlDisableShader();
+    }
+
+    // Get a ray trace from screen position (i.e. mouse)
+    public Ray GetScreenToWorldRay(Vector2 position, Camera3D camera){
+        return GetScreenToWorldRayEx(position, camera, GetScreenWidth(), GetScreenHeight());
+    }
+
+    // Get a ray trace from the screen position (i.e mouse) within a specific section of the screen
+    public Ray GetScreenToWorldRayEx(Vector2 position, Camera3D camera, int width, int height){
+        Ray ray = new Ray();
+
+        // Calculate normalized device coordinates
+        // NOTE: y value is negative
+        float x = (2.0f * position.getX()) / (float) width - 1.0f;
+        float y = 1.0f - (2.0f * position.getY()) / (float) height;
+        float z = 1.0f;
+
+        // Store values in a vector
+        Vector3 deviceCoords = new Vector3(x, y, z);
+
+        // Calculate view matrix from camera look at
+        Matrix matView = MatrixLookAt(camera.getPosition(), camera.getTarget(), camera.getUp());
+
+        Matrix matProj = MatrixIdentity();
+
+        if (camera.projection == CAMERA_PERSPECTIVE){
+            // Calculate projection matrix from perspective
+            matProj = MatrixPerspective(
+                    camera.fovy * DEG2RAD,
+                    ((double) width / (double) height),
+                    RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+
+        } else if (camera.projection == CAMERA_ORTHOGRAPHIC){
+            double aspect = (double) width / (double) height;
+            double top = camera.fovy / 2.0;
+            double right = top * aspect;
+
+            // Calculate projection matrix from orthographic
+            matProj = MatrixOrtho(-right, right, -top, top, 0.01, 1000.0);
+        }
+
+        // Unproject far/near points
+        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 0.0f), matProj, matView);
+        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 1.0f), matProj, matView);
+
+        // Unproject the mouse cursor in the near plane
+        // We need this as the source position because orthographic projects,
+        // compared to perspective doesn't have a convergence point,
+        // meaning that the "eye" of the camera is more like a plane than a point
+        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), -1.0f), matProj, matView);
+
+        // Calculate normalized direction vector
+        Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
+
+        if (camera.projection == CAMERA_PERSPECTIVE){
+            ray.position = camera.position;
+        } else if (camera.projection == CAMERA_ORTHOGRAPHIC){
+            ray.position = cameraPlanePointerPos;
+        }
+
+        // Apply calculated vectors to ray
+        ray.direction = direction;
+
+        return ray;
     }
 
     // Returns a ray trace from mouse position
@@ -2098,6 +2202,15 @@ public class rCore{
     // Detect if a key has been pressed once
     public boolean IsKeyPressed(int key){
         return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
+    }
+
+    // Detect if a key has been pressed again (Only PLATFORM_DESKTOP)
+    public boolean IsKeyPressedRepeat(int key){
+        if ((key > 0) && (key < MAX_KEYBOARD_KEYS)){
+            return !input.keyboard.previousKeyState[key] && input.keyboard.currentKeyState[key];
+        }
+
+        return false;
     }
 
     // Detect if a key is being pressed (key held down)
