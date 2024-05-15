@@ -20,6 +20,7 @@ import com.raylib.java.textures.RenderTexture;
 import com.raylib.java.textures.Texture2D;
 import com.raylib.java.textures.rTextures;
 import com.raylib.java.utils.FileIO;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
@@ -630,6 +631,18 @@ public class rCore{
         glfwSetWindowSize(window.handle, width, height);
     }
 
+    // Set window opacity [0.0f..1.0f] (only PLATFORM_DESKTOP)
+    public void SetWindowOpacity(float opacity){
+        float clampedOpacity = Math.clamp(opacity, 0.0f, 1.0f);
+
+        glfwSetWindowOpacity(window.handle, clampedOpacity);
+    }
+
+    // Set window focused (only PLATFORM_DESKTOP)
+    public void SetWindowFocused(){
+        glfwFocusWindow(window.handle);
+    }
+
     /**
      * Get current screen width
      *
@@ -646,6 +659,26 @@ public class rCore{
      */
     public static int GetScreenHeight(){
         return window.currentFbo.getHeight();
+    }
+
+    // Get current render width (it considers HiDPI)
+    public int GetRenderWidth(){
+        if (__APPLE__){
+            Vector2 scale = GetWindowScaleDPI();
+            return (int) (window.render.width * scale.x);
+        } else{
+            return window.render.width;
+        }
+    }
+
+    // Get current render height (it considers HiDPI)
+    public int GetRenderHeight(){
+        if (__APPLE__){
+            Vector2 scale = GetWindowScaleDPI();
+            return (int) (window.render.height * scale.y);
+        } else{
+            return window.render.height;
+        }
     }
 
     // Get native window handle
@@ -809,6 +842,31 @@ public class rCore{
             Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
+    }
+
+    // Get selected monitor refresh rate
+    public int GetMonitorRefreshRate(int monitor){
+        int monitorCount;
+        PointerBuffer monitors = glfwGetMonitors();
+        monitorCount = monitors.sizeof();
+
+        if ((monitor >= 0) && (monitor < monitorCount)){
+            GLFWVidMode mode = glfwGetVideoMode(monitors.get(monitor));
+            return mode.refreshRate();
+        }
+        else{
+            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+        }
+        return 0;
+    }
+
+    // Get window scale DPI factor for current monitor
+    public Vector2 GetWindowScaleDPI(){
+        FloatBuffer xScale = BufferUtils.createFloatBuffer(1);
+        FloatBuffer yScale = BufferUtils.createFloatBuffer(1);
+        glfwGetWindowContentScale(window.handle, xScale, yScale);
+
+        return new Vector2(xScale.get(), yScale.get());
     }
 
     // Get the human-readable, UTF-8 encoded name of the primary monitor
@@ -1327,6 +1385,11 @@ public class rCore{
         }
 
         return shader;
+    }
+
+    // Check if a shader is ready
+    public boolean IsShaderReady(Shader shader){
+        return (shader.getId() > 0 && shader.getLocs() != null);
     }
 
     // Unload shader from GPU memory (VRAM)
