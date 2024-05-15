@@ -574,6 +574,7 @@ public class rCore{
         }
     }
 
+    // Set icon for window (multiple images, RGBA 32bit, only PLATFORM_DESKTOP)
     @SuppressWarnings("resource") // Reason: Buffer is explicitly allocated and freed
     public void SetWindowIcons(List<Image> images){
         int count = images.size();
@@ -630,6 +631,7 @@ public class rCore{
         }
     }
 
+    // Set the window size limits based on the current screenMin and screenMax
     private void UpdateWindowSizeLimits(){
         int minWidth = window.screenMin.width == 0 ? GLFW_DONT_CARE : window.screenMin.width;
         int minHeight = window.screenMin.height == 0 ? GLFW_DONT_CARE : window.screenMin.height;
@@ -1814,6 +1816,7 @@ public class rCore{
         return (int) (random.nextDouble() * (max - min + 1) + min);
     }
 
+    // Load random values sequence, no values repeated
     public int[] LoadRandomSequence(long count, int min, int max){
         int[] values = new int[(int) count];
 
