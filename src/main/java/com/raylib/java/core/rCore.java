@@ -3265,7 +3265,7 @@ public class rCore{
                         input.mouse.currentPosition.y = (float)events.get(i).params[1];
                         break;
                     case INPUT_MOUSE_WHEEL_MOTION:   // param[0]: delta
-                        input.mouse.currentWheelMove = new Vector2(0.0f, (float) events.get(i).params[0]);
+                        input.mouse.currentWheelMove = new Vector2((float) events.get(i).params[1], (float) events.get(i).params[0]);
                         break;
                     case INPUT_TOUCH_UP:     // param[0]: id
                         input.touch.currentTouchState[events.get(i).params[0]] = false;
