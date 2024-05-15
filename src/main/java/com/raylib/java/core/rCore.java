@@ -33,6 +33,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -111,6 +112,8 @@ public class rCore{
     static int index = 0;
     static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     static float average = 0, last = 0;
+
+    private final Random random = new Random();
 
     public rCore(){
         window = new Window();
@@ -1603,6 +1606,11 @@ public class rCore{
         Tracelog(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
     }
 
+    // Set the seed for the random number generator
+    public void SetRandomSeed(long seed){
+        random.setSeed(seed);
+    }
+
     /**
      * Returns a random value between min and max (both included)
      *
@@ -1617,7 +1625,49 @@ public class rCore{
             min = tmp;
         }
 
-        return (int) (Math.random() * (max - min + 1) + min);
+        return (int) (random.nextDouble() * (max - min + 1) + min);
+    }
+
+    public int[] LoadRandomSequence(long count, int min, int max){
+        int[] values = new int[(int) count];
+
+        // Security check
+        if (count > (Math.abs(max - min) + 1)){
+            return null;
+        }
+
+        int value;
+        boolean dupValue;
+
+        for (int i = 0; i < count; ){
+            value = GetRandomValue(min, max);
+            dupValue = false;
+
+            for (int j = 0; j < i; j++){
+                if (values[j] == value){
+                    dupValue = true;
+                    break;
+                }
+            }
+
+            if (!dupValue){
+                values[i] = value;
+                i++;
+            }
+        }
+
+        return values;
+    }
+
+    /**
+     * Unload random values sequence
+     *
+     * @implNote It is not possible (nor required) to explicitly free memory in Java. All we can do is nullify the reference
+     * to indicate to the garbage collector that the memory can be collected.
+     */
+    public void UnloadRandomSequence(@SuppressWarnings({"ReassignedVariable", "ParameterCanBeLocal"}) int[] sequence){
+        // noinspection UnusedAssignment
+        sequence = null;
     }
 
     // Check if the file exists
