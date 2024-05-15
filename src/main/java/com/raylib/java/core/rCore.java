@@ -599,10 +599,29 @@ public class rCore{
         }
     }
 
+    private void UpdateWindowSizeLimits(){
+        int minWidth = window.screenMin.width == 0 ? GLFW_DONT_CARE : window.screenMin.width;
+        int minHeight = window.screenMin.height == 0 ? GLFW_DONT_CARE : window.screenMin.height;
+        int maxWidth = window.screenMax.width == 0 ? GLFW_DONT_CARE : window.screenMax.width;
+        int maxHeight = window.screenMax.height == 0 ? GLFW_DONT_CARE : window.screenMax.height;
+
+        glfwSetWindowSizeLimits(window.handle, minWidth, minHeight, maxWidth, maxHeight);
+    }
+
     // Set window minimum dimensions (FLAG_WINDOW_RESIZABLE)
     public void SetWindowMinSize(int width, int height){
-        GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowSizeLimits(window.handle, width, height, mode.width(), mode.height());
+        window.screenMin.width = width;
+        window.screenMin.height = height;
+
+        UpdateWindowSizeLimits();
+    }
+
+    // Set window maximum dimensions (FLAG_WINDOW_RESIZABLE)
+    public void SetWindowMaxSize(int width, int height){
+        window.screenMax.width = width;
+        window.screenMax.height = height;
+
+        UpdateWindowSizeLimits();
     }
 
     // Set window dimensions
