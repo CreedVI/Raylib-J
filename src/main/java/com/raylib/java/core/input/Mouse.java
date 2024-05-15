@@ -15,8 +15,8 @@ public class Mouse{
 
     public int[] currentButtonState;     // Registers current mouse button state
     public int[] previousButtonState;    // Registers previous mouse button state
-    public float currentWheelMove;         // Registers current mouse wheel variation
-    public float previousWheelMove;        // Registers previous mouse wheel variation
+    public Vector2 currentWheelMove;         // Registers current mouse wheel variation
+    public Vector2 previousWheelMove;        // Registers previous mouse wheel variation
 
 
     // Mouse buttons
@@ -131,19 +131,19 @@ public class Mouse{
         this.previousButtonState = previousButtonState;
     }
 
-    public float getCurrentWheelMove(){
+    public Vector2 getCurrentWheelMove(){
         return currentWheelMove;
     }
 
-    public void setCurrentWheelMove(float currentWheelMove){
+    public void setCurrentWheelMove(Vector2 currentWheelMove){
         this.currentWheelMove = currentWheelMove;
     }
 
-    public float getPreviousWheelMove(){
+    public Vector2 getPreviousWheelMove(){
         return previousWheelMove;
     }
 
-    public void setPreviousWheelMove(float previousWheelMove){
+    public void setPreviousWheelMove(Vector2 previousWheelMove){
         this.previousWheelMove = previousWheelMove;
     }
 }

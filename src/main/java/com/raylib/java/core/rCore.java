@@ -2241,9 +2241,17 @@ public class rCore{
         input.mouse.setScale(new Vector2(scaleX, scaleY));
     }
 
-    // Returns mouse wheel movement Y
+    // Get mouse wheel movement for X or Y, whichever is larger
     public static float GetMouseWheelMove(){
-        return input.mouse.getPreviousWheelMove();
+        return Math.max(
+                input.mouse.currentWheelMove.getX(),
+                input.mouse.currentWheelMove.getY()
+        );
+    }
+
+    // Get mouse wheel movement X/Y as a vector
+    public static Vector2 GetMouseWheelMoveV(){
+        return new Vector2(input.mouse.currentWheelMove.getX(), input.mouse.currentWheelMove.getY());
     }
 
     // Set mouse cursor
@@ -2787,7 +2795,7 @@ public class rCore{
 
         // Register previous mouse wheel state
         input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());
-        input.mouse.setCurrentWheelMove(0.0f);
+        input.mouse.setCurrentWheelMove(Vector2Zero());
 
         // Check if gamepads are ready
         // NOTE: We do it here in case of disconnection
@@ -3109,11 +3117,11 @@ public class rCore{
         }
 
         // INPUT_MOUSE_WHEEL_MOTION
-        if ((int)input.mouse.currentWheelMove != (int)input.mouse.previousWheelMove) {
+        if (input.mouse.currentWheelMove.getX() != input.mouse.previousWheelMove.getX() || input.mouse.currentWheelMove.getY() != input.mouse.previousWheelMove.getY()){
             events.get(eventCount).frame = frame;
             events.get(eventCount).type = INPUT_MOUSE_WHEEL_MOTION;
-            events.get(eventCount).params[0] = (int)input.mouse.currentWheelMove;
-            events.get(eventCount).params[1] = 0;
+            events.get(eventCount).params[0] = (int) input.mouse.currentWheelMove.getX();
+            events.get(eventCount).params[1] = (int) input.mouse.currentWheelMove.getY();
             events.get(eventCount).params[2] = 0;
 
             Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
@@ -3257,7 +3265,7 @@ public class rCore{
                         input.mouse.currentPosition.y = (float)events.get(i).params[1];
                         break;
                     case INPUT_MOUSE_WHEEL_MOTION:   // param[0]: delta
-                        input.mouse.currentWheelMove = (float)events.get(i).params[0];
+                        input.mouse.currentWheelMove = new Vector2(0.0f, (float) events.get(i).params[0]);
                         break;
                     case INPUT_TOUCH_UP:     // param[0]: id
                         input.touch.currentTouchState[events.get(i).params[0]] = false;

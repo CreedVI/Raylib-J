@@ -1,5 +1,6 @@
 package com.raylib.java.core;
 
+import com.raylib.java.raymath.Vector2;
 import org.lwjgl.glfw.*;
 
 import static com.raylib.java.Config.*;
@@ -174,7 +175,7 @@ public class Callbacks{
         @Override
         public void invoke(long window, double xoffset, double yoffset){
             Tracelog(LOG_DEBUG, "Scroll Callback Triggered");
-            rCore.getInput().mouse.setCurrentWheelMove((float) yoffset);
+            rCore.getInput().mouse.setCurrentWheelMove(new Vector2((float) xoffset, (float) yoffset));
         }
     }
 
