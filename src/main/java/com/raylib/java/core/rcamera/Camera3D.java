@@ -109,7 +109,7 @@ public class Camera3D {
         // Mouse movement detection
         Vector2 mousePositionDelta = new Vector2(0.0f, 0.0f);
         Vector2 mousePosition = rCore.GetMousePosition();
-        Vector2 mouseWheelMove = rCore.GetMouseWheelMove();
+        float mouseWheelMove = rCore.GetMouseWheelMove();
 
         // Keys input detection
         // TODO: Input detection is raylib-dependant, it could be moved outside the module
@@ -138,45 +138,45 @@ public class Camera3D {
         switch (cameraData.mode) {
             case CameraMode.CAMERA_FREE: {          // rCamera free controls, using standard 3d-content-creation scheme
                 // rCamera zoom
-                if ((cameraData.targetDistance < CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove.getY() < 0)){
-                    cameraData.targetDistance -= (mouseWheelMove.getY() * CAMERA_MOUSE_SCROLL_SENSITIVITY);
+                if ((cameraData.targetDistance < CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
+                    cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
                     if (cameraData.targetDistance > CAMERA_FREE_DISTANCE_MAX_CLAMP) {
                         cameraData.targetDistance = CAMERA_FREE_DISTANCE_MAX_CLAMP;
                     }
                 }
 
                 // rCamera looking down
-                else if ((position.y > target.y) && (cameraData.targetDistance == CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove.getY() < 0)){
-                    target.x += mouseWheelMove.getY() * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.y += mouseWheelMove.getY() * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.z += mouseWheelMove.getY() * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                else if ((position.y > target.y) && (cameraData.targetDistance == CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
+                    target.x += mouseWheelMove * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.y += mouseWheelMove * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.z += mouseWheelMove * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
                 }
                 else if ((position.y > target.y) && (target.y >= 0)){
-                    target.x += mouseWheelMove.getY() * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.y += mouseWheelMove.getY() * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.z += mouseWheelMove.getY() * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.x += mouseWheelMove * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.y += mouseWheelMove * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.z += mouseWheelMove * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
 
                     // if (target.y < 0) target.y = -0.001;
-                } else if ((position.y > target.y) && (target.y < 0) && (mouseWheelMove.getY() > 0)){
-                    cameraData.targetDistance -= (mouseWheelMove.getY() * CAMERA_MOUSE_SCROLL_SENSITIVITY);
+                } else if ((position.y > target.y) && (target.y < 0) && (mouseWheelMove > 0)){
+                    cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
                     if (cameraData.targetDistance < CAMERA_FREE_DISTANCE_MIN_CLAMP) {
                         cameraData.targetDistance = CAMERA_FREE_DISTANCE_MIN_CLAMP;
                     }
                 }
                 // rCamera looking up
-                else if ((position.y < target.y) && (cameraData.targetDistance == CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove.getY() < 0)){
-                    target.x += mouseWheelMove.getY() * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.y += mouseWheelMove.getY() * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.z += mouseWheelMove.getY() * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                else if ((position.y < target.y) && (cameraData.targetDistance == CAMERA_FREE_DISTANCE_MAX_CLAMP) && (mouseWheelMove < 0)){
+                    target.x += mouseWheelMove * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.y += mouseWheelMove * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.z += mouseWheelMove * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
                 }
                 else if ((position.y < target.y) && (target.y <= 0)){
-                    target.x += mouseWheelMove.getY() * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.y += mouseWheelMove.getY() * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
-                    target.z += mouseWheelMove.getY() * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.x += mouseWheelMove * (target.x - position.x) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.y += mouseWheelMove * (target.y - position.y) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
+                    target.z += mouseWheelMove * (target.z - position.z) * CAMERA_MOUSE_SCROLL_SENSITIVITY / cameraData.targetDistance;
 
                     // if (target.y > 0) target.y = 0.001;
-                } else if ((position.y < target.y) && (target.y > 0) && (mouseWheelMove.getY() > 0)){
-                    cameraData.targetDistance -= (mouseWheelMove.getY() * CAMERA_MOUSE_SCROLL_SENSITIVITY);
+                } else if ((position.y < target.y) && (target.y > 0) && (mouseWheelMove > 0)){
+                    cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
                     if (cameraData.targetDistance < CAMERA_FREE_DISTANCE_MIN_CLAMP) {
                         cameraData.targetDistance = CAMERA_FREE_DISTANCE_MIN_CLAMP;
                     }
@@ -222,7 +222,7 @@ public class Camera3D {
             break;
             case CameraMode.CAMERA_ORBITAL: {        // rCamera just orbits around target, only zoom allowed
                 cameraData.angle.x += CAMERA_ORBITAL_SPEED;      // rCamera orbit angle
-                cameraData.targetDistance -= (mouseWheelMove.getY() * CAMERA_MOUSE_SCROLL_SENSITIVITY);   // rCamera zoom
+                cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);   // rCamera zoom
 
                 // rCamera distance clamp
                 if (cameraData.targetDistance < CAMERA_THIRD_PERSON_DISTANCE_CLAMP) {
@@ -320,7 +320,7 @@ public class Camera3D {
                 }
 
                 // rCamera zoom
-                cameraData.targetDistance -= (mouseWheelMove.getY() * CAMERA_MOUSE_SCROLL_SENSITIVITY);
+                cameraData.targetDistance -= (mouseWheelMove * CAMERA_MOUSE_SCROLL_SENSITIVITY);
 
                 // rCamera distance clamp
                 if (cameraData.targetDistance < CAMERA_THIRD_PERSON_DISTANCE_CLAMP){
