@@ -20,8 +20,10 @@ public class Window{
     boolean resizedLastFrame;              // Check if window has been resized last frame
 
     Point position;                     // window position on screen (required on fullscreen toggle)
+    Point previousPosition;             // Window previous position (required on borderless windowed toggle)
     Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
     Size screen;                        // Screen width and height (used render area)
+    Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
     Size currentFbo;                    // Current render width and height, it could change on BeginTextureMode()
     Size render;                        // Framebuffer width and height (render area, including black bars if required)
     Point renderOffset;                 // Offset from render area (must be divided by 2)

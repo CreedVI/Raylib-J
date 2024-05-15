@@ -344,6 +344,81 @@ public class rCore{
     }
 
     /**
+     * Toggle borderless windowed mode (only PLATFORM_DESKTOP)
+     */
+    public void ToggleBorderlessWindowed() {
+        boolean wasOnFullscreen = false;
+
+        if (window.fullscreen) {
+            window.previousPosition = window.position;
+            ToggleFullscreen();
+            wasOnFullscreen = true;
+        }
+
+        PointerBuffer monitors = glfwGetMonitors();
+        int monitorCount = monitors.sizeof();
+        int monitorIndex = GetCurrentMonitor();
+        long monitor = monitorIndex < monitorCount ? monitors.get(monitorIndex) : -1;
+
+        if ((monitor >= 0) && (monitor < monitorCount)) {
+            GLFWVidMode mode = glfwGetVideoMode(monitor);
+            if (mode != null) {
+                if (!IsWindowState(FLAG_BORDERLESS_WINDOWED_MODE)) {
+                    // Store screen position and size
+                    // NOTE: If it was on fullscreen, screen position was already stored, so skip
+                    // setting it here
+                    if (!wasOnFullscreen) {
+                        glfwGetWindowPos(window.handle, new int[]{(int) window.previousPosition.x}, new int[]{(int) window.previousPosition.y});
+                    }
+                    window.previousScreen = window.screen;
+
+                    // Set undecorated and topmost modes and flags
+                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
+                    window.flags |= FLAG_WINDOW_UNDECORATED;
+                    glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_TRUE);
+                    window.flags |= FLAG_WINDOW_TOPMOST;
+
+                    // Get monitor position and size
+                    int monitorPosX = 0;
+                    int monitorPosY = 0;
+                    glfwGetMonitorPos(monitor, new int[]{monitorPosX}, new int[]{monitorPosY});
+                    int monitorWidth = mode.width();
+                    int monitorHeight = mode.height();
+
+                    // Set screen position and size
+                    glfwSetWindowPos(window.handle, monitorPosX, monitorPosY);
+                    glfwSetWindowSize(window.handle, monitorWidth, monitorHeight);
+
+                    // Refocus window
+                    glfwFocusWindow(window.handle);
+
+                    window.flags |= FLAG_BORDERLESS_WINDOWED_MODE;
+                } else {
+                    // Remove topmost and undecorated modes and flags
+                    glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_FALSE);
+                    window.flags &= ~FLAG_WINDOW_TOPMOST;
+                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
+                    window.flags &= ~FLAG_WINDOW_UNDECORATED;
+
+                    // Return previous screen size and position
+                    // NOTE: The order matters here, it must set size first, then position, otherwise the screen will be position incorrectly
+                    glfwSetWindowSize(window.handle, window.previousScreen.width, window.previousScreen.height);
+                    glfwSetWindowPos(window.handle, (int) window.previousPosition.x, (int) window.previousPosition.y);
+
+                    // Refocus window
+                    glfwFocusWindow(window.handle);
+
+                    window.flags &= ~FLAG_BORDERLESS_WINDOWED_MODE;
+                }
+            } else {
+                Tracelog(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+            }
+        } else {
+            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+        }
+    }
+
+    /**
      * Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
      */
     public void MaximizeWindow(){
@@ -782,6 +857,22 @@ public class rCore{
             int physicalHeight = 0;
             nglfwGetMonitorPhysicalSize(monitor, 0, physicalHeight);
             return physicalHeight;
+        }
+        else{
+            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+        }
+        return 0;
+    }
+
+    // Get selected monitor refresh rate
+    public int GetMonitorRefreshRate(int monitor){
+        int monitorCount;
+        PointerBuffer monitors = glfwGetMonitors();
+        monitorCount = monitors.sizeof();
+
+        if ((monitor >= 0) && (monitor < monitorCount)){
+            GLFWVidMode mode = glfwGetVideoMode(monitors.get(monitor));
+            return mode.refreshRate();
         }
         else{
             Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
