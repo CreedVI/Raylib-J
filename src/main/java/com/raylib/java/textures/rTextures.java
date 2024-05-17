@@ -1,14 +1,13 @@
 package com.raylib.java.textures;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.core.Color;
-import com.raylib.java.core.rCore;
 import com.raylib.java.raymath.Vector2;
 import com.raylib.java.raymath.Vector3;
 import com.raylib.java.raymath.Vector4;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.Rectangle;
 import com.raylib.java.text.Font;
-import com.raylib.java.text.rText;
 import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.Tracelog;
 import org.lwjgl.PointerBuffer;
@@ -36,7 +35,6 @@ import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.RL_ATTACH
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_COLOR_CHANNEL0;
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_DEPTH;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.text.rText.GetFontDefault;
 import static com.raylib.java.textures.NPatchInfo.NPatchType.*;
 import static com.raylib.java.textures.rTextures.CubemapLayoutType.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
@@ -59,8 +57,14 @@ public class rTextures{
                 CUBEMAP_PANORAMA = 5;               // Layout is defined by a panorama image (equirectangular map)
     }
 
+    private final Raylib context;
+
+    public rTextures(Raylib context) {
+        this.context = context;
+    }
+
     // Load image to memory
-    public static Image LoadImage(String fileName) {
+    public Image LoadImage(String fileName) {
         Image image = new Image();
         // Loading file to memory
         int fileSize = 0;
@@ -127,12 +131,12 @@ public class rTextures{
         int framesCount = 1;
 
         if (SUPPORT_FILEFORMAT_GIF) {
-            if (rCore.IsFileExtension(fileName, ".gif")) {
+            if (context.core.IsFileExtension(fileName, ".gif")) {
                 byte[] fileData = null;
                 try{
                     BufferedImage tmpImg = ImageIO.read(new File(fileName));
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ImageIO.write(tmpImg, rCore.GetFileExtension(fileName).substring(1), os);
+                    ImageIO.write(tmpImg, context.core.GetFileExtension(fileName).substring(1), os);
                     fileData = os.toByteArray();
                 } catch (IOException exception) {
                     exception.printStackTrace();
@@ -184,7 +188,7 @@ public class rTextures{
 
     // Load image from memory buffer, fileType refers to extension: i.e. ".png"
     // WARNING: File extension must be provided in lower-case
-    public static Image LoadImageFromMemory(String fileType, byte[] fileData, int dataSize) {
+    public Image LoadImageFromMemory(String fileType, byte[] fileData, int dataSize) {
         Image image = new Image();
 
         if (SUPPORT_FILEFORMAT_PNG || SUPPORT_FILEFORMAT_BMP || SUPPORT_FILEFORMAT_TGA || SUPPORT_FILEFORMAT_JPG ||
@@ -314,14 +318,14 @@ public class rTextures{
         return image;
     }
 
-    public static Image UnloadImage(Image image) {
+    public Image UnloadImage(Image image) {
         image.data = null;
         return image;
     }
 
     // Export image data to file
     // NOTE: File format depends on fileName extension
-    public static boolean ExportImage(Image image, String fileName) {
+    public boolean ExportImage(Image image, String fileName) {
         boolean success = false;
 
         if (SUPPORT_IMAGE_EXPORT) {
@@ -362,23 +366,23 @@ public class rTextures{
             imgBuffer.put(imgData).flip();
 
             if (SUPPORT_FILEFORMAT_PNG) {
-                if (rCore.IsFileExtension(fileName, ".png")) {
+                if (context.core.IsFileExtension(fileName, ".png")) {
                     success = STBImageWrite.stbi_write_png(fileName, image.width, image.height,
                                                            channels, imgBuffer, image.width*channels);
                 }
             }
             if (SUPPORT_FILEFORMAT_BMP) {
-                if (rCore.IsFileExtension(fileName, ".bmp")) {
+                if (context.core.IsFileExtension(fileName, ".bmp")) {
                     success = STBImageWrite.stbi_write_bmp(fileName, image.width, image.height, channels, imgBuffer);
                 }
             }
             if (SUPPORT_FILEFORMAT_TGA) {
-                if (rCore.IsFileExtension(fileName, ".tga")) {
+                if (context.core.IsFileExtension(fileName, ".tga")) {
                     success = STBImageWrite.stbi_write_tga(fileName, image.width, image.height, channels, imgBuffer);
                 }
             }
             if (SUPPORT_FILEFORMAT_JPG) {
-                if (rCore.IsFileExtension(fileName, ".jpeg")) {
+                if (context.core.IsFileExtension(fileName, ".jpeg")) {
                     success = STBImageWrite.stbi_write_jpg(fileName, image.width, image.height, channels, imgBuffer, 90);  // JPG quality: between 1 and 100
                 }
             }
@@ -391,7 +395,7 @@ public class rTextures{
                 * PVR
                 * ASTC
             */
-            else if (rCore.IsFileExtension(fileName, ".raw")) {
+            else if (context.core.IsFileExtension(fileName, ".raw")) {
                 // Export raw pixel data (without header)
                 // NOTE: It's up to the user to track image parameters
                 try{
@@ -706,7 +710,7 @@ public class rTextures{
         return newImage;
     }
 
-    public static Image ImageFromImage(Image image, Rectangle rectangle) {
+    public Image ImageFromImage(Image image, Rectangle rectangle) {
         Image result = new Image();
         int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
 
@@ -975,7 +979,7 @@ public class rTextures{
         }
         int spacing = fontSize / defaultFontSize;
 
-        return ImageTextEx(GetFontDefault(), text, (float) fontSize, (float) spacing, color);
+        return ImageTextEx(context.text.GetFontDefault(), text, (float) fontSize, (float) spacing, color);
     }
 
     // Create an image from text (custom sprite font)
@@ -986,7 +990,7 @@ public class rTextures{
         int textOffsetY = 0;            // Offset between lines (on line break '\n')
 
         // NOTE: rText image is generated at font base size, later scaled to desired font size
-        Vector2 imSize = rText.MeasureTextEx(font, text, (float) font.getBaseSize(), spacing);
+        Vector2 imSize = context.text.MeasureTextEx(font, text, (float) font.getBaseSize(), spacing);
 
         // Create image to store text
         Image imText = GenImageColor((int) imSize.x, (int) imSize.y, BLANK);
@@ -994,10 +998,10 @@ public class rTextures{
         for (int i = 0; i < length; i++) {
             // Get next codepoint from byte string and glyph index in font
             int codepointByteCount = 0;
-            int codepoint = rText.GetCodepoint(text.toCharArray(), i);
-            int index = rText.GetGlyphIndex(font, codepoint);
+            int codepoint = context.text.GetCodepoint(text.toCharArray(), i);
+            int index = context.text.GetGlyphIndex(font, codepoint);
 
-            codepointByteCount = rText.getCPBC();
+            codepointByteCount = context.text.getCPBC();
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
@@ -1041,7 +1045,7 @@ public class rTextures{
             Tracelog(LOG_INFO, "IMAGE: rText scaled by factor: " + scaleFactor);
 
             // Using nearest-neighbor scaling algorithm for default font
-            if (font.getTexture().getId() == rText.GetFontDefault().getTexture().getId()) {
+            if (font.getTexture().getId() == context.text.GetFontDefault().getTexture().getId()) {
                 ImageResizeNN(imText, (int) (imSize.x * scaleFactor), (int) (imSize.y * scaleFactor));
             }
             else{
@@ -1894,7 +1898,7 @@ public class rTextures{
 
     // Load color data from image as a Color array (RGBA - 32bit)
     // NOTE: Memory allocated should be freed using UnloadImageColors();
-    public static Color[] LoadImageColors(Image image) {
+    public Color[] LoadImageColors(Image image) {
         if ((image.width == 0) || (image.height == 0)) {
             return null;
         }
@@ -2065,7 +2069,7 @@ public class rTextures{
         return palette;
     }
 
-    public static Color[] UnloadImageColors(Color[] color) {
+    public Color[] UnloadImageColors(Color[] color) {
         return null;
     }
 
@@ -2074,7 +2078,7 @@ public class rTextures{
     }
 
     // Get pixel data from image as Vector4 array (float normalized)
-    public static Vector4[] LoadImageDataNormalized(Image image) {
+    public Vector4[] LoadImageDataNormalized(Image image) {
         Vector4[] pixels = new Vector4[image.width * image.height];
 
         for (int i = 0; i < pixels.length; i++) {
@@ -2684,7 +2688,7 @@ public class rTextures{
         Vector2 position = new Vector2((float) posX, (float) posY);
 
         // NOTE: For default font, sapcing is set to desired font size / default font size (10)
-        ImageDrawTextEx(dst, GetFontDefault(), text, position, (float) fontSize, (float) fontSize / 10, color);
+        ImageDrawTextEx(dst, context.text.GetFontDefault(), text, position, (float) fontSize, (float) fontSize / 10, color);
     }
 
     // Draw text (custom sprite font) within an image (destination)
@@ -2699,7 +2703,7 @@ public class rTextures{
         UnloadImage(imText);
     }
 
-    public static Texture2D LoadTexture(String fileName) {
+    public Texture2D LoadTexture(String fileName) {
         Texture2D texture = new Texture2D();
         Image image = LoadImage(fileName);
 
@@ -2711,7 +2715,7 @@ public class rTextures{
         return texture;
     }
 
-    public static Texture2D LoadTextureFromImage(Image image) {
+    public Texture2D LoadTextureFromImage(Image image) {
         Texture2D texture = new Texture2D();
 
         if ((image.data != null) && (image.width != 0) && (image.height != 0)) {
@@ -2926,7 +2930,7 @@ public class rTextures{
 
     // Get pixel data from GPU texture and return an Image
     // NOTE: Compressed texture formats not supported
-    public static Image LoadImageFromTexture(Texture2D texture) {
+    public Image LoadImageFromTexture(Texture2D texture) {
         Image image = new Image();
 
         if (texture.format < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
@@ -2961,8 +2965,8 @@ public class rTextures{
     public Image LoadImageFromScreen() {
         Image image = new Image();
 
-        image.width = rCore.GetScreenWidth();
-        image.height = rCore.GetScreenHeight();
+        image.width = context.core.GetScreenWidth();
+        image.height = context.core.GetScreenHeight();
         image.mipmaps = 1;
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
         image.setData(rlReadScreenPixels(image.width, image.height));
@@ -2981,7 +2985,7 @@ public class rTextures{
     }
 
     // Set texture scaling filter mode
-    public static void SetTextureFilter(Texture2D texture, int filterMode) {
+    public void SetTextureFilter(Texture2D texture, int filterMode) {
         switch (filterMode) {
 
             case 0:{
@@ -3210,7 +3214,7 @@ public class rTextures{
 
     // Draw a part of a texture (defined by a rectangle) with 'pro' parameters
     // NOTE: origin is relative to destination rectangle size
-    public static void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
+    public void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin,
                                       float rotation, Color tint) {
         // Check if texture is valid
         if (texture.id > 0) {
@@ -3589,7 +3593,7 @@ public class rTextures{
 
 
     // Returns color with alpha applied, alpha goes from 0.0f to 1.0f
-    public static Color Fade(Color color, float alpha) {
+    public Color Fade(Color color, float alpha) {
         if (alpha < 0.0f) {
             alpha = 0.0f;
         }
@@ -3947,7 +3951,7 @@ public class rTextures{
 
     // Get pixel data size in bytes for certain format
     // NOTE: Size can be requested for Image or Texture data
-    public static int GetPixelDataSize(int width, int height, int format) {
+    public int GetPixelDataSize(int width, int height, int format) {
         int dataSize;       // Size in bytes
         int bpp = 0;            // Bits per pixel
 

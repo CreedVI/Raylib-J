@@ -39,8 +39,8 @@ public  class State{                    // Renderer state
     public int glBlendDstFactor;               // Blending destination factor
     public int glBlendEquation;                // Blending equation
 
-    public int framebufferWidth;               // Default framebuffer width
-    public int framebufferHeight;              // Default framebuffer height
+    public int framebufferWidth;               // Current framebuffer width
+    public int framebufferHeight;              // Current framebuffer height
 
     public State(){
         stack = new Matrix[MAX_MATRIX_STACK_SIZE];

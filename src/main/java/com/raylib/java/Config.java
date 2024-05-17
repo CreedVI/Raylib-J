@@ -7,7 +7,17 @@ public class Config{
      * This file defines all the configuration flags for the different raylib modules.txt
      */
 
-    public static final String RAYLIB_VERSION = "4.0";
+    public static final String RAYLIB_VERSION = "4.2";
+
+    //------------------------------------------------------------------------------------
+// Module selection - Some modules could be avoided
+// Mandatory modules: rcore, rlgl, utils
+//------------------------------------------------------------------------------------
+            public static boolean SUPPORT_MODULE_RSHAPES   = true;
+            public static boolean SUPPORT_MODULE_RTEXTURES = true;
+            public static boolean SUPPORT_MODULE_RTEXT     = true;          // WARNING: It requires SUPPORT_MODULE_RTEXTURES to load sprite font textures
+            public static boolean SUPPORT_MODULE_RMODELS   = true;
+            public static boolean SUPPORT_MODULE_RAUDIO    = true;
 
     //------------------------------------------------------------------------------------
     // Module: core - Configuration Flags
@@ -333,6 +343,7 @@ public class Config{
         FLAG_WINDOW_TRANSPARENT = 0x00000010,   // Set to allow transparent framebuffer
         FLAG_WINDOW_HIGHDPI = 0x00002000,   // Set to support HighDPI
         FLAG_BORDERLESS_WINDOWED_MODE = 0x00008000, // Set to run program in borderless windowed mode
+        FLAG_WINDOW_MOUSE_PASSTHROUGH = 0x00004000, // Set to support mouse passthrough, only supported when FLAG_WINDOW_UNDECORATED
         FLAG_MSAA_4X_HINT = 0x00000020,   // Set to try enabling MSAA 4X
         FLAG_INTERLACED_HINT = 0x00010000;    // Set to try enabling interlaced video format (for V3D)
 

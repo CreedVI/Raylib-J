@@ -1,5 +1,6 @@
 package com.raylib.java.core.rcamera;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.core.rCore;
 import com.raylib.java.raymath.Matrix;
 import com.raylib.java.raymath.Raymath;
@@ -67,7 +68,10 @@ public class Camera3D {
     public int projection;                  // rCamera projection, defines projection projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
     CameraData cameraData;
 
-    public Camera3D(){
+    private final Raylib context;
+
+    public Camera3D(Raylib context){
+        this.context = context;
         position = new Vector3();
         target = new Vector3();
         up = new Vector3();
@@ -77,7 +81,8 @@ public class Camera3D {
         cameraData = new CameraData();
     }
 
-    public Camera3D(CameraData cameraData){
+    public Camera3D(Raylib context, CameraData cameraData){
+        this.context = context;
         position = new Vector3();
         target = new Vector3();
         up = new Vector3();
@@ -85,7 +90,8 @@ public class Camera3D {
         this.cameraData = cameraData;
     }
 
-    public Camera3D(Vector3 position, Vector3 target, Vector3 up, Float fovy, int projection){
+    public Camera3D(Raylib context, Vector3 position, Vector3 target, Vector3 up, Float fovy, int projection){
+        this.context = context;
         this.position = position;
         this.target = target;
         this.up = up;
@@ -108,21 +114,21 @@ public class Camera3D {
 
         // Mouse movement detection
         Vector2 mousePositionDelta = new Vector2(0.0f, 0.0f);
-        Vector2 mousePosition = rCore.GetMousePosition();
-        float mouseWheelMove = rCore.GetMouseWheelMove();
+        Vector2 mousePosition = context.core.GetMousePosition();
+        float mouseWheelMove = context.core.GetMouseWheelMove();
 
         // Keys input detection
         // TODO: Input detection is raylib-dependant, it could be moved outside the module
-        boolean keyPan = rCore.IsMouseButtonDown(cameraData.panControl);
-        boolean keyAlt = rCore.IsKeyDown(cameraData.altControl);
-        boolean sZoomKey = rCore.IsKeyDown(cameraData.smoothZoomControl);
+        boolean keyPan = context.core.IsMouseButtonDown(cameraData.panControl);
+        boolean keyAlt = context.core.IsKeyDown(cameraData.altControl);
+        boolean sZoomKey = context.core.IsKeyDown(cameraData.smoothZoomControl);
         int[] direction = new int[]{
-                rCore.IsKeyDown(cameraData.MoveFront) ? 1 : 0,
-                rCore.IsKeyDown(cameraData.MoveBack) ? 1 : 0,
-                rCore.IsKeyDown(cameraData.MoveRight) ? 1 : 0,
-                rCore.IsKeyDown(cameraData.MoveLeft) ? 1 : 0,
-                rCore.IsKeyDown(cameraData.MoveUp) ? 1 : 0,
-                rCore.IsKeyDown(cameraData.MoveDown) ? 1 : 0
+                context.core.IsKeyDown(cameraData.MoveFront) ? 1 : 0,
+                context.core.IsKeyDown(cameraData.MoveBack) ? 1 : 0,
+                context.core.IsKeyDown(cameraData.MoveRight) ? 1 : 0,
+                context.core.IsKeyDown(cameraData.MoveLeft) ? 1 : 0,
+                context.core.IsKeyDown(cameraData.MoveUp) ? 1 : 0,
+                context.core.IsKeyDown(cameraData.MoveDown) ? 1 : 0
         };
 
         if (cameraData.mode != CameraMode.CAMERA_CUSTOM) {
@@ -368,10 +374,10 @@ public class Camera3D {
 
         // Lock cursor for first person and third person cameras
         if ((mode == CameraMode.CAMERA_FIRST_PERSON) || (mode == CameraMode.CAMERA_THIRD_PERSON)){
-            rCore.DisableCursor();
+            context.core.DisableCursor();
         }
         else{
-            rCore.EnableCursor();
+            context.core.EnableCursor();
         }
 
         cameraData.mode = mode;

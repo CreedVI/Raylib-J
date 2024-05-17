@@ -23,13 +23,13 @@ public class Raylib{
      * Creates new Raylib instance.
      */
     public Raylib(){
-        audio = new rAudioAL();
-        core = new rCore();
         config = new Config();
-        text = new rText();
-        shapes = new rShapes();
-        textures = new rTextures();
-        models = new rModels();
+        core = new rCore(this);
+        textures = new rTextures(this);
+        text = new rText(this);
+        audio = new rAudioAL(this);
+        shapes = new rShapes(this);
+        models = new rModels(this);
         physac = new Physac();
     }
 
@@ -40,13 +40,13 @@ public class Raylib{
      * @param title title to display for the window
      */
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
-        audio = new rAudioAL();
-        core = new rCore();
         config = new Config();
-        text = new rText();
-        shapes = new rShapes();
-        textures = new rTextures();
-        models = new rModels();
+        core = new rCore(this);
+        textures = new rTextures(this);
+        text = new rText(this);
+        audio = new rAudioAL(this);
+        shapes = new rShapes(this);
+        models = new rModels(this);
         physac = new Physac();
 
         core.InitWindow(ScreenWidth, ScreenHeight, title);
