@@ -1,4 +1,4 @@
-<img align="left" src="https://github.com/CreedVI/Raylib-J/blob/main/logo/raylib-j_256x256.png" width=256>
+<img align="left" src="https://github.com/CreedVI/Raylib-J/blob/main/logo/raylib-j_256x256.png" width=256 alt="Raylib-J Logo">
 
 # Raylib-J
 A handmade version of Raylib for Java.
