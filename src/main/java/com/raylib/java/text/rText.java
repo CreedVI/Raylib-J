@@ -1,5 +1,6 @@
 package com.raylib.java.text;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.core.Color;
 import com.raylib.java.core.rCore;
 import com.raylib.java.raymath.Vector2;
@@ -23,7 +24,6 @@ import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
-import static com.raylib.java.textures.rTextures.*;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
@@ -89,9 +89,9 @@ public class rText{
                 FONT_SDF = 2;                    // SDF font generation, requires external shader
     }
 
-    final static int MAX_TEXTFORMAT_BUFFERS = 4;             // Maximum number of static buffers for text formatting
-    final static int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
-    private static int next;
+    final int MAX_TEXTFORMAT_BUFFERS = 4;             // Maximum number of static buffers for text formatting
+    final int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
+    private int next;
 
     // Default values for ttf font generation
     final int FONT_TTF_DEFAULT_SIZE = 32;          // TTF font generation default char size (char-height)
@@ -103,11 +103,14 @@ public class rText{
     final int MAX_TEXT_UNICODE_CHARS = 512;        // Maximum number of unicode codepoints: GetCodepoints()
     final int MAX_TEXTSPLIT_COUNT = 128;           // Maximum number of substrings to split: TextSplit()
 
-    static int codepointByteCount;
+    int codepointByteCount;
 
-    static Font defaultFont;
+    Font defaultFont;
+    private final Raylib context;
 
-    public rText() {
+    public rText(Raylib raylib) {
+        this.context = raylib;
+
         if (SUPPORT_DEFAULT_FONT) {
             defaultFont = new Font();
         }
@@ -120,7 +123,7 @@ public class rText{
      * @param b position of bit to examine
      * @return <code>true</code> if bit at b is set to 1
      */
-    private static boolean BitCheck(int a, int b) {
+    private boolean BitCheck(int a, int b) {
         return ((a) & (1L << (b))) == (long) Math.pow(2, b);
     }
 
@@ -130,7 +133,7 @@ public class rText{
     }
 
     // Load raylib default font
-    public static void LoadFontDefault() {
+    public void LoadFontDefault() {
         // NOTE: Using UTF8 encoding table for Unicode U+0000..U+00FF Basic Latin + Latin-1 Supplement
         // Ref: http://www.utf8-chartable.de/unicode-utf8-table.pl
 
@@ -226,7 +229,7 @@ public class rText{
 
         imFont.setData(fontdata);
 
-        defaultFont.texture = rTextures.LoadTextureFromImage(imFont);
+        defaultFont.texture = context.textures.LoadTextureFromImage(imFont);
 
         // Reconstruct charSet using charsWidth[], charsHeight, charsDivisor, glyphCount
         //------------------------------------------------------------------------------
@@ -275,10 +278,10 @@ public class rText{
             defaultFont.glyphs[i].advanceX = 0;
 
             // Fill character image data from fontClear data
-            defaultFont.glyphs[i].image = rTextures.ImageFromImage(imFont, defaultFont.recs[i]);
+            defaultFont.glyphs[i].image = context.textures.ImageFromImage(imFont, defaultFont.recs[i]);
         }
 
-        UnloadImage(imFont);
+        context.textures.UnloadImage(imFont);
 
         defaultFont.baseSize = (int)defaultFont.recs[0].height;
 
@@ -286,9 +289,9 @@ public class rText{
     }
 
     // Unload raylib default font
-    public static void UnloadFontDefault() {
+    public void UnloadFontDefault() {
         for (int i = 0; i < defaultFont.glyphCount; i++) {
-            defaultFont.glyphs[i].image = UnloadImage(defaultFont.glyphs[i].image);
+            defaultFont.glyphs[i].image = context.textures.UnloadImage(defaultFont.glyphs[i].image);
         }
         defaultFont.texture = null;
         defaultFont.glyphs = null;
@@ -296,7 +299,7 @@ public class rText{
     }
 
     // Get the default font, useful to be used with extended parameters
-    public static Font GetFontDefault() {
+    public Font GetFontDefault() {
         if (SUPPORT_DEFAULT_FONT) {
             return defaultFont;
         }
@@ -320,11 +323,11 @@ public class rText{
             }
         }
         if (font == null) {
-            Image image = rTextures.LoadImage(fileName);
+            Image image = context.textures.LoadImage(fileName);
             if (image.getData() != null) {
                 font = LoadFontFromImage(image, Color.MAGENTA, FONT_TTF_DEFAULT_FIRST_CHAR);
             }
-            UnloadImage(image);
+            context.textures.UnloadImage(image);
         }
 
         if (font.texture.getId() == 0) {
@@ -332,7 +335,7 @@ public class rText{
             font = GetFontDefault();
         }
         else{
-            rTextures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT); // By default we set point filter (best performance)
+            context.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT); // By default we set point filter (best performance)
             Tracelog(LOG_INFO, "FONT: Data loaded successfully (" + FONT_TTF_DEFAULT_SIZE + " pixel size | " + FONT_TTF_DEFAULT_NUMCHARS + " glyphs)");
         }
 
@@ -383,7 +386,7 @@ public class rText{
             tempCharRecs[i] = new Rectangle();
         }
 
-        Color[] pixels = rTextures.LoadImageColors(image);
+        Color[] pixels = context.textures.LoadImageColors(image);
 
         // Parse image data to get charSpacing and lineSpacing
         for (y = 0; y < image.getHeight(); y++) {
@@ -457,7 +460,7 @@ public class rText{
         // Create spritefont with all data parsed from image
         Font font = new Font();
 
-        font.texture = rTextures.LoadTextureFromImage(fontClear); // Convert processed image to OpenGL texture
+        font.texture = context.textures.LoadTextureFromImage(fontClear); // Convert processed image to OpenGL texture
         font.glyphCount = index;
         font.glyphPadding = 0;
 
@@ -484,10 +487,10 @@ public class rText{
             font.glyphs[i].advanceX = 0;
 
             // Fill character image data from fontClear data
-            font.glyphs[i].image = rTextures.ImageFromImage(fontClear, tempCharRecs[i]);
+            font.glyphs[i].image = context.textures.ImageFromImage(fontClear, tempCharRecs[i]);
         }
 
-        UnloadImage(fontClear);     // Unload processed image once converted to texture
+        context.textures.UnloadImage(fontClear);     // Unload processed image once converted to texture
 
         font.baseSize = (int) font.recs[0].height;
 
@@ -511,15 +514,15 @@ public class rText{
                     font.glyphPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
 
                     Image atlas = GenImageFontAtlas(font, 0);
-                    font.texture = rTextures.LoadTextureFromImage(atlas);
+                    font.texture = context.textures.LoadTextureFromImage(atlas);
 
                     // Update chars[i].image to use alpha, required to be used on ImageDrawText()
                     for (int i = 0; i < font.glyphCount; i++) {
-                        UnloadImage(font.glyphs[i].image);
-                        font.glyphs[i].image = rTextures.ImageFromImage(atlas, font.recs[i]);
+                        context.textures.UnloadImage(font.glyphs[i].image);
+                        font.glyphs[i].image = context.textures.ImageFromImage(atlas, font.recs[i]);
                     }
 
-                    UnloadImage(atlas);
+                    context.textures.UnloadImage(atlas);
                     Tracelog(LOG_INFO, "FONT: Data loaded successfully (" + font.baseSize + " pixel size | " + font.glyphCount + " glyphs)");
                 }
                 else {
@@ -870,14 +873,14 @@ public class rText{
     }
 
     // Unload font chars info data (RAM)
-    public static void UnloadFontData(GlyphInfo[] chars, int charsCount) {
+    public void UnloadFontData(GlyphInfo[] chars, int charsCount) {
         for (int i = 0; i < charsCount; i++) {
-            UnloadImage(chars[i].image);
+            context.textures.UnloadImage(chars[i].image);
         }
     }
 
     // Unload Font from GPU memory (VRAM)
-    public static void UnloadFont(Font f) {
+    public void UnloadFont(Font f) {
         f = null;
     }
 
@@ -918,11 +921,11 @@ public class rText{
 
         // Support font export and initialization
         // NOTE: This mechanism is highly coupled to raylib
-        Image image = LoadImageFromTexture(font.texture);
+        Image image = context.textures.LoadImageFromTexture(font.texture);
         if (image.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
             Tracelog(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
         }
-        int imageDataSize = GetPixelDataSize(image.width, image.height, image.format);
+        int imageDataSize = context.textures.GetPixelDataSize(image.width, image.height, image.format);
 
         // Image data is usually GRAYSCALE + ALPHA and can be reduced to GRAYSCALE
         //ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
@@ -1034,7 +1037,7 @@ public class rText{
         txtData.append("    return font;\n");
         txtData.append("}\n");
 
-        UnloadImage(image);
+        context.textures.UnloadImage(image);
 
         // NOTE: Text data size exported is determined by '\0' (NULL) character
         try {
@@ -1049,7 +1052,7 @@ public class rText{
         return success;
     }
 
-    public static int getCPBC() {
+    public int getCPBC() {
         return codepointByteCount;
     }
 
@@ -1057,7 +1060,7 @@ public class rText{
     // NOTE: Uses default font
     public void DrawFPS(int posX, int posY) {
         Color color = Color.LIME; // Good fps
-        int fps = rCore.GetFPS();
+        int fps = context.core.GetFPS();
 
         if (fps < 30 && fps >= 15) {
             color = Color.ORANGE;  // Warning FPS
@@ -1072,7 +1075,7 @@ public class rText{
     // Draw current FPS
     // NOTE: Uses default font and custom colour
     public void DrawFPS(int posX, int posY, Color textColor) {
-        DrawText((rCore.GetFPS() + " FPS"), posX, posY, 20, textColor);
+        DrawText((context.core.GetFPS() + " FPS"), posX, posY, 20, textColor);
     }
 
     // Draw text (using default font)
@@ -1179,7 +1182,7 @@ public class rText{
                 font.recs[index].getHeight() + 2.0f * font.glyphPadding);
 
         // Draw the character texture on the screen
-        rTextures.DrawTexturePro(font.texture, srcRec, dstRec, new Vector2(), 0.0f, tint);
+        context.textures.DrawTexturePro(font.texture, srcRec, dstRec, new Vector2(), 0.0f, tint);
     }
 
     // Draw multiple characters (codepoints)
@@ -1230,7 +1233,7 @@ public class rText{
     }
 
     // Measure string size for Font
-    public static Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing){
+    public Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing){
         int len = TextLength(text);
         int tempLen = 0;                // Used to count longer text line num chars
         int lenCounter = 0;
@@ -1250,7 +1253,7 @@ public class rText{
 
             next = 0;
             letter = GetCodepoint(text.substring(i).toCharArray(), next);
-            next = rText.codepointByteCount;
+            next = codepointByteCount;
             index = GetGlyphIndex(font, letter);
 
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -1288,7 +1291,7 @@ public class rText{
     }
 
     // Returns index position for a unicode character on spritefont
-    public static int GetGlyphIndex(Font font, int codepoint){
+    public int GetGlyphIndex(Font font, int codepoint){
         // Support charsets with any characters order
         int index = GLYPH_NOTFOUND_CHAR_FALLBACK;
         for (int i = 0; i < font.glyphCount; i++){
@@ -1312,7 +1315,7 @@ public class rText{
         return font.recs[GetGlyphIndex(font, codepoint)];
     }
 
-    public static int TextLength(String text){
+    public int TextLength(String text){
         return text.length();
     }
 
@@ -1534,7 +1537,7 @@ public class rText{
     // NOTE: the standard says U+FFFD should be returned in case of errors
     // but that character is not supported by the default font in raylib
     // TODO: optimize this code for speed!!
-    public static int GetCodepoint(char[] text, int bytesProcessed){
+    public int GetCodepoint(char[] text, int bytesProcessed){
         /*
             UTF8 specs from https://www.ietf.org/rfc/rfc3629.txt
             Char. number range  |        UTF-8 octet sequence
@@ -1656,7 +1659,7 @@ public class rText{
             code = 0x3f;     // Codepoints after U+10ffff are invalid
         }
 
-        rText.codepointByteCount = bytesProcessed;
+        codepointByteCount = bytesProcessed;
 
         return code;
     }
@@ -1713,7 +1716,7 @@ public class rText{
 
         String imPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + imFileName;
 
-        Image imFont = rTextures.LoadImage(imPath);
+        Image imFont = context.textures.LoadImage(imPath);
 
         if (imFont.format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
             // Convert image to GRAYSCALE + ALPHA, using the mask as the alpha channel
@@ -1732,11 +1735,11 @@ public class rText{
             imFontAlpha.format = RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
             imFontAlpha.mipmaps = 1;
 
-            UnloadImage(imFont);
+            context.textures.UnloadImage(imFont);
             imFont = imFontAlpha;
         }
 
-        font.texture = rTextures.LoadTextureFromImage(imFont);
+        font.texture = context.textures.LoadTextureFromImage(imFont);
 
         // Fill font characters info data
         font.baseSize = fontSize;
@@ -1798,7 +1801,7 @@ public class rText{
 
 
             // Fill character image data from imFont data
-            font.glyphs[i].image = rTextures.ImageFromImage(imFont, font.recs[i]);
+            font.glyphs[i].image = context.textures.ImageFromImage(imFont, font.recs[i]);
 
             lineTracker++;
 
@@ -1807,7 +1810,7 @@ public class rText{
             }
         }
 
-        UnloadImage(imFont);
+        context.textures.UnloadImage(imFont);
 
         if (font.texture.getId() == 0){
             UnloadFont(font);
