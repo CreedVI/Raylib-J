@@ -1,6 +1,7 @@
 package com.raylib.java.core;
 
 import com.raylib.java.Config;
+import com.raylib.java.Raylib;
 import com.raylib.java.core.input.Input;
 import com.raylib.java.core.ray.Ray;
 import com.raylib.java.core.rcamera.Camera2D;
@@ -14,11 +15,9 @@ import com.raylib.java.rlgl.shader.Shader;
 import com.raylib.java.rlgl.vr.VrDeviceInfo;
 import com.raylib.java.rlgl.vr.VrStereoConfig;
 import com.raylib.java.shapes.Rectangle;
-import com.raylib.java.text.rText;
 import com.raylib.java.textures.Image;
 import com.raylib.java.textures.RenderTexture;
 import com.raylib.java.textures.Texture2D;
-import com.raylib.java.textures.rTextures;
 import com.raylib.java.utils.FileIO;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
@@ -34,7 +33,6 @@ import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -42,7 +40,6 @@ import java.util.stream.Stream;
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.AutomationEvent.AutomationEventType.*;
-import static com.raylib.java.core.Color.RAYWHITE;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_LEFT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadButton.*;
@@ -92,7 +89,11 @@ public class rCore{
     static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     static float average = 0, last = 0;
 
-    public rCore(){
+    private final Raylib context;
+
+    public rCore(Raylib context){
+        this.context = context;
+
         window = new Window();
         input = new Input();
         time = new Time();
@@ -201,10 +202,10 @@ public class rCore{
         if (SUPPORT_MODULE_RTEXT && SUPPORT_DEFAULT_FONT){
             // Load default font
             // WARNING: External function: Module required: rtext
-            rText.LoadFontDefault();
-            Rectangle rec = rText.GetFontDefault().getRecs()[95];
+            context.text.LoadFontDefault();
+            Rectangle rec = context.text.GetFontDefault().getRecs()[95];
             // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
-            SetShapesTexture(rText.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
+            SetShapesTexture(context.text.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
                                                                                         rec.getWidth() - 2, rec.getHeight() - 2));
         }
         else if (SUPPORT_MODULE_RSHAPES){
@@ -218,8 +219,8 @@ public class rCore{
             if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
                 // Set default font texture filter for HighDPI (blurry)
                 // RL_TEXTURE_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-                rlTextureParameters(rText.GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
-                rlTextureParameters(rText.GetFontDefault().texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
             }
         }
 
@@ -231,7 +232,7 @@ public class rCore{
      */
     public void CloseWindow(){
         if (SUPPORT_MODULE_RTEXT && SUPPORT_DEFAULT_FONT){
-            rText.UnloadFontDefault();        // WARNING: Module required: rtext
+            context.text.UnloadFontDefault();        // WARNING: Module required: rtext
         }
 
         glfwSetWindowShouldClose(window.handle, true);
@@ -1739,7 +1740,7 @@ public class rCore{
 
             String path = "" + fileName;
 
-            rTextures.ExportImage(image, path); // WARNING: Module required: rtextures
+            context.textures.ExportImage(image, path); // WARNING: Module required: rtextures
 
             // TODO: Verification required for log
             Tracelog(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
@@ -1855,11 +1856,11 @@ public class rCore{
     }
 
     // Get filenames in a directory path (max 512 files)
-    public String[] GetDirectoryFiles(String dirPath) {
+    public String[] LoadDirectoryFiles(String dirPath) {
 
         final int MAX_DIRECTORY_FILES = 512;
 
-        ClearDirectoryFiles();
+        UnloadDirectoryFiles();
 
         Set<String> files = Stream.of(new File(dirPath).listFiles())
                 .filter(file -> !file.isDirectory())
@@ -1877,7 +1878,7 @@ public class rCore{
     }
 
     // Clear directory files paths buffers
-    public void ClearDirectoryFiles() {
+    public void UnloadDirectoryFiles() {
         if (dirFileCount > 0) {
             dirFilesPath = null;
             dirFileCount = 0;
@@ -1892,7 +1893,7 @@ public class rCore{
     }
 
     // Get dropped files names
-    public String[] GetDroppedFiles(){
+    public String[] LoadDroppedFiles(){
         return window.dropFilePaths;
     }
 
@@ -1906,7 +1907,7 @@ public class rCore{
                 window.dropFilePaths[i] = null;
             }
 
-            window.setDropFilesPath(null);
+            window.setDropFilePaths(null);
 
             window.setDropFilesCount(0);
         }
@@ -2022,91 +2023,6 @@ public class rCore{
 
         outputLength = outLength;
         return decodedData;
-    }
-
-
-    // Save integer value to storage file (to defined position)
-    // NOTE: Storage positions is directly related to file memory layout (4 bytes each integer)
-    public boolean SaveStorageValue(int position, int value) throws IOException{
-        boolean success = false;
-
-        if (SUPPORT_DATA_STORAGE){
-            String path = STORAGE_DATA_FILE;
-
-            int dataSize = 0;
-            int newDataSize = 0;
-            byte[] fileData = FileIO.LoadFileData(path);
-            byte[] newFileData = null;
-
-            if (fileData != null){
-                if (dataSize <= position){
-                    // Increase data size up to position and store value
-                    newDataSize = (position + 1);
-                    newFileData = new byte[fileData.length + newDataSize];
-
-                    if (newFileData != null){
-                        // RL_REALLOC succeded
-                        newFileData[position] = (byte) value;
-                    }
-                    else{
-                        // RL_REALLOC failed
-                        Tracelog(LOG_WARNING, "FILEIO: [" + path + "] Failed to realloc data (" + dataSize + "), position in bytes (" +
-                                position + ") bigger than " + "actual file size");
-
-                        // We store the old size of the file
-                        newFileData = fileData;
-                        newDataSize = dataSize;
-                    }
-                }
-                else{
-                    // Store the old size of the file
-                    newFileData = fileData;
-                    newDataSize = dataSize;
-
-                    // Replace value on selected position
-                    newFileData[position] = (byte) value;
-                }
-
-                success = FileIO.SaveFileData(path, newFileData, newDataSize);
-            }
-            else{
-                Tracelog(LOG_INFO, "FILEIO: [" + path + "] File not found, creating it");
-
-                dataSize = (position + 1);
-                fileData = new byte[dataSize];
-                fileData[position] = (byte) value;
-
-                success = FileIO.SaveFileData(path, fileData, dataSize);
-                FileIO.UnloadFileData(fileData);
-            }
-        }
-
-        return success;
-    }
-
-    // Load integer value from storage file (from defined position)
-    // NOTE: If requested position could not be found, value 0 is returned
-    public int LoadStorageValue(int position) throws IOException{
-        int value = 0;
-
-        if(SUPPORT_DATA_STORAGE){
-            String path = STORAGE_DATA_FILE;
-
-            byte[] fileData = FileIO.LoadFileData(path);
-            int dataSize = fileData.length;
-
-            if (fileData != null){
-                if (dataSize < (position)){
-                    Tracelog(LOG_WARNING, "SYSTEM: Failed to find storage position");
-                }
-                else{
-                    value = fileData[position];
-                }
-
-                FileIO.UnloadFileData(fileData);
-            }
-        }
-        return value;
     }
 
     //TODO:
@@ -2501,7 +2417,7 @@ public class rCore{
         // ...in top-down or left-right to match display aspect ratio (no weird scalings)
 
         callback = new Callbacks(this);
-        glfwSetErrorCallback(new Callbacks.ErrorCallback());
+        glfwSetErrorCallback(callback.errorCallback);
 
         if (!glfwInit()){
             Tracelog(LOG_WARNING, "GLFW: Failed to initialize GLFW");
@@ -2756,32 +2672,21 @@ public class rCore{
         }
 
         // Set window callback events
-        Callbacks.WindowMaximizeCallback maximizeCallback;
-        glfwSetWindowMaximizeCallback(window.handle, new Callbacks.WindowMaximizeCallback());
-        Callbacks.WindowSizeCallback sizeCallback;
-        glfwSetWindowSizeCallback(window.handle, new Callbacks.WindowSizeCallback());
+        glfwSetWindowMaximizeCallback(window.handle, callback.windowMaximizeCallback);
+        glfwSetWindowSizeCallback(window.handle, callback.windowSizeCallback);
         // NOTE: Resizing not allowed by default!
-        Callbacks.WindowIconifyCallback iconifyCallback;
-        glfwSetWindowIconifyCallback(window.handle, new Callbacks.WindowIconifyCallback());
-        Callbacks.WindowFocusCallback focusCallback;
-        glfwSetWindowFocusCallback(window.handle, new Callbacks.WindowFocusCallback());
-        Callbacks.WindowDropCallback dropCallback;
-        glfwSetDropCallback(window.handle, new Callbacks.WindowDropCallback());
+        glfwSetWindowIconifyCallback(window.handle, callback.windowIconifyCallback);
+        glfwSetWindowFocusCallback(window.handle, callback.windowFocusCallback);
+        glfwSetDropCallback(window.handle, callback.windowDropCallback);
         // Set input callback events
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        Callbacks.KeyCallback keyCallback;
-        glfwSetKeyCallback(window.handle, new Callbacks.KeyCallback());
-        Callbacks.CharCallback charCallback;
-        glfwSetCharCallback(window.handle, new Callbacks.CharCallback());
-        Callbacks.MouseButtonCallback mouseBtnCallback;
-        glfwSetMouseButtonCallback(window.handle, new Callbacks.MouseButtonCallback());
-        Callbacks.MouseCursorPosCallback cursorPosCallback;
-        glfwSetCursorPosCallback(window.handle, new Callbacks.MouseCursorPosCallback());
+        glfwSetKeyCallback(window.handle, callback.keyCallback);
+        glfwSetCharCallback(window.handle, callback.charCallback);
+        glfwSetMouseButtonCallback(window.handle, callback.mouseButtonCallback);
+        glfwSetCursorPosCallback(window.handle, callback.mouseCursorPosCallback);
         // Track mouse position changes
-        Callbacks.MouseScrollCallback scrollCallback;
-        glfwSetScrollCallback(window.handle, new Callbacks.MouseScrollCallback());
-        Callbacks.CursorEnterCallback cursorEnterCallback;
-        glfwSetCursorEnterCallback(window.handle, new Callbacks.CursorEnterCallback());
+        glfwSetScrollCallback(window.handle, callback.mouseScrollCallback);
+        glfwSetCursorEnterCallback(window.handle, callback.cursorEnterCallback);
 
         glfwMakeContextCurrent(window.handle);
         GL.createCapabilities();

@@ -1,5 +1,6 @@
 package com.raylib.java.core;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.raymath.Vector2;
 import org.lwjgl.glfw.*;
 
@@ -14,18 +15,51 @@ public class Callbacks{
 
     private static rCore context;
 
+    final ErrorCallback errorCallback;
+    final WindowMaximizeCallback windowMaximizeCallback;
+    final WindowSizeCallback windowSizeCallback;
+    final WindowIconifyCallback windowIconifyCallback;
+    final WindowFocusCallback windowFocusCallback;
+    final WindowDropCallback windowDropCallback;
+    final KeyCallback keyCallback;
+    final CharCallback charCallback;
+    final MouseButtonCallback mouseButtonCallback;
+    final MouseCursorPosCallback mouseCursorPosCallback;
+    final MouseScrollCallback mouseScrollCallback;
+    final CursorEnterCallback cursorEnterCallback;
+
+
     Callbacks(rCore context) {
         this.context = context;
+
+        errorCallback = new ErrorCallback();
+        windowMaximizeCallback = new WindowMaximizeCallback(context);
+        windowSizeCallback = new WindowSizeCallback(context);
+        windowIconifyCallback = new WindowIconifyCallback(context);
+        windowFocusCallback = new WindowFocusCallback(context);
+        windowDropCallback = new WindowDropCallback(context);
+        keyCallback = new KeyCallback(context);
+        charCallback = new CharCallback(context);
+        mouseButtonCallback = new MouseButtonCallback(context);
+        mouseCursorPosCallback = new MouseCursorPosCallback(context);
+        mouseScrollCallback = new MouseScrollCallback(context);
+        cursorEnterCallback = new CursorEnterCallback(context);
     }
 
-    static class ErrorCallback extends GLFWErrorCallback{
+    class ErrorCallback extends GLFWErrorCallback{
         @Override
         public void invoke(int error, long description){
             Tracelog(LOG_WARNING, "GLFW: Error: " + error + " Description: " + description);
         }
     }
 
-    static class WindowSizeCallback extends GLFWWindowSizeCallback{
+    class WindowSizeCallback extends GLFWWindowSizeCallback{
+
+        private final rCore context;
+        public WindowSizeCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, int width, int height){
             Tracelog(LOG_DEBUG, "Window Size Callback Triggered");
@@ -45,7 +79,13 @@ public class Callbacks{
         }
     }
 
-    static class WindowIconifyCallback extends GLFWWindowIconifyCallback{
+    class WindowIconifyCallback extends GLFWWindowIconifyCallback{
+
+        private final rCore context;
+        public WindowIconifyCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, boolean iconified){
             Tracelog(LOG_DEBUG, "Iconify Callback Triggered");
@@ -58,7 +98,13 @@ public class Callbacks{
         }
     }
 
-    static class WindowMaximizeCallback extends GLFWWindowMaximizeCallback{
+    class WindowMaximizeCallback extends GLFWWindowMaximizeCallback{
+
+        private final rCore context;
+        public WindowMaximizeCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, boolean maximized){
             if (maximized){
@@ -70,7 +116,13 @@ public class Callbacks{
         }
     }
 
-    static class WindowFocusCallback extends GLFWWindowFocusCallback{
+    class WindowFocusCallback extends GLFWWindowFocusCallback{
+
+        private final rCore context;
+        public WindowFocusCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, boolean focused){
             Tracelog(LOG_DEBUG, "Focus Callback Triggered");
@@ -83,7 +135,13 @@ public class Callbacks{
         }
     }
 
-    static class KeyCallback extends GLFWKeyCallback{
+    class KeyCallback extends GLFWKeyCallback{
+
+        private final rCore context;
+        public KeyCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods){
             // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
@@ -135,7 +193,13 @@ public class Callbacks{
         }
     }
 
-    static class CharCallback extends GLFWCharCallback{
+    class CharCallback extends GLFWCharCallback{
+
+        private final rCore context;
+        public CharCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, int codepoint){
             Tracelog(LOG_DEBUG, "Char Callback: KEY:"+codepoint+"("+ Character.highSurrogate(codepoint) +")");
@@ -155,7 +219,13 @@ public class Callbacks{
         }
     }
 
-    static class MouseButtonCallback extends GLFWMouseButtonCallback{
+    class MouseButtonCallback extends GLFWMouseButtonCallback{
+
+        private final rCore context;
+        public MouseButtonCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, int button, int action, int mods){
             Tracelog(LOG_DEBUG, "Mouse Button Callback Triggered");
@@ -165,7 +235,13 @@ public class Callbacks{
         }
     }
 
-    static class MouseCursorPosCallback extends GLFWCursorPosCallback{
+    class MouseCursorPosCallback extends GLFWCursorPosCallback{
+
+        private final rCore context;
+        public MouseCursorPosCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, double xpos, double ypos){
             Tracelog(LOG_DEBUG, "Cursor Position Callback Triggered");
@@ -176,7 +252,13 @@ public class Callbacks{
         }
     }
 
-    static class MouseScrollCallback extends GLFWScrollCallback{
+    class MouseScrollCallback extends GLFWScrollCallback{
+
+        private final rCore context;
+        public MouseScrollCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, double xoffset, double yoffset){
             Tracelog(LOG_DEBUG, "Scroll Callback Triggered");
@@ -184,7 +266,13 @@ public class Callbacks{
         }
     }
 
-    static class CursorEnterCallback extends GLFWCursorEnterCallback{
+    class CursorEnterCallback extends GLFWCursorEnterCallback{
+
+        private final rCore context;
+        public CursorEnterCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, boolean entered){
             Tracelog(LOG_DEBUG, "Cursor Enter Callback Triggered");
@@ -192,18 +280,24 @@ public class Callbacks{
         }
     }
 
-    static class WindowDropCallback extends GLFWDropCallback{
+    class WindowDropCallback extends GLFWDropCallback{
+
+        private final rCore context;
+        public WindowDropCallback(rCore context) {
+            this.context = context;
+        }
+
         @Override
         public void invoke(long window, int count, long names){
             Tracelog(LOG_DEBUG, "Drop Callback Triggered");
             context.ClearDroppedFiles();
             String[] paths = new String[(int) names];
 
-            context.getWindow().setDropFilesPath(new String[count]);
+            context.getWindow().setDropFilePaths(new String[count]);
 
             for (int j = 0; j < count; j++){
-                context.getWindow().getDropFilesPath()[count] = String.valueOf(MAX_FILEPATH_LENGTH);
-                paths[j] = String.valueOf(context.getWindow().getDropFilesPath()[j]);
+                context.getWindow().getDropFilePaths()[count] = String.valueOf(MAX_FILEPATH_LENGTH);
+                paths[j] = String.valueOf(context.getWindow().getDropFilePaths()[j]);
             }
 
             context.getWindow().setDropFilesCount(count);

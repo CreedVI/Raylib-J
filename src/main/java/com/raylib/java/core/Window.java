@@ -160,12 +160,12 @@ public class Window{
         this.screenScale = screenScale;
     }
 
-    public String[] getDropFilesPath(){
-        return dropFilesPath;
+    public String[] getDropFilePaths(){
+        return dropFilePaths;
     }
 
-    public void setDropFilesPath(String[] dropFilesPath){
-        this.dropFilesPath = dropFilesPath;
+    public void setDropFilePaths(String[] dropFilesPath){
+        this.dropFilePaths = dropFilesPath;
     }
 
     public int getDropFilesCount(){
