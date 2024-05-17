@@ -28,7 +28,7 @@ switch (org.gradle.internal.os.OperatingSystem.current()) {
 }
 
 group = 'com.raylib'
-version = '0.5'
+version = '0.5.2'
 
 repositories {
     mavenCentral()
