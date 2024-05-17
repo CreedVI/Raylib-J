@@ -16,7 +16,7 @@ public class CameraData{
             MoveDown = KEY_E,
             smoothZoomControl = KEY_LEFT_CONTROL,
             altControl = KEY_LEFT_ALT,
-            panControl = MOUSE_BUTTON_MIDDLE;
+            panControl = MOUSE_BUTTON_MIDDLE.ordinal();
 
     int mode;              // Current camera mode
     float targetDistance;           // rCamera distance from position to target

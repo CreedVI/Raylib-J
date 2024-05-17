@@ -3,6 +3,7 @@ package com.raylib.java.models;
 import com.creedvi.utils.gltfj.gltf.*;
 import com.creedvi.utils.gltfj.gltf.mesh.gltfj_Primitive;
 import com.creedvi.utils.gltfj.gltfj;
+import com.raylib.java.Raylib;
 import com.raylib.java.core.Color;
 import com.raylib.java.core.rCore;
 import com.raylib.java.core.ray.Ray;
@@ -71,13 +72,18 @@ public class rModels{
 
     final static int MAX_MESH_VERTEX_BUFFERS = 7;    // Maximum vertex buffers (VBO) per mesh
 
+    final private Raylib context;
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition
     //----------------------------------------------------------------------------------
 
+    public rModels(Raylib context) {
+        this.context = context;
+    }
+
     private float GRAY_VALUE(Color c) {
-        return (float)((c.r+c.g+c.b)/3);
+        return (float)((c.r+c.g+c.b)/3f);
     }
 
     private static boolean COLOR_EQUAL(Color col1, Color col2) {
@@ -133,7 +139,7 @@ public class rModels{
 
     // Draw a color-filled triangle (vertex in counter-clockwise order!)
     public void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color){
-        RLGL.rlCheckRenderBatchLimit(3);
+        RLGL.rlCheckRenderBatchLimit(8);
 
         RLGL.rlBegin(RLGL.RL_TRIANGLES);
         RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
@@ -1025,8 +1031,10 @@ public class rModels{
                 }
             }
 
-            // Try binding vertex array objects (VAO)
-            // or use VBOs if not possible
+            // Try binding vertex array objects (VAO) or use VBOs if not possible
+            // WARNING: UploadMesh() enables all vertex attributes available in mesh and sets default attribute values
+            // for shader expected vertex attributes that are not provided by the mesh (i.e. colors)
+            // This could be a dangerous approach because different meshes with different shaders can enable/disable some attributes
             if (!rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
                 rlEnableVertexBuffer(mesh.vboId[0]);
@@ -1053,8 +1061,8 @@ public class rModels{
                         rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
                     }
                     else {
-                        // Set default value for unused attribute
-                        // NOTE: Required when using default shader and no VAO support
+                        // Set default value for defined vertex attribute in shader but not provided by mesh
+                        // WARNING: It could result in GPU undefined behaviour
                         float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
                         rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], value, RL_SHADER_ATTRIB_VEC4, 4);
                         rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
@@ -1079,6 +1087,9 @@ public class rModels{
                     RLGL.rlEnableVertexBufferElement(mesh.vboId[6]);
                 }
             }
+
+            // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
+            if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
 
             int eyeCount = 1;
             if (RLGL.rlIsStereoRendererEnabled()) {
@@ -1109,7 +1120,7 @@ public class rModels{
                 }
             }
 
-            // Unbind all binded texture maps
+            // Unbind all bound texture maps
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 // Select current shader texture slot
                 RLGL.rlActiveTextureSlot(i);
@@ -1304,7 +1315,9 @@ public class rModels{
             }
 
             // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
-            if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+            if (mesh.vboId[3] == 0) {
+                rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+            }
 
             int eyeCount = 1;
             if (RLGL.rlIsStereoRendererEnabled()) {
@@ -1342,8 +1355,12 @@ public class rModels{
                     // Disable texture for active slot
                     if ((i == MATERIAL_MAP_IRRADIANCE) ||
                             (i == MATERIAL_MAP_PREFILTER) ||
-                            (i == MATERIAL_MAP_CUBEMAP)) rlDisableTextureCubemap();
-                    else rlDisableTexture();
+                            (i == MATERIAL_MAP_CUBEMAP)) {
+                        rlDisableTextureCubemap();
+                    }
+                    else {
+                        rlDisableTexture();
+                    }
                 }
             }
 
@@ -1693,17 +1710,6 @@ public class rModels{
         }
 
         return result;
-    }
-
-    // Compute mesh binormals (aka bitangent)
-    public void GenMeshBinormals(Mesh mesh) {
-        for (int i = 0; i < mesh.vertexCount; i++) {
-            //Vector3 normal = { mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2] };
-            //Vector3 tangent = { mesh.tangents[i*4 + 0], mesh.tangents[i*4 + 1], mesh.tangents[i*4 + 2] };
-            //Vector3 binormal = Vector3Scale(Vector3CrossProduct(normal, tangent), mesh.tangents[i*4 + 3]);
-
-            // TODO: Register computed binormal in mesh.binormal?
-        }
     }
 
     // MESH GENERATION
@@ -2159,7 +2165,6 @@ public class rModels{
             ParShapesMesh cylinder = ParShapes.par_shapes_create_cylinder(slices, 8);
             ParShapes.par_shapes_scale(cylinder, radius, radius, height);
             ParShapes.par_shapes_rotate(cylinder, -PI/2.0f, new float[]{ 1, 0, 0 });
-            ParShapes.par_shapes_rotate(cylinder, PI/2.0f, new float[]{ 0, 1, 0 });
 
             // Generate an orientable disk shape (top cap)
             ParShapesMesh capTop = ParShapes.par_shapes_create_disk(radius, slices, new float[]{ 0, 0, 0 }, new float[]{ 0, 0, 1 });
@@ -2385,7 +2390,7 @@ public class rModels{
         int mapX = heightmap.width;
         int mapZ = heightmap.height;
 
-        Color[] pixels = rTextures.LoadImageColors(heightmap);
+        Color[] pixels = context.textures.LoadImageColors(heightmap);
 
         // NOTE: One vertex per pixel
         mesh.triangleCount = (mapX-1)*(mapZ-1)*2;    // One quad every four pixels
@@ -2401,8 +2406,6 @@ public class rModels{
         int tcCounter = 0;      // Used to count texcoords float by float
         int nCounter = 0;       // Used to count normals float by float
 
-        int trisCounter = 0;
-
         Vector3 scaleFactor = new Vector3(size.x/mapX, size.y/255.0f, size.z/mapZ);
 
         Vector3 vA = new Vector3();
@@ -2417,15 +2420,15 @@ public class rModels{
 
                 // one triangle - 3 vertex
                 mesh.vertices[vCounter] = (float)x*scaleFactor.x;
-                mesh.vertices[vCounter + 1] = (float)GRAY_VALUE(pixels[x + z*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 1] = GRAY_VALUE(pixels[x + z*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 2] = (float)z*scaleFactor.z;
 
                 mesh.vertices[vCounter + 3] = (float)x*scaleFactor.x;
-                mesh.vertices[vCounter + 4] = (float)GRAY_VALUE(pixels[x + (z + 1)*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 4] = GRAY_VALUE(pixels[x + (z + 1)*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 5] = (float)(z + 1)*scaleFactor.z;
 
                 mesh.vertices[vCounter + 6] = (float)(x + 1)*scaleFactor.x;
-                mesh.vertices[vCounter + 7] = (float)GRAY_VALUE(pixels[(x + 1) + z*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 7] = GRAY_VALUE(pixels[(x + 1) + z*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 8] = (float)z*scaleFactor.z;
 
                 // another triangle - 3 vertex
@@ -2438,7 +2441,7 @@ public class rModels{
                 mesh.vertices[vCounter + 14] = mesh.vertices[vCounter + 5];
 
                 mesh.vertices[vCounter + 15] = (float)(x + 1)*scaleFactor.x;
-                mesh.vertices[vCounter + 16] = (float)GRAY_VALUE(pixels[(x + 1) + (z + 1)*mapX])*scaleFactor.y;
+                mesh.vertices[vCounter + 16] = GRAY_VALUE(pixels[(x + 1) + (z + 1)*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 17] = (float)(z + 1)*scaleFactor.z;
                 vCounter += 18;     // 6 vertex, 18 floats
 
@@ -2494,11 +2497,10 @@ public class rModels{
                 }
 
                 nCounter += 18;     // 6 vertex, 18 floats
-                trisCounter += 2;
             }
         }
 
-        rTextures.UnloadImageColors(pixels);  // Unload pixels color data
+        context.textures.UnloadImageColors(pixels);  // Unload pixels color data
 
         // Upload vertex data to GPU (static mesh)
         UploadMesh(mesh, false);
@@ -2511,7 +2513,7 @@ public class rModels{
     public Mesh GenMeshCubicmap(Image cubicmap, Vector3 cubeSize) {
         Mesh mesh = new Mesh();
 
-        Color[] pixels = rTextures.LoadImageColors(cubicmap);
+        Color[] pixels = context.textures.LoadImageColors(cubicmap);
 
         int mapWidth = cubicmap.width;
         int mapHeight = cubicmap.height;
@@ -2827,7 +2829,7 @@ public class rModels{
         mapNormals = null;
         mapTexcoords = null;
 
-        rTextures.UnloadImageColors(pixels);   // Unload pixels color data
+        context.textures.UnloadImageColors(pixels);   // Unload pixels color data
 
         // Upload vertex data to GPU (static mesh)
         UploadMesh(mesh, false);
@@ -3029,7 +3031,7 @@ public class rModels{
 
     public void DrawBillboardPro(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint) {
         // NOTE: Billboard size will maintain source rectangle aspect ratio, size will represent billboard width
-        Vector2 sizeRatio = new Vector2(size.y,size.x*source.height/source.width);
+        Vector2 sizeRatio = new Vector2(size.x*source.width/source.height, size.y );
 
         Matrix matView = Raymath.MatrixLookAt(camera.position, camera.target, camera.up);
 
@@ -3088,7 +3090,7 @@ public class rModels{
         bottomRight = Raymath.Vector3Add(bottomRight, position);
         bottomLeft = Raymath.Vector3Add(bottomLeft, position);
 
-        RLGL.rlCheckRenderBatchLimit(4);
+        RLGL.rlCheckRenderBatchLimit(8);
 
         RLGL.rlSetTexture(texture.id);
 
@@ -3338,22 +3340,6 @@ public class rModels{
         return collision;
     }
 
-    // Get collision info between ray and model
-    public RayCollision GetRayCollisionModel(Ray ray, Model model) {
-        RayCollision collision = new RayCollision();
-
-        for (int m = 0; m < model.meshCount; m++) {
-            RayCollision meshHitInfo = GetRayCollisionMesh(ray, model.meshes[m], model.transform);
-
-            if (meshHitInfo.hit) {
-                // Save the closest hit mesh
-                if ((!collision.hit) || (collision.distance > meshHitInfo.distance)) collision = meshHitInfo;
-            }
-        }
-
-        return collision;
-    }
-
     // Get collision info between ray and triangle
     // NOTE: The points are expected to be in counter-clockwise winding
     // NOTE: Based on https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -3561,21 +3547,21 @@ public class rModels{
                 model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
                 if (loader.mtlInfo.materials[m].diffuse_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
+                    model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
                 }
 
                 model.materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color((int) (loader.mtlInfo.materials[m].diffuse[0]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[1]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[2]*255.0f), 255); //float diffuse[3];
                 model.materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0.0f;
 
                 if (loader.mtlInfo.materials[m].specular_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_SPECULAR].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
+                    model.materials[m].maps[MATERIAL_MAP_SPECULAR].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
                 }
 
                 model.materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color((int) (loader.mtlInfo.materials[m].specular[0]*255.0f), (int) (loader.mtlInfo.materials[m].specular[1]*255.0f), (int) (loader.mtlInfo.materials[m].specular[2]*255.0f), 255); //float specular[3];
                 model.materials[m].maps[MATERIAL_MAP_SPECULAR].value = 0.0f;
 
                 if (loader.mtlInfo.materials[m].bump_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_NORMAL].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
+                    model.materials[m].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
                 }
 
                 model.materials[m].maps[MATERIAL_MAP_NORMAL].color = WHITE;
@@ -3584,7 +3570,7 @@ public class rModels{
                 model.materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color((int) (loader.mtlInfo.materials[m].emission[0]*255.0f), (int) (loader.mtlInfo.materials[m].emission[1]*255.0f), (int) (loader.mtlInfo.materials[m].emission[2]*255.0f), 255); //float emission[3];
 
                 if (loader.mtlInfo.materials[m].displacement_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_HEIGHT].texture = rTextures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
+                    model.materials[m].maps[MATERIAL_MAP_HEIGHT].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
                 }
 
             }
@@ -4292,13 +4278,13 @@ public class rModels{
                     byte[] data = Base64.getDecoder().decode(encoded);
 
                     if (data != null) {
-                        image = rTextures.LoadImageFromMemory(".png", data, outSize);
+                        image = context.textures.LoadImageFromMemory(".png", data, outSize);
                     }
 
                 }
             }
             else {
-                image = rTextures.LoadImage(texPath + "/" + gltfjImage.uri);
+                image = context.textures.LoadImage(texPath + "/" + gltfjImage.uri);
             }
         }
         else if (imgBuffer.data != null) {
@@ -4312,10 +4298,10 @@ public class rModels{
             }
 
             if (gltfjImage.mimeType.equals("image\\/png") || gltfjImage.mimeType.equals("image/png")) {
-                image = rTextures.LoadImageFromMemory(".png", data, bufferView.size);
+                image = context.textures.LoadImageFromMemory(".png", data, bufferView.size);
             }
             else if (gltfjImage.mimeType.equals("image\\/jpeg") || gltfjImage.mimeType.equals("image/jpeg")) {
-                image = rTextures.LoadImageFromMemory(".jpg", data, bufferView.size);
+                image = context.textures.LoadImageFromMemory(".jpg", data, bufferView.size);
             }
             else {
                 Tracelog(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + gltfjImage.mimeType + ")");
@@ -4325,7 +4311,6 @@ public class rModels{
         return image;
     }
 
-    // TODO: 24/07/2022  LoadGLTF
     // Load glTF file into model struct, .gltf and .glb supported
     private Model LoadGLTF(String fileName) {
 
@@ -4387,7 +4372,6 @@ public class rModels{
             model.meshes = new Mesh[model.meshCount];
             for (int i = 0; i < model.meshCount; i++) {
                 model.meshes[i] = new Mesh();
-                model.meshes[i].vboId = new int[MAX_MESH_VERTEX_BUFFERS];
             }
 
             // NOTE: We keep an extra slot for default material, in case some mesh requires it
@@ -4413,7 +4397,7 @@ public class rModels{
                         Image imAlbedo = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).metallicRoughness.baseColorTexture.texture).image,
                                 gltf.images.get(gltf.materials.get(i).metallicRoughness.baseColorTexture.texture).bufferView,  texPath);
                         if (imAlbedo.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_ALBEDO].texture = rTextures.LoadTextureFromImage(imAlbedo);
+                            model.materials[j].maps[MATERIAL_MAP_ALBEDO].texture = context.textures.LoadTextureFromImage(imAlbedo);
                         }
 
                         //Load base colour factor (tint)
@@ -4430,7 +4414,7 @@ public class rModels{
                         Image imMetallicRoughness = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture).image,
                                 gltf.images.get(gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture).bufferView,  texPath);
                         if (imMetallicRoughness.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].texture = rTextures.LoadTextureFromImage(imMetallicRoughness);
+                            model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].texture = context.textures.LoadTextureFromImage(imMetallicRoughness);
                         }
 
                         // Load metallic/roughness material properties
@@ -4446,7 +4430,7 @@ public class rModels{
                         Image imNormal = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).normalTexture.texture).image,
                                 gltf.images.get(gltf.materials.get(i).normalTexture.texture).bufferView,  texPath);
                         if (imNormal.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_NORMAL].texture = rTextures.LoadTextureFromImage(imNormal);
+                            model.materials[j].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTextureFromImage(imNormal);
                         }
                     }
 
@@ -4455,7 +4439,7 @@ public class rModels{
                         Image imOcclusion = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).occlusionTexture.texture).image,
                                 gltf.images.get(gltf.materials.get(i).occlusionTexture.texture).bufferView,  texPath);
                         if (imOcclusion.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_OCCLUSION].texture = rTextures.LoadTextureFromImage(imOcclusion);
+                            model.materials[j].maps[MATERIAL_MAP_OCCLUSION].texture = context.textures.LoadTextureFromImage(imOcclusion);
                         }
                     }
 
@@ -4463,7 +4447,7 @@ public class rModels{
                         Image imEmissive = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).emissiveTexture.texture).image,
                                 gltf.images.get(gltf.materials.get(i).emissiveTexture.texture).bufferView,  texPath);
                         if (imEmissive.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_EMISSION].texture = rTextures.LoadTextureFromImage(imEmissive);
+                            model.materials[j].maps[MATERIAL_MAP_EMISSION].texture = context.textures.LoadTextureFromImage(imEmissive);
                         }
 
                         //Load base colour factor (tint)
@@ -4743,6 +4727,8 @@ public class rModels{
                     meshIndex++;       // Move to next mesh
                 }
             }
+
+            //todo: Load glTF meshes animation data
 
         }
         else {

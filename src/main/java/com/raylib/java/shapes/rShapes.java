@@ -1,6 +1,8 @@
 package com.raylib.java.shapes;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.core.Color;
+import com.raylib.java.core.ray.Ray;
 import com.raylib.java.raymath.Vector2;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.textures.Texture2D;
@@ -28,9 +30,15 @@ public class rShapes{
     static Texture2D texShapes = new Texture2D(1, 1, 1, 1, 7);        // Texture used on rShapes drawing (usually a white pixel)
     static Rectangle texShapesRec = new Rectangle(0f, 0f, 1f, 1f);        // Texture source rectangle used on rShapes drawing
 
+    final private Raylib context;
+
     //----------------------------------------------------------------------------------
     // Module Functions Definition
     //----------------------------------------------------------------------------------
+
+    public rShapes(Raylib context) {
+        this.context = context;
+    }
 
     /** Set texture and rectangle to be used on rShapes drawing
      * NOTE: It can be useful when using basic rShapes and one single font,
