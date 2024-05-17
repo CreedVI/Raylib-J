@@ -1224,8 +1224,8 @@ public class rCore{
         SetupViewport(window.render.width, window.render.height);
 
         // Reset current screen size
-        window.currentFbo.setWidth(GetScreenWidth());
-        window.currentFbo.setHeight(GetScreenHeight());
+        window.currentFbo.width = window.render.width;
+        window.currentFbo.height = window.render.height;
     }
 
     // Begin custom shader mode
