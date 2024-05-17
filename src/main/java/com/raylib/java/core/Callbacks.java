@@ -12,20 +12,20 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class Callbacks{
 
-    private final rCore context;
+    private static rCore context;
 
     Callbacks(rCore context) {
         this.context = context;
     }
 
-    class ErrorCallback extends GLFWErrorCallback{
+    static class ErrorCallback extends GLFWErrorCallback{
         @Override
         public void invoke(int error, long description){
             Tracelog(LOG_WARNING, "GLFW: Error: " + error + " Description: " + description);
         }
     }
 
-    class WindowSizeCallback extends GLFWWindowSizeCallback{
+    static class WindowSizeCallback extends GLFWWindowSizeCallback{
         @Override
         public void invoke(long window, int width, int height){
             Tracelog(LOG_DEBUG, "Window Size Callback Triggered");
@@ -45,7 +45,7 @@ public class Callbacks{
         }
     }
 
-    class WindowIconifyCallback extends GLFWWindowIconifyCallback{
+    static class WindowIconifyCallback extends GLFWWindowIconifyCallback{
         @Override
         public void invoke(long window, boolean iconified){
             Tracelog(LOG_DEBUG, "Iconify Callback Triggered");
@@ -58,7 +58,7 @@ public class Callbacks{
         }
     }
 
-    class WindowMaximizeCallback extends GLFWWindowMaximizeCallback{
+    static class WindowMaximizeCallback extends GLFWWindowMaximizeCallback{
         @Override
         public void invoke(long window, boolean maximized){
             if (maximized){
@@ -70,7 +70,7 @@ public class Callbacks{
         }
     }
 
-    class WindowFocusCallback extends GLFWWindowFocusCallback{
+    static class WindowFocusCallback extends GLFWWindowFocusCallback{
         @Override
         public void invoke(long window, boolean focused){
             Tracelog(LOG_DEBUG, "Focus Callback Triggered");
@@ -83,7 +83,7 @@ public class Callbacks{
         }
     }
 
-    class KeyCallback extends GLFWKeyCallback{
+    static class KeyCallback extends GLFWKeyCallback{
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods){
             // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
@@ -135,7 +135,7 @@ public class Callbacks{
         }
     }
 
-    class CharCallback extends GLFWCharCallback{
+    static class CharCallback extends GLFWCharCallback{
         @Override
         public void invoke(long window, int codepoint){
             Tracelog(LOG_DEBUG, "Char Callback: KEY:"+codepoint+"("+ Character.highSurrogate(codepoint) +")");
@@ -155,7 +155,7 @@ public class Callbacks{
         }
     }
 
-    class MouseButtonCallback extends GLFWMouseButtonCallback{
+    static class MouseButtonCallback extends GLFWMouseButtonCallback{
         @Override
         public void invoke(long window, int button, int action, int mods){
             Tracelog(LOG_DEBUG, "Mouse Button Callback Triggered");
@@ -165,7 +165,7 @@ public class Callbacks{
         }
     }
 
-    class MouseCursorPosCallback extends GLFWCursorPosCallback{
+    static class MouseCursorPosCallback extends GLFWCursorPosCallback{
         @Override
         public void invoke(long window, double xpos, double ypos){
             Tracelog(LOG_DEBUG, "Cursor Position Callback Triggered");
@@ -176,7 +176,7 @@ public class Callbacks{
         }
     }
 
-    class MouseScrollCallback extends GLFWScrollCallback{
+    static class MouseScrollCallback extends GLFWScrollCallback{
         @Override
         public void invoke(long window, double xoffset, double yoffset){
             Tracelog(LOG_DEBUG, "Scroll Callback Triggered");
@@ -184,7 +184,7 @@ public class Callbacks{
         }
     }
 
-    class CursorEnterCallback extends GLFWCursorEnterCallback{
+    static class CursorEnterCallback extends GLFWCursorEnterCallback{
         @Override
         public void invoke(long window, boolean entered){
             Tracelog(LOG_DEBUG, "Cursor Enter Callback Triggered");
@@ -192,7 +192,7 @@ public class Callbacks{
         }
     }
 
-    class WindowDropCallback extends GLFWDropCallback{
+    static class WindowDropCallback extends GLFWDropCallback{
         @Override
         public void invoke(long window, int count, long names){
             Tracelog(LOG_DEBUG, "Drop Callback Triggered");

@@ -72,6 +72,8 @@ public class rCore{
     Input input;
     Time time;
 
+    Callbacks callback;
+
     ArrayList<AutomationEvent> events;
     int eventCount = 0;                 // Events count
     boolean eventsPlaying = false;      // Play events
@@ -837,6 +839,75 @@ public class rCore{
             Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
+    }
+
+    int GetMonitorRefreshRate(int monitor) {
+        if (PLATFORM_DESKTOP) {
+            PointerBuffer monitors = glfwGetMonitors();
+            int monitorCount = monitors.sizeof();
+
+            if ((monitor >= 0) && (monitor < monitorCount)) {
+                GLFWVidMode vidmode = glfwGetVideoMode(monitors.get(monitor));
+                return vidmode.refreshRate();
+            }
+            else {
+                Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            }
+        }
+        /*
+        if (PLATFORM_DRM) {
+            if ((CORE.Window.connector) && (CORE.Window.modeIndex >= 0)) {
+                return CORE.Window.connector->modes[CORE.Window.modeIndex].vrefresh;
+            }
+        }
+        */
+        return 0;
+    }
+
+    // Get window position XY on monitor
+    public Vector2 GetWindowPosition() {
+        IntBuffer x = IntBuffer.allocate(1);
+        IntBuffer y = IntBuffer.allocate(1);
+        if(PLATFORM_DESKTOP) {
+            glfwGetWindowPos(window.handle, x, y);
+        }
+        return new Vector2(x.get(0), y.get(0));
+    }
+
+    // Get window scale DPI factor
+    public Vector2 GetWindowScaleDPI() {
+        Vector2 scale = new Vector2(1f,1f);
+
+        if(PLATFORM_DESKTOP) {
+            FloatBuffer xdpi = FloatBuffer.allocate(1);
+            FloatBuffer ydpi = FloatBuffer.allocate(1);
+            Vector2 windowPos = GetWindowPosition();
+
+            PointerBuffer monitors = glfwGetMonitors();
+            int monitorCount = monitors.sizeof();
+
+            // Check window monitor
+            for (int i = 0; i < monitorCount; i++) {
+                glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
+
+                IntBuffer xpos, ypos, width, height;
+                xpos = IntBuffer.allocate(1);
+                ypos = IntBuffer.allocate(1);
+                width = IntBuffer.allocate(1);
+                height = IntBuffer.allocate(1);
+
+                glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
+
+                if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
+                        (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))) {
+                    scale.x = xdpi.get(i);
+                    scale.y = ydpi.get(i);
+                    break;
+                }
+            }
+        }
+
+        return scale;
     }
 
     // Get the human-readable, UTF-8 encoded name of the primary monitor
@@ -2050,7 +2121,7 @@ public class rCore{
     }
 
     // Detect if a key is being pressed (key held down)
-    public static boolean IsKeyDown(int key){
+    public boolean IsKeyDown(int key){
         return input.keyboard.getCurrentKeyState()[key];
     }
 
@@ -2324,7 +2395,21 @@ public class rCore{
 
     // Returns mouse wheel movement Y
     public float GetMouseWheelMove(){
-        return input.mouse.getPreviousWheelMove();
+        float result = 0.0f;
+
+        if(Math.abs(input.mouse.currentWheelMove.x) > Math.abs(input.mouse.currentWheelMove.y)) {
+            result = input.mouse.currentWheelMove.x;
+        }
+        else {
+            result = input.mouse.currentWheelMove.y;
+        }
+
+        return result;
+    }
+
+    // Get mouse wheel movement X/Y as a vector
+    public Vector2 GetMouseWheelMoveV() {
+       return input.mouse.currentWheelMove;
     }
 
     // Set mouse cursor
@@ -2415,7 +2500,7 @@ public class rCore{
         // NOTE: Framebuffer (render area - window.render.getWidth(), window.render.height) could include black bars...
         // ...in top-down or left-right to match display aspect ratio (no weird scalings)
 
-        Callbacks.ErrorCallback errorCallback;
+        callback = new Callbacks(this);
         glfwSetErrorCallback(new Callbacks.ErrorCallback());
 
         if (!glfwInit()){
@@ -2517,9 +2602,20 @@ public class rCore{
             // On platforms like macOS the resolution of the framebuffer is changed independently of the window size.
             glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);  // Scale content area based on the monitor content scale
             // where window is placed on
+            if (__APPLE__) {
+                glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
+            }
         }
         else{
             glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
+        }
+
+        // Mouse Passthrough
+        if((window.getFlags() & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0){
+            glfwWindowHint(GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
+        }
+        else {
+            glfwWindowHint(GLFW_MOUSE_PASSTHROUGH, GLFW_FALSE);
         }
 
         if ((window.getFlags() & FLAG_MSAA_4X_HINT) > 0){
@@ -2596,10 +2692,6 @@ public class rCore{
                 }
             }
 
-            if ((window.screen.getHeight() == window.display.getHeight()) && (window.screen.getWidth() == window.display.getWidth())){
-                glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
-            }
-
             Tracelog(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.getWidth() + "x" + window.display.getHeight());
 
             // NOTE: ISSUE: Closest video mode could not match monitor aspect-ratio, for example,
@@ -2621,6 +2713,13 @@ public class rCore{
             //glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.getWidth(), window.screen.getHeight(), GLFW_DONT_CARE);
         }
         else{
+            if (PLATFORM_DESKTOP) {
+                // If we are windowed fullscreen, ensures that window does not minimize when focus is lost
+                if ((window.screen.height == window.display.height) && (window.screen.width == window.display.width)) {
+                    glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
+                }
+            }
+
             // No-fullscreen window creation
             window.handle = glfwCreateWindow(window.screen.getWidth(), window.screen.getHeight(), (window.title != null)
                     ? window.title : " ", NULL, NULL);
@@ -2713,8 +2812,6 @@ public class rCore{
         window.currentFbo.setWidth(window.screen.getWidth());
         window.currentFbo.setHeight(window.screen.getHeight());
 
-        ClearBackground(RAYWHITE);      // Default background color for raylib games :P
-
         glfwShowWindow(window.handle);
 
         if ((window.getFlags() & FLAG_WINDOW_MINIMIZED) > 0){
@@ -2724,7 +2821,7 @@ public class rCore{
         return true;
     }
 
-    static void SetupViewport(int width, int height){
+     void SetupViewport(int width, int height){
         window.render.setWidth(width);
         window.render.setHeight(height);
 
@@ -2829,21 +2926,21 @@ public class rCore{
     }
 
     /**
-     * Wait for some milliseconds (stop program execution)
+     * Wait for some time (stop program execution)
      *
-     * @param ms Time to wait in milliseconds
+     * @param seconds Time to wait in seconds
      */
-    public void WaitTime(float ms){
+    public void WaitTime(double seconds){
         if (SUPPORT_WINMM_HIGHRES_TIMER){
             double prevTime = GetTime();
             double nextTime = 0.0;
 
             // Busy wait loop
-            while ((nextTime - prevTime) < ms / 1000.0f) nextTime = GetTime();
+            while ((nextTime - prevTime) < seconds) nextTime = GetTime();
         }
         else{
             if (SUPPORT_HALFBUSY_WAIT_LOOP){
-                double destTime = GetTime() + ms / 1000;
+                double destTime = GetTime() + seconds;
                 while (GetTime() < destTime){
                 }
             }
@@ -2868,7 +2965,7 @@ public class rCore{
 
         // Register previous mouse wheel state
         input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());
-        input.mouse.setCurrentWheelMove(0.0f);
+        input.mouse.setCurrentWheelMove(new Vector2());
 
         // Check if gamepads are ready
         // NOTE: We do it here in case of disconnection
@@ -3031,7 +3128,7 @@ public class rCore{
     //END DRM
 
     // NOTE: Loading happens over AutomationEvent *events
-    public static void LoadAutomationEvents(String fileName) {
+    public void LoadAutomationEvents(String fileName) {
         //unsigned char fileId[4] = { 0 };
 
         // Load binary
@@ -3087,7 +3184,7 @@ public class rCore{
     }
 
     // Export recorded events into a file
-    public static void ExportAutomationEvents(String fileName) {
+    public void ExportAutomationEvents(String fileName) {
         // Save as binary
         /*
         FILE *repFile = fopen(fileName, "wb");
@@ -3109,7 +3206,7 @@ public class rCore{
             for (int i = 0; i < eventCount; i++) {
                 repFileText.append("e ").append(events.get(i).frame).append(" ").append(events.get(i).type)
                         .append(" ").append(events.get(i).params[0]).append(" ").append(events.get(i).params[1])
-                        .append(" ").append(events.get(i).params[2]).append(" // ").append(autoEventTypeName[events.get(i).type])
+                        .append(" ").append(events.get(i).params[2]).append(" // ").append(AutomationEvent.EventType.values()[events.get(i).type].name().toLowerCase())
                         .append("\n");
             }
 
@@ -3124,12 +3221,12 @@ public class rCore{
 
     // EndDrawing() -> After PollInputEvents()
     // Check event in current frame and save into the events[i] array
-    public static void RecordAutomationEvent(int frame) {
+    public void RecordAutomationEvent(int frame) {
         for (int key = 0; key < Config.MAX_KEYBOARD_KEYS; key++) {
             // INPUT_KEY_UP (only saved once)
             if (input.keyboard.previousKeyState[key] && !input.keyboard.currentKeyState[key]) {
                 events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_KEY_UP;
+                events.get(eventCount).type = INPUT_KEY_UP.ordinal();
                 events.get(eventCount).params[0] = key;
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
@@ -3141,7 +3238,7 @@ public class rCore{
             // INPUT_KEY_DOWN
             if (input.keyboard.currentKeyState[key]) {
                 events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_KEY_DOWN;
+                events.get(eventCount).type = INPUT_KEY_DOWN.ordinal();
                 events.get(eventCount).params[0] = key;
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
@@ -3155,7 +3252,7 @@ public class rCore{
             // INPUT_MOUSE_BUTTON_UP
             if (input.mouse.previousButtonState[button] == 1 && !(input.mouse.currentButtonState[button] == 1)) {
                 events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_MOUSE_BUTTON_UP;
+                events.get(eventCount).type = INPUT_MOUSE_BUTTON_UP.ordinal();
                 events.get(eventCount).params[0] = button;
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
@@ -3167,7 +3264,7 @@ public class rCore{
             // INPUT_MOUSE_BUTTON_DOWN
             if (input.mouse.currentButtonState[button] == 1) {
                 events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_MOUSE_BUTTON_DOWN;
+                events.get(eventCount).type = INPUT_MOUSE_BUTTON_DOWN.ordinal();
                 events.get(eventCount).params[0] = button;
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
@@ -3180,7 +3277,7 @@ public class rCore{
         // INPUT_MOUSE_POSITION (only saved if changed)
         if (((int)input.mouse.currentPosition.x != (int)input.mouse.previousPosition.x) || ((int)input.mouse.currentPosition.y != (int)input.mouse.previousPosition.y)) {
             events.get(eventCount).frame = frame;
-            events.get(eventCount).type = INPUT_MOUSE_POSITION;
+            events.get(eventCount).type = INPUT_MOUSE_POSITION.ordinal();
             events.get(eventCount).params[0] = (int)input.mouse.currentPosition.x;
             events.get(eventCount).params[1] = (int)input.mouse.currentPosition.y;
             events.get(eventCount).params[2] = 0;
@@ -3190,11 +3287,11 @@ public class rCore{
         }
 
         // INPUT_MOUSE_WHEEL_MOTION
-        if ((int)input.mouse.currentWheelMove != (int)input.mouse.previousWheelMove) {
+        if (input.mouse.currentWheelMove != input.mouse.previousWheelMove) {
             events.get(eventCount).frame = frame;
-            events.get(eventCount).type = INPUT_MOUSE_WHEEL_MOTION;
-            events.get(eventCount).params[0] = (int)input.mouse.currentWheelMove;
-            events.get(eventCount).params[1] = 0;
+            events.get(eventCount).type = INPUT_MOUSE_WHEEL_MOTION.ordinal();
+            events.get(eventCount).params[0] = (int) input.mouse.currentWheelMove.x;
+            events.get(eventCount).params[1] = (int) input.mouse.currentWheelMove.y;
             events.get(eventCount).params[2] = 0;
 
             Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
@@ -3205,7 +3302,7 @@ public class rCore{
             // INPUT_TOUCH_UP
             if (input.touch.previousTouchState[id] && !input.touch.currentTouchState[id]) {
                 events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_TOUCH_UP;
+                events.get(eventCount).type = INPUT_TOUCH_UP.ordinal();
                 events.get(eventCount).params[0] = id;
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
@@ -3217,7 +3314,7 @@ public class rCore{
             // INPUT_TOUCH_DOWN
             if (input.touch.currentTouchState[id]) {
                 events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_TOUCH_DOWN;
+                events.get(eventCount).type = INPUT_TOUCH_DOWN.ordinal();
                 events.get(eventCount).params[0] = id;
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
@@ -3263,7 +3360,7 @@ public class rCore{
                 // INPUT_GAMEPAD_BUTTON_UP
                 if (input.gamepad.previousButtonState[gamepad][button] == 1 && !(input.gamepad.currentButtonState[gamepad][button] == 1)) {
                     events.get(eventCount).frame = frame;
-                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_UP;
+                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_UP.ordinal();
                     events.get(eventCount).params[0] = gamepad;
                     events.get(eventCount).params[1] = button;
                     events.get(eventCount).params[2] = 0;
@@ -3275,7 +3372,7 @@ public class rCore{
                 // INPUT_GAMEPAD_BUTTON_DOWN
                 if (input.gamepad.currentButtonState[gamepad][button] == 1) {
                     events.get(eventCount).frame = frame;
-                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_DOWN;
+                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_DOWN.ordinal();
                     events.get(eventCount).params[0] = gamepad;
                     events.get(eventCount).params[1] = button;
                     events.get(eventCount).params[2] = 0;
@@ -3289,7 +3386,7 @@ public class rCore{
                 // INPUT_GAMEPAD_AXIS_MOTION
                 if (input.gamepad.axisState[gamepad][axis] > 0.1f) {
                     events.get(eventCount).frame = frame;
-                    events.get(eventCount).type = INPUT_GAMEPAD_AXIS_MOTION;
+                    events.get(eventCount).type = INPUT_GAMEPAD_AXIS_MOTION.ordinal();
                     events.get(eventCount).params[0] = gamepad;
                     events.get(eventCount).params[1] = axis;
                     events.get(eventCount).params[2] = (int)(input.gamepad.axisState[gamepad][axis]*32768.0f);
@@ -3319,7 +3416,7 @@ public class rCore{
     public void PlayAutomationEvent(int frame) {
         for (int i = 0; i < eventCount; i++) {
             if (events.get(i).frame == frame) {
-                switch (events.get(i).type) {
+                switch (AutomationEvent.AutomationEventType.values()[events.get(i).type]) {
                     // Input events
                     case INPUT_KEY_UP:    // param[0]: key
                         input.keyboard.currentKeyState[events.get(i).params[0]] = false;
@@ -3338,7 +3435,8 @@ public class rCore{
                         input.mouse.currentPosition.y = (float)events.get(i).params[1];
                         break;
                     case INPUT_MOUSE_WHEEL_MOTION:   // param[0]: delta
-                        input.mouse.currentWheelMove = (float)events.get(i).params[0];
+                        input.mouse.currentWheelMove.x = (float)events.get(i).params[0];
+                        input.mouse.currentWheelMove.y = (float)events.get(i).params[1];
                         break;
                     case INPUT_TOUCH_UP:     // param[0]: id
                         input.touch.currentTouchState[events.get(i).params[0]] = false;
