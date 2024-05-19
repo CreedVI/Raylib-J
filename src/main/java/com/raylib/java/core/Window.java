@@ -47,8 +47,10 @@ public class Window{
         resizedLastFrame = false;
 
         position = new Point(0,0);
+        previousPosition = new Point(0, 0);
         display = new Size();
         screen = new Size();
+        previousScreen = new Size();
         currentFbo = new Size();
         render = new Size();
         renderOffset = new Point();
