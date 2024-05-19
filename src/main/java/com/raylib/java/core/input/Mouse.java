@@ -49,8 +49,12 @@ public class Mouse{
     public Mouse(){
         currentPosition = new Vector2();
         previousPosition = new Vector2();
+
         offset = new Vector2();
         scale = new Vector2();
+
+        currentWheelMove = new Vector2();
+        previousWheelMove = new Vector2();
 
         currentButtonState = new int[3];
         previousButtonState = new int[3];
