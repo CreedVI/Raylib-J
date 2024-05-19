@@ -15,37 +15,35 @@ public class Mouse{
 
     public int[] currentButtonState;     // Registers current mouse button state
     public int[] previousButtonState;    // Registers previous mouse button state
-    public float currentWheelMove;         // Registers current mouse wheel variation
-    public float previousWheelMove;        // Registers previous mouse wheel variation
+    public Vector2 currentWheelMove;         // Registers current mouse wheel variation
+    public Vector2 previousWheelMove;        // Registers previous mouse wheel variation
 
 
     // Mouse buttons
-    public static class MouseButton {
-        public static int
-                MOUSE_BUTTON_LEFT    = 0,       // Mouse button left
-                MOUSE_BUTTON_RIGHT   = 1,       // Mouse button right
-                MOUSE_BUTTON_MIDDLE  = 2,       // Mouse button middle (pressed wheel)
-                MOUSE_BUTTON_SIDE    = 3,       // Mouse button side (advanced mouse device)
-                MOUSE_BUTTON_EXTRA   = 4,       // Mouse button extra (advanced mouse device)
-                MOUSE_BUTTON_FORWARD = 5,       // Mouse button fordward (advanced mouse device)
-                MOUSE_BUTTON_BACK    = 6;       // Mouse button back (advanced mouse device)
+    public enum MouseButton {
+                MOUSE_BUTTON_LEFT,       // Mouse button left
+                MOUSE_BUTTON_RIGHT,       // Mouse button right
+                MOUSE_BUTTON_MIDDLE,       // Mouse button middle (pressed wheel)
+                MOUSE_BUTTON_SIDE,       // Mouse button side (advanced mouse device)
+                MOUSE_BUTTON_EXTRA,       // Mouse button extra (advanced mouse device)
+                MOUSE_BUTTON_FORWARD,       // Mouse button fordward (advanced mouse device)
+                MOUSE_BUTTON_BACK;       // Mouse button back (advanced mouse device)
 
     }
 
     // Mouse cursor types
-    public static class MouseCursor{
-        public static int
-                MOUSE_CURSOR_DEFAULT       = 0,     // Default pointer shape
-                MOUSE_CURSOR_ARROW         = 1,     // Arrow shape
-                MOUSE_CURSOR_IBEAM         = 2,     // Text writing cursor shape
-                MOUSE_CURSOR_CROSSHAIR     = 3,     // Cross shape
-                MOUSE_CURSOR_POINTING_HAND = 4,     // Pointing hand cursor
-                MOUSE_CURSOR_RESIZE_EW     = 5,     // Horizontal resize/move arrow shape
-                MOUSE_CURSOR_RESIZE_NS     = 6,     // Vertical resize/move arrow shape
-                MOUSE_CURSOR_RESIZE_NWSE   = 7,     // Top-left to bottom-right diagonal resize/move arrow shape
-                MOUSE_CURSOR_RESIZE_NESW   = 8,     // The top-right to bottom-left diagonal resize/move arrow shape
-                MOUSE_CURSOR_RESIZE_ALL    = 9,     // The omni-directional resize/move cursor shape
-                MOUSE_CURSOR_NOT_ALLOWED  = 10;     // The operation-not-allowed shape
+    public enum MouseCursor {
+                MOUSE_CURSOR_DEFAULT,     // Default pointer shape
+                MOUSE_CURSOR_ARROW,     // Arrow shape
+                MOUSE_CURSOR_IBEAM,     // Text writing cursor shape
+                MOUSE_CURSOR_CROSSHAIR,     // Cross shape
+                MOUSE_CURSOR_POINTING_HAND,     // Pointing hand cursor
+                MOUSE_CURSOR_RESIZE_EW,     // Horizontal resize/move arrow shape
+                MOUSE_CURSOR_RESIZE_NS,     // Vertical resize/move arrow shape
+                MOUSE_CURSOR_RESIZE_NWSE,     // Top-left to bottom-right diagonal resize/move arrow shape
+                MOUSE_CURSOR_RESIZE_NESW,     // The top-right to bottom-left diagonal resize/move arrow shape
+                MOUSE_CURSOR_RESIZE_ALL,     // The omni-directional resize/move cursor shape
+                MOUSE_CURSOR_NOT_ALLOWED;     // The operation-not-allowed shape
     }
 
     public Mouse(){
@@ -131,19 +129,19 @@ public class Mouse{
         this.previousButtonState = previousButtonState;
     }
 
-    public float getCurrentWheelMove(){
+    public Vector2 getCurrentWheelMove(){
         return currentWheelMove;
     }
 
-    public void setCurrentWheelMove(float currentWheelMove){
+    public void setCurrentWheelMove(Vector2 currentWheelMove){
         this.currentWheelMove = currentWheelMove;
     }
 
-    public float getPreviousWheelMove(){
+    public Vector2 getPreviousWheelMove(){
         return previousWheelMove;
     }
 
-    public void setPreviousWheelMove(float previousWheelMove){
+    public void setPreviousWheelMove(Vector2 previousWheelMove){
         this.previousWheelMove = previousWheelMove;
     }
 }

@@ -4,6 +4,8 @@ import com.raylib.java.raymath.Matrix;
 import com.raylib.java.raymath.Point;
 import com.raylib.java.raymath.Size;
 
+import java.util.ArrayList;
+
 public class Window{
     long handle;
 
@@ -19,6 +21,8 @@ public class Window{
     boolean shouldClose;                   // Check if window set for closing
     boolean resizedLastFrame;              // Check if window has been resized last frame
 
+    boolean eventWaiting;               // Wait for events before ending frame
+
     Point position;                     // window position on screen (required on fullscreen toggle)
     Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
     Size screen;                        // Screen width and height (used render area)
@@ -29,7 +33,7 @@ public class Window{
     Size screenMax;                     // Screen maximum width and height (for resizable window)
     Matrix screenScale;                 // Matrix to scale screen (framebuffer rendering)
 
-    String[] dropFilesPath;               // Store dropped files paths as strings
+    String[] dropFilePaths;               // Store dropped files paths as strings
     int dropFilesCount;                 // Count dropped files strings
 
     public Window(){
@@ -50,7 +54,7 @@ public class Window{
         renderOffset = new Point();
         screenScale = new Matrix();
 
-        dropFilesPath = new String[512];
+        dropFilePaths = new String[512];
         dropFilesCount = 0;
     }
 
@@ -158,12 +162,12 @@ public class Window{
         this.screenScale = screenScale;
     }
 
-    public String[] getDropFilesPath(){
-        return dropFilesPath;
+    public String[] getDropFilePaths(){
+        return dropFilePaths;
     }
 
-    public void setDropFilesPath(String[] dropFilesPath){
-        this.dropFilesPath = dropFilesPath;
+    public void setDropFilePaths(String[] dropFilesPath){
+        this.dropFilePaths = dropFilesPath;
     }
 
     public int getDropFilesCount(){

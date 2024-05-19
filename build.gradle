@@ -28,9 +28,7 @@ switch (org.gradle.internal.os.OperatingSystem.current()) {
 }
 
 group = 'com.raylib'
-version = '0.5'
-
-
+version = '0.5.2'
 
 repositories {
     mavenCentral()
@@ -60,3 +58,22 @@ dependencies {
     runtimeOnly "org.lwjgl:lwjgl-par::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
 }
+
+task copyDependencies(type: Copy) {
+    from configurations.runtimeClasspath
+    into "$buildDir/libs/dependencies"
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.raylib.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.build.dependsOn jar

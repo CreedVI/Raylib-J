@@ -1,4 +1,4 @@
-<img align="left" src="https://github.com/CreedVI/Raylib-J/blob/main/logo/raylib-j_256x256.png" width=256>
+<img align="left" src="https://github.com/CreedVI/Raylib-J/blob/main/logo/raylib-j_256x256.png" width=256 alt="Raylib-J Logo">
 
 # Raylib-J
 A handmade version of Raylib for Java.
@@ -18,7 +18,7 @@ To quote [@raysan5](https://github.com/raysan5):
 no debug button... just coding in the most pure spartan-programmers way.*
 
 
-**Raylib-J is being built based on the 4.0 release of Raylib**<br>
+**Raylib-J is currently up-to-date with the 4.2 release of Raylib**<br>
 Raylib-J is meant to be a one-for-one rewrite of Raylib with some quality of life changes including, but not limited 
 to: JavaDoc comments, `DrawFPS(int posX, int posY, Color theColorYouWant)`, and `CloseWindow()` being handled 
 automatically!
@@ -84,7 +84,9 @@ Special thanks to the following:
   - [elias94](https://github.com/elias94) for helping get this library running on OSX
   - [mateoox600](https://github.com/mateoox600) for catching a number of issues and helping update the [Examples Repo](https://github.com/CreedVI/Raylib-J-Examples)
   - [Irgendwer01](https://github.com/Irgendwer01) for converting the project to use the Gradle build system.
-  - Everyone in the Raylib discord!
+  - [ejenk0](https://github.com/ejenk0) for helping with smoothing out the Gradle build process and assisting with the update process.
+  - Everyone in the Raylib discord!'
+  - And you for your time checking out this project!
 ---
 
 ## Development Status:

@@ -4,7 +4,7 @@
 .idea/
 logo/rlj_old.png
 out/
-tests/
+src/tests/
 META-INF/
 *.txt
 .gradle/

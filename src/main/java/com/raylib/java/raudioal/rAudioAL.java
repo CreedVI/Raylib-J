@@ -1,5 +1,6 @@
 package com.raylib.java.raudioal;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.utils.FileIO;
 import org.lwjgl.openal.*;
 import org.lwjgl.stb.STBVorbisInfo;
@@ -110,6 +111,7 @@ public class rAudioAL {
     final static int AL_FORMAT_MONO_FLOAT32 = 0x10010;
     final static int AL_FORMAT_STEREO_FLOAT32 = 0x10011;
 
+    final private Raylib context;
 
     //----------------------------------------------------------------------------------
     // Types and Structures Definition
@@ -120,6 +122,10 @@ public class rAudioAL {
     //----------------------------------------------------------------------------------
     // Module Functions Definition - Audio Device initialization and Closing
     //----------------------------------------------------------------------------------
+
+    public rAudioAL(Raylib context) {
+        this.context = context;
+    }
 
     // Initialize audio device
     public void InitAudioDevice() {

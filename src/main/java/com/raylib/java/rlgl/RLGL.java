@@ -226,7 +226,7 @@ public class RLGL{
     // NOTE 2: Filter is accordingly set for minification and magnification
     public static class rlTextureFilterMode{
         public static final int
-                RL_TEXTURE_FILTER_POINT = 0,                   // No filter, just pixel aproximation
+                RL_TEXTURE_FILTER_POINT = 0,                   // No filter, just pixel approximation
                 RL_TEXTURE_FILTER_BILINEAR = 1,                // Linear filtering
                 RL_TEXTURE_FILTER_TRILINEAR = 2,               // Trilinear filtering  = linear with mipmaps)
                 RL_TEXTURE_FILTER_ANISOTROPIC_4X = 3,          // Anisotropic filtering 4x
@@ -240,9 +240,10 @@ public class RLGL{
                 RL_BLEND_ALPHA = 0,                // Blend textures considering alpha  = default)
                 RL_BLEND_ADDITIVE = 1,                 // Blend textures adding colors
                 RL_BLEND_MULTIPLIED = 2,               // Blend textures multiplying colors
-                RL_BLEND_ADD_COLORS = 3,               // Blend textures adding colors  = alternative)
-                RL_BLEND_SUBTRACT_COLORS = 4,          // Blend textures subtracting colors  = alternative)
-                RL_BLEND_CUSTOM = 5;                   // Belnd textures using custom src/dst factors (use SetBlendModeCustom())
+                RL_BLEND_ADD_COLORS = 3,               // Blend textures adding colors (alternative)
+                RL_BLEND_SUBTRACT_COLORS = 4,          // Blend textures subtracting colors (alternative)
+                RL_BLEND_ALPHA_PREMULTIPLY = 5,         // Blend premultiplied textures considering alpha
+                RL_BLEND_CUSTOM = 6;                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
 
     }
 
@@ -404,6 +405,7 @@ public class RLGL{
     }
 
     // Set the viewport area (transformation from normalized device coordinates to window coordinates)
+    // NOTE: We store current viewport dimensions
     public static void rlViewport(int x, int y, int width, int height){
         glViewport(x, y, width, height);
     }
@@ -603,6 +605,11 @@ public class RLGL{
     public static void rlTextureParameters(int id, int param, int value){
         glBindTexture(GL_TEXTURE_2D, id);
 
+        if (!GRAPHICS_API_OPENGL_11) {
+            // Reset anisotropy filer, in case it was set
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
+        }
+
         switch (param){
             case RL_TEXTURE_WRAP_S:
             case RL_TEXTURE_WRAP_T:{
@@ -632,7 +639,7 @@ public class RLGL{
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
                     }
                     else if (rlglData.getExtSupported().getMaxAnisotropyLevel() > 0.0f){
-                        Tracelog(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " + id + "X" +
+                        Tracelog(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " +
                                 rlglData.getExtSupported().getMaxAnisotropyLevel());
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
                     }
@@ -900,9 +907,14 @@ public class RLGL{
                         glBlendFunc(GL_ONE, GL_ONE);
                         glBlendEquation(GL_FUNC_SUBTRACT);
                         break;
+                    case rlBlendMode.RL_BLEND_ALPHA_PREMULTIPLY:
+                        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                        glBlendEquation(GL_FUNC_ADD);
+                        break;
                     case rlBlendMode.RL_BLEND_CUSTOM:
-                        glBlendFunc(rlglData.getState().getGlBlendSrcFactor(), rlglData.getState().getGlBlendDstFactor());
-                        glBlendEquation(rlglData.getState().getGlBlendEquation());
+                        // NOTE: Using GL blend src/dst factors and GL equation configured with rlSetBlendFactors()
+                        glBlendFunc(rlglData.getState().glBlendSrcFactor, rlglData.getState().glBlendDstFactor);
+                        glBlendEquation(rlglData.getState().glBlendEquation);
                         break;
                     default:
                         break;
@@ -1260,13 +1272,13 @@ public class RLGL{
                     Tracelog(LOG_INFO, "        " + rlGetCompressedFormatName(format[i]));
                 }
 
-                /*
-                // Following capabilities are only supported by OpenGL 4.3 or greater
-                glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, &capability);
-                Tracelog(LOG_INFO, "    GL_MAX_VERTEX_ATTRIB_BINDINGS: %i", capability);
-                glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &capability);
-                Tracelog(LOG_INFO, "    GL_MAX_UNIFORM_LOCATIONS: %i", capability);
-                */
+                if (GRAPHICS_API_OPENGL_43) {
+                    IntBuffer capabilityIB = IntBuffer.allocate(1);
+                    glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, capabilityIB);
+                    Tracelog(LOG_INFO, "    GL_MAX_VERTEX_ATTRIB_BINDINGS: " + capabilityIB.get());
+                    glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, capabilityIB);
+                    Tracelog(LOG_INFO, "    GL_MAX_UNIFORM_LOCATIONS: " +  capabilityIB.get());
+                }
             }
             else{   // SUPPORT_GL_DETAILS_INFO
                 // Show some basic info about GL supported features
@@ -1318,6 +1330,21 @@ public class RLGL{
         return version;
     }
 
+    // Set current framebuffer width
+    public static void rlSetFramebufferWidth(int width) {
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+            rlglData.getState().framebufferWidth = width;
+        }
+    }
+
+    // Set current framebuffer height
+    public static void rlSetFramebufferHeight(int height) {
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+            rlglData.getState().framebufferHeight = height;
+        }
+    }
+
+    // Get current framebuffer width
     public static int rlGetFramebufferWidth(){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             return rlglData.getState().getFramebufferWidth();
@@ -1327,6 +1354,7 @@ public class RLGL{
         }
     }
 
+    // Get current framebuffer height
     public static int rlGetFramebufferHeight(){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             return rlglData.getState().getFramebufferHeight();
@@ -1714,6 +1742,11 @@ public class RLGL{
             }
 
             glUseProgram(0);    // Unbind shader program
+        }
+
+        // Restore viewport to default measures
+        if (eyesCount == 2) {
+            rlViewport(0, 0, rlglData.getState().framebufferWidth, rlglData.getState().framebufferHeight);
         }
         //------------------------------------------------------------------------------------------------------------
         // Reset batch buffers
@@ -2175,9 +2208,9 @@ public class RLGL{
 
     // Get OpenGL internal formats and data type from raylib rlPixelFormat
     public static void rlGetGlTextureFormats(int format){
-        glInternalFormat = -1;
-        glFormat = -1;
-        glType = -1;
+        glInternalFormat = 0;
+        glFormat = 0;
+        glType = 0;
 
         switch (format){
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
@@ -2454,11 +2487,8 @@ public class RLGL{
         }
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if ((texIsPOT) || (rlglData.getExtSupported().isTexNPOT())){
-                //glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);   // Hint for mipmaps generation algorythm: GL_FASTEST, GL_NICEST, GL_DONT_CARE
+                //glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);   // Hint for mipmaps generation algorithm: GL_FASTEST, GL_NICEST, GL_DONT_CARE
                 glGenerateMipmap(GL_TEXTURE_2D);    // Generate mipmaps automatically
-
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);   // Activate Trilinear filtering for mipmaps
 
                 texture.setMipmaps(1 + (int) Math.floor(Math.log(Math.max(texture.getWidth(), texture.getHeight())) / Math.log(2)));
                 Tracelog(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Mipmaps generated automatically, total: " + texture.getMipmaps());
@@ -3009,22 +3039,39 @@ public class RLGL{
         int id = 0;
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            int vertexShaderId = rlglData.getState().defaultVShaderId;
-            int fragmentShaderId = rlglData.getState().defaultFShaderId;
+            int vertexShaderId = 0;
+            int fragmentShaderId = 0;
 
+            // Compile vertex shader (if provided)
             if (vsCode != null) {
                 vertexShaderId = rlCompileShader(vsCode, GL_VERTEX_SHADER);
             }
+
+            // In case no vertex shader was provided or compilation failed, we use default vertex shader
+            if (vertexShaderId == 0) {
+                vertexShaderId = rlglData.getState().defaultVShaderId;
+            }
+
+            // Compile fragment shader (if provided)
             if (fsCode != null) {
                 fragmentShaderId = rlCompileShader(fsCode, GL_FRAGMENT_SHADER);
             }
 
+            // In case no fragment shader was provided or compilation failed, we use default fragment shader
+            if (fragmentShaderId == 0) {
+                fragmentShaderId = rlglData.getState().defaultFShaderId;
+            }
+
+            // In case vertex and fragment shader are the default ones, no need to recompile, we can just assign the default shader program id
             if ((vertexShaderId == rlglData.getState().defaultVShaderId) && (fragmentShaderId == rlglData.getState().defaultFShaderId)) {
                 id = rlglData.getState().defaultShaderId;
             }
             else{
+                // One of or both shader are new, we need to compile a new shader program
                 id = rlLoadShaderProgram(vertexShaderId, fragmentShaderId);
 
+                // We can detach and delete vertex/fragment shaders (if not default ones)
+                // NOTE: We detach shader before deletion to make sure memory is freed
                 if (vertexShaderId != rlglData.getState().defaultVShaderId){
                     // Detach shader before deletion to make sure memory is freed
                     glDetachShader(id, vertexShaderId);
@@ -3035,8 +3082,9 @@ public class RLGL{
                     glDetachShader(id, fragmentShaderId);
                     glDeleteShader(fragmentShaderId);
                 }
+                // In case shader program loading failed, we assign default shader
                 if (id == 0){
-                    Tracelog(LOG_WARNING, "SHADER: Failed to load custom shader code");
+                    Tracelog(LOG_WARNING, "SHADER: Failed to load custom shader code, using default shader");
                     id = rlglData.getState().defaultShaderId;
                 }
             }
@@ -3376,6 +3424,8 @@ public class RLGL{
             ssbo = glGenBuffers();
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
             glBufferData(GL_SHADER_STORAGE_BUFFER, dataBuffer, usageHint == 1 ? usageHint : RL_STREAM_COPY);
+            glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, dataBuffer);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         }
 
         return ssbo;
@@ -3806,7 +3856,8 @@ public class RLGL{
             defaultFShaderCode.append("}                                  \n");
         }
 
-        // NOTE: Compiled vertex/fragment shaders are kept for re-use
+        // NOTE: Compiled vertex/fragment shaders are not deleted,
+        // they are kept for re-use as default shaders in case some shader loading fails
         rlglData.getState().setDefaultVShaderId(rlCompileShader(String.valueOf(defaultVShaderCode), GL_VERTEX_SHADER));     // Compile default vertex shader
         rlglData.getState().setDefaultFShaderId(rlCompileShader(String.valueOf(defaultFShaderCode), GL_FRAGMENT_SHADER));   // Compile default fragment shader
 
@@ -3847,195 +3898,144 @@ public class RLGL{
 
     // Get compressed format official GL identifier name
     static String rlGetCompressedFormatName(int format){
-        String compName = null;
         if (SUPPORT_GL_DETAILS_INFO){
             switch (format){
                 // GL_EXT_texture_compression_s3tc
                 case 0x83F0:
-                    compName = "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
-                    break;
+                    return "GL_COMPRESSED_RGB_S3TC_DXT1_EXT";
                 case 0x83F1:
-                    compName = "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
-                    break;
+                    return "GL_COMPRESSED_RGBA_S3TC_DXT1_EXT";
                 case 0x83F2:
-                    compName = "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
-                    break;
+                    return "GL_COMPRESSED_RGBA_S3TC_DXT3_EXT";
                 case 0x83F3:
-                    compName = "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
-                    break;
+                    return "GL_COMPRESSED_RGBA_S3TC_DXT5_EXT";
+
                 // GL_3DFX_texture_compression_FXT1
                 case 0x86B0:
-                    compName = "GL_COMPRESSED_RGB_FXT1_3DFX";
-                    break;
+                    return "GL_COMPRESSED_RGB_FXT1_3DFX";
                 case 0x86B1:
-                    compName = "GL_COMPRESSED_RGBA_FXT1_3DFX";
-                    break;
+                    return "GL_COMPRESSED_RGBA_FXT1_3DFX";
+
                 // GL_IMG_texture_compression_pvrtc
                 case 0x8C00:
-                    compName = "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG";
-                    break;
+                    return "GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG";
                 case 0x8C01:
-                    compName = "GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG";
-                    break;
+                    return "GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG";
                 case 0x8C02:
-                    compName = "GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG";
-                    break;
+                    return "GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG";
                 case 0x8C03:
-                    compName = "GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG";
-                    break;
+                    return "GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG";
+
                 // GL_OES_compressed_ETC1_RGB8_texture
                 case 0x8D64:
-                    compName = "GL_ETC1_RGB8_OES";
-                    break;
+                    return "GL_ETC1_RGB8_OES";
+
                 // GL_ARB_texture_compression_rgtc
                 case 0x8DBB:
-                    compName = "GL_COMPRESSED_RED_RGTC1";
-                    break;
+                    return "GL_COMPRESSED_RED_RGTC1";
                 case 0x8DBC:
-                    compName = "GL_COMPRESSED_SIGNED_RED_RGTC1";
-                    break;
+                    return "GL_COMPRESSED_SIGNED_RED_RGTC1";
                 case 0x8DBD:
-                    compName = "GL_COMPRESSED_RG_RGTC2";
-                    break;
+                    return "GL_COMPRESSED_RG_RGTC2";
                 case 0x8DBE:
-                    compName = "GL_COMPRESSED_SIGNED_RG_RGTC2";
-                    break;
+                    return "GL_COMPRESSED_SIGNED_RG_RGTC2";
+
                 // GL_ARB_texture_compression_bptc
                 case 0x8E8C:
-                    compName = "GL_COMPRESSED_RGBA_BPTC_UNORM_ARB";
-                    break;
+                    return "GL_COMPRESSED_RGBA_BPTC_UNORM_ARB";
                 case 0x8E8D:
-                    compName = "GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB";
-                    break;
+                    return "GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB";
                 case 0x8E8E:
-                    compName = "GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB";
-                    break;
+                    return "GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB";
                 case 0x8E8F:
-                    compName = "GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB";
-                    break;
+                    return "GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB";
+
                 // GL_ARB_ES3_compatibility
                 case 0x9274:
-                    compName = "GL_COMPRESSED_RGB8_ETC2";
-                    break;
+                    return "GL_COMPRESSED_RGB8_ETC2";
                 case 0x9275:
-                    compName = "GL_COMPRESSED_SRGB8_ETC2";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ETC2";
                 case 0x9276:
-                    compName = "GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2";
-                    break;
+                    return "GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2";
                 case 0x9277:
-                    compName = "GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2";
                 case 0x9278:
-                    compName = "GL_COMPRESSED_RGBA8_ETC2_EAC";
-                    break;
+                    return "GL_COMPRESSED_RGBA8_ETC2_EAC";
                 case 0x9279:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC";
                 case 0x9270:
-                    compName = "GL_COMPRESSED_R11_EAC";
-                    break;
+                    return "GL_COMPRESSED_R11_EAC";
                 case 0x9271:
-                    compName = "GL_COMPRESSED_SIGNED_R11_EAC";
-                    break;
+                    return "GL_COMPRESSED_SIGNED_R11_EAC";
                 case 0x9272:
-                    compName = "GL_COMPRESSED_RG11_EAC";
-                    break;
+                    return "GL_COMPRESSED_RG11_EAC";
                 case 0x9273:
-                    compName = "GL_COMPRESSED_SIGNED_RG11_EAC";
-                    break;
+                    return "GL_COMPRESSED_SIGNED_RG11_EAC";
+
                 // GL_KHR_texture_compression_astc_hdr
                 case 0x93B0:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_4x4_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_4x4_KHR";
                 case 0x93B1:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_5x4_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_5x4_KHR";
                 case 0x93B2:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_5x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_5x5_KHR";
                 case 0x93B3:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_6x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_6x5_KHR";
                 case 0x93B4:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_6x6_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_6x6_KHR";
                 case 0x93B5:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_8x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_8x5_KHR";
                 case 0x93B6:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_8x6_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_8x6_KHR";
                 case 0x93B7:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_8x8_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_8x8_KHR";
                 case 0x93B8:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_10x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_10x5_KHR";
                 case 0x93B9:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_10x6_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_10x6_KHR";
                 case 0x93BA:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_10x8_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_10x8_KHR";
                 case 0x93BB:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_10x10_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_10x10_KHR";
                 case 0x93BC:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_12x10_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_12x10_KHR";
                 case 0x93BD:
-                    compName = "GL_COMPRESSED_RGBA_ASTC_12x12_KHR";
-                    break;
+                    return "GL_COMPRESSED_RGBA_ASTC_12x12_KHR";
                 case 0x93D0:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR";
                 case 0x93D1:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR";
                 case 0x93D2:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR";
                 case 0x93D3:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR";
                 case 0x93D4:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR";
                 case 0x93D5:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR";
                 case 0x93D6:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR";
                 case 0x93D7:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR";
                 case 0x93D8:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR";
                 case 0x93D9:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR";
                 case 0x93DA:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR";
                 case 0x93DB:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR";
                 case 0x93DC:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR";
-                    break;
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR";
                 case 0x93DD:
-                    compName = "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR";
-                    break;
-                default:
-                    compName = "GL_COMPRESSED_UNKNOWN";
-                    break;
-            }
+                    return "GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR";
 
-        } // SUPPORT_GL_DETAILS_INFO
-        return compName;
+                default:
+                    return "GL_COMPRESSED_UNKNOWN";
+            }
+        }
+
+        return "GL_COMPRESSED_UNKNOWN";
     }
 
     // Mipmaps data is generated after image data
