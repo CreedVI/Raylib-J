@@ -52,6 +52,8 @@ public class Window{
         currentFbo = new Size();
         render = new Size();
         renderOffset = new Point();
+        screenMin = new Size();
+        screenMax = new Size();
         screenScale = new Matrix();
 
         dropFilePaths = new String[512];

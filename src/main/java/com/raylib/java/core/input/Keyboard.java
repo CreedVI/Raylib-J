@@ -1,5 +1,6 @@
 package com.raylib.java.core.input;
 
+import static com.raylib.java.Config.MAX_KEYBOARD_KEYS;
 import static com.raylib.java.Config.MAX_KEY_PRESSED_QUEUE;
 
 public class Keyboard{
@@ -7,6 +8,9 @@ public class Keyboard{
     public int exitKey;                    // Default exit key
     public boolean[] currentKeyState;      // Registers current frame key state
     public boolean[] previousKeyState;     // Registers previous frame key state
+
+    // NOTE: Since key press logic involves comparing prev vs cur key state, we need to handle key repeats specially
+    public boolean[] keyRepeatInFrame;     // Registers key repeats for current frame
 
     public int[] keyPressedQueue;     // Input keys queue
     public int keyPressedQueueCount;       // Input keys queue count
@@ -127,8 +131,9 @@ public class Keyboard{
         KEY_KP_EQUAL       = 336;
 
     public Keyboard() {
-        currentKeyState = new boolean[512];
-        previousKeyState = new boolean[512];
+        currentKeyState = new boolean[MAX_KEYBOARD_KEYS];
+        previousKeyState = new boolean[MAX_KEYBOARD_KEYS];
+        keyRepeatInFrame = new boolean[MAX_KEYBOARD_KEYS];
         keyPressedQueue = new int[MAX_KEY_PRESSED_QUEUE];
         charPressedQueue = new int[MAX_KEY_PRESSED_QUEUE];
     }

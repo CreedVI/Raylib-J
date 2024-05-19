@@ -25,6 +25,7 @@ import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +63,7 @@ import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class rCore{
@@ -705,7 +707,6 @@ public class rCore{
     }
 
     // Set window opacity, value opacity is between 0.0 and 1.0
-
     public void SetWindowOpacity(float opacity) {
         if(PLATFORM_DESKTOP) {
             if (opacity >= 1.0f) {
@@ -946,12 +947,15 @@ public class rCore{
 
     // Get window position XY on monitor
     public Vector2 GetWindowPosition() {
-        IntBuffer x = IntBuffer.allocate(1);
-        IntBuffer y = IntBuffer.allocate(1);
-        if(PLATFORM_DESKTOP) {
-            glfwGetWindowPos(window.handle, x, y);
+        // Memory-safe get window position
+        try (MemoryStack stack = MemoryStack.stackPush()){
+            IntBuffer xBuffer = stack.mallocInt(1);
+            IntBuffer yBuffer = stack.mallocInt(1);
+            if (PLATFORM_DESKTOP){
+                glfwGetWindowPos(window.handle, xBuffer, yBuffer);
+            }
+            return new Vector2(xBuffer.get(0), yBuffer.get(0));
         }
-        return new Vector2(x.get(0), y.get(0));
     }
 
     // Get window scale DPI factor
@@ -959,30 +963,32 @@ public class rCore{
         Vector2 scale = new Vector2(1f,1f);
 
         if(PLATFORM_DESKTOP) {
-            FloatBuffer xdpi = FloatBuffer.allocate(1);
-            FloatBuffer ydpi = FloatBuffer.allocate(1);
-            Vector2 windowPos = GetWindowPosition();
+            try (MemoryStack stack = stackPush()){
+                FloatBuffer xdpi = stack.mallocFloat(1);
+                FloatBuffer ydpi = stack.mallocFloat(1);
+                Vector2 windowPos = GetWindowPosition();
 
-            PointerBuffer monitors = glfwGetMonitors();
-            int monitorCount = monitors.sizeof();
+                PointerBuffer monitors = glfwGetMonitors();
+                int monitorCount = monitors.sizeof();
 
-            // Check window monitor
-            for (int i = 0; i < monitorCount; i++) {
-                glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
+                // Check window monitor
+                for (int i = 0; i < monitorCount; i++){
+                    glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
 
-                IntBuffer xpos, ypos, width, height;
-                xpos = IntBuffer.allocate(1);
-                ypos = IntBuffer.allocate(1);
-                width = IntBuffer.allocate(1);
-                height = IntBuffer.allocate(1);
+                    IntBuffer xpos, ypos, width, height;
+                    xpos = stack.mallocInt(1);
+                    ypos = stack.mallocInt(1);
+                    width = stack.mallocInt(1);
+                    height = stack.mallocInt(1);
 
-                glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
+                    glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
 
-                if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
-                        (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))) {
-                    scale.x = xdpi.get(i);
-                    scale.y = ydpi.get(i);
-                    break;
+                    if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
+                            (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))){
+                        scale.x = xdpi.get(i);
+                        scale.y = ydpi.get(i);
+                        break;
+                    }
                 }
             }
         }
@@ -2235,7 +2241,7 @@ public class rCore{
     // Detect if a key has been pressed again (Only PLATFORM_DESKTOP)
     public boolean IsKeyPressedRepeat(int key){
         if ((key > 0) && (key < MAX_KEYBOARD_KEYS)){
-            return !input.keyboard.previousKeyState[key] && input.keyboard.currentKeyState[key];
+            return input.keyboard.keyRepeatInFrame[key];
         }
 
         return false;
@@ -3068,7 +3074,11 @@ public class rCore{
         // Keyboard/Mouse input polling (automatically managed by GLFW3 through callback)
 
         // Register previous keys states
-        for (int i = 0; i < 512; i++) input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
+        for (int i = 0; i < MAX_KEYBOARD_KEYS; i++){
+            input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
+            input.keyboard.keyRepeatInFrame[i] = false;
+        }
+        ;
 
         // Register previous mouse states
         for (int i = 0; i < 3; i++) input.mouse.getPreviousButtonState()[i] = input.mouse.getCurrentButtonState()[i];
