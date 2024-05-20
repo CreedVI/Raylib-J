@@ -236,7 +236,7 @@ public class Raymath{
      * @return angle from v1 and v2
      */
     public static float Vector2Angle(Vector2 v1, Vector2 v2){
-        float result = (float) (Math.atan2(v2.y - v1.y, v2.x - v1.x) * (RAD2DEG));
+        float result = (float) (Math.atan2(v2.y - v1.y, v2.x - v1.x));
         if (result < 0)
             result += 360.0f;
         return result;
