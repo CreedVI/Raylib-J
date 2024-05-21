@@ -155,6 +155,10 @@ public class Callbacks{
                 context.getInput().keyboard.keyPressedQueueCount++;
             }
 
+            if ((context.getInput().keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_REPEAT)){
+                context.getInput().keyboard.keyRepeatInFrame[key] = true;
+            }
+
             // Check the exit key to set close window
             if ((key == context.getInput().keyboard.exitKey) && (action == GLFW_PRESS)){
                 glfwSetWindowShouldClose(context.getWindow().handle, true);

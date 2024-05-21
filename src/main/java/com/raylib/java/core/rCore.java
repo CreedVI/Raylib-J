@@ -16,6 +16,7 @@ import com.raylib.java.textures.Image;
 import com.raylib.java.textures.RenderTexture;
 import com.raylib.java.textures.Texture2D;
 import com.raylib.java.utils.FileIO;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
@@ -30,6 +31,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -57,6 +60,7 @@ import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class rCore{
@@ -86,6 +90,8 @@ public class rCore{
     static int index = 0;
     static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     static float average = 0, last = 0;
+
+    private final Random random = new Random();
 
     private final Raylib context;
 
@@ -693,6 +699,36 @@ public class rCore{
         }
     }
 
+    // Set icon for window (multiple images, RGBA 32bit, only PLATFORM_DESKTOP)
+    @SuppressWarnings("resource") // Reason: Buffer is explicitly allocated and freed
+    public void SetWindowIcons(List<Image> images){
+        int count = images.size();
+
+        if (images.isEmpty()){
+            glfwSetWindowIcon(window.handle, null);
+        } else{
+            GLFWImage.Buffer icons = GLFWImage.malloc(count);
+
+            for (int i = 0; i < count; i++){
+                Image image = images.get(i);
+
+                if (image.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
+                    icons.get(i).set(
+                            image.width,
+                            image.height,
+                            ByteBuffer.wrap(image.getData())
+                    );
+                } else{
+                    Tracelog(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
+                }
+            }
+            // NOTE: Images data is copied internally before this function returns
+            glfwSetWindowIcon(window.handle, icons);
+
+            icons.free();
+        }
+    }
+
     // Set title for window (only PLATFORM_DESKTOP)
     public void SetWindowTitle(String title){
         window.title = title;
@@ -720,10 +756,30 @@ public class rCore{
         }
     }
 
+    // Set the window size limits based on the current screenMin and screenMax
+    private void UpdateWindowSizeLimits(){
+        int minWidth = window.screenMin.width == 0 ? GLFW_DONT_CARE : window.screenMin.width;
+        int minHeight = window.screenMin.height == 0 ? GLFW_DONT_CARE : window.screenMin.height;
+        int maxWidth = window.screenMax.width == 0 ? GLFW_DONT_CARE : window.screenMax.width;
+        int maxHeight = window.screenMax.height == 0 ? GLFW_DONT_CARE : window.screenMax.height;
+
+        glfwSetWindowSizeLimits(window.handle, minWidth, minHeight, maxWidth, maxHeight);
+    }
+
     // Set window minimum dimensions (FLAG_WINDOW_RESIZABLE)
     public void SetWindowMinSize(int width, int height){
-        GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowSizeLimits(window.handle, width, height, mode.width(), mode.height());
+        window.screenMin.width = width;
+        window.screenMin.height = height;
+
+        UpdateWindowSizeLimits();
+    }
+
+    // Set window maximum dimensions (FLAG_WINDOW_RESIZABLE)
+    public void SetWindowMaxSize(int width, int height){
+        window.screenMax.width = width;
+        window.screenMax.height = height;
+
+        UpdateWindowSizeLimits();
     }
 
     // Set window dimensions
@@ -732,7 +788,6 @@ public class rCore{
     }
 
     // Set window opacity, value opacity is between 0.0 and 1.0
-
     public void SetWindowOpacity(float opacity) {
         if(PLATFORM_DESKTOP) {
             if (opacity >= 1.0f) {
@@ -744,7 +799,11 @@ public class rCore{
 
             glfwSetWindowOpacity(window.handle, opacity);
         }
+    }
 
+    // Set window focused (only PLATFORM_DESKTOP)
+    public void SetWindowFocused(){
+        glfwFocusWindow(window.handle);
     }
 
     /**
@@ -763,6 +822,26 @@ public class rCore{
      */
     public int GetScreenHeight(){
         return window.currentFbo.getHeight();
+    }
+
+    // Get current render width (it considers HiDPI)
+    public int GetRenderWidth(){
+        if (__APPLE__){
+            Vector2 scale = GetWindowScaleDPI();
+            return (int) (window.render.width * scale.x);
+        } else{
+            return window.render.width;
+        }
+    }
+
+    // Get current render height (it considers HiDPI)
+    public int GetRenderHeight(){
+        if (__APPLE__){
+            Vector2 scale = GetWindowScaleDPI();
+            return (int) (window.render.height * scale.y);
+        } else{
+            return window.render.height;
+        }
     }
 
     // Get native window handle
@@ -966,30 +1045,32 @@ public class rCore{
         Vector2 scale = new Vector2(1f,1f);
 
         if(PLATFORM_DESKTOP) {
-            FloatBuffer xdpi = FloatBuffer.allocate(1);
-            FloatBuffer ydpi = FloatBuffer.allocate(1);
-            Vector2 windowPos = GetWindowPosition();
+            try (MemoryStack stack = stackPush()){
+                FloatBuffer xdpi = stack.mallocFloat(1);
+                FloatBuffer ydpi = stack.mallocFloat(1);
+                Vector2 windowPos = GetWindowPosition();
 
-            PointerBuffer monitors = glfwGetMonitors();
-            int monitorCount = monitors.sizeof();
+                PointerBuffer monitors = glfwGetMonitors();
+                int monitorCount = monitors.sizeof();
 
-            // Check window monitor
-            for (int i = 0; i < monitorCount; i++) {
-                glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
+                // Check window monitor
+                for (int i = 0; i < monitorCount; i++){
+                    glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
 
-                IntBuffer xpos, ypos, width, height;
-                xpos = IntBuffer.allocate(1);
-                ypos = IntBuffer.allocate(1);
-                width = IntBuffer.allocate(1);
-                height = IntBuffer.allocate(1);
+                    IntBuffer xpos, ypos, width, height;
+                    xpos = stack.mallocInt(1);
+                    ypos = stack.mallocInt(1);
+                    width = stack.mallocInt(1);
+                    height = stack.mallocInt(1);
 
-                glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
+                    glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
 
-                if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
-                        (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))) {
-                    scale.x = xdpi.get(i);
-                    scale.y = ydpi.get(i);
-                    break;
+                    if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
+                            (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))){
+                        scale.x = xdpi.get(i);
+                        scale.y = ydpi.get(i);
+                        break;
+                    }
                 }
             }
         }
@@ -1533,6 +1614,11 @@ public class rCore{
         return shader;
     }
 
+    // Check if a shader is ready
+    public boolean IsShaderReady(Shader shader){
+        return (shader.getId() > 0 && shader.getLocs() != null);
+    }
+
     // Unload shader from GPU memory (VRAM)
     public static void UnloadShader(Shader shader){
         if (shader.getId() != rlGetShaderIdDefault()){
@@ -1575,6 +1661,70 @@ public class rCore{
         rlEnableShader(shader.getId());
         rlgl.rlSetUniformSampler(locIndex, texture.getId());
         //rlDisableShader();
+    }
+
+    // Get a ray trace from screen position (i.e. mouse)
+    public Ray GetScreenToWorldRay(Vector2 position, Camera3D camera){
+        return GetScreenToWorldRayEx(position, camera, GetScreenWidth(), GetScreenHeight());
+    }
+
+    // Get a ray trace from the screen position (i.e mouse) within a specific section of the screen
+    public Ray GetScreenToWorldRayEx(Vector2 position, Camera3D camera, int width, int height){
+        Ray ray = new Ray();
+
+        // Calculate normalized device coordinates
+        // NOTE: y value is negative
+        float x = (2.0f * position.getX()) / (float) width - 1.0f;
+        float y = 1.0f - (2.0f * position.getY()) / (float) height;
+        float z = 1.0f;
+
+        // Store values in a vector
+        Vector3 deviceCoords = new Vector3(x, y, z);
+
+        // Calculate view matrix from camera look at
+        Matrix matView = MatrixLookAt(camera.getPosition(), camera.getTarget(), camera.getUp());
+
+        Matrix matProj = MatrixIdentity();
+
+        if (camera.projection == CAMERA_PERSPECTIVE){
+            // Calculate projection matrix from perspective
+            matProj = MatrixPerspective(
+                    camera.fovy * DEG2RAD,
+                    ((double) width / (double) height),
+                    RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+
+        } else if (camera.projection == CAMERA_ORTHOGRAPHIC){
+            double aspect = (double) width / (double) height;
+            double top = camera.fovy / 2.0;
+            double right = top * aspect;
+
+            // Calculate projection matrix from orthographic
+            matProj = MatrixOrtho(-right, right, -top, top, 0.01, 1000.0);
+        }
+
+        // Unproject far/near points
+        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 0.0f), matProj, matView);
+        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 1.0f), matProj, matView);
+
+        // Unproject the mouse cursor in the near plane
+        // We need this as the source position because orthographic projects,
+        // compared to perspective doesn't have a convergence point,
+        // meaning that the "eye" of the camera is more like a plane than a point
+        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), -1.0f), matProj, matView);
+
+        // Calculate normalized direction vector
+        Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
+
+        if (camera.projection == CAMERA_PERSPECTIVE){
+            ray.position = camera.position;
+        } else if (camera.projection == CAMERA_ORTHOGRAPHIC){
+            ray.position = cameraPlanePointerPos;
+        }
+
+        // Apply calculated vectors to ray
+        ray.direction = direction;
+
+        return ray;
     }
 
     // Returns a ray trace from mouse position
@@ -1836,6 +1986,11 @@ public class rCore{
         }
     }
 
+    // Set the seed for the random number generator
+    public void SetRandomSeed(long seed){
+        random.setSeed(seed);
+    }
+
     /**
      * Returns a random value between min and max (both included)
      *
@@ -1850,7 +2005,50 @@ public class rCore{
             min = tmp;
         }
 
-        return (int) (Math.random() * (max - min + 1) + min);
+        return (int) (random.nextDouble() * (max - min + 1) + min);
+    }
+
+    // Load random values sequence, no values repeated
+    public int[] LoadRandomSequence(long count, int min, int max){
+        int[] values = new int[(int) count];
+
+        // Security check
+        if (count > (Math.abs(max - min) + 1)){
+            return null;
+        }
+
+        int value;
+        boolean dupValue;
+
+        for (int i = 0; i < count; ){
+            value = GetRandomValue(min, max);
+            dupValue = false;
+
+            for (int j = 0; j < i; j++){
+                if (values[j] == value){
+                    dupValue = true;
+                    break;
+                }
+            }
+
+            if (!dupValue){
+                values[i] = value;
+                i++;
+            }
+        }
+
+        return values;
+    }
+
+    /**
+     * Unload random values sequence
+     *
+     * @implNote It is not possible (nor required) to explicitly free memory in Java. All we can do is nullify the reference
+     * to indicate to the garbage collector that the memory can be collected.
+     */
+    public void UnloadRandomSequence(@SuppressWarnings({"ReassignedVariable", "ParameterCanBeLocal"}) int[] sequence){
+        // noinspection UnusedAssignment
+        sequence = null;
     }
 
     // Check if the file exists
@@ -2120,6 +2318,15 @@ public class rCore{
     // Detect if a key has been pressed once
     public boolean IsKeyPressed(int key){
         return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
+    }
+
+    // Detect if a key has been pressed again (Only PLATFORM_DESKTOP)
+    public boolean IsKeyPressedRepeat(int key){
+        if ((key > 0) && (key < MAX_KEYBOARD_KEYS)){
+            return input.keyboard.keyRepeatInFrame[key];
+        }
+
+        return false;
     }
 
     // Detect if a key is being pressed (key held down)
@@ -2949,7 +3156,11 @@ public class rCore{
         // Keyboard/Mouse input polling (automatically managed by GLFW3 through callback)
 
         // Register previous keys states
-        for (int i = 0; i < 512; i++) input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
+        for (int i = 0; i < MAX_KEYBOARD_KEYS; i++){
+            input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
+            input.keyboard.keyRepeatInFrame[i] = false;
+        }
+        ;
 
         // Register previous mouse states
         for (int i = 0; i < 3; i++) input.mouse.getPreviousButtonState()[i] = input.mouse.getCurrentButtonState()[i];
