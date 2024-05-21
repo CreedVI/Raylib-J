@@ -24,11 +24,15 @@ public class Window{
     boolean eventWaiting;               // Wait for events before ending frame
 
     Point position;                     // window position on screen (required on fullscreen toggle)
+    Point previousPosition;             // Window previous position (required on borderless windowed toggle)
     Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
     Size screen;                        // Screen width and height (used render area)
+    Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
     Size currentFbo;                    // Current render width and height, it could change on BeginTextureMode()
     Size render;                        // Framebuffer width and height (render area, including black bars if required)
     Point renderOffset;                 // Offset from render area (must be divided by 2)
+    Size screenMin;                     // Screen minimum width and height (for resizable window)
+    Size screenMax;                     // Screen maximum width and height (for resizable window)
     Matrix screenScale;                 // Matrix to scale screen (framebuffer rendering)
 
     String[] dropFilePaths;               // Store dropped files paths as strings
@@ -45,11 +49,15 @@ public class Window{
         resizedLastFrame = false;
 
         position = new Point(0,0);
+        previousPosition = new Point(0, 0);
         display = new Size();
         screen = new Size();
+        previousScreen = new Size();
         currentFbo = new Size();
         render = new Size();
         renderOffset = new Point();
+        screenMin = new Size();
+        screenMax = new Size();
         screenScale = new Matrix();
 
         dropFilePaths = new String[512];
