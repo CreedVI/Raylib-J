@@ -2,6 +2,7 @@ package com.raylib.java.textures;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.core.Color;
+import com.raylib.java.core.rCore;
 import com.raylib.java.raymath.Vector2;
 import com.raylib.java.raymath.Vector3;
 import com.raylib.java.raymath.Vector4;
@@ -77,8 +78,9 @@ public class rTextures{
         }
 
         if (fileData != null) {
+            String fileType = rCore.GetFileExtension(fileName).toLowerCase();
             // Loading image from memory data
-            image = LoadImageFromMemory(fileName, fileData, fileSize);
+            image = LoadImageFromMemory(fileType, fileData, fileSize);
 
             if (image.data != null) {
                 Tracelog(LOG_INFO, "IMAGE: [" + fileName + "] Data loaded successfully (" +
