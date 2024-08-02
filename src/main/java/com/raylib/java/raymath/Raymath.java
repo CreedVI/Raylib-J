@@ -322,8 +322,11 @@ public class Raymath{
         float dy = target.y - v.y;
         float value = (dx * dx) + (dy * dy);
 
-        if (value == 0 || maxDistance >= 0 && value <= maxDistance * maxDistance)
-            result = target;
+        if (value == 0 || maxDistance >= 0 && value <= maxDistance * maxDistance) {
+            result.x = target.x;
+            result.y = target.y;
+            return result;
+        }
 
         float dist = (float) Math.sqrt(value);
 
@@ -501,7 +504,7 @@ public class Raymath{
     public static Vector3 Vector3Normalize(Vector3 v){
         Vector3 result = new Vector3();
         result.x = v.x;
-        result.y= v.y;
+        result.y = v.y;
         result.z = v.z;
 
         float length, ilength;
