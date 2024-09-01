@@ -29,7 +29,7 @@ public class Color{
     }
 
     /**
-     * Creates new color with desired RGBA
+     * Creates new color from existing color
      * @param c Color
      */
     public Color(Color c) {
