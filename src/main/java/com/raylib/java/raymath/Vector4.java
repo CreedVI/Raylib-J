@@ -17,6 +17,13 @@ public class Vector4{
         this.w = w;
     }
 
+    public Vector4(Vector4 v4) {
+        this.x = v4.x;
+        this.y = v4.y;
+        this.z = v4.z;
+        this.w = v4.w;
+    }
+
     public float getX(){
         return x;
     }
