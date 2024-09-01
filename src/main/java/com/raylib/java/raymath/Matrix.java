@@ -48,6 +48,25 @@ public class Matrix{
         this.m15 = m15;
     }
 
+    public Matrix(Matrix m){
+        this.m0 = m.m0;
+        this.m4 = m.m4;
+        this.m8 = m.m8;
+        this.m12 = m.m12;
+        this.m1 = m.m1;
+        this.m5 = m.m5;
+        this.m9 = m.m9;
+        this.m13 = m.m13;
+        this.m2 = m.m2;
+        this.m6 = m.m6;
+        this.m10 = m.m10;
+        this.m14 = m.m14;
+        this.m3 = m.m3;
+        this.m7 = m.m7;
+        this.m11 = m.m11;
+        this.m15 = m.m15;
+    }
+
     public Matrix(float[] mat){
         this.m0  = mat[0];     this.m4  = mat[4];     this.m8  = mat[8];     this.m12 = mat[12];
         this.m1  = mat[1];     this.m5  = mat[5];     this.m9  = mat[9];     this.m13 = mat[13];
