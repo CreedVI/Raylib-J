@@ -235,10 +235,22 @@ public class Raymath{
      * @param v2 Second Vector2
      * @return angle from v1 and v2
      */
-    public static float Vector2Angle(Vector2 v1, Vector2 v2){
+    public static float Vector2Angle(Vector2 v1, Vector2 v2) {
         float result = (float) (Math.atan2(v2.y - v1.y, v2.x - v1.x));
-        if (result < 0)
-            result += 360.0f;
+
+        return result;
+    }
+
+    public static float Vector2LineAngle(Vector2 start, Vector2 end) {
+        float result;
+
+        float dot = start.x*end.x + start.y*end.y; // Dor product
+
+        float dotClamp = (dot < -1.0f) ? -1.0f : dot; // Clamp
+        dotClamp = (dot > 1.0f) ? 1.0f : dot; // Clamp
+
+        result = (float) Math.acos(dotClamp);
+
         return result;
     }
 

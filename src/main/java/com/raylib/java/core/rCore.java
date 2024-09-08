@@ -16,7 +16,6 @@ import com.raylib.java.textures.Image;
 import com.raylib.java.textures.RenderTexture;
 import com.raylib.java.textures.Texture2D;
 import com.raylib.java.utils.FileIO;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
@@ -1035,8 +1034,11 @@ public class rCore{
             IntBuffer yBuffer = stack.mallocInt(1);
             if (PLATFORM_DESKTOP){
                 glfwGetWindowPos(window.handle, xBuffer, yBuffer);
+                return new Vector2(xBuffer.get(0), yBuffer.get(0));
             }
-            return new Vector2(xBuffer.get(0), yBuffer.get(0));
+            else {
+                return new Vector2();
+            }
         }
     }
 
