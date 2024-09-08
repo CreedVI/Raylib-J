@@ -1069,7 +1069,7 @@ public class rText{
             color = Color.RED;    // Low FPS
         }
 
-        DrawText(fps + " + FPS", posX, posY, 20, color);
+        DrawText(fps + " FPS", posX, posY, 20, color);
     }
 
     // Draw current FPS
