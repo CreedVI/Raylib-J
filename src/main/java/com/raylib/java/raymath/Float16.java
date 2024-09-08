@@ -44,6 +44,25 @@ public class Float16{
         v[15] = v15;
     }
 
+    public Float16(Float16 f){
+        v[0] = f.v[0];
+        v[1] = f.v[1];
+        v[2] = f.v[2];
+        v[3] = f.v[3];
+        v[4] = f.v[4];
+        v[5] = f.v[5];
+        v[6] = f.v[6];
+        v[7] = f.v[7];
+        v[8] = f.v[8];
+        v[9] = f.v[9];
+        v[10] = f.v[10];
+        v[11] = f.v[11];
+        v[12] = f.v[12];
+        v[13] = f.v[13];
+        v[14] = f.v[14];
+        v[15] = f.v[15];
+    }
+
     public float[] getV(){
         return v;
     }

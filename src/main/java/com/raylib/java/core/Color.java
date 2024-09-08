@@ -29,6 +29,17 @@ public class Color{
     }
 
     /**
+     * Creates new color from existing color
+     * @param c Color
+     */
+    public Color(Color c) {
+        this.r = c.r;
+        this.g = c.g;
+        this.b = c.b;
+        this.a = c.a;
+    }
+
+    /**
      * String value of Color
      * @return R, G, B, A
      */

@@ -15,4 +15,10 @@ class Float3{
         v[1] = v1;
         v[2] = v2;
     }
+
+    public Float3(Float3 f){
+        v[0] = f.v[0];
+        v[1] = f.v[1];
+        v[2] = f.v[2];
+    }
 }
