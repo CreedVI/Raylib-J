@@ -2312,6 +2312,9 @@ public class rCore{
     // Returns mouse wheel movement Y
     public float GetMouseWheelMove(){
         float result = 0.0f;
+        if (this.input.mouse.currentWheelMove == null) {
+            return result;
+        }
 
         if(Math.abs(input.mouse.currentWheelMove.x) > Math.abs(input.mouse.currentWheelMove.y)) {
             result = input.mouse.currentWheelMove.x;
