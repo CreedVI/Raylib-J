@@ -24,6 +24,7 @@ import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -877,37 +878,39 @@ public class rCore{
 
     // Get window scale DPI factor
     public Vector2 GetWindowScaleDPI() {
-        Vector2 scale = new Vector2(1f,1f);
+        Vector2 scale = new Vector2(1f, 1f);
 
-        if(PLATFORM_DESKTOP) {
-            FloatBuffer xdpi = FloatBuffer.allocate(1);
-            FloatBuffer ydpi = FloatBuffer.allocate(1);
-            Vector2 windowPos = GetWindowPosition();
+        if (PLATFORM_DESKTOP) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                FloatBuffer xdpi = stack.mallocFloat(1);
+                FloatBuffer ydpi = stack.mallocFloat(1);
 
-            PointerBuffer monitors = glfwGetMonitors();
-            int monitorCount = monitors.sizeof();
+                Vector2 windowPos = GetWindowPosition();
 
-            // Check window monitor
-            for (int i = 0; i < monitorCount; i++) {
-                glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
+                PointerBuffer monitors = glfwGetMonitors();
+                int monitorCount = monitors.remaining();
 
-                IntBuffer xpos, ypos, width, height;
-                xpos = IntBuffer.allocate(1);
-                ypos = IntBuffer.allocate(1);
-                width = IntBuffer.allocate(1);
-                height = IntBuffer.allocate(1);
+                for (int i = 0; i < monitorCount; i++) {
+                    long monitor = monitors.get(i);
 
-                glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
+                    glfwGetMonitorContentScale(monitor, xdpi, ydpi);
 
-                if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
-                        (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))) {
-                    scale.x = xdpi.get(i);
-                    scale.y = ydpi.get(i);
-                    break;
+                    IntBuffer xpos = stack.mallocInt(1);
+                    IntBuffer ypos = stack.mallocInt(1);
+                    IntBuffer width = stack.mallocInt(1);
+                    IntBuffer height = stack.mallocInt(1);
+
+                    glfwGetMonitorWorkarea(monitor, xpos, ypos, width, height);
+
+                    if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
+                            (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))) {
+                        scale.x = xdpi.get(0);
+                        scale.y = ydpi.get(0);
+                        break;
+                    }
                 }
             }
         }
-
         return scale;
     }
 
