@@ -24,6 +24,7 @@ import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -867,12 +868,15 @@ public class rCore{
 
     // Get window position XY on monitor
     public Vector2 GetWindowPosition() {
-        IntBuffer x = IntBuffer.allocate(1);
-        IntBuffer y = IntBuffer.allocate(1);
-        if(PLATFORM_DESKTOP) {
-            glfwGetWindowPos(window.handle, x, y);
+        if (PLATFORM_DESKTOP) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                IntBuffer x = stack.mallocInt(1);
+                IntBuffer y = stack.mallocInt(1);
+                glfwGetWindowPos(window.handle, x, y);
+                return new Vector2(x.get(), y.get());
+            }
         }
-        return new Vector2(x.get(0), y.get(0));
+        return new Vector2(0, 0);
     }
 
     // Get window scale DPI factor
