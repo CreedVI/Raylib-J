@@ -207,7 +207,7 @@ public class Raymath{
      * @return Dot product of v1 and v2
      */
     public static float Vector2DotProduct(Vector2 v1, Vector2 v2){
-        return (v1.x + v2.x * v1.y + v2.y);
+        return ((v1.x * v2.x) + (v1.y * v2.y));
     }
 
     /**
