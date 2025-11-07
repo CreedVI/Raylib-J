@@ -4,7 +4,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 
 import static com.raylib.java.Config.SUPPORT_STANDARD_FILEIO;
 import static com.raylib.java.utils.Tracelog.Tracelog;
@@ -13,54 +12,55 @@ import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 
 public class FileIO{
 
-    //TODO: FIGURE OUT THIS MESS
-    //Load data from file into a buffer
+    /**
+     * Load data from file into a buffer
+     * Supports relative and absolute paths.
+     *
+     * @param fileName Path and extension of file to read
+     * @return byte array of data loaded from file
+     * @throws IOException If Java fails to load file form disk
+     */
     public static byte[] LoadFileData(String fileName) throws IOException{
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] fileData = null;
 
-        if (SUPPORT_STANDARD_FILEIO){
+        if (fileName != null) {
+            if (SUPPORT_STANDARD_FILEIO) {
+                Path path = Paths.get(fileName);
 
-            InputStream inputStream;
-            if (fileName.contains("/")) {
-                inputStream = FileIO.class.getResourceAsStream(fileName.substring(fileName.lastIndexOf('/')));
-            }
-            else {
-                inputStream = FileIO.class.getResourceAsStream("/"+fileName);
-            }
-            if(inputStream == null) {
-                String ext = fileName.substring(fileName.lastIndexOf('.')).toUpperCase();
-                inputStream = getFileFromResourceAsStream(fileName.substring(0, fileName.lastIndexOf('.'))+ext);
-            }
-
-            if (inputStream != null) {
-                try {
-                    int read;
-                    byte[] input = new byte[4096];
-                    while (-1 != (read = inputStream.read(input))) {
-                        buffer.write(input, 0, read);
+                if (!path.toFile().exists()) {
+                    try {
+                        fileData = Files.readAllBytes(path);
+                    }
+                    catch (IOException exception) {
+                        Tracelog(LOG_WARNING, "FILE IO: Failed to read file: " + fileName);
+                        throw exception;
                     }
                 }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
+                else {
+                    Tracelog(LOG_INFO, "FILE IO: Failed to find file: " + fileName);
                 }
-
-                return buffer.toByteArray();
+            }
+            else {
+                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
 
-        return null;
+        return fileData;
     }
 
-    // Unload file data allocated by LoadFileData()
-    public static void UnloadFileData(Object o){
-        o = null;
-    }
-
-    // Save data to file from buffer
-    public static boolean SaveFileData(String fileName, byte[] data, int bytesToWrite) throws IOException{
+    /**
+     * Save data to file from buffer.
+     * Supports relative and absolute paths.
+     *
+     * @param fileName Path and extension of where the file should be created
+     * @param data Buffer of bytes to be written
+     * @return Success status of operation
+     * @throws IOException If Java fails to write file to disk
+     */
+    public static boolean SaveFileData(String fileName, byte[] data) throws IOException{
         boolean success = false;
 
         if (fileName != null){
@@ -71,18 +71,18 @@ public class FileIO{
                     try{
                         Files.write(path, data);
                     } catch (IOException exception){
-                        Tracelog(LOG_WARNING, "FILEIO: Failed to write file" + fileName);
+                        Tracelog(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
                         throw exception;
                     } finally{
                         success = true;
                     }
                 }
                 else{
-                    Tracelog(LOG_INFO, "FILEIO: Overwriting file " + fileName);
+                    Tracelog(LOG_INFO, "FILE IO: Overwriting file: " + fileName);
                     try{
                         Files.write(path, data);
                     } catch (IOException exception){
-                        Tracelog(LOG_WARNING, "FILEIO: Failed to write file" + fileName);
+                        Tracelog(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
                         throw exception;
                     } finally{
                         success = true;
@@ -90,11 +90,11 @@ public class FileIO{
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid");
+            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
 
         return success;
@@ -102,91 +102,76 @@ public class FileIO{
 
     /**
      * Load text data from file
-     * NOTE: text chars array should be freed manually
+     * Supports relative and absolute paths.
      *
      * @param fileName name and extension of file to be loaded
+     * @throws IOException If Java fails to load file form disk
      */
     public static String LoadFileText(String fileName) throws IOException{
+        StringBuilder text = new StringBuilder();
+
         if (fileName != null){
-
             if (SUPPORT_STANDARD_FILEIO){
-                InputStream inputStream;
-                if (fileName.contains("/")) {
-                    inputStream = FileIO.class.getResourceAsStream(fileName.substring(fileName.lastIndexOf('/')));
+                try {
+                    BufferedReader buffer = new BufferedReader(new FileReader(fileName));
+                    String line;
+                    while ((line = buffer.readLine()) != null) {
+                        text.append(line);
+                    }
                 }
-                else {
-                    inputStream = FileIO.class.getResourceAsStream("/"+fileName);
+                catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                if(inputStream == null) {
-                    String ext = fileName.substring(fileName.lastIndexOf('.')).toUpperCase();
-                    inputStream = getFileFromResourceAsStream(fileName.substring(0, fileName.lastIndexOf('.'))+ext);
-                }
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String[] tmp = reader.lines().toArray(String[]::new);
-                StringBuilder builder = new StringBuilder();
-
-                for (String s : tmp) {
-                    builder.append(s);
-                    builder.append("\n");
-                }
-
-                if (tmp != null) {
-                    return builder.toString();
-                }
-                else{
-                    Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to open text file");
+                finally {
+                    Tracelog(LOG_WARNING, "FILE IO: Failed to read file: " + fileName);
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
-        return null;
+        else{
+            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
+        }
+        return text.toString();
     }
 
-    // Unload file text data allocated by LoadFileText()
-    public static Object UnloadFileText(){
-        return null;
-    }
-
-    // Save text data to file (write), string must be '\0' terminated
+    /**
+     * Save text data to file (write).
+     * Supports relative and absolute paths.
+     * If the file exists on disk, it will be overwritten
+     * @param fileName Name and extension of the file to be saved.
+     * @param text String to be written to file
+     * @return Returns `true` on successful file write
+     * @throws IOException If Java fails to write file to disk
+     */
     public static boolean SaveFileText(String fileName, String text) throws IOException{
         boolean success = false;
 
         if (fileName != null){
 
-            if (SUPPORT_STANDARD_FILEIO){
-                Path path = Paths.get(fileName);
+            //TODO: Check if file exists and warn overwrite
 
-                if (!path.toFile().exists()){
-                    try{
-                        Files.write(path, Collections.singleton(text));
-                    } catch (IOException exception){
-                        Tracelog(LOG_WARNING, "FILEIO: Failed to write file" + fileName);
-                        throw exception;
-                    } finally{
-                        success = true;
-                    }
+            if (SUPPORT_STANDARD_FILEIO){
+                try {
+                    BufferedWriter buffer = new BufferedWriter(new FileWriter(fileName));
+                    buffer.write(text);
+                    buffer.close();
+                    success = true;
                 }
-                else{
-                    Tracelog(LOG_INFO, "FILEIO: Overwriting file " + fileName);
-                    try{
-                        Files.write(path, Collections.singleton(text));
-                    } catch (IOException exception){
-                        Tracelog(LOG_WARNING, "FILEIO: Failed to write file" + fileName);
-                        throw exception;
-                    } finally{
-                        success = true;
-                    }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                finally {
+                    Tracelog(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "FILEIO: Standard file io not supported, use custom file callback");
+                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILEIO: File name provided is not valid");
+            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
 
         return success;
