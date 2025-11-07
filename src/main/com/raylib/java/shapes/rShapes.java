@@ -267,7 +267,15 @@ public class rShapes{
         DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
     }
 
-    // Draw line using cubic bezier curves with 2 control points
+    /**
+     * Draw line using cubic bezier curves with 2 control points
+     * @param startPos Starting position of the bezier curve
+     * @param endPos Ending position of the bezier curve
+     * @param startControlPos Position of the first control point
+     * @param endControlPos Position of the second control point
+     * @param thick Thickness of the curve
+     * @param color Color of the curve
+     */
     public void DrawLineBezierCubic(Vector2 startPos, Vector2 endPos, Vector2 startControlPos, Vector2 endControlPos,
                                    float thick, Color color) {
         float step = 1.0f/BEZIER_LINE_DIVISIONS;

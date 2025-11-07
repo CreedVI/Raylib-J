@@ -395,8 +395,7 @@ public class rTextures{
                 // Export raw pixel data (without header)
                 // NOTE: It's up to the user to track image parameters
                 try{
-                    success = FileIO.SaveFileData(fileName, image.getData(), GetPixelDataSize(image.width, image.height,
-                                                                                              image.format));
+                    success = FileIO.SaveFileData(fileName, image.getData());
                 } catch (IOException exception) {
                     exception.printStackTrace();
                 }
@@ -994,10 +993,10 @@ public class rTextures{
         for (int i = 0; i < length; i++) {
             // Get next codepoint from byte string and glyph index in font
             int codepointByteCount = 0;
-            int codepoint = context.text.GetCodepoint(text.toCharArray(), i);
+            int codepoint = context.text.GetCodepointNext(text.toCharArray());
             int index = context.text.GetGlyphIndex(font, codepoint);
 
-            codepointByteCount = context.text.getCPBC();
+            codepointByteCount = text.toCharArray().length;
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte

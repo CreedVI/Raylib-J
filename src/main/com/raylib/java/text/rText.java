@@ -104,8 +104,6 @@ public class rText{
     final int MAX_TEXT_UNICODE_CHARS = 512;        // Maximum number of unicode codepoints: GetCodepoints()
     final int MAX_TEXTSPLIT_COUNT = 128;           // Maximum number of substrings to split: TextSplit()
 
-    int codepointByteCount;
-
     Font defaultFont;
     private final Raylib context;
 
@@ -874,9 +872,11 @@ public class rText{
     }
 
     // Unload font chars info data (RAM)
-    public void UnloadFontData(GlyphInfo[] chars, int charsCount) {
-        for (int i = 0; i < charsCount; i++) {
-            context.textures.UnloadImage(chars[i].image);
+    public void UnloadFontData(GlyphInfo[] glyphs, int charsCount) {
+        if (glyphs != null) {
+            for (int i = 0; i < charsCount; i++) {
+                context.textures.UnloadImage(glyphs[i].image);
+            }
         }
     }
 
@@ -1053,10 +1053,6 @@ public class rText{
         return success;
     }
 
-    public int getCPBC() {
-        return codepointByteCount;
-    }
-
     // Draw current FPS
     // NOTE: Uses default font
     public void DrawFPS(int posX, int posY) {
@@ -1111,8 +1107,8 @@ public class rText{
 
         for (int i = 0; i < length; ) {
             // Get next codepoint from byte string and glyph index in font
-            codepointByteCount = 0;
-            int codepoint = GetCodepoint(text.substring(i).toCharArray(), codepointByteCount);
+            int codepoint = Character.codePointAt(text.toCharArray(), i);
+            int codepointByteCount = GetByteCountOfCodePoint(codepoint);
             int index = GetGlyphIndex(font, codepoint);
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -1234,61 +1230,71 @@ public class rText{
     }
 
     // Measure string size for Font
-    public Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing){
-        int len = TextLength(text);
-        int tempLen = 0;                // Used to count longer text line num chars
-        int lenCounter = 0;
+    public Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing) {
+        Vector2 textSize = new Vector2();
+
+        if ((font.texture.id == 0) || (text == null)) {
+            return textSize;
+        }
+
+        int size = TextLength(text);    // Get size in bytes of text
+        int tempByteCounter = 0;        // Used to count longer text line num chars
+        int byteCounter = 0;
 
         float textWidth = 0.0f;
         float tempTextWidth = 0.0f;     // Used to count longer text line width
 
-        float textHeight = (float) font.baseSize;
-        float scaleFactor = fontSize / (float) font.baseSize;
+        float textHeight = (float)font.baseSize;
+        float scaleFactor = fontSize/(float)font.baseSize;
 
-        int letter;                 // Current character
-        int index;                  // Index position in sprite font
+        int letter = 0;                 // Current character
+        int index = 0;                  // Index position in sprite font
 
+        for (int i = 0; i < size; i++) {
+            byteCounter++;
 
-        for (int i = 0; i < len; i++){
-            lenCounter++;
-
-            next = 0;
-            letter = GetCodepoint(text.substring(i).toCharArray(), next);
-            next = codepointByteCount;
+            int next = 0;
+            letter = Character.codePointAt(text.toCharArray(), i);
             index = GetGlyphIndex(font, letter);
+            next = GetByteCountOfCodePoint(letter);
 
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-            // but we need to draw all of the bad bytes using the '?' symbol so to not skip any we set next = 1
-            if (letter == 0x3f){
+            // but we need to draw all the bad bytes using the '?' symbol so to not skip any we set next = 1
+            if (letter == 0x3f) {
                 next = 1;
             }
             i += next - 1;
 
-            if (letter != '\n'){
-                if (font.glyphs[index].advanceX != 0){
+            if (letter != '\n') {
+                if (font.glyphs[index].advanceX != 0) {
                     textWidth += font.glyphs[index].advanceX;
                 }
-                else{
-                    textWidth += (font.recs[index].getWidth() + font.glyphs[index].offsetX);
+                else {
+                    textWidth += (font.recs[index].width + font.glyphs[index].offsetX);
                 }
             }
-            else{
-                if (tempTextWidth < textWidth) tempTextWidth = textWidth;
-                lenCounter = 0;
+            else {
+                if (tempTextWidth < textWidth) {
+                    tempTextWidth = textWidth;
+                }
+                byteCounter = 0;
                 textWidth = 0;
-                textHeight += ((float) font.baseSize * 1.5f); // NOTE: Fixed line spacing of 1.5 lines
+                textHeight += ((float)font.baseSize*1.5f); // NOTE: Fixed line spacing of 1.5 lines
             }
 
-            if (tempLen < lenCounter) tempLen = lenCounter;
+            if (tempByteCounter < byteCounter) {
+                tempByteCounter = byteCounter;
+            }
         }
 
-        if (tempTextWidth < textWidth) tempTextWidth = textWidth;
+        if (tempTextWidth < textWidth) {
+            tempTextWidth = textWidth;
+        }
 
-        Vector2 vec = new Vector2();
-        vec.setX(tempTextWidth * scaleFactor + ((tempLen - 1) * spacing)); // Adds chars spacing to measure
-        vec.setY(textHeight * scaleFactor);
+        textSize.x = tempTextWidth * scaleFactor + ((tempByteCounter - 1) * spacing); // Adds chars spacing to measure
+        textSize.y = textHeight * scaleFactor;
 
-        return vec;
+        return textSize;
     }
 
     // Returns index position for a unicode character on spritefont
@@ -1439,7 +1445,7 @@ public class rText{
     }
 
     // Encode text codepoint into UTF-8 text
-    public String TextCodepointsToUTF8(int[] codepoints, int length){
+    public String LoadUTF8(int[] codepoints, int length){
         // We allocate enough memory fo fit all possible codepoints
         // NOTE: 5 bytes for every codepoint should be enough
         StringBuilder text = new StringBuilder();
@@ -1459,29 +1465,24 @@ public class rText{
     // Encode codepoint into UTF-8 text (char array length returned as parameter)
     public String CodepointToUTF8(int codepoint){
         char[] utf8 = new char[6];
-        int length = 0;
 
         if (codepoint <= 0x7f){
             utf8[0] = (char) codepoint;
-            length = 1;
         }
         else if (codepoint <= 0x7ff){
             utf8[0] = (char) (((codepoint >> 6) & 0x1f) | 0xc0);
             utf8[1] = (char) ((codepoint & 0x3f) | 0x80);
-            length = 2;
         }
         else if (codepoint <= 0xffff){
             utf8[0] = (char) (((codepoint >> 12) & 0x0f) | 0xe0);
             utf8[1] = (char) (((codepoint >> 6) & 0x3f) | 0x80);
             utf8[2] = (char) ((codepoint & 0x3f) | 0x80);
-            length = 3;
         }
         else if (codepoint <= 0x10ffff){
             utf8[0] = (char) (((codepoint >> 18) & 0x07) | 0xf0);
             utf8[1] = (char) (((codepoint >> 12) & 0x3f) | 0x80);
             utf8[2] = (char) (((codepoint >> 6) & 0x3f) | 0x80);
             utf8[3] = (char) ((codepoint & 0x3f) | 0x80);
-            length = 4;
         }
 
         return String.valueOf(utf8);
@@ -1497,7 +1498,7 @@ public class rText{
         int codepointsCount = 0;
 
         for (int i = 0; i < textLength; codepointsCount++){
-            codepoints[codepointsCount] = GetCodepoint(text.toCharArray(), i);
+            codepoints[codepointsCount] = GetCodepointNext(text.toCharArray());
             i += bytesProcessed;
         }
 
@@ -1517,7 +1518,7 @@ public class rText{
 
         while (ptr < text.length() && text.charAt(ptr) != '\0'){
             next = 0;
-            int letter = GetCodepoint(text.toCharArray(), ptr);
+            int letter = GetCodepointNext(text.toCharArray());
 
             if (letter == 0x3f){
                 ptr += 1;
@@ -1532,137 +1533,52 @@ public class rText{
         return len;
     }
 
-    // Returns next codepoint in a UTF8 encoded text, scanning until '\0' is found
-    // When a invalid UTF8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
-    // Total number of bytes processed are returned as a parameter
-    // NOTE: the standard says U+FFFD should be returned in case of errors
-    // but that character is not supported by the default font in raylib
-    // TODO: optimize this code for speed!!
-    public int GetCodepoint(char[] text, int bytesProcessed){
-        /*
-            UTF8 specs from https://www.ietf.org/rfc/rfc3629.txt
-            Char. number range  |        UTF-8 octet sequence
-              (hexadecimal)     |              (binary)
-            --------------------+---------------------------------------------
-            0000 0000-0000 007F | 0xxxxxxx
-            0000 0080-0000 07FF | 110xxxxx 10xxxxxx
-            0000 0800-0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx
-            0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-        */
-        // NOTE: on decode errors we return as soon as possible
+    /**
+     * Get next codepoint in a byte sequence and bytes processed
+     * @param text Bytes of character
+     * @return UTF-8 codepoint
+     */
+    public int GetCodepointNext(char[] text){
+        int codepoint = 0x3f;       // Codepoint (defaults to '?')
 
-        int code = 0x3f;   // Codepoint (defaults to '?')
-        int octet = text.toString().getBytes(StandardCharsets.UTF_8)[0]; // The first UTF8 octet
-        bytesProcessed = 1;
-
-        if (octet <= 0x7f){
-            // Only one octet (ASCII range x00-7F)
-            code = text[0];
+        // Get current codepoint and bytes processed
+        if (0xf0 == (0xf8 & text[0])) {
+            // 4 byte UTF-8 codepoint
+            codepoint = ((0x07 & text[0]) << 18) | ((0x3f & text[1]) << 12) | ((0x3f & text[2]) << 6) | (0x3f & text[3]);
         }
-        else if ((octet & 0xe0) == 0xc0){
-            // Two octets
-            // [0]xC2-DF    [1]UTF8-tail(x80-BF)
-            char octet1 = text[1];
-
-            if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                bytesProcessed = 2;
-                return code;
-            } // Unexpected sequence
-
-            if ((octet >= 0xc2) && (octet <= 0xdf)){
-                code = ((octet & 0x1f) << 6) | (octet1 & 0x3f);
-                bytesProcessed = 2;
-            }
+        else if (0xe0 == (0xf0 & text[0])) {
+            // 3 byte UTF-8 codepoint
+            codepoint = ((0x0f & text[0]) << 12) | ((0x3f & text[1]) << 6) | (0x3f & text[2]);
         }
-        else if ((octet & 0xf0) == 0xe0){
-            // Three octets
-            char octet1 = text[1];
-            char octet2;
-
-            if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                bytesProcessed = 2;
-                return code;
-            } // Unexpected sequence
-
-            octet2 = text[2];
-
-            if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
-                bytesProcessed = 3;
-                return code;
-            } // Unexpected sequence
-
-        /*
-            [0]xE0    [1]xA0-BF       [2]UTF8-tail(x80-BF)
-            [0]xE1-EC [1]UTF8-tail    [2]UTF8-tail(x80-BF)
-            [0]xED    [1]x80-9F       [2]UTF8-tail(x80-BF)
-            [0]xEE-EF [1]UTF8-tail    [2]UTF8-tail(x80-BF)
-        */
-
-            if (((octet == 0xe0) && !((octet1 >= 0xa0) && (octet1 <= 0xbf))) ||
-                    ((octet == 0xed) && !((octet1 >= 0x80) && (octet1 <= 0x9f)))){
-                bytesProcessed = 2;
-                return code;
-            }
-
-            if ((octet >= 0xe0) && (octet <= 0xef)){
-                code = ((octet & 0xf) << 12) | ((octet1 & 0x3f) << 6) | (octet2 & 0x3f);
-                bytesProcessed = 3;
-            }
+        else if (0xc0 == (0xe0 & text[0])) {
+            // 2 byte UTF-8 codepoint
+            codepoint = ((0x1f & text[0]) << 6) | (0x3f & text[1]);
         }
-        else if ((octet & 0xf8) == 0xf0){
-            // Four octets
-            if (octet > 0xf4){
-                return code;
-            }
-
-            char octet1 = text[1];
-            char octet2 = '\0';
-            char octet3 = '\0';
-
-            if ((octet1 == '\0') || ((octet1 >> 6) != 2)){
-                bytesProcessed = 2;
-                return code;
-            }  // Unexpected sequence
-
-            octet2 = text[2];
-
-            if ((octet2 == '\0') || ((octet2 >> 6) != 2)){
-                bytesProcessed = 3;
-                return code;
-            }  // Unexpected sequence
-
-            octet3 = text[3];
-
-            if ((octet3 == '\0') || ((octet3 >> 6) != 2)){
-                bytesProcessed = 4;
-                return code;
-            }  // Unexpected sequence
-
-        /*
-            [0]xF0       [1]x90-BF       [2]UTF8-tail  [3]UTF8-tail
-            [0]xF1-F3    [1]UTF8-tail    [2]UTF8-tail  [3]UTF8-tail
-            [0]xF4       [1]x80-8F       [2]UTF8-tail  [3]UTF8-tail
-        */
-
-            if (((octet == 0xf0) && !((octet1 >= 0x90) && (octet1 <= 0xbf))) ||
-                    ((octet == 0xf4) && !((octet1 >= 0x80) && (octet1 <= 0x8f)))){
-                bytesProcessed = 2;
-                return code;
-            } // Unexpected sequence
-
-            if (octet >= 0xf0){
-                code = ((octet & 0x7) << 18) | ((octet1 & 0x3f) << 12) | ((octet2 & 0x3f) << 6) | (octet3 & 0x3f);
-                bytesProcessed = 4;
-            }
+        else {
+            // 1 byte UTF-8 codepoint
+            codepoint = text[0];
         }
 
-        if (code > 0x10ffff){
-            code = 0x3f;     // Codepoints after U+10ffff are invalid
+        return codepoint;
+    }
+
+    private int GetByteCountOfCodePoint(int codepoint) {
+        if (0xf0 == (0xf8 & codepoint)) {
+            // 4 byte UTF-8 codepoint
+            return 4;
         }
-
-        codepointByteCount = bytesProcessed;
-
-        return code;
+        else if (0xe0 == (0xf0 & codepoint)) {
+            // 3 byte UTF-8 codepoint
+            return 3;
+        }
+        else if (0xc0 == (0xe0 & codepoint)) {
+            // 2 byte UTF-8 codepoint
+            return 2;
+        }
+        else {
+            // 1 byte UTF-8 codepoint
+            return 1;
+        }
     }
 
     // Read a line from memory

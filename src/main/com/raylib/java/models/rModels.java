@@ -4760,9 +4760,6 @@ public class rModels{
         VoxLoader.VoxArray3D voxarray = voxLoader.pvoxArray;
 
         if (ret != VoxLoader.VOX_SUCCESS) {
-            // Error
-            FileIO.UnloadFileData(fileData);
-
             Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
             return model;
         }
@@ -4855,7 +4852,6 @@ public class rModels{
 
         // Free buffers
         VoxLoader.Vox_FreeArrays(voxarray);
-        FileIO.UnloadFileData(fileData);
 
         return model;
     }
