@@ -61,7 +61,7 @@ dependencies {
 
 task copyDependencies(type: Copy) {
     from configurations.runtimeClasspath
-    into "$buildDir/libs/dependencies"
+    into "libs/dependencies"
 }
 
 jar {
@@ -77,3 +77,13 @@ jar {
 }
 
 tasks.build.dependsOn jar
+
+sourceSets {
+    main {
+        java.srcDir('src/main')
+    }
+    test {
+        java.srcDir('src/tests')
+        resources.srcDir('src/test/resources')
+    }
+}

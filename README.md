@@ -33,18 +33,18 @@ Here's all the code needed to create a window and render some text:
 package example;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.core.Color;
+import com.raylib.java.structs.Color;
 
-public class example{
+public class example {
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Raylib rlj = new Raylib();
         rlj.core.InitWindow(800, 600, "Raylib-J Example");
 
-        while (!rlj.core.WindowShouldClose()){
+        while (!rlj.core.WindowShouldClose()) {
             rlj.core.BeginDrawing();
             rlj.core.ClearBackground(Color.WHITE);
-            rlj.text.DrawText("Hello, World!", 800 - (rlj.text.MeasureText("Hello, World!", 20)/2), 300, 20, Color.DARKGRAY);
+            rlj.text.DrawText("Hello, World!", 800 - (rlj.text.MeasureText("Hello, World!", 20) / 2), 300, 20, Color.DARKGRAY);
             rlj.core.EndDrawing();
         }
     }
