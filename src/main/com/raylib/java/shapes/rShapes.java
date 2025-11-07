@@ -60,11 +60,7 @@ public class rShapes{
      * @param color Color to draw pixel
      */
     public void DrawPixel(int posX, int posY, Color color) {
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlVertex2i(posX, posY);
-        rlVertex2i(posX + 1, posY + 1);
-        rlEnd();
+        DrawPixelV(new Vector2(posX, posY), color);
     }
 
     /**
@@ -74,11 +70,45 @@ public class rShapes{
      * @param color    Color to draw pixel
      */
     public void DrawPixelV(Vector2 position, Color color) {
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlVertex2f(position.x, position.y);
-        rlVertex2f(position.x + 1.0f, position.y + 1.0f);
-        rlEnd();
+        if (SUPPORT_QUADS_DRAW_MODE) {
+            rlSetTexture(texShapes.id);
+
+            rlBegin(RL_QUADS);
+
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            rlColor4ub(color.r, color.g, color.b, color.a);
+
+            rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+            rlVertex2f(position.x, position.y);
+
+            rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+            rlVertex2f(position.x, position.y + 1);
+
+            rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+            rlVertex2f(position.x + 1, position.y + 1);
+
+            rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+            rlVertex2f(position.x + 1, position.y);
+
+            rlEnd();
+
+            rlSetTexture(0);
+        }
+        else {
+            rlBegin(RL_TRIANGLES);
+
+            rlColor4ub(color.r, color.g, color.b, color.a);
+
+            rlVertex2f(position.x, position.y);
+            rlVertex2f(position.x, position.y + 1);
+            rlVertex2f(position.x + 1, position.y);
+
+            rlVertex2f(position.x + 1, position.y);
+            rlVertex2f(position.x, position.y + 1);
+            rlVertex2f(position.x + 1, position.y + 1);
+
+            rlEnd();
+        }
     }
 
     /**
@@ -151,16 +181,37 @@ public class rShapes{
         Vector2 previous = startPos;
         Vector2 current = new Vector2();
 
+        Vector2[] points = new Vector2[2*BEZIER_LINE_DIVISIONS + 2];
+        for (int i = 0; i < points.length; i++) {
+            points[i] = new Vector2();
+        }
+
         for (int i = 1; i <= BEZIER_LINE_DIVISIONS; i++) {
             // Cubic easing in-out
             // NOTE: Easing is calculated only for y position value
             current.y = EaseCubicInOut((float)i, startPos.y, endPos.y - startPos.y, (float)BEZIER_LINE_DIVISIONS);
             current.x = previous.x + (endPos.x - startPos.x)/ (float)BEZIER_LINE_DIVISIONS;
 
-            DrawLineEx(previous, current, thick, color);
+            float dy = current.y-previous.y;
+            float dx = current.x-previous.x;
+            float size = (float) (0.5f*thick/Math.sqrt(dx*dx+dy*dy));
+
+            if (i == 1) {
+                points[0].x = previous.x+dy*size;
+                points[0].y = previous.y-dx*size;
+                points[1].x = previous.x-dy*size;
+                points[1].y = previous.y+dx*size;
+            }
+
+            points[2*i+1].x = current.x-dy*size;
+            points[2*i+1].y = current.y+dx*size;
+            points[2*i].x = current.x+dy*size;
+            points[2*i].y = current.y-dx*size;
 
             previous = current;
         }
+
+        DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
     }
 
     /**
@@ -174,25 +225,46 @@ public class rShapes{
      */
     public void DrawLineBezierQuad(Vector2 startPos, Vector2 endPos, Vector2 controlPos, float thick, Color color) {
         float step = 1.0f/BEZIER_LINE_DIVISIONS;
-        
+
         Vector2 previous = startPos;
         Vector2 current = new Vector2();
         float t;
 
-        for(int i = 0; i <= BEZIER_LINE_DIVISIONS; i++) {
-            t = step * i;
+        Vector2[] points = new Vector2[2*BEZIER_LINE_DIVISIONS + 2];
+        for (int i = 0; i < points.length; i++) {
+            points[i] = new Vector2();
+        }
+
+        for (int i = 0; i <= BEZIER_LINE_DIVISIONS; i++) {
+            t = step*i;
             float a = (float) Math.pow(1 - t, 2);
-            float b = 2 * (1 - t) * t;
+            float b = 2*(1 - t)*t;
             float c = (float) Math.pow(t, 2);
 
             // NOTE: The easing functions aren't suitable here because they don't take a control point
-            current.setY(a * startPos.y + b * controlPos.y + c * endPos.y);
-            current.setX(a * startPos.y + b * controlPos.x + c * endPos.x);
+            current.y = a*startPos.y + b*controlPos.y + c*endPos.y;
+            current.x = a*startPos.x + b*controlPos.x + c*endPos.x;
 
-            DrawLineEx(previous, current, thick, color);
+            float dy = current.y-previous.y;
+            float dx = current.x-previous.x;
+            float size = (float) (0.5f*thick/Math.sqrt(dx*dx+dy*dy));
+
+            if (i == 1) {
+                points[0].x = previous.x+dy*size;
+                points[0].y = previous.y-dx*size;
+                points[1].x = previous.x-dy*size;
+                points[1].y = previous.y+dx*size;
+            }
+
+            points[2*i+1].x = current.x-dy*size;
+            points[2*i+1].y = current.y+dx*size;
+            points[2*i].x = current.x+dy*size;
+            points[2*i].y = current.y-dx*size;
 
             previous = current;
         }
+
+        DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
     }
 
     // Draw line using cubic bezier curves with 2 control points
@@ -204,6 +276,11 @@ public class rShapes{
         Vector2 current = new Vector2();
         float t;
 
+        Vector2[] points = new Vector2[2*BEZIER_LINE_DIVISIONS + 2];
+        for (int i = 0; i < points.length; i++) {
+            points[i] = new Vector2();
+        }
+
         for (int i = 0; i <= BEZIER_LINE_DIVISIONS; i++) {
             t = step*i;
             float a = (float) Math.pow(1 - t, 3);
@@ -214,10 +291,26 @@ public class rShapes{
             current.y = a*startPos.y + b*startControlPos.y + c*endControlPos.y + d*endPos.y;
             current.x = a*startPos.x + b*startControlPos.x + c*endControlPos.x + d*endPos.x;
 
-            DrawLineEx(previous, current, thick, color);
+            float dy = current.y-previous.y;
+            float dx = current.x-previous.x;
+            float size = (float) (0.5f*thick/Math.sqrt(dx*dx+dy*dy));
+
+            if (i == 1) {
+                points[0].x = previous.x+dy*size;
+                points[0].y = previous.y-dx*size;
+                points[1].x = previous.x-dy*size;
+                points[1].y = previous.y+dx*size;
+            }
+
+            points[2*i+1].x = current.x-dy*size;
+            points[2*i+1].y = current.y+dx*size;
+            points[2*i].x = current.x+dy*size;
+            points[2*i].y = current.y-dx*size;
 
             previous = current;
         }
+
+        DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
     }
 
 
@@ -1845,6 +1938,30 @@ public class rShapes{
         float gamma = 1.0f - alpha - beta;
 
         if ((alpha > 0) && (beta > 0) && (gamma > 0)) collision = true;
+
+        return collision;
+    }
+
+    /**
+     * Check if point is within a polygon described by an array of vertices
+     * @param point XY point to check
+     * @param points Array of XY points to describe the polygon
+     * @return If point is within polygon
+     */
+    public boolean CheckCollisionPointPolly(Vector2 point, Vector2[] points) {
+        boolean collision = false;
+
+        if (points.length > 2) {
+            for (int i = 0; i < points.length; i++) {
+                Vector2 vc = points[i];
+                Vector2 vn = points[i + 1];
+
+                if ((((vc.y >= point.y) && (vn.y < point.y)) || ((vc.y < point.y) && (vn.y >= point.y))) &&
+                        (point.x < ((vn.x - vc.x)*(point.y - vc.y)/(vn.y - vc.y) + vc.x))) {
+                    collision = !collision;
+                }
+            }
+        }
 
         return collision;
     }

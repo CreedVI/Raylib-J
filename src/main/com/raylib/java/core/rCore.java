@@ -56,11 +56,11 @@ public class rCore{
 
     public RLGL rlgl;
 
-    Window window;
-    Input input;
-    Time time;
+    private Window window;
+    private Input input;
+    private Time time;
 
-    Callbacks callback;
+    private Callbacks callback;
 
     ArrayList<AutomationEvent> events;
     int eventCount = 0;                 // Events count
