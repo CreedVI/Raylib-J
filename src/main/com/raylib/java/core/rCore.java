@@ -56,9 +56,9 @@ public class rCore{
 
     public RLGL rlgl;
 
-    private Window window;
-    private Input input;
-    private Time time;
+    private final Window window;
+    private final Input input;
+    private final Time time;
 
     private Callbacks callback;
 

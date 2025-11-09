@@ -69,10 +69,10 @@ public class Image{
     public void setData(byte[] data){
         this.data = new DataBufferByte(data, data.length);
     }
+
     public void setData(int[] data){
         this.data = new DataBufferInt(data, data.length);
     }
-
 
     public int getWidth(){
         return width;

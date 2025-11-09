@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.structs.Color.BLANK;
@@ -37,10 +38,12 @@ import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.stb.STBImageResize.stbir_resize_uint8;
+import static org.lwjgl.stb.STBPerlin.stb_perlin_fbm_noise3;
 
 public class rTextures{
 
     final int UNCOMPRESSED_R5G5B5A1_ALPHA_THRESHOLD = 50;
+    final int GAUSSIAN_BLUR_ITERATIONS = 4;
 
     // Cubemap layouts
     public static class CubemapLayoutType{
@@ -611,6 +614,38 @@ public class rTextures{
         return new Image(pixels, width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
     }
 
+    public Image GenImagePerlinNoise(int width, int height, int offsetX, int offsetY, int scale) {
+        Color[] pixels = new Color[width*height];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x += 4) {
+                float nx = (float)(x + offsetX)*scale/(float)width;
+                float ny = (float)(y + offsetY)*scale/(float)height;
+
+                // Typical values to start playing with:
+                //   lacunarity = ~2.0   -- spacing between successive octaves (use exactly 2.0 for wrapping output)
+                //   gain       =  0.5   -- relative weighting applied to each successive octave
+                //   octaves    =  6     -- number of "octaves" of noise3() to sum
+
+                // NOTE: We need to translate the data from [-1..1] to [0..1]
+                float p = (stb_perlin_fbm_noise3(nx, ny, 1.0f, 2.0f, 0.5f, 6) + 1.0f)/2.0f;
+
+                byte intensity = (byte) (p*255.0f);
+                pixels[y * width + x] = new Color(intensity, intensity, intensity, 255);
+            }
+        }
+
+        Image image = new Image();
+        image.setData(pixels);
+        image.width = width;
+        image.height = height;
+        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        image.mipmaps = 1;
+
+
+        return image;
+    }
+
     // Generate image: cellular algorithm. Bigger tileSize means bigger cells
     public Image GenImageCellular(int width, int height, int tileSize) {
         Color[] pixels = new Color[width * height];
@@ -663,6 +698,22 @@ public class rTextures{
         return new Image(pixels, width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
     }
 
+    // Generate image: grayscale image from text data
+    public Image GenImageText(int width, int height, String text) {
+        Image image = new Image();
+
+        int textLength = context.text.TextLength(text);
+        int imageViewSize = width * height;
+
+        image.width = width;
+        image.height = height;
+        image.format = RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+        image.setData(text.getBytes(StandardCharsets.UTF_8));
+        image.mipmaps = 1;
+
+        return image;
+    }
+
     //End Support image generation
 
     //------------------------------------------------------------------------------------
@@ -710,8 +761,8 @@ public class rTextures{
         int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
 
         // TODO: Check rec is valid?
-        result.width = (int) rectangle.getWidth();
-        result.height = (int) rectangle.getHeight();
+        result.width = (int) rectangle.width;
+        result.height = (int) rectangle.height;
         result.format = image.format;
         result.mipmaps = 1;
 
@@ -1014,17 +1065,17 @@ public class rTextures{
                 if ((codepoint != ' ') && (codepoint != '\t')) {
                     Rectangle rec = new Rectangle((float) (textOffsetX + font.getGlyphs()[index].getOffsetX()),
                                                   (float) (textOffsetY + font.getGlyphs()[index].getOffsetY()),
-                                                  font.getRecs()[index].getWidth(), font.getRecs()[index].getHeight());
+                                                  font.getRecs()[index].width, font.getRecs()[index].height);
 
 
                     ImageDraw(imText, font.getGlyphs()[index].getImage(), new Rectangle(0, 0,
-                                                                                        (float) font.getGlyphs()[index].getImage().getWidth(),
-                                                                                        (float) font.getGlyphs()[index].getImage().getHeight()), rec, tint);
+                                                                                        (float) font.getGlyphs()[index].getImage().width,
+                                                                                        (float) font.getGlyphs()[index].getImage().height), rec, tint);
 
                 }
 
                 if (font.getGlyphs()[index].getAdvanceX() == 0) {
-                    textOffsetX += (int) (font.getRecs()[index].getWidth() + spacing);
+                    textOffsetX += (int) (font.getRecs()[index].width + spacing);
                 }
                 else{
                     textOffsetX += font.getGlyphs()[index].getAdvanceX() + (int) spacing;
@@ -1035,7 +1086,7 @@ public class rTextures{
         }
 
         // Scale image depending on text size
-        if (fontSize > imSize.getY()) {
+        if (fontSize > imSize.y) {
             float scaleFactor = fontSize / imSize.y;
             Tracelog(LOG_INFO, "IMAGE: rText scaled by factor: " + scaleFactor);
 
@@ -1226,6 +1277,151 @@ public class rTextures{
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
         ImageFormat(image, format);
+    }
+
+
+    // Apply box blur
+    public Image ImageBlurGaussian(Image image, int blurSize) {
+        Image result = new Image();
+        // Security check to avoid program crash
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return null;
+        }
+
+        ImageAlphaPremultiply(image);
+
+        Color[] pixels = LoadImageColors(image);
+
+        // Loop switches between pixelsCopy1 and pixelsCopy2
+        Vector4[] pixelsCopy1 = new Vector4[image.height * image.width];
+        Vector4[] pixelsCopy2 = new Vector4[image.height * image.width];
+
+        for (int i = 0; i < (image.height)*(image.width); i++) {
+            pixelsCopy1[i].x = pixels[i].r;
+            pixelsCopy1[i].y = pixels[i].g;
+            pixelsCopy1[i].z = pixels[i].b;
+            pixelsCopy1[i].w = pixels[i].a;
+        }
+
+        // Repeated convolution of rectangular window signal by itself converges to a gaussian distribution
+        for (int j = 0; j < GAUSSIAN_BLUR_ITERATIONS; j++) {
+            // Horizontal motion blur
+            for (int row = 0; row < image.height; row++) {
+                float avgR = 0.0f;
+                float avgG = 0.0f;
+                float avgB = 0.0f;
+                float avgAlpha = 0.0f;
+                int convolutionSize = blurSize+1;
+
+                for (int i = 0; i < blurSize+1; i++) {
+                    avgR += pixelsCopy1[row*image.width + i].x;
+                    avgG += pixelsCopy1[row*image.width + i].y;
+                    avgB += pixelsCopy1[row*image.width + i].z;
+                    avgAlpha += pixelsCopy1[row*image.width + i].w;
+                }
+
+                pixelsCopy2[row*image.width].x = avgR/convolutionSize;
+                pixelsCopy2[row*image.width].y = avgG/convolutionSize;
+                pixelsCopy2[row*image.width].z = avgB/convolutionSize;
+                pixelsCopy2[row*image.width].w = avgAlpha/convolutionSize;
+
+                for (int x = 1; x < image.width; x++) {
+                    if (x-blurSize >= 0) {
+                        avgR -= pixelsCopy1[row*image.width + x-blurSize].x;
+                        avgG -= pixelsCopy1[row*image.width + x-blurSize].y;
+                        avgB -= pixelsCopy1[row*image.width + x-blurSize].z;
+                        avgAlpha -= pixelsCopy1[row*image.width + x-blurSize].w;
+                        convolutionSize--;
+                    }
+
+                    if (x+blurSize < image.width) {
+                        avgR += pixelsCopy1[row*image.width + x+blurSize].x;
+                        avgG += pixelsCopy1[row*image.width + x+blurSize].y;
+                        avgB += pixelsCopy1[row*image.width + x+blurSize].z;
+                        avgAlpha += pixelsCopy1[row*image.width + x+blurSize].w;
+                        convolutionSize++;
+                    }
+
+                    pixelsCopy2[row*image.width + x].x = avgR/convolutionSize;
+                    pixelsCopy2[row*image.width + x].y = avgG/convolutionSize;
+                    pixelsCopy2[row*image.width + x].z = avgB/convolutionSize;
+                    pixelsCopy2[row*image.width + x].w = avgAlpha/convolutionSize;
+                }
+            }
+
+            // Vertical motion blur
+            for (int col = 0; col < image.width; col++) {
+                float avgR = 0.0f;
+                float avgG = 0.0f;
+                float avgB = 0.0f;
+                float avgAlpha = 0.0f;
+                int convolutionSize = blurSize+1;
+
+                for (int i = 0; i < blurSize+1; i++) {
+                    avgR += pixelsCopy2[i*image.width + col].x;
+                    avgG += pixelsCopy2[i*image.width + col].y;
+                    avgB += pixelsCopy2[i*image.width + col].z;
+                    avgAlpha += pixelsCopy2[i*image.width + col].w;
+                }
+
+                pixelsCopy1[col].x = (avgR/convolutionSize);
+                pixelsCopy1[col].y = (avgG/convolutionSize);
+                pixelsCopy1[col].z = (avgB/convolutionSize);
+                pixelsCopy1[col].w = (avgAlpha/convolutionSize);
+
+                for (int y = 1; y < image.height; y++) {
+                    if (y-blurSize >= 0) {
+                        avgR -= pixelsCopy2[(y-blurSize)*image.width + col].x;
+                        avgG -= pixelsCopy2[(y-blurSize)*image.width + col].y;
+                        avgB -= pixelsCopy2[(y-blurSize)*image.width + col].z;
+                        avgAlpha -= pixelsCopy2[(y-blurSize)*image.width + col].w;
+                        convolutionSize--;
+                    }
+                    if (y+blurSize < image.height) {
+                        avgR += pixelsCopy2[(y+blurSize)*image.width + col].x;
+                        avgG += pixelsCopy2[(y+blurSize)*image.width + col].y;
+                        avgB += pixelsCopy2[(y+blurSize)*image.width + col].z;
+                        avgAlpha += pixelsCopy2[(y+blurSize)*image.width + col].w;
+                        convolutionSize++;
+                    }
+
+                    pixelsCopy1[y*image.width + col].x = (avgR/convolutionSize);
+                    pixelsCopy1[y*image.width + col].y = (avgG/convolutionSize);
+                    pixelsCopy1[y*image.width + col].z = (avgB/convolutionSize);
+                    pixelsCopy1[y*image.width + col].w = (avgAlpha/convolutionSize);
+                }
+            }
+        }
+
+
+        // Reverse premultiply
+        for (int i = 0; i < (image.width)*(image.height); i++) {
+            if (pixelsCopy1[i].w == 0.0f) {
+                pixels[i].r = 0;
+                pixels[i].g = 0;
+                pixels[i].b = 0;
+                pixels[i].a = 0;
+            }
+            else if (pixelsCopy1[i].w <= 255.0f) {
+                float alpha = pixelsCopy1[i].w/255.0f;
+                pixels[i].r = (int) (pixelsCopy1[i].x/alpha);
+                pixels[i].g = (int) (pixelsCopy1[i].y/alpha);
+                pixels[i].b = (int) (pixelsCopy1[i].z/alpha);
+                pixels[i].a = (int) pixelsCopy1[i].w;
+            }
+        }
+
+        int format = image.format;
+
+        result.setData(pixels);
+        result.width = image.width;
+        result.height = image.height;
+        result.format = image.format;
+        result.mipmaps = image.mipmaps;
+
+        ImageFormat(image, format);
+
+        return image;
     }
 
     // Resize and image to new size
@@ -2222,7 +2418,7 @@ public class rTextures{
     }
 
     // Get image pixel color at (x, y) position
-    Color GetImageColor(Image image, int x, int y) {
+    public Color GetImageColor(Image image, int x, int y) {
         Color color = new Color();
         byte[] imgData = image.getData();
 
@@ -2316,32 +2512,43 @@ public class rTextures{
 
     //IMAGE DRAWING FUNCTIONS
 
-    void ImageClearBackground(Image dst, Color color) {
+    public Image ImageClearBackground(Image image, Color color) {
+        Image result = new Image((byte[]) null, image.width, image.height, image.format, image.mipmaps);
+        result.setData(image.getData());
 
         // Security check to avoid program crash
-        if ((dst.data == null) || (dst.width == 0) || (dst.height == 0)) {
-            return;
+        if ((image.getData() == null) || (image.width == 0) || (image.height == 0)) {
+            return null;
         }
-
-        for (int i = 0; i < dst.width * dst.height; ++i) {
-            ImageDrawPixel(dst, i % dst.width, i / dst.width, color);
+        
+        Color[] data = new Color[image.width * image.height];
+        
+        for (int i = 0; i < image.width * image.height; ++i) {
+            data[i] = color;
         }
+        
+        result.setData(data);
+        
+        return result;
     }
 
-    void ImageDrawPixel(Image dst, int x, int y, Color color) {
+    public Image ImageDrawPixel(Image image, int x, int y, Color color) {
+        Image result = new Image((byte[]) null, image.width, image.height, image.format, image.mipmaps);
+        result.setData(image.getData());
+        
         // Security check to avoid program crash
-        if ((dst.data == null) || (x < 0) || (x >= dst.getWidth()) || (y < 0) || (y >= dst.getHeight())) {
-            return;
+        if ((result.getData() == null) ||(x < 0) || (x >= result.width) || (y < 0) || (y >= result.height)) {
+            return null;
         }
-
-        switch (dst.getFormat()) {
+        
+        switch (result.format) {
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:{
                 // NOTE: Calculate grayscale equivalent color
                 Vector3 coln = new Vector3((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f);
                 short gray = (byte) ((coln.x * 0.299f + coln.y * 0.587f + coln.z * 0.114f) * 255.0f);
 
-                dst.data.setElem(y * dst.getWidth() + x, gray);
+                result.data.setElem(y * result.width + x, gray);
 
             }
             break;
@@ -2351,8 +2558,8 @@ public class rTextures{
                                            (float) color.b / 255.0f);
                 short gray = (byte) ((coln.x * 0.299f + coln.y * 0.587f + coln.z * 0.114f) * 255.0f);
 
-                dst.data.setElem((y * dst.getWidth() + x) * 2, gray);
-                dst.data.setElem(y * dst.getWidth() + x * 2 + 1, color.getA());
+                result.data.setElem((y * result.width + x) * 2, gray);
+                result.data.setElem(y * result.width + x * 2 + 1, color.a);
 
             }
             break;
@@ -2365,7 +2572,7 @@ public class rTextures{
                 int g = (Math.round(coln.y * 63.0f));
                 int b = (Math.round(coln.z * 31.0f));
 
-                dst.data.setElem(y * dst.getWidth() + x, (r << 11 | g << 5 | b));
+                result.data.setElem(y * result.width + x, (r << 11 | g << 5 | b));
 
             }
             break;
@@ -2379,7 +2586,7 @@ public class rTextures{
                 short b = (byte) (Math.round(coln.z * 31.0f));
                 short a = (byte) ((coln.x > (float) UNCOMPRESSED_R5G5B5A1_ALPHA_THRESHOLD / 255.0f) ? 1 : 0);
 
-                dst.data.setElem(y * dst.getWidth() + x, (r << 11 | g << 6 | b << 1 | a));
+                result.data.setElem(y * result.width + x, (r << 11 | g << 6 | b << 1 | a));
 
             }
             break;
@@ -2393,22 +2600,22 @@ public class rTextures{
                 short b = (byte) (Math.round(coln.z * 15.0f));
                 short a = (byte) (Math.round(coln.w * 15.0f));
 
-                dst.data.setElem(y * dst.getWidth() + x, (r << 12 | g << 8 | b << 4 | a));
+                result.data.setElem(y * result.width + x, (r << 12 | g << 8 | b << 4 | a));
 
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:{
-                dst.data.setElem((y * dst.getWidth() + x) * 3, color.getR());
-                dst.data.setElem((y * dst.getWidth() + x) * 3 + 1, color.getG());
-                dst.data.setElem((y * dst.getWidth() + x) * 3 + 2, color.getB());
+                result.data.setElem((y * result.width + x) * 3, color.r);
+                result.data.setElem((y * result.width + x) * 3 + 1, color.g);
+                result.data.setElem((y * result.width + x) * 3 + 2, color.b);
 
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:{
-                dst.data.setElem((y * dst.getWidth() + x) * 4, color.getR());
-                dst.data.setElem((y * dst.getWidth() + x) * 4 + 1, color.getG());
-                dst.data.setElem((y * dst.getWidth() + x) * 4 + 2, color.getB());
-                dst.data.setElem((y * dst.getWidth() + x) * 4 + 3, color.getA());
+                result.data.setElem((y * result.width + x) * 4, color.r);
+                result.data.setElem((y * result.width + x) * 4 + 1, color.g);
+                result.data.setElem((y * result.width + x) * 4 + 2, color.b);
+                result.data.setElem((y * result.width + x) * 4 + 3, color.a);
 
             }
             break;
@@ -2417,7 +2624,7 @@ public class rTextures{
                 Vector3 coln = new Vector3((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f);
 
-                dst.data.setElem(y * dst.width + x,
+                result.data.setElem(y * result.width + x,
                                  (int) (coln.x * 0.299f + coln.y * 0.587f + coln.z * 0.114f));
 
             }
@@ -2427,9 +2634,9 @@ public class rTextures{
                 Vector3 coln = new Vector3((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f);
 
-                dst.data.setElem((y * dst.getWidth() + x) * 3, (int) coln.getX());
-                dst.data.setElem((y * dst.getWidth() + x) * 3 + 1, (int) coln.getY());
-                dst.data.setElem((y * dst.getWidth() + x) * 3 + 2, (int) coln.getZ());
+                result.data.setElem((y * result.width + x) * 3, (int) coln.x);
+                result.data.setElem((y * result.width + x) * 3 + 1, (int) coln.y);
+                result.data.setElem((y * result.width + x) * 3 + 2, (int) coln.z);
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:{
@@ -2437,30 +2644,40 @@ public class rTextures{
                 Vector4 coln = new Vector4((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f, (float) color.a / 255.0f);
 
-                dst.data.setElem((y * dst.getWidth() + x) * 4, (int) coln.getX());
-                dst.data.setElem((y * dst.getWidth() + x) * 4 + 1, (int) coln.getY());
-                dst.data.setElem((y * dst.getWidth() + x) * 4 + 2, (int) coln.getZ());
-                dst.data.setElem((y * dst.getWidth() + x) * 4 + 3, (int) coln.getW());
+                result.data.setElem((y * result.width + x) * 4, (int) coln.x);
+                result.data.setElem((y * result.width + x) * 4 + 1, (int) coln.y);
+                result.data.setElem((y * result.width + x) * 4 + 2, (int) coln.z);
+                result.data.setElem((y * result.width + x) * 4 + 3, (int) coln.w);
 
             }
             break;
             default:
                 break;
         }
+
+        return result;
     }
 
     // Draw pixel within an image (Vector version)
-    void ImageDrawPixelV(Image dst, Vector2 position, Color color) {
-        ImageDrawPixel(dst, (int) position.x, (int) position.y, color);
+    public Image ImageDrawPixelV(Image image, Vector2 position, Color color) {
+        return ImageDrawPixel(image, (int) position.x, (int) position.y, color);
     }
 
     // Draw line within an image
-    void ImageDrawLine(Image dst, int startPosX, int startPosY, int endPosX, int endPosY, Color color) {
+    public Image ImageDrawLine(Image image, int startPosX, int startPosY, int endPosX, int endPosY, Color color) {
+        Image result = new Image((byte[]) null, image.width, image.height, image.format, image.mipmaps);
+        result.setData(image.getData());
+
         int m = 2 * (endPosY - startPosY);
         int slopeError = m - (endPosX - startPosX);
 
         for (int x = startPosX, y = startPosY; x <= endPosX; x++) {
-            ImageDrawPixel(dst, x, y, color);
+            byte[] tmp = ImageDrawPixel(image, x, y, color).getData();
+            byte[] pixelBuffer = result.getData();
+            if (pixelBuffer.length - (y * result.width + x) >= 0) {
+                System.arraycopy(tmp, y * result.width + x, pixelBuffer, y * result.width + x, pixelBuffer.length - (y * result.width + x));
+            }
+
             slopeError += m;
 
             if (slopeError >= 0) {
@@ -2468,11 +2685,13 @@ public class rTextures{
                 slopeError -= 2 * (endPosX - startPosX);
             }
         }
+
+        return result;
     }
 
     // Draw line within an image (Vector version)
-    void ImageDrawLineV(Image dst, Vector2 start, Vector2 end, Color color) {
-        ImageDrawLine(dst, (int) start.x, (int) start.y, (int) end.x, (int) end.y, color);
+    public Image ImageDrawLineV(Image image, Vector2 start, Vector2 end, Color color) {
+        return ImageDrawLine(image, (int) start.x, (int) start.y, (int) end.x, (int) end.y, color);
     }
 
     // Draw circle within an image
@@ -2506,6 +2725,34 @@ public class rTextures{
         ImageDrawCircle(dst, (int) center.x, (int) center.y, radius, color);
     }
 
+    // Draw circle outline within an image
+    void ImageDrawCircleLines(Image dst, int centerX, int centerY, int radius, Color color)
+    {
+        int x = 0;
+        int y = radius;
+        int decesionParameter = 3 - 2*radius;
+
+        while (y >= x)
+        {
+            ImageDrawPixel(dst, centerX + x, centerY + y, color);
+            ImageDrawPixel(dst, centerX - x, centerY + y, color);
+            ImageDrawPixel(dst, centerX + x, centerY - y, color);
+            ImageDrawPixel(dst, centerX - x, centerY - y, color);
+            ImageDrawPixel(dst, centerX + y, centerY + x, color);
+            ImageDrawPixel(dst, centerX - y, centerY + x, color);
+            ImageDrawPixel(dst, centerX + y, centerY - x, color);
+            ImageDrawPixel(dst, centerX - y, centerY - x, color);
+            x++;
+
+            if (decesionParameter > 0)
+            {
+                y--;
+                decesionParameter = decesionParameter + 4*(x - y) + 10;
+            }
+            else decesionParameter = decesionParameter + 4*x + 6;
+        }
+    }
+    
     // Draw rectangle within an image
     void ImageDrawRectangle(Image dst, int posX, int posY, int width, int height, Color color) {
         ImageDrawRectangleRec(dst, new Rectangle((float) posX, (float) posY, (float) width, (float) height), color);
@@ -2538,11 +2785,11 @@ public class rTextures{
 
     // Draw rectangle lines within an image
     void ImageDrawRectangleLines(Image dst, Rectangle rec, int thick, Color color) {
-        ImageDrawRectangle(dst, (int) rec.x, (int) rec.y, (int) rec.getWidth(), thick, color);
-        ImageDrawRectangle(dst, (int) rec.x, (int) (rec.y + thick), thick, (int) (rec.getHeight() - thick * 2), color);
-        ImageDrawRectangle(dst, (int) (rec.x + rec.getWidth() - thick), (int) (rec.y + thick), thick,
-                           (int) (rec.getHeight() - thick * 2), color);
-        ImageDrawRectangle(dst, (int) rec.x, (int) (rec.y + rec.getHeight() - thick), (int) rec.getWidth(), thick,
+        ImageDrawRectangle(dst, (int) rec.x, (int) rec.y, (int) rec.width, thick, color);
+        ImageDrawRectangle(dst, (int) rec.x, (int) (rec.y + thick), thick, (int) (rec.height - thick * 2), color);
+        ImageDrawRectangle(dst, (int) (rec.x + rec.width - thick), (int) (rec.y + thick), thick,
+                           (int) (rec.height - thick * 2), color);
+        ImageDrawRectangle(dst, (int) rec.x, (int) (rec.y + rec.height - thick), (int) rec.width, thick,
                            color);
     }
 
@@ -2569,25 +2816,25 @@ public class rTextures{
 
             // Source rectangle out-of-bounds security checks
             if (srcRec.x < 0) {
-                srcRec.setWidth(srcRec.getWidth() + srcRec.getX());
+                srcRec.setWidth(srcRec.width + srcRec.x);
                 srcRec.setX(0);
             }
             if (srcRec.y < 0) {
-                srcRec.setHeight(srcRec.getHeight() + srcRec.getY());
+                srcRec.setHeight(srcRec.height + srcRec.y);
                 srcRec.setY(0);
             }
-            if ((srcRec.x + srcRec.getWidth()) > src.width) {
-                srcRec.setWidth(src.getWidth() - srcRec.getX());
+            if ((srcRec.x + srcRec.width) > src.width) {
+                srcRec.setWidth(src.width - srcRec.x);
             }
-            if ((srcRec.y + srcRec.getHeight()) > src.getHeight()) {
-                srcRec.setHeight(src.getHeight() - srcRec.getY());
+            if ((srcRec.y + srcRec.height) > src.height) {
+                srcRec.setHeight(src.height - srcRec.y);
             }
 
             // Check if source rectangle needs to be resized to destination rectangle
             // In that case, we make a copy of source and we apply all required transform
-            if (((int) srcRec.getWidth() != (int) dstRec.getWidth()) || ((int) srcRec.getHeight() != (int) dstRec.getHeight())) {
+            if (((int) srcRec.width != (int) dstRec.width) || ((int) srcRec.height != (int) dstRec.height)) {
                 srcMod = ImageFromImage(src, srcRec);   // Create image from another image
-                ImageResize(srcMod, (int) dstRec.getWidth(), (int) dstRec.getHeight());   // Resize to destination rectangle
+                ImageResize(srcMod, (int) dstRec.width, (int) dstRec.height);   // Resize to destination rectangle
                 srcRec = new Rectangle(0, 0, (float) srcMod.width, (float) srcMod.height);
 
                 srcPtr = srcMod;
@@ -2596,27 +2843,27 @@ public class rTextures{
 
             // Destination rectangle out-of-bounds security checks
             if (dstRec.x < 0) {
-                srcRec.setX(-dstRec.getX());
-                srcRec.setWidth(srcRec.getWidth() + dstRec.getX());
+                srcRec.setX(-dstRec.x);
+                srcRec.setWidth(srcRec.width + dstRec.x);
                 dstRec.setX(0);
             }
-            else if ((dstRec.x + srcRec.getWidth()) > dst.width) {
-                srcRec.setWidth(dst.getWidth() - dstRec.getX());
+            else if ((dstRec.x + srcRec.width) > dst.width) {
+                srcRec.setWidth(dst.width - dstRec.x);
             }
 
             if (dstRec.y < 0) {
-                srcRec.setY(-dstRec.getY());
-                srcRec.setHeight(srcRec.getHeight() + dstRec.getY());
+                srcRec.setY(-dstRec.y);
+                srcRec.setHeight(srcRec.height + dstRec.y);
                 dstRec.setY(0);
             }
-            else if ((dstRec.y + srcRec.getHeight()) > dst.getHeight()) {
-                srcRec.setHeight(dst.getHeight() - dstRec.getY());
+            else if ((dstRec.y + srcRec.height) > dst.height) {
+                srcRec.setHeight(dst.height - dstRec.y);
             }
 
-            if (dst.getWidth() < srcRec.getWidth()) {
-                srcRec.setWidth((float) dst.getWidth());
+            if (dst.width < srcRec.width) {
+                srcRec.setWidth((float) dst.width);
             }
-            if (dst.getHeight() < srcRec.getHeight()) {
+            if (dst.height < srcRec.height) {
                 srcRec.setHeight((float) dst.height);
             }
 
@@ -2646,17 +2893,17 @@ public class rTextures{
             byte[] pSrcBase = srcPtr.getData();
             byte[] pDstBase = dst.getData();
 
-            for (int y = 0; y < (int) srcRec.getHeight(); y++) {
+            for (int y = 0; y < (int) srcRec.height; y++) {
                 byte[] pSrc = pSrcBase;
                 byte[] pDst = pDstBase;
 
                 // Fast path: Avoid moving pixel by pixel if no blend required and same format
                 if (!blendRequired && (srcPtr.format == dst.format)) {
-                    //memcpy(pDst, pSrc, (int) (srcRec.getWidth()) * bytesPerPixelSrc);
+                    //memcpy(pDst, pSrc, (int) (srcRec.width) * bytesPerPixelSrc);
                     pDst = pSrc;
                 }
                 else{
-                    for (int x = 0; x < (int) srcRec.getWidth(); x++) {
+                    for (int x = 0; x < (int) srcRec.width; x++) {
                         colSrc = GetPixelColor(pSrc, srcPtr.getFormat());
                         colDst = GetPixelColor(pDst, dst.getFormat());
 
@@ -2919,7 +3166,7 @@ public class rTextures{
     // Update GPU texture rectangle with new data
     // NOTE: pixels data must match texture.format
     public void UpdateTextureRec(Texture2D texture, Rectangle rec, byte[] pixels) {
-        rlUpdateTexture(texture.id, (int) rec.x, (int) rec.y, (int) rec.getWidth(), (int) rec.getHeight(),
+        rlUpdateTexture(texture.id, (int) rec.x, (int) rec.y, (int) rec.width, (int) rec.height,
                         texture.format, pixels);
     }
 
@@ -3100,111 +3347,11 @@ public class rTextures{
 
     // Draw a part of a texture (defined by a rectangle)
     public void DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Color tint) {
-        Rectangle dest = new Rectangle(position.x, position.y, Math.abs(source.getWidth()),
-                                       Math.abs(source.getHeight()));
+        Rectangle dest = new Rectangle(position.x, position.y, Math.abs(source.width),
+                                       Math.abs(source.height));
         Vector2 origin = new Vector2(0.0f, 0.0f);
 
         DrawTexturePro(texture, source, dest, origin, 0.0f, tint);
-    }
-
-    // Draw texture quad with tiling and offset parameters
-    // NOTE: Tiling and offset should be provided considering normalized texture values [0..1]
-    // i.e tiling = { 1.0f, 1.0f } refers to all texture, offset = { 0.5f, 0.5f } moves texture origin to center
-    public void DrawTextureQuad(Texture2D texture, Vector2 tiling, Vector2 offset, Rectangle quad, Color tint) {
-        // WARNING: This solution only works if TEXTURE_WRAP_REPEAT is supported,
-        // NPOT textures supported is required and OpenGL ES 2.0 could not support it
-        Rectangle source = new Rectangle(offset.x * texture.getWidth(), offset.y * texture.getHeight(),
-                                         tiling.x * texture.getWidth(), tiling.y * texture.getHeight());
-        Vector2 origin = new Vector2(0.0f, 0.0f);
-
-        DrawTexturePro(texture, source, quad, origin, 0.0f, tint);
-    }
-
-    // Draw part of a texture (defined by a rectangle) with rotation and scale tiled into dest.
-    // NOTE: For tilling a whole texture DrawTextureQuad() is better
-    public void DrawTextureTiled(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, float scale, Color tint) {
-        if ((texture.id <= 0) || (scale <= 0.0f)) return;  // Wanna see an infinite loop?!...just delete this line!
-        if ((source.width == 0) || (source.height == 0)) return;
-
-        int tileWidth = (int) (source.width * scale), tileHeight = (int) (source.height * scale);
-        if ((dest.width < tileWidth) && (dest.height < tileHeight)) {
-            // Can fit only one tile
-            DrawTexturePro(texture,
-                           new Rectangle(source.x, source.y, (dest.width / tileWidth) * source.width, (dest.height / tileHeight) * source.height),
-                           new Rectangle(dest.x, dest.y, dest.width, dest.height), origin, rotation, tint);
-        }
-        else if (dest.width <= tileWidth) {
-            // Tiled vertically (one column)
-            int dy = 0;
-            for (; dy + tileHeight < dest.height; dy += tileHeight) {
-                DrawTexturePro(texture,
-                               new Rectangle(source.x, source.y, (dest.width / tileWidth) * source.width, source.height),
-                               new Rectangle(dest.x, dest.y + dy, dest.width, (float) tileHeight), origin, rotation, tint);
-            }
-
-            // Fit last tile
-            if (dy < dest.height) {
-                DrawTexturePro(texture,
-                               new Rectangle(source.x, source.y, (dest.width / tileWidth) * source.width, ((dest.height - dy) / tileHeight) * source.height),
-                               new Rectangle(dest.x, dest.y + dy, dest.width, dest.height - dy), origin, rotation, tint);
-            }
-        }
-        else if (dest.height <= tileHeight) {
-            // Tiled horizontally (one row)
-            int dx = 0;
-            for (; dx + tileWidth < dest.width; dx += tileWidth) {
-                DrawTexturePro(texture,
-                               new Rectangle(source.x, source.y, source.width, (dest.height / tileHeight) * source.height),
-                               new Rectangle(dest.x + dx, dest.y, (float) tileWidth, dest.height), origin, rotation, tint);
-            }
-
-            // Fit last tile
-            if (dx < dest.width) {
-                DrawTexturePro(texture,
-                               new Rectangle(source.x, source.y, ((dest.width - dx) / tileWidth) * source.width,
-                                             (dest.height / tileHeight) * source.height),
-                               new Rectangle(dest.x + dx, dest.y, dest.width - dx, dest.height), origin, rotation, tint);
-            }
-        }
-        else{
-            // Tiled both horizontally and vertically (rows and columns)
-            int dx = 0;
-            for (; dx + tileWidth < dest.width; dx += tileWidth) {
-                int dy = 0;
-                for (; dy + tileHeight < dest.height; dy += tileHeight) {
-                    DrawTexturePro(texture, source,
-                                   new Rectangle(dest.x + dx, dest.y + dy, (float) tileWidth, (float) tileHeight),
-                                   origin, rotation, tint);
-                }
-
-                if (dy < dest.height) {
-                    DrawTexturePro(texture,
-                                   new Rectangle(source.x, source.y, source.width, ((dest.height - dy) / tileHeight) * source.height),
-                                   new Rectangle(dest.x + dx, dest.y + dy, (float) tileWidth, dest.height - dy),
-                                   origin, rotation, tint);
-                }
-            }
-
-            // Fit last column of tiles
-            if (dx < dest.width) {
-                int dy = 0;
-                for (; dy + tileHeight < dest.height; dy += tileHeight) {
-                    DrawTexturePro(texture,
-                                   new Rectangle(source.x, source.y, ((dest.width - dx) / tileWidth) * source.width, source.height),
-                                   new Rectangle(dest.x + dx, dest.y + dy, dest.width - dx, (float) tileHeight),
-                                   origin, rotation, tint);
-                }
-
-                // Draw final tile in the bottom right corner
-                if (dy < dest.height) {
-                    DrawTexturePro(texture,
-                                   new Rectangle(source.x, source.y, ((dest.width - dx) / tileWidth) * source.width,
-                                                 ((dest.height - dy) / tileHeight) * source.height),
-                                   new Rectangle(dest.x + dx, dest.y + dy, dest.width - dx, dest.height - dy),
-                                   origin, rotation, tint);
-                }
-            }
-        }
     }
 
     // Draw a part of a texture (defined by a rectangle) with 'pro' parameters
@@ -3314,20 +3461,20 @@ public class rTextures{
             float width = (float) texture.width;
             float height = (float) texture.height;
 
-            float patchWidth = Math.max(dest.getWidth(), 0.0f);
-            float patchHeight = Math.max(dest.getHeight(), 0.0f);
+            float patchWidth = Math.max(dest.width, 0.0f);
+            float patchHeight = Math.max(dest.height, 0.0f);
 
-            if (nPatchInfo.source.getWidth() < 0) {
-                nPatchInfo.source.x -= nPatchInfo.source.getWidth();
+            if (nPatchInfo.source.width < 0) {
+                nPatchInfo.source.x -= nPatchInfo.source.width;
             }
-            if (nPatchInfo.source.getHeight() < 0) {
-                nPatchInfo.source.y -= nPatchInfo.source.getHeight();
+            if (nPatchInfo.source.height < 0) {
+                nPatchInfo.source.y -= nPatchInfo.source.height;
             }
             if (nPatchInfo.getType() == NPATCH_THREE_PATCH_HORIZONTAL) {
-                patchHeight = nPatchInfo.source.getHeight();
+                patchHeight = nPatchInfo.source.height;
             }
             if (nPatchInfo.getType() == NPATCH_THREE_PATCH_VERTICAL) {
-                patchWidth = nPatchInfo.source.getWidth();
+                patchWidth = nPatchInfo.source.width;
             }
 
             boolean drawCenter = true;
@@ -3554,39 +3701,6 @@ public class rTextures{
         }
     }
 
-    // Draw textured polygon, defined by vertex and texturecoordinates
-    // NOTE: Polygon center must have straight line path to all points
-    // without crossing perimeter, points must be in anticlockwise order
-    public void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2[] points, Vector2[] texcoords, int pointsCount,
-                                Color tint) {
-        RLGL.rlCheckRenderBatchLimit((pointsCount - 1) * 4);
-
-        RLGL.rlSetTexture(texture.id);
-
-        // Texturing is only supported on RL_QUADs
-        rlBegin(RL_QUADS);
-
-        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-
-        for (int i = 0; i < pointsCount - 1; i++) {
-            rlTexCoord2f(0.5f, 0.5f);
-            rlVertex2f(center.x, center.y);
-
-            rlTexCoord2f(texcoords[i].x, texcoords[i].y);
-            rlVertex2f(points[i].x + center.x, points[i].y + center.y);
-
-            rlTexCoord2f(texcoords[i + 1].x, texcoords[i + 1].y);
-            rlVertex2f(points[i + 1].x + center.x, points[i + 1].y + center.y);
-
-            rlTexCoord2f(texcoords[i + 1].x, texcoords[i + 1].y);
-            rlVertex2f(points[i + 1].x + center.x, points[i + 1].y + center.y);
-        }
-        rlEnd();
-
-        RLGL.rlSetTexture(0);
-    }
-
-
     // Returns color with alpha applied, alpha goes from 0.0f to 1.0f
     public Color Fade(Color color, float alpha) {
         if (alpha < 0.0f) {
@@ -3601,7 +3715,7 @@ public class rTextures{
 
     // Returns hexadecimal value for a Color
     public int ColorToInt(Color color) {
-        return ((color.r << 24) | (color.g << 16) | (color.b << 8) | color.getA());
+        return ((color.r << 24) | (color.g << 16) | (color.b << 8) | color.a);
     }
 
     // Returns color normalized as float [0..1]
@@ -3703,6 +3817,28 @@ public class rTextures{
         return color;
     }
 
+    // Get color multiplied with another color
+    public Color ColorTint(Color color, Color tint) {
+        Color result = new Color();
+
+        float cR = (float)tint.r/255;
+        float cG = (float)tint.g/255;
+        float cB = (float)tint.b/255;
+        float cA = (float)tint.a/255;
+
+        int r = (int) (((float) color.r /255*cR)*255.0f);
+        int g = (int) (((float) color.g /255*cG)*255.0f);
+        int b = (int) (((float) color.b /255*cB)*255.0f);
+        int a = (int) (((float) color.a /255*cA)*255.0f);
+
+        result.r = r;
+        result.g = g;
+        result.b = b;
+        result.a = a;
+
+        return result;
+    }
+
     // Returns color with alpha applied, alpha goes from 0.0f to 1.0f
     public Color ColorAlpha(Color color, float alpha) {
         if (alpha < 0.0f) {
@@ -3741,9 +3877,9 @@ public class rTextures{
                 out.setA((byte) ((alpha * 256 + dst.a * (256 - alpha)) >> 8));
 
                 if (out.a > 0) {
-                    out.setR((byte) (((src.r * alpha * 256 + dst.r * dst.a * (256 - alpha)) / out.getA()) >> 8));
-                    out.setG((byte) (((src.g * alpha * 256 + dst.g * dst.a * (256 - alpha)) / out.getA()) >> 8));
-                    out.setB((byte) (((src.b * alpha * 256 + dst.b * dst.a * (256 - alpha)) / out.getA()) >> 8));
+                    out.setR((byte) (((src.r * alpha * 256 + dst.r * dst.a * (256 - alpha)) / out.a) >> 8));
+                    out.setG((byte) (((src.g * alpha * 256 + dst.g * dst.a * (256 - alpha)) / out.a) >> 8));
+                    out.setB((byte) (((src.b * alpha * 256 + dst.b * dst.a * (256 - alpha)) / out.a) >> 8));
                 }
             }
         }
@@ -3760,12 +3896,12 @@ public class rTextures{
                 Vector4 ftint = ColorNormalize(tint);
                 Vector4 fout = new Vector4();
 
-                fout.setW(fsrc.w + fdst.w * (1.0f - fsrc.getW()));
+                fout.setW(fsrc.w + fdst.w * (1.0f - fsrc.w));
 
                 if (fout.w > 0.0f) {
-                    fout.setX(fsrc.x * fsrc.w + fdst.x * fdst.w * (1 - fsrc.getW()) / fout.getW());
-                    fout.setY(fsrc.y * fsrc.w + fdst.y * fdst.w * (1 - fsrc.getW()) / fout.getW());
-                    fout.setZ(fsrc.z * fsrc.w + fdst.z * fdst.w * (1 - fsrc.getW()) / fout.getW());
+                    fout.setX(fsrc.x * fsrc.w + fdst.x * fdst.w * (1 - fsrc.w) / fout.w);
+                    fout.setY(fsrc.y * fsrc.w + fdst.y * fdst.w * (1 - fsrc.w) / fout.w);
+                    fout.setZ(fsrc.z * fsrc.w + fdst.z * fdst.w * (1 - fsrc.w) / fout.w);
                 }
 
                 out = new Color((int) (fout.x * 255.0f), (int) (fout.y * 255.0f),
