@@ -27,18 +27,14 @@ public class FileIO{
             if (SUPPORT_STANDARD_FILEIO) {
                 Path path = Paths.get(fileName);
 
-                if (!path.toFile().exists()) {
-                    try {
-                        fileData = Files.readAllBytes(path);
-                    }
-                    catch (IOException exception) {
-                        Tracelog(LOG_WARNING, "FILE IO: Failed to read file: " + fileName);
-                        throw exception;
-                    }
+                try {
+                    fileData = Files.readAllBytes(path);
                 }
-                else {
-                    Tracelog(LOG_INFO, "FILE IO: Failed to find file: " + fileName);
+                catch (IOException exception) {
+                    Tracelog(LOG_WARNING, "FILE IO: Failed to read file: " + path);
+                    throw exception;
                 }
+
             }
             else {
                 Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");

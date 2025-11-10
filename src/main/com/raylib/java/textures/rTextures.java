@@ -77,7 +77,7 @@ public class rTextures{
 
         if (fileData != null) {
             // Loading image from memory data
-            image = LoadImageFromMemory(fileName, fileData, fileSize);
+            image = LoadImageFromMemory(fileName.substring(fileName.lastIndexOf('.')), fileData, fileSize);
 
             if (image.data != null) {
                 Tracelog(LOG_INFO, "IMAGE: [" + fileName + "] Data loaded successfully (" +
@@ -2513,8 +2513,7 @@ public class rTextures{
     //IMAGE DRAWING FUNCTIONS
 
     public Image ImageClearBackground(Image image, Color color) {
-        Image result = new Image((byte[]) null, image.width, image.height, image.format, image.mipmaps);
-        result.setData(image.getData());
+        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
 
         // Security check to avoid program crash
         if ((image.getData() == null) || (image.width == 0) || (image.height == 0)) {
@@ -2533,8 +2532,7 @@ public class rTextures{
     }
 
     public Image ImageDrawPixel(Image image, int x, int y, Color color) {
-        Image result = new Image((byte[]) null, image.width, image.height, image.format, image.mipmaps);
-        result.setData(image.getData());
+        Image result = new Image(image.getData() , image.width, image.height, image.format, image.mipmaps);
         
         // Security check to avoid program crash
         if ((result.getData() == null) ||(x < 0) || (x >= result.width) || (y < 0) || (y >= result.height)) {
@@ -2665,18 +2663,17 @@ public class rTextures{
 
     // Draw line within an image
     public Image ImageDrawLine(Image image, int startPosX, int startPosY, int endPosX, int endPosY, Color color) {
-        Image result = new Image((byte[]) null, image.width, image.height, image.format, image.mipmaps);
-        result.setData(image.getData());
+        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
 
         int m = 2 * (endPosY - startPosY);
         int slopeError = m - (endPosX - startPosX);
 
+        byte[] tmp;
+        byte[] pixelBuffer = result.getData();
+
         for (int x = startPosX, y = startPosY; x <= endPosX; x++) {
-            byte[] tmp = ImageDrawPixel(image, x, y, color).getData();
-            byte[] pixelBuffer = result.getData();
-            if (pixelBuffer.length - (y * result.width + x) >= 0) {
-                System.arraycopy(tmp, y * result.width + x, pixelBuffer, y * result.width + x, pixelBuffer.length - (y * result.width + x));
-            }
+            tmp = ImageDrawPixel(image, x, y, color).getData();
+            System.arraycopy(tmp, (y * result.width + x) * 4, pixelBuffer, (y * result.width + x) * 4, 4);
 
             slopeError += m;
 
@@ -2686,6 +2683,7 @@ public class rTextures{
             }
         }
 
+        result.setData(pixelBuffer);
         return result;
     }
 
@@ -2695,19 +2693,19 @@ public class rTextures{
     }
 
     // Draw circle within an image
-    void ImageDrawCircle(Image dst, int centerX, int centerY, int radius, Color color) {
+    public Image ImageDrawCircle(Image image, int centerX, int centerY, int radius, Color color) {
+        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
+
         int x = 0, y = radius;
         int decesionParameter = 3 - 2 * radius;
+        byte[] tmp;
+        byte[] pixelBuffer = result.getData();
 
         while (y >= x) {
-            ImageDrawPixel(dst, centerX + x, centerY + y, color);
-            ImageDrawPixel(dst, centerX - x, centerY + y, color);
-            ImageDrawPixel(dst, centerX + x, centerY - y, color);
-            ImageDrawPixel(dst, centerX - x, centerY - y, color);
-            ImageDrawPixel(dst, centerX + y, centerY + x, color);
-            ImageDrawPixel(dst, centerX - y, centerY + x, color);
-            ImageDrawPixel(dst, centerX + y, centerY - x, color);
-            ImageDrawPixel(dst, centerX - y, centerY - x, color);
+            tmp = ImageDrawRectangle(image, centerX - x, centerY + y, x*2, 1, color).getData();
+            tmp = ImageDrawRectangle(image, centerX - x, centerY - y, x*2, 1, color).getData();
+            tmp = ImageDrawRectangle(image, centerX - y, centerY + x, y*2, 1, color).getData();
+            tmp = ImageDrawRectangle(image, centerX - y, centerY - x, y*2, 1, color).getData();
             x++;
 
             if (decesionParameter > 0) {
@@ -2718,57 +2716,86 @@ public class rTextures{
                 decesionParameter = decesionParameter + 4 * x + 6;
             }
         }
+
+        result.setData(pixelBuffer);
+        return result;
     }
 
     // Draw circle within an image (Vector version)
-    void ImageDrawCircleV(Image dst, Vector2 center, int radius, Color color) {
-        ImageDrawCircle(dst, (int) center.x, (int) center.y, radius, color);
+    void ImageDrawCircleV(Image image, Vector2 center, int radius, Color color) {
+        ImageDrawCircle(image, (int) center.x, (int) center.y, radius, color);
     }
 
     // Draw circle outline within an image
-    void ImageDrawCircleLines(Image dst, int centerX, int centerY, int radius, Color color)
-    {
+    public Image ImageDrawCircleLines(Image image, int centerX, int centerY, int radius, Color color) {
+        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
+
         int x = 0;
         int y = radius;
-        int decesionParameter = 3 - 2*radius;
+        int decesionParameter = 3 - 2 * radius;
+        byte[] tmp;
+        byte[] pixelBuffer = result.getData();
 
-        while (y >= x)
-        {
-            ImageDrawPixel(dst, centerX + x, centerY + y, color);
-            ImageDrawPixel(dst, centerX - x, centerY + y, color);
-            ImageDrawPixel(dst, centerX + x, centerY - y, color);
-            ImageDrawPixel(dst, centerX - x, centerY - y, color);
-            ImageDrawPixel(dst, centerX + y, centerY + x, color);
-            ImageDrawPixel(dst, centerX - y, centerY + x, color);
-            ImageDrawPixel(dst, centerX + y, centerY - x, color);
-            ImageDrawPixel(dst, centerX - y, centerY - x, color);
+        while (y >= x) {
+            tmp = ImageDrawPixel(image, centerX + x, centerY + y, color).getData();
+            System.arraycopy(tmp, ((centerY + y) * result.width + (centerX + x)) * 4, pixelBuffer, ((centerY + y) * result.width + (centerX + x)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX - x, centerY + y, color).getData();
+            System.arraycopy(tmp, ((centerY + y) * result.width + (centerX - x)) * 4, pixelBuffer, ((centerY + y) * result.width + (centerX - x)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX + x, centerY - y, color).getData();
+            System.arraycopy(tmp, ((centerY - y) * result.width + (centerX + x)) * 4, pixelBuffer, ((centerY - y) * result.width + (centerX + x)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX - x, centerY - y, color).getData();
+            System.arraycopy(tmp, ((centerY - y) * result.width + (centerX - x)) * 4, pixelBuffer, ((centerY - y) * result.width + (centerX - x)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX + y, centerY + x, color).getData();
+            System.arraycopy(tmp, ((centerY + x) * result.width + (centerX + y)) * 4, pixelBuffer, ((centerY + x) * result.width + (centerX + y)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX - y, centerY + x, color).getData();
+            System.arraycopy(tmp, ((centerY + x) * result.width + (centerX - y)) * 4, pixelBuffer, ((centerY + x) * result.width + (centerX - y)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX + y, centerY - x, color).getData();
+            System.arraycopy(tmp, ((centerY - x) * result.width + (centerX + y)) * 4, pixelBuffer, ((centerY - x) * result.width + (centerX + y)) * 4, 4);
+
+            tmp = ImageDrawPixel(image, centerX - y, centerY - x, color).getData();
+            System.arraycopy(tmp, ((centerY - x) * result.width + (centerX - y)) * 4, pixelBuffer, ((centerY - x) * result.width + (centerX - y)) * 4, 4);
             x++;
 
-            if (decesionParameter > 0)
-            {
+            if (decesionParameter > 0) {
                 y--;
-                decesionParameter = decesionParameter + 4*(x - y) + 10;
+                decesionParameter = decesionParameter + 4 * (x - y) + 10;
             }
-            else decesionParameter = decesionParameter + 4*x + 6;
+            else {
+                decesionParameter = decesionParameter + 4 * x + 6;
+            }
         }
+
+        result.setData(pixelBuffer);
+        return result;
     }
     
     // Draw rectangle within an image
-    void ImageDrawRectangle(Image dst, int posX, int posY, int width, int height, Color color) {
-        ImageDrawRectangleRec(dst, new Rectangle((float) posX, (float) posY, (float) width, (float) height), color);
+    public Image ImageDrawRectangle(Image image, int posX, int posY, int width, int height, Color color) {
+        return ImageDrawRectangleRec(image, new Rectangle((float) posX, (float) posY, (float) width, (float) height), color);
     }
 
     // Draw rectangle within an image (Vector version)
-    void ImageDrawRectangleV(Image dst, Vector2 position, Vector2 size, Color color) {
-        ImageDrawRectangle(dst, (int) position.x, (int) position.y, (int) size.x, (int) size.y, color);
+    public Image ImageDrawRectangleV(Image image, Vector2 position, Vector2 size, Color color) {
+        return ImageDrawRectangle(image, (int) position.x, (int) position.y, (int) size.x, (int) size.y, color);
     }
 
     // Draw rectangle within an image
-    void ImageDrawRectangleRec(Image dst, Rectangle rec, Color color) {
+    public Image ImageDrawRectangleRec(Image image, Rectangle rec, Color color) {
+        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
+
         // Security check to avoid program crash
-        if ((dst.data == null) || (dst.width == 0) || (dst.height == 0)) {
-            return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return result;
         }
+
+        byte[] tmp;
+        byte[] pixelBuffer = result.getData();
 
         int sy = (int) rec.y;
         int ey = sy + (int) rec.height;
@@ -2778,35 +2805,46 @@ public class rTextures{
 
         for (int y = sy; y < ey; y++) {
             for (int x = sx; x < ex; x++) {
-                ImageDrawPixel(dst, x, y, color);
+                tmp = ImageDrawPixel(image, x, y, color).getData();
+                System.arraycopy(tmp, (y * result.width + x) * 4, pixelBuffer, (y * result.width + x) * 4, 4);
             }
         }
+
+        result.setData(pixelBuffer);
+        return result;
     }
 
     // Draw rectangle lines within an image
-    void ImageDrawRectangleLines(Image dst, Rectangle rec, int thick, Color color) {
-        ImageDrawRectangle(dst, (int) rec.x, (int) rec.y, (int) rec.width, thick, color);
-        ImageDrawRectangle(dst, (int) rec.x, (int) (rec.y + thick), thick, (int) (rec.height - thick * 2), color);
-        ImageDrawRectangle(dst, (int) (rec.x + rec.width - thick), (int) (rec.y + thick), thick,
-                           (int) (rec.height - thick * 2), color);
-        ImageDrawRectangle(dst, (int) rec.x, (int) (rec.y + rec.height - thick), (int) rec.width, thick,
-                           color);
+    public Image ImageDrawRectangleLines(Image image, Rectangle rec, int thick, Color color) {
+        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
+
+
+        byte[] tmp;
+        byte[] pixelBuffer = result.getData();
+
+        tmp = ImageDrawRectangle(image, (int) rec.x, (int) rec.y, (int) rec.width, thick, color).getData();
+        tmp = ImageDrawRectangle(image, (int) rec.x, (int) (rec.y + thick), thick, (int) (rec.height - thick * 2), color).getData();
+        tmp = ImageDrawRectangle(image, (int) (rec.x + rec.width - thick), (int) (rec.y + thick), thick, (int) (rec.height - thick * 2), color).getData();
+        tmp = ImageDrawRectangle(image, (int) rec.x, (int) (rec.y + rec.height - thick), (int) rec.width, thick, color).getData();
+
+        result.setData(pixelBuffer);
+        return result;
     }
 
     //This function uses pointers.
     // Draw an image (source) within an image (destination)
     // NOTE: Color tint is applied to source image
-    void ImageDraw(Image dst, Image src, Rectangle srcRec, Rectangle dstRec, Color tint) {
+    void ImageDraw(Image image, Image src, Rectangle srcRec, Rectangle imageRec, Color tint) {
         // Security check to avoid program crash
-        if ((dst.data == null) || (dst.width == 0) || (dst.height == 0) ||
+        if ((image.data == null) || (image.width == 0) || (image.height == 0) ||
                 (src.data == null) || (src.width == 0) || (src.height == 0)) {
             return;
         }
 
-        if (dst.mipmaps > 1) {
+        if (image.mipmaps > 1) {
             Tracelog(LOG_WARNING, "Image drawing only applied to base mipmap level");
         }
-        if (dst.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
             Tracelog(LOG_WARNING, "Image drawing not supported for compressed formats");
         }
         else{
@@ -2832,9 +2870,9 @@ public class rTextures{
 
             // Check if source rectangle needs to be resized to destination rectangle
             // In that case, we make a copy of source and we apply all required transform
-            if (((int) srcRec.width != (int) dstRec.width) || ((int) srcRec.height != (int) dstRec.height)) {
+            if (((int) srcRec.width != (int) imageRec.width) || ((int) srcRec.height != (int) imageRec.height)) {
                 srcMod = ImageFromImage(src, srcRec);   // Create image from another image
-                ImageResize(srcMod, (int) dstRec.width, (int) dstRec.height);   // Resize to destination rectangle
+                ImageResize(srcMod, (int) imageRec.width, (int) imageRec.height);   // Resize to destination rectangle
                 srcRec = new Rectangle(0, 0, (float) srcMod.width, (float) srcMod.height);
 
                 srcPtr = srcMod;
@@ -2842,40 +2880,40 @@ public class rTextures{
             }
 
             // Destination rectangle out-of-bounds security checks
-            if (dstRec.x < 0) {
-                srcRec.setX(-dstRec.x);
-                srcRec.setWidth(srcRec.width + dstRec.x);
-                dstRec.setX(0);
+            if (imageRec.x < 0) {
+                srcRec.setX(-imageRec.x);
+                srcRec.setWidth(srcRec.width + imageRec.x);
+                imageRec.setX(0);
             }
-            else if ((dstRec.x + srcRec.width) > dst.width) {
-                srcRec.setWidth(dst.width - dstRec.x);
-            }
-
-            if (dstRec.y < 0) {
-                srcRec.setY(-dstRec.y);
-                srcRec.setHeight(srcRec.height + dstRec.y);
-                dstRec.setY(0);
-            }
-            else if ((dstRec.y + srcRec.height) > dst.height) {
-                srcRec.setHeight(dst.height - dstRec.y);
+            else if ((imageRec.x + srcRec.width) > image.width) {
+                srcRec.setWidth(image.width - imageRec.x);
             }
 
-            if (dst.width < srcRec.width) {
-                srcRec.setWidth((float) dst.width);
+            if (imageRec.y < 0) {
+                srcRec.setY(-imageRec.y);
+                srcRec.setHeight(srcRec.height + imageRec.y);
+                imageRec.setY(0);
             }
-            if (dst.height < srcRec.height) {
-                srcRec.setHeight((float) dst.height);
+            else if ((imageRec.y + srcRec.height) > image.height) {
+                srcRec.setHeight(image.height - imageRec.y);
+            }
+
+            if (image.width < srcRec.width) {
+                srcRec.setWidth((float) image.width);
+            }
+            if (image.height < srcRec.height) {
+                srcRec.setHeight((float) image.height);
             }
 
             // This blitting method is quite fast! The process followed is:
-            // for every pixel -> [get_src_format/get_dst_format -> blend -> format_to_dst]
+            // for every pixel -> [get_src_format/get_image_format -> blend -> format_to_image]
             // Some optimization ideas:
             //    [x] Avoid creating source copy if not required (no resize required)
             //    [x] Optimize ImageResize() for pixel format (alternative: ImageResizeNN())
             //    [x] Optimize ColorAlphaBlend() to avoid processing (alpha = 0) and (alpha = 1)
             //    [x] Optimize ColorAlphaBlend() for faster operations (maybe avoiding divs?)
             //    [x] Consider fast path: no alpha blending required cases (src has no alpha)
-            //    [x] Consider fast path: same src/dst format with no alpha -> direct line copy
+            //    [x] Consider fast path: same src/image format with no alpha -> direct line copy
             //    [-] GetPixelColor(): Return Vector4 instead of Color, easier for ColorAlphaBlend()
 
             Color colSrc, colDst, blend;
@@ -2884,28 +2922,28 @@ public class rTextures{
 
             // Fast path: Avoid blend if source has no alpha to blend
 
-            int strideDst = GetPixelDataSize(dst.width, 1, dst.format);
-            int bytesPerPixelDst = strideDst / (dst.width);
+            int strideDst = GetPixelDataSize(image.width, 1, image.format);
+            int bytesPerPixelDst = strideDst / (image.width);
 
             int strideSrc = GetPixelDataSize(srcPtr.width, 1, srcPtr.format);
             int bytesPerPixelSrc = strideSrc / (srcPtr.width);
 
             byte[] pSrcBase = srcPtr.getData();
-            byte[] pDstBase = dst.getData();
+            byte[] pDstBase = image.getData();
 
             for (int y = 0; y < (int) srcRec.height; y++) {
                 byte[] pSrc = pSrcBase;
                 byte[] pDst = pDstBase;
 
                 // Fast path: Avoid moving pixel by pixel if no blend required and same format
-                if (!blendRequired && (srcPtr.format == dst.format)) {
+                if (!blendRequired && (srcPtr.format == image.format)) {
                     //memcpy(pDst, pSrc, (int) (srcRec.width) * bytesPerPixelSrc);
                     pDst = pSrc;
                 }
                 else{
                     for (int x = 0; x < (int) srcRec.width; x++) {
                         colSrc = GetPixelColor(pSrc, srcPtr.getFormat());
-                        colDst = GetPixelColor(pDst, dst.getFormat());
+                        colDst = GetPixelColor(pDst, image.getFormat());
 
                         // Fast path: Avoid blend if source has no alpha to blend
                         if (blendRequired) {
@@ -2915,7 +2953,7 @@ public class rTextures{
                             blend = colSrc;
                         }
 
-                        SetPixelColor(pDst, blend, dst.getFormat());
+                        SetPixelColor(pDst, blend, image.getFormat());
                     }
                 }
 
@@ -2926,23 +2964,25 @@ public class rTextures{
     }
 
     // Draw text (default font) within an image (destination)
-    public void ImageDrawText(Image dst, String text, int posX, int posY, int fontSize, Color color) {
+    public Image ImageDrawText(Image image, String text, int posX, int posY, int fontSize, Color color) {
         Vector2 position = new Vector2((float) posX, (float) posY);
 
         // NOTE: For default font, sapcing is set to desired font size / default font size (10)
-        ImageDrawTextEx(dst, context.text.GetFontDefault(), text, position, (float) fontSize, (float) fontSize / 10, color);
+        return ImageDrawTextEx(image, context.text.GetFontDefault(), text, position, (float) fontSize, (float) fontSize / 10, color);
     }
 
     // Draw text (custom sprite font) within an image (destination)
-    public void ImageDrawTextEx(Image dst, Font font, String text, Vector2 position, float fontSize, float spacing, Color tint) {
+    public Image ImageDrawTextEx(Image image, Font font, String text, Vector2 position, float fontSize, float spacing, Color tint) {
         Image imText = ImageTextEx(font, text, fontSize, spacing, tint);
 
         Rectangle srcRec = new Rectangle(0.0f, 0.0f, (float) imText.width, (float) imText.height);
-        Rectangle dstRec = new Rectangle(position.x, position.y, (float) imText.width, (float) imText.height);
+        Rectangle imageRec = new Rectangle(position.x, position.y, (float) imText.width, (float) imText.height);
 
-        ImageDraw(dst, imText, srcRec, dstRec, Color.WHITE);
+        ImageDraw(image, imText, srcRec, imageRec, Color.WHITE);
 
         UnloadImage(imText);
+
+        return image;
     }
 
     public Texture2D LoadTexture(String fileName) {
