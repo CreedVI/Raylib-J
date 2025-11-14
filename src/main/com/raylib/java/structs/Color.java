@@ -127,5 +127,26 @@ public class Color{
         this.a = a;
     }
 
+    /**
+     * Converts an array of raw pixel data into an array of colors
+     * @param pixels Raw pixel data (RGBA format)
+     * @return Array of colors
+     */
+    public static Color[] FromPixels(byte[] pixels) {
+        Color[] result = new Color[pixels.length/4];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = new Color();
+        }
+
+        for (int i = 0; i < pixels.length; i+=4) {
+            result[i].r = pixels[i];
+            result[i].g = pixels[i + 1];
+            result[i].b = pixels[i + 2];
+            result[i].a = pixels[i + 3];
+        }
+
+        return result;
+    }
+
 }
 

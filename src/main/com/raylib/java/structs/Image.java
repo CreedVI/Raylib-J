@@ -4,10 +4,20 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
+import java.nio.ByteBuffer;
+
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R32;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
 public class Image{
 
-    public DataBuffer data;               // Image raw data
+    public ByteBuffer data;               // Image raw data
     public int width;                        // Image base width
     public int height;                       // Image base height
     public int mipmaps;                      // Mipmap levels, 1 by default
@@ -28,7 +38,9 @@ public class Image{
             dataB[i + 2] = (byte) pixels[j].getB();
             dataB[i + 3] = (byte) pixels[j].getA();
         }
-        data = new DataBufferByte(dataB,dataB.length);
+        this.data = ByteBuffer.allocate(dataB.length);
+        this.data.put(dataB);
+        this.data.flip();
         this.width = width;
         this.height = height;
         this.format = pixForInt;
@@ -36,7 +48,9 @@ public class Image{
     }
 
     public Image(byte[] data, int width, int height, int pixForInt, int mipmaps){
-        this.data = new DataBufferByte(data,data.length);
+        this.data = ByteBuffer.allocate(data.length);
+        this.data.put(data);
+        this.data.flip();
         this.width = width;
         this.height = height;
         this.format = pixForInt;
@@ -44,34 +58,60 @@ public class Image{
     }
 
     public byte[] getData(){
-        byte[] dataB = new byte[data.getSize()];
-        for(int s = 0;s < dataB.length; s++){
-            dataB[s] = (byte) data.getElem(s);
+        byte[] array = new byte[data.capacity()];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = data.get();
         }
-        return dataB;
+        data.flip();
+        return array;
+    }
+
+    public void setData(Color[] data){
+        byte[] dataB = new byte[data.length*4];
+        int i = 0;
+        for (Color color: data) {
+            dataB[i] = (byte) color.r;
+            dataB[i + 1] = (byte) color.g;
+            dataB[i + 2] = (byte) color.b;
+            dataB[i + 3] = (byte) color.a;
+            i += 4;
+        }
+        if (this.data != null) {
+            this.data.clear();
+        }
+        this.data = ByteBuffer.allocate(dataB.length);
+        this.data.put(dataB);
+        this.data.flip();
+    }
+    public void setData(byte[] data){
+        if (this.data != null) {
+            this.data.clear();
+        }
+        this.data = ByteBuffer.allocateDirect(data.length);
+        this.data.put(data.clone());
+        this.data.flip();
     }
 
     public void setData(short[] data){
-        this.data = new DataBufferShort(data, data.length);
-    }
-    public void setData(Color[] data){
-        byte[] dataB = new byte[data.length*4];
-        int g=0;
-        for (int i = 0; i < data.length; i++){
-            dataB[g] = (byte) data[i].r;
-            dataB[g+1] = (byte) data[i].g;
-            dataB[g+2] = (byte) data[i].b;
-            dataB[g+3] = (byte) data[i].a;
-            g+=4;
+        if (this.data != null) {
+            this.data.clear();
         }
-        this.data = new DataBufferByte(dataB, dataB.length);
-    }
-    public void setData(byte[] data){
-        this.data = new DataBufferByte(data, data.length);
+        this.data = ByteBuffer.allocateDirect(data.length * Short.BYTES);
+        for (short datum : data) {
+            this.data.putShort(datum);
+        }
+        this.data.flip();
     }
 
     public void setData(int[] data){
-        this.data = new DataBufferInt(data, data.length);
+        if (this.data != null) {
+            this.data.clear();
+        }
+        this.data = ByteBuffer.allocateDirect(data.length * Integer.BYTES);
+        for (int datum : data) {
+            this.data.putInt(datum);
+        }
+        this.data.flip();
     }
 
     public int getWidth(){

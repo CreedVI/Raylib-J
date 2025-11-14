@@ -2387,7 +2387,7 @@ public class rModels{
         int mapX = heightmap.width;
         int mapZ = heightmap.height;
 
-        Color[] pixels = context.textures.LoadImageColors(heightmap);
+        Color[] pixels = Color.FromPixels(context.textures.LoadImageColors(heightmap));
 
         // NOTE: One vertex per pixel
         mesh.triangleCount = (mapX-1)*(mapZ-1)*2;    // One quad every four pixels
@@ -2510,7 +2510,7 @@ public class rModels{
     public Mesh GenMeshCubicmap(Image cubicmap, Vector3 cubeSize) {
         Mesh mesh = new Mesh();
 
-        Color[] pixels = context.textures.LoadImageColors(cubicmap);
+        Color[] pixels = Color.FromPixels(context.textures.LoadImageColors(cubicmap));
 
         int mapWidth = cubicmap.width;
         int mapHeight = cubicmap.height;

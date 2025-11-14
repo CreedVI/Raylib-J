@@ -27,8 +27,8 @@ public class rShapes{
      */
     int BEZIER_LINE_DIVISIONS = 24;
 
-    static Texture2D texShapes = new Texture2D(1, 1, 1, 1, 7);        // Texture used on rShapes drawing (usually a white pixel)
-    static Rectangle texShapesRec = new Rectangle(0f, 0f, 1f, 1f);        // Texture source rectangle used on rShapes drawing
+    Texture2D texShapes = new Texture2D(1, 1, 1, 1, 7);        // Texture used on rShapes drawing (usually a white pixel)
+    Rectangle texShapesRec = new Rectangle(0f, 0f, 1f, 1f);        // Texture source rectangle used on rShapes drawing
 
     final private Raylib context;
 
@@ -47,7 +47,7 @@ public class rShapes{
      * @param texture New default shape texture
      * @param source Defined area of default texture
      */
-    public static void SetShapesTexture(Texture2D texture, Rectangle source) {
+    public void SetShapesTexture(Texture2D texture, Rectangle source) {
         texShapes = texture;
         texShapesRec = source;
     }
@@ -874,7 +874,7 @@ public class rShapes{
      * @param rec   rectangle shape to draw
      * @param color color to draw rectangle
      */
-    public static void DrawRectangleRec(Rectangle rec, Color color) {
+    public void DrawRectangleRec(Rectangle rec, Color color) {
         DrawRectanglePro(rec, new Vector2(0.0f, 0.0f), 0.0f, color);
     }
 
@@ -886,7 +886,7 @@ public class rShapes{
      * @param rotation degrees to rotate rectangle
      * @param color    color to draw rectangle
      */
-    public static void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color) {
+    public void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color) {
         Vector2 topLeft = new Vector2();
         Vector2 topRight = new Vector2();
         Vector2 bottomLeft = new Vector2();

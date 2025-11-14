@@ -42,7 +42,6 @@ import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.shapes.rShapes.SetShapesTexture;
 import static com.raylib.java.utils.Tracelog.Tracelog;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
@@ -198,14 +197,14 @@ public class rCore{
             context.text.LoadFontDefault();
             Rectangle rec = context.text.GetFontDefault().getRecs()[95];
             // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
-            SetShapesTexture(context.text.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
+            context.shapes.SetShapesTexture(context.text.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
                                                                                         rec.getWidth() - 2, rec.getHeight() - 2));
         }
         else if (SUPPORT_MODULE_RSHAPES){
             // Set default texture and rectangle to be used for shapes drawing
             // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
             Texture2D texture = new Texture2D(rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-            SetShapesTexture(texture, new Rectangle(0.0f, 0.0f, 1.0f, 1.0f));    // WARNING: Module required: rshapes
+            context.shapes.SetShapesTexture(texture, new Rectangle(0.0f, 0.0f, 1.0f, 1.0f));    // WARNING: Module required: rshapes
         }
 
         if (SUPPORT_MODULE_RTEXT && SUPPORT_MODULE_RTEXTURES) {

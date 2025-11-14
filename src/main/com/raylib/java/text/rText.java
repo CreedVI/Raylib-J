@@ -220,7 +220,7 @@ public class rText{
                     fontdata[i + j] = (short) 0xffff;
                 }
                 else{
-                    fontdata[i + j] = (short) 0x00ff;
+                    fontdata[i + j] = (short) 0x0000;
                 }
             }
             counter++;
@@ -385,7 +385,7 @@ public class rText{
             tempCharRecs[i] = new Rectangle();
         }
 
-        Color[] pixels = context.textures.LoadImageColors(image);
+        Color[] pixels = Color.FromPixels(context.textures.LoadImageColors(image));
 
         // Parse image data to get charSpacing and lineSpacing
         for (y = 0; y < image.getHeight(); y++) {
@@ -1562,7 +1562,7 @@ public class rText{
         return codepoint;
     }
 
-    private int GetByteCountOfCodePoint(int codepoint) {
+    public int GetByteCountOfCodePoint(int codepoint) {
         if (0xf0 == (0xf8 & codepoint)) {
             // 4 byte UTF-8 codepoint
             return 4;

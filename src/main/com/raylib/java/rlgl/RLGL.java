@@ -151,7 +151,7 @@ public class RLGL{
     public static final int RL_VERTEX_SHADER   = 0x8B31;      // GL_VERTEX_SHADER
     public static final int RL_COMPUTE_SHADER  = 0x91B9;      // GL_COMPUTE_SHADER
 
-    static int glInternalFormat = 0, glFormat = 0, glType = 0;
+    private static int glInternalFormat = 0, glFormat = 0, glType = 0;
 
     static rlglData rlglData;
 
@@ -969,7 +969,12 @@ public class RLGL{
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // Init default white texture
-            DataBuffer pixels = new DataBufferByte(new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255}, 4);
+            ByteBuffer pixels = ByteBuffer.allocateDirect(4);
+            pixels.put((byte) 255);
+            pixels.put((byte) 255);
+            pixels.put((byte) 255);
+            pixels.put((byte) 255);
+            pixels.flip();
             rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
 
             if(rlglData.getState().getDefaultTextureId() != 0) {
@@ -1830,7 +1835,7 @@ public class RLGL{
 
 
     // Convert image data to OpenGL texture (returns OpenGL valid Id)
-    public static int rlLoadTexture(DataBuffer data, int width, int height, int format, int mipmapCount){
+    public static int rlLoadTexture(ByteBuffer data, int width, int height, int format, int mipmapCount){
         glBindTexture(GL_TEXTURE_2D, 0);    // Free any old binding
 
         int id = 0;
@@ -1879,10 +1884,6 @@ public class RLGL{
 
         id = glGenTextures();              // Generate texture id
 
-        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            // glActiveTexture(GL_TEXTURE0);     // If not defined, using GL_TEXTURE0 by default (shader texture)
-        }
-
         glBindTexture(GL_TEXTURE_2D, id);
 
         int mipWidth = width;
@@ -1901,61 +1902,11 @@ public class RLGL{
 
             if (glInternalFormat != -1){
                 if (format < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB){
-                    if(data == null){
-                        glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat,
-                                     glType, (ByteBuffer) null);
-                    }
-                    else{
-                        switch (data.getDataType()){
-                        /*
-                         0 = byte
-                         1 = uShort
-                         2 = Short
-                         3 = int
-                         4 = float
-                         5 = double
-                         */
-                            case 0:{
-                                ByteBuffer buffer = ByteBuffer.allocateDirect(data.getSize());
-                                for (int s = 0; s < data.getSize(); s++){
-                                    buffer.put((byte) data.getElem(s));
-                                }
-                                buffer.flip();
-                                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat,
-                                        glType, buffer);
-                                break;
-                            }
-                            case 1:
-                            case 2:{
-                                short[] dataS = new short[data.getSize()];
-                                for (int s = 0; s < dataS.length; s++){
-                                    dataS[s] = (short) data.getElem(s);
-                                }
-                                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                                        dataS);
-                                break;
-                            }
-                            case 4:
-                            case 5:
-                            case 6:
-                            default:{
-                                int[] dataI = new int[data.getSize()];
-                                for (int s = 0; s < dataI.length; s++){
-                                    dataI[s] = data.getElem(s);
-                                }
-                                glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType,
-                                        dataI);
-                                break;
-                            }
-
-                        }
-                    }
-
+                        glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, data);
                 }
                 else{
                     if (!GRAPHICS_API_OPENGL_11){
-                        glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, mipSize,
-                                data.getSize() + mipOffset);
+                        glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, data);
                     }
                 }
 
@@ -2198,7 +2149,8 @@ public class RLGL{
 
         if ((glInternalFormat != -1) && (format < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB)){
             ByteBuffer bb = ByteBuffer.allocateDirect(data.length);
-            bb.put(data).flip();
+            bb.put(data);
+            bb.flip();
             glTexSubImage2D(GL_TEXTURE_2D, 0, offsetX, offsetY, width, height, glFormat, glType, bb);
         }
         else{
@@ -2207,7 +2159,7 @@ public class RLGL{
     }
 
     // Get OpenGL internal formats and data type from raylib rlPixelFormat
-    public static void rlGetGlTextureFormats(int format){
+    private static void rlGetGlTextureFormats(int format){
         glInternalFormat = 0;
         glFormat = 0;
         glType = 0;
