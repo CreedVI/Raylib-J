@@ -56,8 +56,8 @@ public class Mouse{
         currentWheelMove = new Vector2();
         previousWheelMove = new Vector2();
 
-        currentButtonState = new int[3];
-        previousButtonState = new int[3];
+        currentButtonState = new int[10];
+        previousButtonState = new int[10];
     }
 
     public Vector2 getPreviousPosition(){

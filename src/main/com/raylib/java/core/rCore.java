@@ -3165,7 +3165,9 @@ public class rCore{
         ;
 
         // Register previous mouse states
-        for (int i = 0; i < 3; i++) input.mouse.getPreviousButtonState()[i] = input.mouse.getCurrentButtonState()[i];
+        for (int i = 0; i < input.mouse.previousButtonState.length; i++) {
+            input.mouse.getPreviousButtonState()[i] = input.mouse.getCurrentButtonState()[i];
+        }
 
         // Register previous mouse wheel state
         input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());
