@@ -148,5 +148,18 @@ public class Color{
         return result;
     }
 
+    /**
+     * Converts a Color object to an array of bytes
+     * @param color Color
+     * @return byte array of values (length = 4, RGBA format)
+     */
+    public static byte[] ToPixels(Color color) {
+        byte[] result = new byte[4];
+        result[0] = (byte) color.r;
+        result[1] = (byte) color.g;
+        result[2] = (byte) color.b;
+        result[3] = (byte) color.a;
+        return result;
+    }
 }
 
