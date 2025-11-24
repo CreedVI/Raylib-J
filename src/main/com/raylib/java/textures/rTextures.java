@@ -189,10 +189,10 @@ public class rTextures{
         Image image = new Image();
 
         if (SUPPORT_FILEFORMAT_PNG || SUPPORT_FILEFORMAT_BMP || SUPPORT_FILEFORMAT_TGA || SUPPORT_FILEFORMAT_JPG ||
-                SUPPORT_FILEFORMAT_GIF || SUPPORT_FILEFORMAT_PIC || SUPPORT_FILEFORMAT_PSD) {
+                SUPPORT_FILEFORMAT_GIF || SUPPORT_FILEFORMAT_PIC || SUPPORT_FILEFORMAT_PNM || SUPPORT_FILEFORMAT_PSD) {
             if (fileType.equals(".png") || fileType.equals(".bmp") || fileType.equals(".tga") ||
                     (fileType.equals(".jpeg") || fileType.equals(".jpg")) || fileType.equals(".gif") ||
-                    fileType.equals(".pic") || fileType.equals(".psd")) {
+                    fileType.equals(".pic") || fileType.equals(".ppm") || fileType.equals(".pgm") || fileType.equals(".psd")) {
 
                 if (fileData != null) {
                     int comp = 0;

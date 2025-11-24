@@ -177,6 +177,7 @@ public class Config{
     public static boolean SUPPORT_FILEFORMAT_JPG = true;
     public static boolean SUPPORT_FILEFORMAT_GIF = true;
     public static boolean SUPPORT_FILEFORMAT_PIC = true;
+    public static boolean SUPPORT_FILEFORMAT_PNM = true;
     public static boolean SUPPORT_FILEFORMAT_PSD = true;
     static boolean SUPPORT_FILEFORMAT_DDS = true;
     public static boolean SUPPORT_FILEFORMAT_HDR = true;
