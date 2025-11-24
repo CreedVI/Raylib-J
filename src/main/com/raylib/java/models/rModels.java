@@ -324,91 +324,6 @@ public class rModels{
         DrawCubeWires(position, size.x, size.y, size.z, color);
     }
 
-    // Draw cube
-    // NOTE: Cube position is the center position
-    public void DrawCubeTexture(Texture2D texture, Vector3 position, float width, float height, float length, Color color){
-        float x = position.x;
-        float y = position.y;
-        float z = position.z;
-
-        RLGL.rlCheckRenderBatchLimit(36);
-
-        RLGL.rlSetTexture(texture.id);
-
-        //rlPushMatrix();
-        // NOTE: Transformation is applied in inverse order (scale -> rotate -> translate)
-        //rlTranslatef(2.0f, 0.0f, 0.0f);
-        //rlRotatef(45, 0, 1, 0);
-        //rlScalef(2.0f, 2.0f, 2.0f);
-
-        RLGL.rlBegin(RLGL.RL_QUADS);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
-        // Front Face
-        RLGL.rlNormal3f(0.0f, 0.0f, 1.0f);                  // Normal Pointing Towards Viewer
-        RLGL.rlTexCoord2f(0.0f, 0.0f);
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 0.0f);
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 1.0f);
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 1.0f);
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left Of The Texture and Quad
-        // Back Face
-        RLGL.rlNormal3f(0.0f, 0.0f, -1.0f);                  // Normal Pointing Away From Viewer
-        RLGL.rlTexCoord2f(1.0f, 0.0f);
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 1.0f);
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 1.0f);
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 0.0f);
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Left Of The Texture and Quad
-        // Top Face
-        RLGL.rlNormal3f(0.0f, 1.0f, 0.0f);                  // Normal Pointing Up
-        RLGL.rlTexCoord2f(0.0f, 1.0f);
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 0.0f);
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Bottom Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 0.0f);
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 1.0f);
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right Of The Texture and Quad
-        // Bottom Face
-        RLGL.rlNormal3f(0.0f, -1.0f, 0.0f);                  // Normal Pointing Down
-        RLGL.rlTexCoord2f(1.0f, 1.0f);
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 1.0f);
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 0.0f);
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 0.0f);
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Right Of The Texture and Quad
-        // Right face
-        RLGL.rlNormal3f(1.0f, 0.0f, 0.0f);                  // Normal Pointing Right
-        RLGL.rlTexCoord2f(1.0f, 0.0f);
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 1.0f);
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 1.0f);
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 0.0f);
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Left Of The Texture and Quad
-        // Left Face
-        RLGL.rlNormal3f(-1.0f, 0.0f, 0.0f);                  // Normal Pointing Left
-        RLGL.rlTexCoord2f(0.0f, 0.0f);
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 0.0f);
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(1.0f, 1.0f);
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Right Of The Texture and Quad
-        RLGL.rlTexCoord2f(0.0f, 1.0f);
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left Of The Texture and Quad
-        RLGL.rlEnd();
-        //rlPopMatrix();
-
-        RLGL.rlSetTexture(0);
-    }
-
     // Draw sphere
     public void DrawSphere(Vector3 centerPos, float radius, Color color){
         DrawSphereEx(centerPos, radius, 16, 16, color);
@@ -578,6 +493,288 @@ public class rModels{
         RLGL.rlPopMatrix();
     }
 
+    // Draw a capsule with the center of its sphere caps at startPos and endPos
+    void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color) {
+        if (slices < 3) {
+            slices = 3;
+        }
+
+        Vector3 direction = new Vector3(endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z);
+
+        // draw a sphere if start and end points are the same
+        boolean sphereCase = (direction.x == 0) && (direction.y == 0) && (direction.z == 0);
+        if (sphereCase) {
+            direction = new Vector3(0.0f, 1.0f, 0.0f);
+        }
+
+        // Construct a basis of the base and the caps:
+        Vector3 b0 = Vector3Normalize(direction);
+        Vector3 b1 = Vector3Normalize(Vector3Perpendicular(direction));
+        Vector3 b2 = Vector3Normalize(Vector3CrossProduct(b1, direction));
+        Vector3 capCenter = endPos;
+
+        float baseSliceAngle = (2.0f*PI)/slices;
+        float baseRingAngle  = PI * 0.5f / rings;
+
+        rlBegin(RL_TRIANGLES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+
+        // render both caps
+        for (int c = 0; c < 2; c++) {
+            for (int i = 0; i < rings; i++) {
+                for (int j = 0; j < slices; j++) {
+
+                    // we build up the rings from capCenter in the direction of the 'direction' vector we computed earlier
+
+                    // as we iterate through the rings they must be placed higher above the center, the height we need is sin(angle(i))
+                    // as we iterate through the rings they must get smaller by the cos(angle(i))
+
+                    // compute the four vertices
+                    float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
+                    Vector3 w1 = new Vector3(
+                        (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin1*b1.x + ringCos1*b2.x) * radius),
+                        (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin1*b1.y + ringCos1*b2.y) * radius),
+                        (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin1*b1.z + ringCos1*b2.z) * radius)
+                    );
+
+                    float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
+                    Vector3 w2 = new Vector3(
+                        (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin2*b1.x + ringCos2*b2.x) * radius),
+                        (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin2*b1.y + ringCos2*b2.y) * radius),
+                        (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin2*b1.z + ringCos2*b2.z) * radius)
+                    );
+
+                    float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
+                    Vector3 w3 = new Vector3(
+                        (capCenter.x + (Math.sin(baseRingAngle * ( i + 1 ))*b0.x + ringSin3*b1.x + ringCos3*b2.x) * radius),
+                        (capCenter.y + (Math.sin(baseRingAngle * ( i + 1 ))*b0.y + ringSin3*b1.y + ringCos3*b2.y) * radius),
+                        (capCenter.z + (Math.sin(baseRingAngle * ( i + 1 ))*b0.z + ringSin3*b1.z + ringCos3*b2.z) * radius)
+                    );
+
+                    float ringSin4 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringCos4 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 1 )));
+                    Vector3 w4 = new Vector3(
+                        (capCenter.x + (Math.sin(baseRingAngle * ( i + 1 ))*b0.x + ringSin4*b1.x + ringCos4*b2.x) * radius),
+                        (capCenter.y + (Math.sin(baseRingAngle * ( i + 1 ))*b0.y + ringSin4*b1.y + ringCos4*b2.y) * radius),
+                        (capCenter.z + (Math.sin(baseRingAngle * ( i + 1 ))*b0.z + ringSin4*b1.z + ringCos4*b2.z) * radius)
+                    );
+
+                    // make sure cap triangle normals are facing outwards
+                    if(c == 0) {
+                        rlVertex3f(w1.x, w1.y, w1.z);
+                        rlVertex3f(w2.x, w2.y, w2.z);
+                        rlVertex3f(w3.x, w3.y, w3.z);
+
+                        rlVertex3f(w2.x, w2.y, w2.z);
+                        rlVertex3f(w4.x, w4.y, w4.z);
+                        rlVertex3f(w3.x, w3.y, w3.z);
+                    }
+                    else {
+                        rlVertex3f(w1.x, w1.y, w1.z);
+                        rlVertex3f(w3.x, w3.y, w3.z);
+                        rlVertex3f(w2.x, w2.y, w2.z);
+
+                        rlVertex3f(w2.x, w2.y, w2.z);
+                        rlVertex3f(w3.x, w3.y, w3.z);
+                        rlVertex3f(w4.x, w4.y, w4.z);
+                    }
+                }
+            }
+            capCenter = startPos;
+            b0 = Vector3Scale(b0, -1.0f);
+        }
+
+        // render middle
+        if (!sphereCase) {
+            for (int j = 0; j < slices; j++) {
+                // compute the four vertices
+                float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
+                float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                Vector3 w1 = new Vector3(
+                    startPos.x + ringSin1*b1.x + ringCos1*b2.x,
+                    startPos.y + ringSin1*b1.y + ringCos1*b2.y,
+                    startPos.z + ringSin1*b1.z + ringCos1*b2.z
+                );
+
+                float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*radius);
+                float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*radius);
+                Vector3 w2 = new Vector3(
+                    startPos.x + ringSin2*b1.x + ringCos2*b2.x,
+                    startPos.y + ringSin2*b1.y + ringCos2*b2.y,
+                    startPos.z + ringSin2*b1.z + ringCos2*b2.z
+                );
+
+                float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
+                float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                Vector3 w3 = new Vector3(
+                    endPos.x + ringSin3*b1.x + ringCos3*b2.x,
+                    endPos.y + ringSin3*b1.y + ringCos3*b2.y,
+                    endPos.z + ringSin3*b1.z + ringCos3*b2.z
+                );
+
+                float ringSin4 = (float) (Math.sin(baseSliceAngle*(j + 1))*radius);
+                float ringCos4 = (float) (Math.cos(baseSliceAngle*(j + 1))*radius);
+                Vector3 w4 = new Vector3(
+                    endPos.x + ringSin4*b1.x + ringCos4*b2.x,
+                    endPos.y + ringSin4*b1.y + ringCos4*b2.y,
+                    endPos.z + ringSin4*b1.z + ringCos4*b2.z
+                );
+                //          w2 x.-----------x startPos
+                rlVertex3f(w1.x, w1.y, w1.z);                         // |           |\'.  T0    /
+                rlVertex3f(w2.x, w2.y, w2.z);                         // T1          | \ '.     /
+                rlVertex3f(w3.x, w3.y, w3.z);                         // |           |T \  '.  /
+                //             | 2 \ T 'x w1
+                rlVertex3f(w2.x, w2.y, w2.z);                         // |        w4 x.---\-1-|---x endPos
+                rlVertex3f(w4.x, w4.y, w4.z);                         // T2            '.  \  |T3/
+                rlVertex3f(w3.x, w3.y, w3.z);                         // |               '. \ | /
+                //                   '.\|/
+                //                   'x w3
+            }
+        }
+        rlEnd();
+    }
+
+    // Draw capsule wires with the center of its sphere caps at startPos and endPos
+    void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color) {
+        if (slices < 3) {
+            slices = 3;
+        }
+
+        Vector3 direction = new Vector3(endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z);
+
+        // draw a sphere if start and end points are the same
+        boolean sphereCase = (direction.x == 0) && (direction.y == 0) && (direction.z == 0);
+        if (sphereCase) {
+            direction = new Vector3(0.0f, 1.0f, 0.0f);
+        }
+
+        // Construct a basis of the base and the caps:
+        Vector3 b0 = Vector3Normalize(direction);
+        Vector3 b1 = Vector3Normalize(Vector3Perpendicular(direction));
+        Vector3 b2 = Vector3Normalize(Vector3CrossProduct(b1, direction));
+        Vector3 capCenter = endPos;
+
+        float baseSliceAngle = (2.0f*PI)/slices;
+        float baseRingAngle  = PI * 0.5f / rings;
+
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+
+        // render both caps
+        for (int c = 0; c < 2; c++) {
+            for (int i = 0; i < rings; i++){
+                for (int j = 0; j < slices; j++) {
+
+                    // we build up the rings from capCenter in the direction of the 'direction' vector we computed earlier
+
+                    // as we iterate through the rings they must be placed higher above the center, the height we need is sin(angle(i))
+                    // as we iterate through the rings they must get smaller by the cos(angle(i))
+
+                    // compute the four vertices
+                    float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
+                    Vector3 w1 = new Vector3(
+                            (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin1*b1.x + ringCos1*b2.x) * radius),
+                            (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin1*b1.y + ringCos1*b2.y) * radius),
+                            (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin1*b1.z + ringCos1*b2.z) * radius)
+                    );
+
+                    float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
+                    Vector3 w2 = new Vector3(
+                            (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin2*b1.x + ringCos2*b2.x) * radius),
+                            (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin2*b1.y + ringCos2*b2.y) * radius),
+                            (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin2*b1.z + ringCos2*b2.z) * radius)
+                    );
+
+                    float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
+                    Vector3 w3 = new Vector3(
+                            (capCenter.x + (Math.sin(baseRingAngle * ( i + 1 ))*b0.x + ringSin3*b1.x + ringCos3*b2.x) * radius),
+                            (capCenter.y + (Math.sin(baseRingAngle * ( i + 1 ))*b0.y + ringSin3*b1.y + ringCos3*b2.y) * radius),
+                            (capCenter.z + (Math.sin(baseRingAngle * ( i + 1 ))*b0.z + ringSin3*b1.z + ringCos3*b2.z) * radius)
+                    );
+
+                    float ringSin4 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringCos4 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 1 )));
+                    Vector3 w4 = new Vector3(
+                            (capCenter.x + (Math.sin(baseRingAngle * ( i + 1 ))*b0.x + ringSin4*b1.x + ringCos4*b2.x) * radius),
+                            (capCenter.y + (Math.sin(baseRingAngle * ( i + 1 ))*b0.y + ringSin4*b1.y + ringCos4*b2.y) * radius),
+                            (capCenter.z + (Math.sin(baseRingAngle * ( i + 1 ))*b0.z + ringSin4*b1.z + ringCos4*b2.z) * radius)
+                    );
+
+                    rlVertex3f(w1.x, w1.y, w1.z);
+                    rlVertex3f(w2.x, w2.y, w2.z);
+
+                    rlVertex3f(w2.x, w2.y, w2.z);
+                    rlVertex3f(w3.x, w3.y, w3.z);
+
+                    rlVertex3f(w1.x, w1.y, w1.z);
+                    rlVertex3f(w3.x, w3.y, w3.z);
+
+                    rlVertex3f(w2.x, w2.y, w2.z);
+                    rlVertex3f(w4.x, w4.y, w4.z);
+
+                    rlVertex3f(w3.x, w3.y, w3.z);
+                    rlVertex3f(w4.x, w4.y, w4.z);
+                }
+            }
+            capCenter = startPos;
+            b0 = Vector3Scale(b0, -1.0f);
+        }
+
+        // render middle
+        if (!sphereCase) {
+            for (int j = 0; j < slices; j++) {
+                // compute the four vertices
+                float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
+                float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                Vector3 w1 = new Vector3(
+                        startPos.x + ringSin1*b1.x + ringCos1*b2.x,
+                        startPos.y + ringSin1*b1.y + ringCos1*b2.y,
+                        startPos.z + ringSin1*b1.z + ringCos1*b2.z
+                );
+
+                float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*radius);
+                float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*radius);
+                Vector3 w2 = new Vector3(
+                        startPos.x + ringSin2*b1.x + ringCos2*b2.x,
+                        startPos.y + ringSin2*b1.y + ringCos2*b2.y,
+                        startPos.z + ringSin2*b1.z + ringCos2*b2.z
+                );
+
+                float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
+                float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                Vector3 w3 = new Vector3(
+                        endPos.x + ringSin3*b1.x + ringCos3*b2.x,
+                        endPos.y + ringSin3*b1.y + ringCos3*b2.y,
+                        endPos.z + ringSin3*b1.z + ringCos3*b2.z
+                );
+
+                float ringSin4 = (float) (Math.sin(baseSliceAngle*(j + 1))*radius);
+                float ringCos4 = (float) (Math.cos(baseSliceAngle*(j + 1))*radius);
+                Vector3 w4 = new Vector3(
+                        endPos.x + ringSin4*b1.x + ringCos4*b2.x,
+                        endPos.y + ringSin4*b1.y + ringCos4*b2.y,
+                        endPos.z + ringSin4*b1.z + ringCos4*b2.z
+                );
+
+                rlVertex3f(w1.x, w1.y, w1.z);
+                rlVertex3f(w3.x, w3.y, w3.z);
+
+                rlVertex3f(w2.x, w2.y, w2.z);
+                rlVertex3f(w4.x, w4.y, w4.z);
+
+                rlVertex3f(w2.x, w2.y, w2.z);
+                rlVertex3f(w3.x, w3.y, w3.z);
+            }
+        }
+        rlEnd();
+    }
+
     // Draw a plane
     public void DrawPlane(Vector3 centerPos, Vector2 size, Color color){
         RLGL.rlCheckRenderBatchLimit(4);
@@ -745,28 +942,6 @@ public class rModels{
         model.bindPose = null;
 
         TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
-    }
-
-    // Unload model (but not meshes) from memory (RAM and/or VRAM)
-    public void UnloadModelKeepMeshes(Model model) {
-        // Unload materials maps
-        // NOTE: As the user could be sharing shaders and textures between models,
-        // we don't unload the material but just free its maps,
-        // the user is responsible for freeing models shaders and textures
-        for (int i = 0; i < model.materialCount; i++) {
-            model.materials[i].maps = null;
-        }
-
-        // Unload arrays
-        model.meshes = null;
-        model.materials = null;
-        model.meshMaterial = null;
-
-        // Unload animation data
-        model.bones = null;
-        model.bindPose = null;
-
-        TRACELOG(LOG_INFO, "MODEL: Unloaded model (but not meshes) from RAM and VRAM");
     }
 
     // Compute model bounding box limits (considers all meshes)
@@ -1461,6 +1636,50 @@ public class rModels{
         return success;
     }
 
+    private Material[] ProcessMaterialsOBJ(OBJLoader loader) {
+        Material[] materials = new Material[loader.objInfo.totalMaterials];
+
+        // Init model materials
+        for (int m = 0; m < loader.objInfo.totalMaterials; m++) {
+            // Init material to default
+            // NOTE: Uses default shader, which only supports MATERIAL_MAP_DIFFUSE
+            materials[m] = LoadMaterialDefault();
+
+            // Get default texture, in case no texture is defined
+            // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
+            materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
+            if (loader.mtlInfo.materials[m].diffuse_texname != null) {
+                materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
+            }
+
+            materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color((int) (loader.mtlInfo.materials[m].diffuse[0]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[1]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[2]*255.0f), 255); //float diffuse[3];
+            materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0.0f;
+
+            if (loader.mtlInfo.materials[m].specular_texname != null) {
+                materials[m].maps[MATERIAL_MAP_SPECULAR].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
+            }
+
+            materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color((int) (loader.mtlInfo.materials[m].specular[0]*255.0f), (int) (loader.mtlInfo.materials[m].specular[1]*255.0f), (int) (loader.mtlInfo.materials[m].specular[2]*255.0f), 255); //float specular[3];
+            materials[m].maps[MATERIAL_MAP_SPECULAR].value = 0.0f;
+
+            if (loader.mtlInfo.materials[m].bump_texname != null) {
+                materials[m].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
+            }
+
+            materials[m].maps[MATERIAL_MAP_NORMAL].color = WHITE;
+            materials[m].maps[MATERIAL_MAP_NORMAL].value = loader.mtlInfo.materials[m].shininess;
+
+            materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color((int) (loader.mtlInfo.materials[m].emission[0]*255.0f), (int) (loader.mtlInfo.materials[m].emission[1]*255.0f), (int) (loader.mtlInfo.materials[m].emission[2]*255.0f), 255); //float emission[3];
+
+            if (loader.mtlInfo.materials[m].displacement_texname != null) {
+                materials[m].maps[MATERIAL_MAP_HEIGHT].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
+            }
+
+        }
+
+        return materials;
+    }
 
     // Load materials from model file
     public Material[] LoadMaterials(String fileName) {
@@ -1483,19 +1702,11 @@ public class rModels{
                     TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
                 }
 
-                // TODO: Process materials to return
+                materials = ProcessMaterialsOBJ(loader);
             }
         }
         else {
             TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to load material file");
-        }
-
-        // Set materials shader to default (DIFFUSE, SPECULAR, NORMAL)
-        if (materials != null) {
-            for (int i = 0; i < count; i++) {
-                materials[i].shader.id = rlGetShaderIdDefault();
-                materials[i].shader.locs = rlGetShaderLocsDefault();
-            }
         }
 
         return materials;
@@ -2390,7 +2601,7 @@ public class rModels{
         Color[] pixels = Color.FromPixels(context.textures.LoadImageColors(heightmap));
 
         // NOTE: One vertex per pixel
-        mesh.triangleCount = (mapX-1)*(mapZ-1)*2;    // One quad every four pixels
+        mesh.triangleCount = (mapX - 1) * (mapZ - 1) * 2;    // One quad every four pixels
 
         mesh.vertexCount = mesh.triangleCount*3;
 
@@ -2403,7 +2614,7 @@ public class rModels{
         int tcCounter = 0;      // Used to count texcoords float by float
         int nCounter = 0;       // Used to count normals float by float
 
-        Vector3 scaleFactor = new Vector3(size.x/mapX, size.y/255.0f, size.z/mapZ);
+        Vector3 scaleFactor = new Vector3(size.x/(mapX - 1), size.y/255.0f, size.z/(mapZ - 1));
 
         Vector3 vA = new Vector3();
         Vector3 vB = new Vector3();
@@ -2415,7 +2626,7 @@ public class rModels{
                 // Fill vertices array with data
                 //----------------------------------------------------------
 
-                // one triangle - 3 vertex
+                // One triangle - 3 vertex
                 mesh.vertices[vCounter] = (float)x*scaleFactor.x;
                 mesh.vertices[vCounter + 1] = GRAY_VALUE(pixels[x + z*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 2] = (float)z*scaleFactor.z;
@@ -2428,7 +2639,7 @@ public class rModels{
                 mesh.vertices[vCounter + 7] = GRAY_VALUE(pixels[(x + 1) + z*mapX])*scaleFactor.y;
                 mesh.vertices[vCounter + 8] = (float)z*scaleFactor.z;
 
-                // another triangle - 3 vertex
+                // Another triangle - 3 vertex
                 mesh.vertices[vCounter + 9] = mesh.vertices[vCounter + 6];
                 mesh.vertices[vCounter + 10] = mesh.vertices[vCounter + 7];
                 mesh.vertices[vCounter + 11] = mesh.vertices[vCounter + 8];
@@ -2865,13 +3076,12 @@ public class rModels{
     // NOTE: To calculate mesh tangents and binormals we need mesh vertex positions and texture coordinates
     // Implementation base don: https://answers.unity.com/questions/7789/calculating-tangents-vector4.html
     public void GenMeshTangents(Mesh mesh) {
-        if (mesh.tangents == null) {
-            mesh.tangents = new float[mesh.vertexCount*4];
+        if ((mesh.vertices == null) || (mesh.texcoords == null)) {
+            TRACELOG(LOG_WARNING, "MESH: Tangents generation requires texcoord vertex attribute data");
+            return;
         }
-        else {
-            mesh.tangents = null;
-            mesh.tangents = new float[mesh.vertexCount*4];
-        }
+
+        mesh.tangents = new float[mesh.vertexCount*4];
 
         Vector3[] tan1 = new Vector3[mesh.vertexCount];
         Vector3[] tan2 = new Vector3[mesh.vertexCount];
@@ -3533,44 +3743,7 @@ public class rModels{
                 }
             }
 
-            // Init model materials
-            for (int m = 0; m < loader.objInfo.totalMaterials; m++) {
-                // Init material to default
-                // NOTE: Uses default shader, which only supports MATERIAL_MAP_DIFFUSE
-                model.materials[m] = LoadMaterialDefault();
-
-                // Get default texture, in case no texture is defined
-                // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-
-                if (loader.mtlInfo.materials[m].diffuse_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
-                }
-
-                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color((int) (loader.mtlInfo.materials[m].diffuse[0]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[1]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[2]*255.0f), 255); //float diffuse[3];
-                model.materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0.0f;
-
-                if (loader.mtlInfo.materials[m].specular_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_SPECULAR].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
-                }
-
-                model.materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color((int) (loader.mtlInfo.materials[m].specular[0]*255.0f), (int) (loader.mtlInfo.materials[m].specular[1]*255.0f), (int) (loader.mtlInfo.materials[m].specular[2]*255.0f), 255); //float specular[3];
-                model.materials[m].maps[MATERIAL_MAP_SPECULAR].value = 0.0f;
-
-                if (loader.mtlInfo.materials[m].bump_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
-                }
-
-                model.materials[m].maps[MATERIAL_MAP_NORMAL].color = WHITE;
-                model.materials[m].maps[MATERIAL_MAP_NORMAL].value = loader.mtlInfo.materials[m].shininess;
-
-                model.materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color((int) (loader.mtlInfo.materials[m].emission[0]*255.0f), (int) (loader.mtlInfo.materials[m].emission[1]*255.0f), (int) (loader.mtlInfo.materials[m].emission[2]*255.0f), 255); //float emission[3];
-
-                if (loader.mtlInfo.materials[m].displacement_texname != null) {
-                    model.materials[m].maps[MATERIAL_MAP_HEIGHT].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
-                }
-
-            }
+            model.materials = ProcessMaterialsOBJ(loader);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
