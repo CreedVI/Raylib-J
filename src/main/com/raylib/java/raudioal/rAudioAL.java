@@ -18,7 +18,7 @@ import static com.raylib.java.Config.SUPPORT_FILEFORMAT_OGG;
 import static com.raylib.java.core.rCore.IsFileExtension;
 import static com.raylib.java.raudioal.rAudioAL.MusicContextType.MUSIC_AUDIO_OGG;
 import static com.raylib.java.raudioal.rAudioAL.MusicContextType.MUSIC_MODULE_MP3;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
 import static org.lwjgl.openal.AL11.*;
 import static org.lwjgl.openal.ALC11.*;
@@ -134,20 +134,20 @@ public class rAudioAL {
         long device = alcOpenDevice(defaultDevice);
 
         if (device == 0) {
-            Tracelog(LOG_WARNING, "Failed to open default audio device. Trying alternative devices...");
+            TRACELOG(LOG_WARNING, "Failed to open default audio device. Trying alternative devices...");
             List<String> devices = ALUtil.getStringList(0, ALC_ALL_DEVICES_SPECIFIER);
             System.out.println("Available audio devices: " + devices);
             for (int i = 0; i < devices.size(); i++) {
                 device = alcOpenDevice(devices.get(i));
                 if (device != 0) {
-                    Tracelog(LOG_INFO, "Fallback device opened. Using " + devices.get(i));
+                    TRACELOG(LOG_INFO, "Fallback device opened. Using " + devices.get(i));
                     break;
                 }
             }
         }
 
         if (device==0) {
-            Tracelog(LOG_ERROR, "Audio device could not be opened");
+            TRACELOG(LOG_ERROR, "Audio device could not be opened");
         }
         else {
             int[] attrib = {0};
@@ -165,10 +165,10 @@ public class rAudioAL {
 
                 alcCloseDevice(device);
 
-                Tracelog(LOG_ERROR, "Could not initialize audio context");
+                TRACELOG(LOG_ERROR, "Could not initialize audio context");
             }
             else {
-                Tracelog(LOG_INFO, "Audio device and context initialized successfully: " + alcGetString(device, ALC_DEVICE_SPECIFIER));
+                TRACELOG(LOG_INFO, "Audio device and context initialized successfully: " + alcGetString(device, ALC_DEVICE_SPECIFIER));
 
                 // Listener definition (just for 2D)
                 alListener3f(AL_POSITION, 0.0f, 0.0f, 0.0f);
@@ -186,7 +186,7 @@ public class rAudioAL {
         long context = alcGetCurrentContext();
 
         if (context == 0) {
-            Tracelog(LOG_WARNING, "Could not get current audio context for closing");
+            TRACELOG(LOG_WARNING, "Could not get current audio context for closing");
         }
 
         device = alcGetContextsDevice(context);
@@ -195,7 +195,7 @@ public class rAudioAL {
         alcDestroyContext(context);
         alcCloseDevice(device);
 
-        Tracelog(LOG_INFO, "Audio device closed successfully");
+        TRACELOG(LOG_INFO, "Audio device closed successfully");
     }
 
     // Check if device has been initialized successfully
@@ -247,13 +247,13 @@ public class rAudioAL {
             // NOTE: Parameters for RRES_TYPE_WAVE are: sampleCount, sampleRate, sampleSize, channels
 
             if (rres[0].type == RRES_TYPE_WAVE) wave = LoadWaveEx(rres[0].data, rres[0].param1, rres[0].param2, rres[0].param3, rres[0].param4);
-            else Tracelog(LOG_WARNING, "["+fileName+"] Resource file does not contain wave data");
+            else TRACELOG(LOG_WARNING, "["+fileName+"] Resource file does not contain wave data");
 
             UnloadResource(rres);
         }*/
 
         else {
-            Tracelog(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
+            TRACELOG(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
         }
 
         return wave;
@@ -308,7 +308,7 @@ public class rAudioAL {
                         format = AL_FORMAT_MONO_FLOAT32;
                         break;  // Requires OpenAL extension: AL_EXT_FLOAT32
                     default:
-                        Tracelog(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
+                        TRACELOG(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
                         break;
                 }
             }
@@ -324,12 +324,12 @@ public class rAudioAL {
                         format = AL_FORMAT_STEREO_FLOAT32;
                         break;  // Requires OpenAL extension: AL_EXT_FLOAT32
                     default:
-                        Tracelog(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
+                        TRACELOG(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
                         break;
                 }
             }
             else {
-                Tracelog(LOG_WARNING, "Wave number of channels not supported: " + wave.channels);
+                TRACELOG(LOG_WARNING, "Wave number of channels not supported: " + wave.channels);
             }
 
             // Create an audio source
@@ -358,7 +358,7 @@ public class rAudioAL {
             // Attach sound buffer to source
             alSourcei(source, AL_BUFFER, buffer);
 
-            Tracelog(LOG_INFO, "[SND ID "+source+"][BUFR ID "+buffer+"] Sound data loaded successfully ("+wave.sampleRate+" Hz, "+wave.sampleSize+" bit, "+((wave.channels == 1) ? "Mono" : "Stereo")+")");
+            TRACELOG(LOG_INFO, "[SND ID "+source+"][BUFR ID "+buffer+"] Sound data loaded successfully ("+wave.sampleRate+" Hz, "+wave.sampleSize+" bit, "+((wave.channels == 1) ? "Mono" : "Stereo")+")");
 
             sound.source = source;
             sound.buffer = buffer;
@@ -374,7 +374,7 @@ public class rAudioAL {
            wave.data.clear();
         }
 
-        Tracelog(LOG_INFO, "Unloaded wave data from RAM");
+        TRACELOG(LOG_INFO, "Unloaded wave data from RAM");
     }
 
     // Unload sound
@@ -384,7 +384,7 @@ public class rAudioAL {
         alDeleteSources(sound.source);
         alDeleteBuffers(sound.buffer);
 
-        Tracelog(LOG_INFO, "[SND ID "+sound.source+"][BUFR ID "+sound.buffer+"] Unloaded sound data from RAM");
+        TRACELOG(LOG_INFO, "[SND ID "+sound.source+"][BUFR ID "+sound.buffer+"] Unloaded sound data from RAM");
     }
 
     // Update sound buffer with new data
@@ -395,9 +395,9 @@ public class rAudioAL {
         sampleSize = alGetBufferi(sound.buffer, AL_BITS);           // It could also be retrieved from sound.format
         channels = alGetBufferi(sound.buffer, AL_CHANNELS);         // It could also be retrieved from sound.format
 
-        Tracelog(LOG_DEBUG, "UpdateSound() : AL_FREQUENCY: " + sampleRate);
-        Tracelog(LOG_DEBUG, "UpdateSound() : AL_BITS: " + sampleSize);
-        Tracelog(LOG_DEBUG, "UpdateSound() : AL_CHANNELS: " + channels);
+        TRACELOG(LOG_DEBUG, "UpdateSound() : AL_FREQUENCY: " + sampleRate);
+        TRACELOG(LOG_DEBUG, "UpdateSound() : AL_BITS: " + sampleSize);
+        TRACELOG(LOG_DEBUG, "UpdateSound() : AL_CHANNELS: " + channels);
 
         int dataSize = samplesCount*channels*sampleSize/8;   // Size of data in bytes
 
@@ -417,7 +417,7 @@ public class rAudioAL {
     public void PlaySound(Sound sound) {
         alSourcePlay(sound.source);        // Play the sound
 
-        //Tracelog(LOG_INFO, "Playing sound");
+        //TRACELOG(LOG_INFO, "Playing sound");
 
         // Find the current position of the sound being played
         // NOTE: Only work when the entire file is in a single buffer
@@ -609,7 +609,7 @@ public class rAudioAL {
             wave.data = data;
         }
         else {
-            Tracelog(LOG_WARNING, "Wave crop range out of bounds");
+            TRACELOG(LOG_WARNING, "Wave crop range out of bounds");
         }
     }
 
@@ -651,7 +651,7 @@ public class rAudioAL {
             music.ctxOgg = stb_vorbis_open_filename(fileName, errorBuffer, null);
 
             if (music.ctxOgg == 0) {
-                Tracelog(LOG_WARNING, "["+fileName+"] OGG audio file could not be opened");
+                TRACELOG(LOG_WARNING, "["+fileName+"] OGG audio file could not be opened");
             }
             else {
                  // Get Ogg file info
@@ -672,10 +672,10 @@ public class rAudioAL {
                 }
                 finally {
 
-                    Tracelog(LOG_DEBUG, "["+fileName+"] FLAC total samples: " + music.totalSamples);
-                    Tracelog(LOG_DEBUG, "["+fileName+"] OGG sample rate: " + info.sample_rate());
-                    Tracelog(LOG_DEBUG, "["+fileName+"] OGG channels: " + info.channels());
-                    Tracelog(LOG_DEBUG, "["+fileName+"] OGG memory required: " + info.temp_memory_required());
+                    TRACELOG(LOG_DEBUG, "["+fileName+"] FLAC total samples: " + music.totalSamples);
+                    TRACELOG(LOG_DEBUG, "["+fileName+"] OGG sample rate: " + info.sample_rate());
+                    TRACELOG(LOG_DEBUG, "["+fileName+"] OGG channels: " + info.channels());
+                    TRACELOG(LOG_DEBUG, "["+fileName+"] OGG memory required: " + info.temp_memory_required());
                 }
 
             }
@@ -708,7 +708,7 @@ public class rAudioAL {
             music.ctxFlac = drflac_open_file(fileName);
 
 
-            if (music.ctxFlac == null) Tracelog(LOG_WARNING, "["+fileName+"] FLAC audio file could not be opened");
+            if (music.ctxFlac == null) TRACELOG(LOG_WARNING, "["+fileName+"] FLAC audio file could not be opened");
             else
             {
                 music.stream = InitAudioStream(music.ctxFlac.sampleRate, music.ctxFlac.bitsPerSample, music.ctxFlac.channels);
@@ -717,10 +717,10 @@ public class rAudioAL {
                 music.ctxType = MUSIC_AUDIO_FLAC;
                 music.loopCount = -1;                       // Infinite loop by default
 
-                Tracelog(LOG_DEBUG, "["+music.totalSamples+"] FLAC total samples: " + fileName);
-                Tracelog(LOG_DEBUG, "["+music.ctxFlac.sampleRate+"] FLAC sample rate: " + fileName);
-                Tracelog(LOG_DEBUG, "["+music.ctxFlac.bitsPerSample+"] FLAC bits per sample: " + fileName);
-                Tracelog(LOG_DEBUG, "["+ music.ctxFlac.channels+"] FLAC channels: " + fileName);
+                TRACELOG(LOG_DEBUG, "["+music.totalSamples+"] FLAC total samples: " + fileName);
+                TRACELOG(LOG_DEBUG, "["+music.ctxFlac.sampleRate+"] FLAC sample rate: " + fileName);
+                TRACELOG(LOG_DEBUG, "["+music.ctxFlac.bitsPerSample+"] FLAC bits per sample: " + fileName);
+                TRACELOG(LOG_DEBUG, "["+ music.ctxFlac.channels+"] FLAC channels: " + fileName);
             }
         }
         /*
@@ -739,10 +739,10 @@ public class rAudioAL {
                     music.ctxType = MUSIC_MODULE_XM;
                     music.loopCount = -1;                       // Infinite loop by default
 
-                    Tracelog(LOG_DEBUG, "["++"] XM number of samples: " + fileName, music.totalSamples);
-                    Tracelog(LOG_DEBUG, "["++"] XM track length: %11.6f sec", fileName, (float)music.totalSamples/48000.0f);
+                    TRACELOG(LOG_DEBUG, "["++"] XM number of samples: " + fileName, music.totalSamples);
+                    TRACELOG(LOG_DEBUG, "["++"] XM track length: %11.6f sec", fileName, (float)music.totalSamples/48000.0f);
                 }
-                else Tracelog(LOG_WARNING, "["++"] XM file could not be opened", fileName);
+                else TRACELOG(LOG_WARNING, "["++"] XM file could not be opened", fileName);
             }
         #endif
         #if defined(SUPPORT_FILEFORMAT_MOD)
@@ -757,15 +757,15 @@ public class rAudioAL {
                     music.ctxType = MUSIC_MODULE_MOD;
                     music.loopCount = -1;                       // Infinite loop by default
 
-                    Tracelog(LOG_DEBUG, "["++"] MOD number of samples: " + fileName, music.samplesLeft);
-                    Tracelog(LOG_DEBUG, "["++"] MOD track length: %11.6f sec", fileName, (float)music.totalSamples/48000.0f);
+                    TRACELOG(LOG_DEBUG, "["++"] MOD number of samples: " + fileName, music.samplesLeft);
+                    TRACELOG(LOG_DEBUG, "["++"] MOD track length: %11.6f sec", fileName, (float)music.totalSamples/48000.0f);
                 }
-                else Tracelog(LOG_WARNING, "["++"] MOD file could not be opened", fileName);
+                else TRACELOG(LOG_WARNING, "["++"] MOD file could not be opened", fileName);
             }
         #endif
         */
     else {
-        Tracelog(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
+        TRACELOG(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
         }
 
         return music;
@@ -806,7 +806,7 @@ public class rAudioAL {
         int state = alGetSourcei(music.stream.source, AL_SOURCE_STATE);
 
         if (state == AL_PAUSED) {
-            Tracelog(LOG_INFO, "[AUD ID "+music.stream.source+"] Resume music stream playing");
+            TRACELOG(LOG_INFO, "[AUD ID "+music.stream.source+"] Resume music stream playing");
             alSourcePlay(music.stream.source);
         }
     }
@@ -987,7 +987,7 @@ public class rAudioAL {
             stream.channels = channels;
         }
         else {
-            Tracelog(LOG_WARNING, "Init audio stream: Number of channels not supported: " + channels);
+            TRACELOG(LOG_WARNING, "Init audio stream: Number of channels not supported: " + channels);
             stream.channels = 1;  // Fallback to mono channel
         }
 
@@ -997,7 +997,7 @@ public class rAudioAL {
                 case 8: stream.format = AL_FORMAT_MONO8; break;
                 case 16: stream.format = AL_FORMAT_MONO16; break;
                 case 32: stream.format = AL_FORMAT_MONO_FLOAT32; break;     // Requires OpenAL extension: AL_EXT_FLOAT32
-                default: Tracelog(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize); break;
+                default: TRACELOG(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize); break;
             }
         }
         else if (stream.channels == 2) {
@@ -1012,7 +1012,7 @@ public class rAudioAL {
                     stream.format = AL_FORMAT_STEREO_FLOAT32;
                     break;   // Requires OpenAL extension: AL_EXT_FLOAT32
                 default:
-                    Tracelog(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize);
+                    TRACELOG(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize);
                     break;
             }
         }
@@ -1041,7 +1041,7 @@ public class rAudioAL {
 
         alSourceQueueBuffers(stream.source, stream.buffers);
 
-        Tracelog(LOG_INFO, "[AUD ID "+ stream.source+"] Audio stream loaded successfully ("+stream.sampleRate+" Hz, "+stream.sampleSize+" bit, "+((stream.channels == 1) ? "Mono" : "Stereo")+")");
+        TRACELOG(LOG_INFO, "[AUD ID "+ stream.source+"] Audio stream loaded successfully ("+stream.sampleRate+" Hz, "+stream.sampleSize+" bit, "+((stream.channels == 1) ? "Mono" : "Stereo")+")");
 
         return stream;
     }
@@ -1065,7 +1065,7 @@ public class rAudioAL {
         alDeleteSources(stream.source);
         alDeleteBuffers(stream.buffers);
 
-        Tracelog(LOG_INFO, "[AUD ID "+stream.source+"] Unloaded audio stream data");
+        TRACELOG(LOG_INFO, "[AUD ID "+stream.source+"] Unloaded audio stream data");
     }
 
     // Update audio stream buffers with data
@@ -1080,7 +1080,7 @@ public class rAudioAL {
             alSourceQueueBuffers(stream.source, buffer);
         }
         else {
-            Tracelog(LOG_WARNING, "[AUD ID "+stream.source+"] Audio buffer not available for unqueuing");
+            TRACELOG(LOG_WARNING, "[AUD ID "+stream.source+"] Audio buffer not available for unqueuing");
         }
     }
 
@@ -1226,10 +1226,10 @@ public class rAudioAL {
             wave.sampleSize = 16;
 
             // NOTE: Only support up to 2 channels (mono, stereo)
-            if (wave.channels > 2) Tracelog(LOG_WARNING, "["++"] FLAC channels number ("++") not supported", fileName, wave.channels);
+            if (wave.channels > 2) TRACELOG(LOG_WARNING, "["++"] FLAC channels number ("++") not supported", fileName, wave.channels);
 
-            if (wave.data == null) Tracelog(LOG_WARNING, "["++"] FLAC data could not be loaded", fileName);
-            else Tracelog(LOG_INFO, "["++"] FLAC file loaded successfully ("++" Hz, "++" bit, %s)", fileName, wave.sampleRate, wave.sampleSize, (wave.channels == 1) ? "Mono" : "Stereo");
+            if (wave.data == null) TRACELOG(LOG_WARNING, "["++"] FLAC data could not be loaded", fileName);
+            else TRACELOG(LOG_INFO, "["++"] FLAC file loaded successfully ("++" Hz, "++" bit, %s)", fileName, wave.sampleRate, wave.sampleSize, (wave.channels == 1) ? "Mono" : "Stereo");
 
             return wave;
         }

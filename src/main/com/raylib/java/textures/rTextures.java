@@ -32,7 +32,7 @@ import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5;
 import static com.raylib.java.structs.NPatchInfo.NPatchType.*;
 import static com.raylib.java.textures.rTextures.CubemapLayoutType.*;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.stb.STBImageResize.stbir_resize_uint8;
@@ -78,11 +78,11 @@ public class rTextures{
             image = LoadImageFromMemory(fileName.substring(fileName.lastIndexOf('.')), fileData, fileSize);
 
             if (image.data != null) {
-                Tracelog(LOG_INFO, "IMAGE: [" + fileName + "] Data loaded successfully (" +
+                TRACELOG(LOG_INFO, "IMAGE: [" + fileName + "] Data loaded successfully (" +
                         image.width + "x" + image.height + ")");
             }
             else{
-                Tracelog(LOG_WARNING, "IMAGE: [" + fileName + "] Failed to load data");
+                TRACELOG(LOG_WARNING, "IMAGE: [" + fileName + "] Failed to load data");
             }
 
         }
@@ -207,7 +207,7 @@ public class rTextures{
                         ByteBuffer imgBuffer = STBImage.stbi_load_from_memory(fileDataBuffer, widthBuffer,
                                                                               heightBuffer, compBuffer, 0);
                         if (imgBuffer == null) {
-                            Tracelog(LOG_WARNING, "Failed to load image: " + fileType + "\t" + STBImage.stbi_failure_reason());
+                            TRACELOG(LOG_WARNING, "Failed to load image: " + fileType + "\t" + STBImage.stbi_failure_reason());
                         }
                         image.width = widthBuffer.get();
                         image.height = heightBuffer.get();
@@ -255,7 +255,7 @@ public class rTextures{
                         ByteBuffer imgBuffer = STBImage.stbi_load_from_memory(fileDataBuffer, widthBuffer,
                                                                               heightBuffer, compBuffer, 0);
                         if (imgBuffer == null) {
-                            Tracelog(LOG_WARNING, "Failed to load image " + fileType + "\n\t" + STBImage.stbi_failure_reason());
+                            TRACELOG(LOG_WARNING, "Failed to load image " + fileType + "\n\t" + STBImage.stbi_failure_reason());
                         }
                         image.width = widthBuffer.get();
                         image.height = heightBuffer.get();
@@ -284,7 +284,7 @@ public class rTextures{
                         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32;
                     }
                     else {
-                        Tracelog(LOG_WARNING, "IMAGE: HDR file format not supported");
+                        TRACELOG(LOG_WARNING, "IMAGE: HDR file format not supported");
                         UnloadImage(image);
                     }
                 }
@@ -300,15 +300,15 @@ public class rTextures{
                 * ASTC
             */
         else {
-            Tracelog(LOG_WARNING, "IMAGE: Data format not supported");
+            TRACELOG(LOG_WARNING, "IMAGE: Data format not supported");
         }
 
         if (image.data != null) {
-            Tracelog(LOG_INFO, "IMAGE: Data loaded successfully (" + image.width + "x" + image.height + " | " +
+            TRACELOG(LOG_INFO, "IMAGE: Data loaded successfully (" + image.width + "x" + image.height + " | " +
                     rlGetPixelFormatName(image.format) + " | " + image.mipmaps + " mipmaps)");
         }
         else {
-            Tracelog(LOG_WARNING, "IMAGE: Failed to load image data");
+            TRACELOG(LOG_WARNING, "IMAGE: Failed to load image data");
         }
 
         return image;
@@ -398,10 +398,10 @@ public class rTextures{
         }    // SUPPORT_IMAGE_EXPORT
 
         if (success) {
-            Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Image exported successfully");
+            TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Image exported successfully");
         }
         else{
-            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export image");
+            TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export image");
         }
 
         return success;
@@ -467,10 +467,10 @@ public class rTextures{
         }     // SUPPORT_IMAGE_EXPORT
 
         if (success) {
-            Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Image as code exported successfully");
+            TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Image as code exported successfully");
         }
         else {
-            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export image as code");
+            TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export image as code");
         }
 
         return success;
@@ -780,13 +780,13 @@ public class rTextures{
         if ((crop.x + crop.width) > image.width) crop.width = image.width - crop.x;
         if ((crop.y + crop.height) > image.height) crop.height = image.height - crop.y;
         if ((crop.x > image.width) || (crop.y > image.height)) {
-            Tracelog(LOG_WARNING, "IMAGE: Failed to crop, rectangle out of bounds");
+            TRACELOG(LOG_WARNING, "IMAGE: Failed to crop, rectangle out of bounds");
             return;
         }
 
-        if (image.mipmaps > 1) Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -958,7 +958,7 @@ public class rTextures{
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "IMAGE: Data format is compressed, can not be converted");
+                TRACELOG(LOG_WARNING, "IMAGE: Data format is compressed, can not be converted");
             }
         }
 
@@ -1064,7 +1064,7 @@ public class rTextures{
             // Scale image depending on text size
             if (textSize.y != imSize.y) {
                 float scaleFactor = textSize.y / imSize.y;
-                Tracelog(LOG_INFO, "IMAGE: Text scaled by factor: " + scaleFactor);
+                TRACELOG(LOG_INFO, "IMAGE: Text scaled by factor: " + scaleFactor);
 
                 // Using nearest-neighbor scaling algorithm for default font
                 // TODO: Allow defining the preferred scaling mechanism externally
@@ -1079,7 +1079,7 @@ public class rTextures{
         }
         else {
             imText = GenImageColor(200, 60, Color.BLACK);     // Generating placeholder black image rectangle
-            Tracelog(LOG_WARNING, "IMAGE: ImageTextEx() requires module: rtext");
+            TRACELOG(LOG_WARNING, "IMAGE: ImageTextEx() requires module: rtext");
         }
 
         return imText;
@@ -1110,10 +1110,10 @@ public class rTextures{
         }
 
         if (image.mipmaps > 1) {
-            Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         }
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
             switch (image.format) {
@@ -1191,10 +1191,10 @@ public class rTextures{
     // NOTE 2: alphaMask should be same size as image
     public void ImageAlphaMask(Image image, Image alphaMask) {
         if ((image.width != alphaMask.width) || (image.height != alphaMask.height)) {
-            Tracelog(LOG_WARNING, "IMAGE: Alpha mask must be same size as image");
+            TRACELOG(LOG_WARNING, "IMAGE: Alpha mask must be same size as image");
         }
         else if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "IMAGE: Alpha mask can not be applied to compressed data formats");
+            TRACELOG(LOG_WARNING, "IMAGE: Alpha mask can not be applied to compressed data formats");
         }
         else{
             // Force mask to be Grayscale
@@ -1519,10 +1519,10 @@ public class rTextures{
         }
 
         if (result.mipmaps > 1) {
-            Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         }
         if (result.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else if ((newWidth != result.width) || (newHeight != result.height)) {
             Rectangle srcRec = new Rectangle(0, 0, (float) result.width, (float) result.height);
@@ -1610,7 +1610,7 @@ public class rTextures{
                 mipHeight = 1;
             }
 
-            Tracelog.Tracelog("IMAGE: Next mipmap level: " + mipWidth + " x " + mipHeight + " - current size " + mipSize);
+            Tracelog.TRACELOG("IMAGE: Next mipmap level: " + mipWidth + " x " + mipHeight + " - current size " + mipSize);
 
             mipCount++;
             mipSize += GetPixelDataSize(mipWidth, mipHeight, image.format);       // Add mipmap size (in bytes)
@@ -1623,7 +1623,7 @@ public class rTextures{
                 image.data = temp;      // Assign new pointer (new size) to store mipmaps data
             }
             else{
-                Tracelog(LOG_WARNING, "IMAGE: Mipmaps required memory could not be allocated");
+                TRACELOG(LOG_WARNING, "IMAGE: Mipmaps required memory could not be allocated");
             }
 
             // Pointer to allocated memory point where store next mipmap level data
@@ -1635,7 +1635,7 @@ public class rTextures{
             Image imCopy = ImageCopy(image);
 
             for (int i = 1; i < mipCount; i++) {
-                Tracelog.Tracelog("IMAGE: Generating mipmap level: " + i + " (" + mipWidth + " x " + mipHeight + ")" +
+                Tracelog.TRACELOG("IMAGE: Generating mipmap level: " + i + " (" + mipWidth + " x " + mipHeight + ")" +
                                   " - size: " + mipSize + " - offset: " + nextmip);
 
                 ImageResize(imCopy, mipWidth, mipHeight);  // Uses internally Mitchell cubic downscale filter
@@ -1661,7 +1661,7 @@ public class rTextures{
             UnloadImage(imCopy);
         }
         else{
-            Tracelog(LOG_WARNING, "IMAGE: Mipmaps already available");
+            TRACELOG(LOG_WARNING, "IMAGE: Mipmaps already available");
         }
     }
 
@@ -1673,19 +1673,19 @@ public class rTextures{
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "IMAGE: Compressed data formats can not be dithered");
+            TRACELOG(LOG_WARNING, "IMAGE: Compressed data formats can not be dithered");
             return;
         }
 
         if ((rBpp + gBpp + bBpp + aBpp) > 16) {
-            Tracelog(LOG_WARNING, "IMAGE: Unsupported dithering bpps (" + (rBpp + gBpp + bBpp + aBpp) + "bpp), only 16bpp or lower modes supported");
+            TRACELOG(LOG_WARNING, "IMAGE: Unsupported dithering bpps (" + (rBpp + gBpp + bBpp + aBpp) + "bpp), only 16bpp or lower modes supported");
         }
         else{
             Color[] pixels = Color.FromPixels(LoadImageColors(image));
 
 
             if ((image.format != RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8) && (image.format != RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)) {
-                Tracelog(LOG_WARNING, "IMAGE: Format is already 16bpp or lower, dithering could have no effect");
+                TRACELOG(LOG_WARNING, "IMAGE: Format is already 16bpp or lower, dithering could have no effect");
             }
 
             // Define new image format, check if desired bpp match internal known format
@@ -1700,7 +1700,7 @@ public class rTextures{
             }
             else{
                 image.format = 0;
-                Tracelog(LOG_WARNING, "IMAGE: Unsupported dithered OpenGL internal format: " +
+                TRACELOG(LOG_WARNING, "IMAGE: Unsupported dithered OpenGL internal format: " +
                         (rBpp + gBpp + bBpp + aBpp) + "bpp (R" + rBpp + "G" + gBpp + "B" + bBpp + "A" + aBpp + ")");
             }
 
@@ -1775,9 +1775,9 @@ public class rTextures{
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
-        if (image.mipmaps > 1) Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -1798,9 +1798,9 @@ public class rTextures{
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
-        if (image.mipmaps > 1) Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -1825,9 +1825,9 @@ public class rTextures{
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
-        if (image.mipmaps > 1) Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -1856,9 +1856,9 @@ public class rTextures{
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
-        if (image.mipmaps > 1) Tracelog(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -2078,12 +2078,12 @@ public class rTextures{
         byte[] pixels = new byte[image.width * image.height * 4];
 
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
+            TRACELOG(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
             if ((image.format == RL_PIXELFORMAT_UNCOMPRESSED_R32) || (image.format == RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32) ||
                     (image.format == RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)) {
-                Tracelog(LOG_WARNING, "IMAGE: Pixel format converted from 32bit to 8bit per channel");
+                TRACELOG(LOG_WARNING, "IMAGE: Pixel format converted from 32bit to 8bit per channel");
             }
 
             for (int i = 0, k = 0; i < pixels.length; i+=4) {
@@ -2223,7 +2223,7 @@ public class rTextures{
                         // We reached the limit of colors supported by palette
                         if (palCount >= maxPaletteSize) {
                             i = image.width * image.height;   // Finish palette get
-                            Tracelog(LOG_WARNING, "IMAGE: Palette is greater than " + maxPaletteSize + " colors");
+                            TRACELOG(LOG_WARNING, "IMAGE: Palette is greater than " + maxPaletteSize + " colors");
                         }
                     }
                 }
@@ -2254,7 +2254,7 @@ public class rTextures{
         }
 
         if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
+            TRACELOG(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
             byte[] imgData = image.getData();
@@ -2478,11 +2478,11 @@ public class rTextures{
 
                 } break;
                 default:
-                    Tracelog(LOG_WARNING, "Compressed image format does not support color reading");
+                    TRACELOG(LOG_WARNING, "Compressed image format does not support color reading");
                     break;
             }
         }
-        else Tracelog(LOG_WARNING, "Requested image pixel (" + x + ", " + y + ") out of bounds");
+        else TRACELOG(LOG_WARNING, "Requested image pixel (" + x + ", " + y + ") out of bounds");
 
         return color;
     }
@@ -2774,10 +2774,10 @@ public class rTextures{
         }
 
         if (dst.mipmaps > 1) {
-            Tracelog(LOG_WARNING, "Image drawing only applied to base mipmap level");
+            TRACELOG(LOG_WARNING, "Image drawing only applied to base mipmap level");
         }
         if (dst.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            Tracelog(LOG_WARNING, "Image drawing not supported for compressed formats");
+            TRACELOG(LOG_WARNING, "Image drawing not supported for compressed formats");
         }
         else {
             Image srcMod = src;       // Source copy (in case it was required)
@@ -2957,7 +2957,7 @@ public class rTextures{
             texture.id = rlLoadTexture(image.data, image.width, image.height, image.format, image.mipmaps);
         }
         else{
-            Tracelog(LOG_WARNING, "IMAGE: Data is not valid to load texture");
+            TRACELOG(LOG_WARNING, "IMAGE: Data is not valid to load texture");
         }
 
         texture.width = image.width;
@@ -3064,13 +3064,13 @@ public class rTextures{
 
             cubemap.id = RLGL.rlLoadTextureCubemap(faces.getData(), size, faces.format);
             if (cubemap.id == 0) {
-                Tracelog(LOG_WARNING, "IMAGE: Failed to load cubemap image");
+                TRACELOG(LOG_WARNING, "IMAGE: Failed to load cubemap image");
             }
 
             UnloadImage(faces);
         }
         else{
-            Tracelog(LOG_WARNING, "IMAGE: Failed to detect cubemap image layout");
+            TRACELOG(LOG_WARNING, "IMAGE: Failed to detect cubemap image layout");
         }
 
         return cubemap;
@@ -3107,13 +3107,13 @@ public class rTextures{
 
             // Check if fbo is complete with attachments (valid)
             if (RLGL.rlFramebufferComplete(target.id)) {
-                Tracelog(LOG_INFO, "FBO: [ID " + target.id + "] Framebuffer object created successfully");
+                TRACELOG(LOG_INFO, "FBO: [ID " + target.id + "] Framebuffer object created successfully");
             }
 
             rlDisableFramebuffer();
         }
         else{
-            Tracelog(LOG_WARNING, "FBO: Framebuffer object can not be created");
+            TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
         }
 
         return target;
@@ -3123,7 +3123,7 @@ public class rTextures{
         if (texture.getId() > 0) {
             RLGL.rlUnloadTexture(texture.getId());
 
-            Tracelog(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Unloaded texture data from VRAM (GPU)");
+            TRACELOG(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Unloaded texture data from VRAM (GPU)");
         }
     }
 
@@ -3172,14 +3172,14 @@ public class rTextures{
                     // original texture format is retrieved on RPI...
                     image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
                 }
-                Tracelog(LOG_INFO, "TEXTURE: [ID " + texture.id + "] Pixel data retrieved successfully");
+                TRACELOG(LOG_INFO, "TEXTURE: [ID " + texture.id + "] Pixel data retrieved successfully");
             }
             else{
-                Tracelog(LOG_WARNING, "TEXTURE: [ID " + texture.id + "] Failed to retrieve pixel data");
+                TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.id + "] Failed to retrieve pixel data");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "TEXTURE: [ID " + texture.id + "] Failed to retrieve compressed pixel data");
+            TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.id + "] Failed to retrieve compressed pixel data");
         }
 
         return image;
@@ -3252,7 +3252,7 @@ public class rTextures{
                     rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
                 }
                 else{
-                    Tracelog(LOG_WARNING, "TEXTURE: [ID " + texture.id
+                    TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.id
                             + "] No mipmaps available for TRILINEAR texture filtering");
 
                     // RL_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps

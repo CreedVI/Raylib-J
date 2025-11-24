@@ -42,7 +42,7 @@ import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -122,44 +122,44 @@ public class rCore{
      * @param title  Window title - passing null will use a default title
      */
     public void InitWindow(int width, int height, String title){
-        Tracelog(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
-        Tracelog(LOG_INFO, "Supported raylib modules: ");
-        Tracelog(LOG_INFO, "    > rcore:..... loaded (mandatory)");
-        Tracelog(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
+        TRACELOG(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
+        TRACELOG(LOG_INFO, "Supported raylib modules: ");
+        TRACELOG(LOG_INFO, "    > rcore:..... loaded (mandatory)");
+        TRACELOG(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
 
         if(SUPPORT_MODULE_RSHAPES) {
-            Tracelog(LOG_INFO, "    > rshapes:... loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rshapes:... loaded (optional)");
         }
         else {
-            Tracelog(LOG_INFO, "    > rshapes:... not loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rshapes:... not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RTEXTURES) {
-            Tracelog(LOG_INFO, "    > rtextures:. loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rtextures:. loaded (optional)");
         }
         else {
-            Tracelog(LOG_INFO, "    > rtextures:. not loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rtextures:. not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RTEXT) {
-            Tracelog(LOG_INFO, "    > rtext:..... loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rtext:..... loaded (optional)");
         }
         else {
-            Tracelog(LOG_INFO, "    > rtext:..... not loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rtext:..... not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RMODELS) {
-            Tracelog(LOG_INFO, "    > rmodels:... loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rmodels:... loaded (optional)");
         }
         else {
-            Tracelog(LOG_INFO, "    > rmodels:... not loaded (optional)");
+            TRACELOG(LOG_INFO, "    > rmodels:... not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RAUDIO) {
-            Tracelog(LOG_INFO, "    > raudio:.... loaded (optional)");
+            TRACELOG(LOG_INFO, "    > raudio:.... loaded (optional)");
         }
         else {
-            Tracelog(LOG_INFO, "    > raudio:.... not loaded (optional)");
+            TRACELOG(LOG_INFO, "    > raudio:.... not loaded (optional)");
         }
 
 
@@ -232,7 +232,7 @@ public class rCore{
         glfwDestroyWindow(window.handle);
         glfwTerminate();
 
-        Tracelog(LOG_INFO, "Window closed successfully");
+        TRACELOG(LOG_INFO, "Window closed successfully");
     }
 
     /**
@@ -335,7 +335,7 @@ public class rCore{
             long monitor = (monitorIndex < monitorCount) ? monitors.get(monitorIndex) : -1;
 
             if (monitor < 0){
-                Tracelog(LOG_WARNING, "GLFW: Failed to get monitor");
+                TRACELOG(LOG_WARNING, "GLFW: Failed to get monitor");
                 window.setFullscreen(false);
                 window.flags &= ~FLAG_FULLSCREEN_MODE;
 
@@ -439,10 +439,10 @@ public class rCore{
                     window.flags &= ~FLAG_BORDERLESS_WINDOWED_MODE;
                 }
             } else {
-                Tracelog(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+                TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
             }
         } else {
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
     }
 
@@ -543,13 +543,13 @@ public class rCore{
 
         // State change: FLAG_WINDOW_TRANSPARENT
         if (((window.flags & FLAG_WINDOW_TRANSPARENT) != (flags & FLAG_WINDOW_TRANSPARENT)) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
-            Tracelog(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window " +
+            TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window " +
                     "initialization");
         }
 
         // State change: FLAG_WINDOW_HIGHDPI
         if (((window.flags & FLAG_WINDOW_HIGHDPI) != (flags & FLAG_WINDOW_HIGHDPI)) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
-            Tracelog(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
@@ -563,12 +563,12 @@ public class rCore{
 
         // State change: FLAG_MSAA_4X_HINT
         if (((window.flags & FLAG_MSAA_4X_HINT) != (flags & FLAG_MSAA_4X_HINT)) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
-            Tracelog(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
         }
 
         // State change: FLAG_INTERLACED_HINT
         if (((window.flags & FLAG_INTERLACED_HINT) != (flags & FLAG_INTERLACED_HINT)) && ((flags & FLAG_INTERLACED_HINT) > 0)){
-            Tracelog(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
         }
     }
 
@@ -637,12 +637,12 @@ public class rCore{
 
         // State change: FLAG_WINDOW_TRANSPARENT
         if (((window.flags & FLAG_WINDOW_TRANSPARENT) > 0) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
-            Tracelog(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_HIGHDPI
         if (((window.flags & FLAG_WINDOW_HIGHDPI) > 0) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
-            Tracelog(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
@@ -653,12 +653,12 @@ public class rCore{
 
         // State change: FLAG_MSAA_4X_HINT
         if (((window.flags & FLAG_MSAA_4X_HINT) > 0) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
-            Tracelog(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
         }
 
         // State change: FLAG_INTERLACED_HINT
         if (((window.flags & FLAG_INTERLACED_HINT) > 0) && ((flags & FLAG_INTERLACED_HINT) > 0)){
-            Tracelog(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
+            TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
         }
     }
 
@@ -683,7 +683,7 @@ public class rCore{
             iconBuffer.free();
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: window icon image must be in R8G8B8A8 pixel format");
+            TRACELOG(LOG_WARNING, "GLFW: window icon image must be in R8G8B8A8 pixel format");
         }
     }
 
@@ -707,7 +707,7 @@ public class rCore{
                             ByteBuffer.wrap(image.getData())
                     );
                 } else{
-                    Tracelog(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
+                    TRACELOG(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
                 }
             }
             // NOTE: Images data is copied internally before this function returns
@@ -734,13 +734,13 @@ public class rCore{
         PointerBuffer monitors = glfwGetMonitors();
 
         if ((monitor >= 0) && (monitor < monitorCount)){
-            Tracelog(LOG_INFO, "GLFW: Selected fullscreen monitor: [" + monitor + "] " + glfwGetMonitorName(monitor));
+            TRACELOG(LOG_INFO, "GLFW: Selected fullscreen monitor: [" + monitor + "] " + glfwGetMonitorName(monitor));
 
             GLFWVidMode mode = glfwGetVideoMode(monitor);
             glfwSetWindowMonitor(window.handle, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
     }
 
@@ -905,7 +905,7 @@ public class rCore{
             return new Vector2(x.get(0), y.get(0));
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return null;
     }
@@ -924,11 +924,11 @@ public class rCore{
                 return modes.width();
             }
             else{
-                Tracelog(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+                TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
     }
@@ -947,11 +947,11 @@ public class rCore{
                 return modes.height();
             }
             else{
-                Tracelog(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+                TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
             return 0;
         }
         return 0;
@@ -969,7 +969,7 @@ public class rCore{
             return physicalWidth;
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
     }
@@ -986,7 +986,7 @@ public class rCore{
             return physicalHeight;
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
     }
@@ -1002,7 +1002,7 @@ public class rCore{
                 return vidmode.refreshRate();
             }
             else {
-                Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+                TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
             }
         }
         /*
@@ -1079,7 +1079,7 @@ public class rCore{
             return glfwGetMonitorName(monitor);
         }
         else{
-            Tracelog(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return "";
     }
@@ -1520,7 +1520,7 @@ public class rCore{
             */
         }
         else{
-            Tracelog(LOG_WARNING, "RLGL: VR Simulator not supported on OpenGL 1.1");
+            TRACELOG(LOG_WARNING, "RLGL: VR Simulator not supported on OpenGL 1.1");
         }
 
         return config;
@@ -1892,7 +1892,7 @@ public class rCore{
             time.setTarget(1.0 / (double) fps);
         }
 
-        Tracelog(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000.0f + " milliseconds");
+        TRACELOG(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000.0f + " milliseconds");
     }
 
     /**
@@ -1958,7 +1958,7 @@ public class rCore{
     public void TakeScreenshot(String fileName){
         if (SUPPORT_MODULE_RTEXTURES) {
             if (fileName.contains("\\")) {
-                Tracelog(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\\'] character");
+                TRACELOG(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\\'] character");
                 return;
             }
 
@@ -1975,10 +1975,10 @@ public class rCore{
             context.textures.ExportImage(image, path); // WARNING: Module required: rtextures
 
             // TODO: Verification required for log
-            Tracelog(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
+            TRACELOG(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
         }
         else {
-            Tracelog(LOG_WARNING,"IMAGE: ExportImage() requires module: rtextures");
+            TRACELOG(LOG_WARNING,"IMAGE: ExportImage() requires module: rtextures");
         }
     }
 
@@ -2715,14 +2715,14 @@ public class rCore{
         glfwSetErrorCallback(callback.errorCallback);
 
         if (!glfwInit()){
-            Tracelog(LOG_WARNING, "GLFW: Failed to initialize GLFW");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to initialize GLFW");
             return false;
         }
 
         // Find monitor resolution
         long monitor = glfwGetPrimaryMonitor();
         if (monitor < 0){
-            Tracelog(LOG_WARNING, "GLFW: Failed to get primary monitor");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to get primary monitor");
             return false;
         }
         GLFWVidMode mode = glfwGetVideoMode(monitor);
@@ -2830,7 +2830,7 @@ public class rCore{
         }
 
         if ((window.getFlags() & FLAG_MSAA_4X_HINT) > 0){
-            Tracelog(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
+            TRACELOG(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
             glfwWindowHint(GLFW_SAMPLES, 4);   // Tries to enable multisampling x4 (MSAA), default is 0
         }
 
@@ -2903,7 +2903,7 @@ public class rCore{
                 }
             }
 
-            Tracelog(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.getWidth() + "x" + window.display.getHeight());
+            TRACELOG(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.getWidth() + "x" + window.display.getHeight());
 
             // NOTE: ISSUE: Closest video mode could not match monitor aspect-ratio, for example,
             // for a desired screen size of 800x450 (16:9), the closest supported video mode is 800x600 (4:3),
@@ -2952,18 +2952,18 @@ public class rCore{
 
         if (window.handle <= 0){
             glfwTerminate();
-            Tracelog(LOG_WARNING, "GLFW: Failed to initialize Window");
+            TRACELOG(LOG_WARNING, "GLFW: Failed to initialize Window");
             return false;
         }
         else{
-            Tracelog(LOG_INFO, "DISPLAY: Device initialized successfully");
-            Tracelog(LOG_INFO,
+            TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
+            TRACELOG(LOG_INFO,
                      "    > Display size: " + window.display.getWidth() + " x " + window.display.getHeight());
-            Tracelog(LOG_INFO,
+            TRACELOG(LOG_INFO,
                      "    > Render size:  " + window.render.getWidth() + " x " + window.render.getHeight());
-            Tracelog(LOG_INFO,
+            TRACELOG(LOG_INFO,
                      "    > Screen size:  " + window.screen.getWidth() + " x " + window.screen.getHeight());
-            Tracelog(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
+            TRACELOG(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
         }
 
         // Set window callback events
@@ -3049,7 +3049,7 @@ public class rCore{
     void SetupFramebuffer(int width, int height){
         // Calculate window.render.getWidth() and window.render.getHeight(), we have the display size (input params) and the desired screen size (global var)
         if ((window.screen.getWidth() > window.display.getWidth()) || (window.screen.getHeight() > window.display.getHeight())){
-            Tracelog(LOG_WARNING, "DISPLAY: Downscaling required: Screen size (" + window.screen.getWidth() + "x" +
+            TRACELOG(LOG_WARNING, "DISPLAY: Downscaling required: Screen size (" + window.screen.getWidth() + "x" +
                     window.screen.getHeight() + ") is bigger than display size " + "(" + window.display.getWidth() + "x" +
                     window.display.getHeight() + ")");
 
@@ -3079,12 +3079,12 @@ public class rCore{
             window.render.setWidth(window.display.getWidth());
             window.render.setHeight(window.display.getHeight());
 
-            Tracelog(LOG_WARNING, "DISPLAY: Downscale matrix generated, content will be rendered at (" +
+            TRACELOG(LOG_WARNING, "DISPLAY: Downscale matrix generated, content will be rendered at (" +
                     window.render.getWidth() + "x" + window.render.getHeight() + ")");
         }
         else if ((window.screen.getWidth() < window.display.getWidth()) || (window.screen.getHeight() < window.display.getHeight())){
             // Required screen size is smaller than display size
-            Tracelog(LOG_INFO, "DISPLAY: Upscaling required: Screen size (" + window.screen.getWidth() + "x" +
+            TRACELOG(LOG_INFO, "DISPLAY: Upscaling required: Screen size (" + window.screen.getWidth() + "x" +
                     window.screen.getHeight() + ") smaller than display size (" + window.display.getWidth() + "x" +
                     window.display.getHeight() + ")");
 
@@ -3399,12 +3399,12 @@ public class rCore{
             }
 
             if (count != eventCount) {
-                Tracelog(LOG_WARNING, "Events count provided is different than count");
+                TRACELOG(LOG_WARNING, "Events count provided is different than count");
             }
 
         }
 
-        Tracelog(LOG_WARNING, "Events loaded: " + eventCount);
+        TRACELOG(LOG_WARNING, "Events loaded: " + eventCount);
     }
 
     // Export recorded events into a file
@@ -3455,7 +3455,7 @@ public class rCore{
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -3467,7 +3467,7 @@ public class rCore{
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
         }
@@ -3481,7 +3481,7 @@ public class rCore{
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -3493,7 +3493,7 @@ public class rCore{
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
         }
@@ -3506,7 +3506,7 @@ public class rCore{
             events.get(eventCount).params[1] = (int)input.mouse.currentPosition.y;
             events.get(eventCount).params[2] = 0;
 
-            Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
             eventCount++;
         }
 
@@ -3518,7 +3518,7 @@ public class rCore{
             events.get(eventCount).params[1] = (int) input.mouse.currentWheelMove.y;
             events.get(eventCount).params[2] = 0;
 
-            Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
             eventCount++;
         }
 
@@ -3531,7 +3531,7 @@ public class rCore{
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -3543,7 +3543,7 @@ public class rCore{
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -3557,7 +3557,7 @@ public class rCore{
                 events.get(eventCount).params[1] = (int)input.touch.currentPosition[id].x;
                 events.get(eventCount).params[2] = (int)input.touch.currentPosition[id].y;
 
-                Tracelog(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events.get(eventCount).frame, events.get(eventCount).params[0], events.get(eventCount).params[1], events.get(eventCount).params[2]);
+                TRACELOG(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events.get(eventCount).frame, events.get(eventCount).params[0], events.get(eventCount).params[1], events.get(eventCount).params[2]);
                 eventCount++;
             }
             */
@@ -3589,7 +3589,7 @@ public class rCore{
                     events.get(eventCount).params[1] = button;
                     events.get(eventCount).params[2] = 0;
 
-                    Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                     eventCount++;
                 }
 
@@ -3601,7 +3601,7 @@ public class rCore{
                     events.get(eventCount).params[1] = button;
                     events.get(eventCount).params[2] = 0;
 
-                    Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                     eventCount++;
                 }
             }
@@ -3615,7 +3615,7 @@ public class rCore{
                     events.get(eventCount).params[1] = axis;
                     events.get(eventCount).params[2] = (int)(input.gamepad.axisState[gamepad][axis]*32768.0f);
 
-                    Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                     eventCount++;
                 }
             }
@@ -3630,7 +3630,7 @@ public class rCore{
             events.get(eventCount).params[1] = 0;
             events.get(eventCount).params[2] = 0;
 
-            Tracelog(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GESTURE: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GESTURE: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
             eventCount++;
         }
         */

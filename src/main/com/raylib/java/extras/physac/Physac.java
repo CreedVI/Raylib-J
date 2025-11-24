@@ -4,6 +4,7 @@ import com.raylib.java.structs.Vector2;
 
 import static com.raylib.java.extras.physac.Physac.PhysicsShapeType.PHYSICS_CIRCLE;
 import static com.raylib.java.extras.physac.Physac.PhysicsShapeType.PHYSICS_POLYGON;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 
 public class Physac{
 
@@ -185,10 +186,10 @@ public class Physac{
             bodies[physicsBodiesCount] = body;
             physicsBodiesCount++;
 
-            Tracelog("[PHYSAC] Physic body created successfully (id: " + body.id + ")");
+            TRACELOG("[PHYSAC] Physic body created successfully (id: " + body.id + ")");
         }
         else{
-            Tracelog("[PHYSAC] Physic body could not be created, PHYSAC_MAX_BODIES reached");
+            TRACELOG("[PHYSAC] Physic body could not be created, PHYSAC_MAX_BODIES reached");
         }
 
         return body;
@@ -264,10 +265,10 @@ public class Physac{
             bodies[physicsBodiesCount] = body;
             physicsBodiesCount++;
 
-            Tracelog("[PHYSAC] Physic body created successfully (id: " + body.id + ")");
+            TRACELOG("[PHYSAC] Physic body created successfully (id: " + body.id + ")");
         }
         else {
-            Tracelog("[PHYSAC] Physics body could not be created, PHYSAC_MAX_BODIES reached");
+            TRACELOG("[PHYSAC] Physics body could not be created, PHYSAC_MAX_BODIES reached");
         }
 
         return body;
@@ -416,7 +417,7 @@ public class Physac{
             }
         }
         else {
-            Tracelog("[PHYSAC] WARNING: PhysicsShatter: null physic body");
+            TRACELOG("[PHYSAC] WARNING: PhysicsShatter: null physic body");
         }
     }
 
@@ -433,11 +434,11 @@ public class Physac{
             body = bodies[index];
 
             if (body == null){
-                Tracelog("[PHYSAC] WARNING: GetPhysicsBody: null physic body");
+                TRACELOG("[PHYSAC] WARNING: GetPhysicsBody: null physic body");
             }
         }
         else {
-            Tracelog("[PHYSAC] WARNING: Physic body index is out of bounds");
+            TRACELOG("[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return body;
@@ -454,11 +455,11 @@ public class Physac{
                 result = body.shape.type;
             }
             else {
-                Tracelog("[PHYSAC] WARNING: GetPhysicsShapeType: null physic body");
+                TRACELOG("[PHYSAC] WARNING: GetPhysicsShapeType: null physic body");
             }
         }
         else {
-            Tracelog("[PHYSAC] WARNING: Physic body index is out of bounds");
+            TRACELOG("[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return result;
@@ -484,11 +485,11 @@ public class Physac{
                 }
             }
             else {
-                Tracelog("[PHYSAC] WARNING: GetPhysicsShapeVerticesCount: null physic body");
+                TRACELOG("[PHYSAC] WARNING: GetPhysicsShapeVerticesCount: null physic body");
             }
         }
         else {
-            Tracelog("[PHYSAC] WARNING: Physic body index is out of bounds");
+            TRACELOG("[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return result;
@@ -516,7 +517,7 @@ public class Physac{
             }
         }
         else{
-            Tracelog("[PHYSAC] WARNING: GetPhysicsShapeVertex: null physic body");
+            TRACELOG("[PHYSAC] WARNING: GetPhysicsShapeVertex: null physic body");
         }
 
         return position;
@@ -547,7 +548,7 @@ public class Physac{
             }
 
             if (index == -1) {
-                Tracelog("[PHYSAC] WARNING: Requested body (id: " + id + ") can not be found");
+                TRACELOG("[PHYSAC] WARNING: Requested body (id: " + id + ") can not be found");
                 return;     // Prevent access to index -1
             }
 
@@ -562,10 +563,10 @@ public class Physac{
             // Update physics bodies count
             physicsBodiesCount--;
 
-            Tracelog("[PHYSAC] Physic body destroyed successfully (id: " + id + ")");
+            TRACELOG("[PHYSAC] Physic body destroyed successfully (id: " + id + ")");
         }
         else {
-            Tracelog("[PHYSAC] WARNING: DestroyPhysicsBody: null physic body");
+            TRACELOG("[PHYSAC] WARNING: DestroyPhysicsBody: null physic body");
         }
     }
 
@@ -597,7 +598,7 @@ public class Physac{
             physicsManifoldsCount = 0;
         }
 
-        Tracelog("[PHYSAC] Physics module reset successfully");
+        TRACELOG("[PHYSAC] Physics module reset successfully");
     }
 
     // Unitializes physics and exits physics loop
@@ -910,7 +911,7 @@ public class Physac{
             physicsManifoldsCount++;
         }
         else {
-            Tracelog("[PHYSAC] Physic manifold could not be created, PHYSAC_MAX_MANIFOLDS reached");
+            TRACELOG("[PHYSAC] Physic manifold could not be created, PHYSAC_MAX_MANIFOLDS reached");
         }
 
         return manifold;
@@ -946,7 +947,7 @@ public class Physac{
             physicsManifoldsCount--;
         }
         else {
-            Tracelog("[PHYSAC] WARNING: DestroyPhysicsManifold: null physic manifold");
+            TRACELOG("[PHYSAC] WARNING: DestroyPhysicsManifold: null physic manifold");
         }
     }
 

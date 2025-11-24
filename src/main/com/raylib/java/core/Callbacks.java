@@ -5,7 +5,7 @@ import org.lwjgl.glfw.*;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.Config.ConfigFlag.*;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
@@ -48,7 +48,7 @@ public class Callbacks{
     class ErrorCallback extends GLFWErrorCallback{
         @Override
         public void invoke(int error, long description){
-            Tracelog(LOG_WARNING, "GLFW: Error: " + error + " Description: " + description);
+            TRACELOG(LOG_WARNING, "GLFW: Error: " + error + " Description: " + description);
         }
     }
 
@@ -61,7 +61,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, int width, int height){
-            Tracelog(LOG_DEBUG, "Window Size Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Window Size Callback Triggered");
             context.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
             context.getWindow().currentFbo.setWidth(width);
             context.getWindow().currentFbo.setHeight(height);
@@ -87,7 +87,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, boolean iconified){
-            Tracelog(LOG_DEBUG, "Iconify Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Iconify Callback Triggered");
             if (iconified){
                 context.getWindow().flags |= FLAG_WINDOW_MINIMIZED;  // The window was iconified
             }
@@ -124,7 +124,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, boolean focused){
-            Tracelog(LOG_DEBUG, "Focus Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Focus Callback Triggered");
             if (focused){
                 context.getWindow().flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
             }
@@ -188,7 +188,7 @@ public class Callbacks{
                     context.LoadAutomationEvents("eventsrec.rep");
                     context.eventsPlaying = true;
 
-                    Tracelog(LOG_WARNING, "eventsPlaying enabled!");
+                    TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
                 }
 
             }
@@ -205,7 +205,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, int codepoint){
-            Tracelog(LOG_DEBUG, "Char Callback: KEY:"+codepoint+"("+ Character.highSurrogate(codepoint) +")");
+            TRACELOG(LOG_DEBUG, "Char Callback: KEY:"+codepoint+"("+ Character.highSurrogate(codepoint) +")");
 
             // NOTE: Registers any key down considering OS keyboard layout but
             // do not detects action events, those should be managed by user...
@@ -231,7 +231,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, int button, int action, int mods){
-            Tracelog(LOG_DEBUG, "Mouse Button Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Mouse Button Callback Triggered");
             // WARNING: GLFW could only return GLFW_PRESS (1) or GLFW_RELEASE (0) for now,
             // but future releases may add more actions (i.e. GLFW_REPEAT)
             context.getInput().mouse.getCurrentButtonState()[button] = action;
@@ -247,7 +247,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, double xpos, double ypos){
-            Tracelog(LOG_DEBUG, "Cursor Position Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Cursor Position Callback Triggered");
             context.getInput().mouse.previousPosition.x = context.getInput().mouse.currentPosition.x;
             context.getInput().mouse.previousPosition.y = context.getInput().mouse.currentPosition.y;
             context.getInput().mouse.currentPosition.x = (float) xpos;
@@ -264,7 +264,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, double xoffset, double yoffset){
-            Tracelog(LOG_DEBUG, "Scroll Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Scroll Callback Triggered");
             context.getInput().mouse.setCurrentWheelMove(new Vector2((float) xoffset, (float) yoffset));
         }
     }
@@ -278,7 +278,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, boolean entered){
-            Tracelog(LOG_DEBUG, "Cursor Enter Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Cursor Enter Callback Triggered");
             context.getInput().mouse.setCursorOnScreen(entered);
         }
     }
@@ -292,7 +292,7 @@ public class Callbacks{
 
         @Override
         public void invoke(long window, int count, long names){
-            Tracelog(LOG_DEBUG, "Drop Callback Triggered");
+            TRACELOG(LOG_DEBUG, "Drop Callback Triggered");
             context.ClearDroppedFiles();
             String[] paths = new String[(int) names];
 

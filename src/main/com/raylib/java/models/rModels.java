@@ -39,7 +39,7 @@ import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.RL_SHADER_ATTR
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
 
 public class rModels{
@@ -666,11 +666,11 @@ public class rModels{
             model.meshCount = 1;
             model.meshes = new Mesh[model.meshCount];
             if(SUPPORT_MESH_GENERATION) {
-                Tracelog(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data, default to cube mesh");
+                TRACELOG(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data, default to cube mesh");
                 model.meshes[0] = GenMeshCube(1.0f, 1.0f, 1.0f);
             }
             else {
-                Tracelog(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data");
+                TRACELOG(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data");
             }
         }
         else {
@@ -681,7 +681,7 @@ public class rModels{
         }
 
         if (model.materialCount == 0) {
-            Tracelog(LOG_WARNING, "MATERIAL: ["+fileName+"] Failed to load material data, default to white material");
+            TRACELOG(LOG_WARNING, "MATERIAL: ["+fileName+"] Failed to load material data, default to white material");
 
             model.materialCount = 1;
             model.materials = new Material[model.materialCount];
@@ -744,7 +744,7 @@ public class rModels{
         model.bones = null;
         model.bindPose = null;
 
-        Tracelog(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
+        TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
     }
 
     // Unload model (but not meshes) from memory (RAM and/or VRAM)
@@ -766,7 +766,7 @@ public class rModels{
         model.bones = null;
         model.bindPose = null;
 
-        Tracelog(LOG_INFO, "MODEL: Unloaded model (but not meshes) from RAM and VRAM");
+        TRACELOG(LOG_INFO, "MODEL: Unloaded model (but not meshes) from RAM and VRAM");
     }
 
     // Compute model bounding box limits (considers all meshes)
@@ -799,7 +799,7 @@ public class rModels{
     public void UploadMesh(Mesh mesh, boolean dynamic) {
         if (mesh.vaoId > 0) {
             // Check if mesh has already been loaded in GPU
-            Tracelog(LOG_WARNING, "VAO: [ID "+mesh.vaoId+"] Trying to re-load an already loaded mesh");
+            TRACELOG(LOG_WARNING, "VAO: [ID "+mesh.vaoId+"] Trying to re-load an already loaded mesh");
             return;
         }
 
@@ -890,10 +890,10 @@ public class rModels{
             }
 
             if (mesh.vaoId > 0) {
-                Tracelog(LOG_INFO, "VAO: [ID "+mesh.vaoId+"] Mesh uploaded successfully to VRAM (GPU)");
+                TRACELOG(LOG_INFO, "VAO: [ID "+mesh.vaoId+"] Mesh uploaded successfully to VRAM (GPU)");
             }
             else {
-                Tracelog(LOG_INFO, "VBO: Mesh uploaded successfully to VRAM (GPU)");
+                TRACELOG(LOG_INFO, "VBO: Mesh uploaded successfully to VRAM (GPU)");
             }
 
             rlDisableVertexArray();
@@ -1480,14 +1480,14 @@ public class rModels{
                 }
                 boolean result = loader.ReadMTL(fileText);
                 if (result != true) {
-                    Tracelog(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
+                    TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
                 }
 
                 // TODO: Process materials to return
             }
         }
         else {
-            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to load material file");
+            TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to load material file");
         }
 
         // Set materials shader to default (DIFFUSE, SPECULAR, NORMAL)
@@ -1552,10 +1552,10 @@ public class rModels{
     // Set the material for a mesh
     public void SetModelMeshMaterial(Model model, int meshId, int materialId) {
         if (meshId >= model.meshCount) {
-            Tracelog(LOG_WARNING, "MESH: Id greater than mesh count");
+            TRACELOG(LOG_WARNING, "MESH: Id greater than mesh count");
         }
         else if (materialId >= model.materialCount) {
-            Tracelog(LOG_WARNING, "MATERIAL: Id greater than material count");
+            TRACELOG(LOG_WARNING, "MATERIAL: Id greater than material count");
         }
         else {
             model.meshMaterial[meshId] = materialId;
@@ -1589,7 +1589,7 @@ public class rModels{
             for (int m = 0; m < model.meshCount; m++) {
                 Mesh mesh = model.meshes[m];
                 if (mesh.boneIds == null || mesh.boneWeights == null) {
-                    Tracelog(LOG_WARNING, "MODEL: UpdateModelAnimation Mesh " + m + " has no connection to bones");
+                    TRACELOG(LOG_WARNING, "MODEL: UpdateModelAnimation Mesh " + m + " has no connection to bones");
                     continue;
                 }
 
@@ -2094,7 +2094,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: sphere");
+            TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: sphere");
         }
 
         return mesh;
@@ -2144,7 +2144,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: hemisphere");
+            TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: hemisphere");
         }
 
         return mesh;
@@ -2210,7 +2210,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: cylinder");
+            TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: cylinder");
         }
 
         return mesh;
@@ -2267,7 +2267,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: cone");
+            TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: cone");
         }
 
         return mesh;
@@ -2321,7 +2321,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: torus");
+            TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: torus");
         }
 
         return mesh;
@@ -2373,7 +2373,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            Tracelog(LOG_WARNING, "MESH: Failed to generate mesh: knot");
+            TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: knot");
         }
 
         return mesh;
@@ -2953,7 +2953,7 @@ public class rModels{
             RLGL.rlDisableVertexArray();
         }
 
-        Tracelog(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
+        TRACELOG(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
     }
 
     // Draw a model (with texture if set)
@@ -3431,10 +3431,10 @@ public class rModels{
             boolean success = loader.ReadOBJ(filetext, true);
 
             if(success) {
-                Tracelog(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
+                TRACELOG(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
             }
             else {
-                Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] Failed to load OBJ data");
+                TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] Failed to load OBJ data");
                 return model;
             }
 
@@ -3444,11 +3444,11 @@ public class rModels{
             if(loader.objInfo.totalMaterials > 0) {
                 model.materialCount = loader.objInfo.totalMaterials;
                 model.materials = new Material[model.materialCount];
-                Tracelog(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes.");
+                TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes.");
             }
             else {
                 model.meshCount = 1;
-                Tracelog(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
+                TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
             }
 
             model.meshes = new Mesh[model.meshCount];
@@ -3684,10 +3684,10 @@ public class rModels{
             header.ofs_extensions = IQM_toInt(intbuffer);
 
             if (!IQM_MAGIC.equals(String.valueOf(header.magic))) {
-                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
+                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
             }
             if (IQM_VERSION != header.version) {
-                Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+header.version+")");
+                TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+header.version+")");
             }
 
             imesh = new IQMMesh[header.num_meshes];
@@ -3744,7 +3744,7 @@ public class rModels{
                 model.meshes[i] = new Mesh();
                 model.materials[i] = LoadMaterialDefault();
 
-                Tracelog(LOG_DEBUG, "MODEL: [" + fileName + "] mesh name (" + String.valueOf(name) + "), material (" + String.valueOf(material) + ")");
+                TRACELOG(LOG_DEBUG, "MODEL: [" + fileName + "] mesh name (" + String.valueOf(name) + "), material (" + String.valueOf(material) + ")");
 
                 model.meshes[i].vertexCount = imesh[i].num_vertexes;
 
@@ -4069,10 +4069,10 @@ public class rModels{
             iqmHeader.ofs_extensions = IQM_toInt(intbuffer);
 
             if (!IQM_MAGIC.equals(String.valueOf(iqmHeader.magic))) {
-                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
+                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
             }
             if (IQM_VERSION != iqmHeader.version) {
-                Tracelog(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+iqmHeader.version+")");
+                TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+iqmHeader.version+")");
             }
 
             // Get bones data
@@ -4264,7 +4264,7 @@ public class rModels{
                 }
 
                 if (i == gltfjImage.uri.length()) {
-                    Tracelog(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
+                    TRACELOG(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
                 }
                 else {
                     int b64Size = gltfjImage.uri.length() + i + 1;
@@ -4301,7 +4301,7 @@ public class rModels{
                 image = context.textures.LoadImageFromMemory(".jpg", data, bufferView.size);
             }
             else {
-                Tracelog(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + gltfjImage.mimeType + ")");
+                TRACELOG(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + gltfjImage.mimeType + ")");
             }
         }
 
@@ -4342,21 +4342,21 @@ public class rModels{
 
         if (gltf.result == gltfj_glTF.ResultType.SUCCESS) {
             if (gltf.fileType == gltfj_glTF.FileType.GLB) {
-                Tracelog(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
+                TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
             }
             else if (gltf.fileType == gltfj_glTF.FileType.GLTF) {
-                Tracelog(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
+                TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
             }
             else {
-                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Model format not recognized");
+                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Model format not recognized");
                 return model;
             }
 
-            Tracelog(LOG_INFO, "    > Meshes count: " + gltf.meshCount);
-            Tracelog(LOG_INFO, "    > Materials count: " + gltf.materialCount + " (+1 default)");
-            Tracelog(LOG_DEBUG, "    > Buffers count: " + gltf.bufferCount);
-            Tracelog(LOG_DEBUG, "    > Images count: " + gltf.imageCount);
-            Tracelog(LOG_DEBUG, "    > Textures count: " + gltf.textureCount);
+            TRACELOG(LOG_INFO, "    > Meshes count: " + gltf.meshCount);
+            TRACELOG(LOG_INFO, "    > Materials count: " + gltf.materialCount + " (+1 default)");
+            TRACELOG(LOG_DEBUG, "    > Buffers count: " + gltf.bufferCount);
+            TRACELOG(LOG_DEBUG, "    > Images count: " + gltf.imageCount);
+            TRACELOG(LOG_DEBUG, "    > Textures count: " + gltf.textureCount);
 
             int primitivesCount = 0;
             // NOTE: We will load every primitive in the glTF as a separate raylib mesh
@@ -4501,7 +4501,7 @@ public class rModels{
                                 }
                             }
                             else {
-                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Vertices attribute data format not supported, use vec3 float");
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Vertices attribute data format not supported, use vec3 float");
                             }
                         }
                         // NORMAL
@@ -4525,7 +4525,7 @@ public class rModels{
                                 }
                             }
                             else {
-                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Normal attribute data format not supported, use vec3 float");
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Normal attribute data format not supported, use vec3 float");
                             }
                         }
                         // TANGENT
@@ -4549,7 +4549,7 @@ public class rModels{
                                 }
                             }
                             else {
-                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Tangent attribute data format not supported, use vec4 float");
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Tangent attribute data format not supported, use vec4 float");
                             }
                         }
                         // TEXCOORD_0
@@ -4575,7 +4575,7 @@ public class rModels{
                                 }
                             }
                             else {
-                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported, use vec2 float");
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported, use vec2 float");
                             }
                         }
                         // COLOR_0
@@ -4647,7 +4647,7 @@ public class rModels{
 
                             }
                             else {
-                                Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
                             }
                         }
                     }
@@ -4697,11 +4697,11 @@ public class rModels{
                                 model.meshes[meshIndex].indicesS[d] = (short)temp[d];
                             }
 
-                            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Indices data converted from u32 to u16, possible loss of data");
+                            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Indices data converted from u32 to u16, possible loss of data");
 
                         }
                         else {
-                            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Indices data format not supported, use u16");
+                            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Indices data format not supported, use u16");
                         }
                     }
                     else {
@@ -4729,7 +4729,7 @@ public class rModels{
 
         }
         else {
-            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] failed to load glTF data");
+            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] failed to load glTF data");
         }
 
         return model;
@@ -4750,7 +4750,7 @@ public class rModels{
             throw new RuntimeException(e);
         }
         if (fileData == null) {
-            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
+            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
             return model;
         }
 
@@ -4760,7 +4760,7 @@ public class rModels{
         VoxLoader.VoxArray3D voxarray = voxLoader.pvoxArray;
 
         if (ret != VoxLoader.VOX_SUCCESS) {
-            Tracelog(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
+            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
             return model;
         }
         else {
@@ -4768,7 +4768,7 @@ public class rModels{
             nbvertices = voxarray.vertices.used;
             meshescount = 1 + (nbvertices/65536);
 
-            Tracelog(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/ " + meshescount + " meshes");
+            TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/ " + meshescount + " meshes");
         }
 
         // Build models from meshes

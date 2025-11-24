@@ -170,7 +170,7 @@ public class Config{
     //------------------------------------------------------------------------------------
     // Module: textures - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Selecte desired fileformats to be supported for image data loading
+    // Select desired fileformats to be supported for image data loading
     public static boolean SUPPORT_FILEFORMAT_PNG = true;
     public static boolean SUPPORT_FILEFORMAT_BMP = true;
     public static boolean SUPPORT_FILEFORMAT_TGA = true;

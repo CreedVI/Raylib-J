@@ -6,7 +6,7 @@ import com.raylib.java.structs.Vector3;
 import static com.raylib.java.Config.RL_DEFAULT_BATCH_DRAWCALLS;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_ERROR;
 
 public class GL_33{
@@ -83,7 +83,7 @@ public class GL_33{
     // Push the current matrix into RLGL.getRlgl().getState().stack
     static void rlPushMatrix(){
         if (rlglData.getState().getStackCounter() >= MAX_MATRIX_STACK_SIZE){
-            Tracelog(LOG_ERROR, "RLGL: Matrix stack overflow (MAX_MATRIX_STACK_SIZE)");
+            TRACELOG(LOG_ERROR, "RLGL: Matrix stack overflow (MAX_MATRIX_STACK_SIZE)");
         }
 
         if (rlglData.getState().getCurrentMatrixMode() == RL_MODELVIEW){
@@ -259,7 +259,7 @@ public class GL_33{
             rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount++;
         }
         else{
-            Tracelog(LOG_ERROR, "RLGL: Batch elements overflow");
+            TRACELOG(LOG_ERROR, "RLGL: Batch elements overflow");
         }
     }
 

@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.raylib.java.Config.SUPPORT_STANDARD_FILEIO;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 
@@ -31,17 +31,17 @@ public class FileIO{
                     fileData = Files.readAllBytes(path);
                 }
                 catch (IOException exception) {
-                    Tracelog(LOG_WARNING, "FILE IO: Failed to read file: " + path);
+                    TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + path);
                     throw exception;
                 }
 
             }
             else {
-                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
+            TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
 
         return fileData;
@@ -67,18 +67,18 @@ public class FileIO{
                     try{
                         Files.write(path, data);
                     } catch (IOException exception){
-                        Tracelog(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
+                        TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
                         throw exception;
                     } finally{
                         success = true;
                     }
                 }
                 else{
-                    Tracelog(LOG_INFO, "FILE IO: Overwriting file: " + fileName);
+                    TRACELOG(LOG_INFO, "FILE IO: Overwriting file: " + fileName);
                     try{
                         Files.write(path, data);
                     } catch (IOException exception){
-                        Tracelog(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
+                        TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
                         throw exception;
                     } finally{
                         success = true;
@@ -86,11 +86,11 @@ public class FileIO{
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
+            TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
 
         return success;
@@ -119,15 +119,15 @@ public class FileIO{
                     throw new RuntimeException(e);
                 }
                 finally {
-                    Tracelog(LOG_WARNING, "FILE IO: Failed to read file: " + fileName);
+                    TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + fileName);
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
+            TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
         return text.toString();
     }
@@ -159,15 +159,15 @@ public class FileIO{
                     throw new RuntimeException(e);
                 }
                 finally {
-                    Tracelog(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
+                    TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
                 }
             }
             else{
-                Tracelog(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
             }
         }
         else{
-            Tracelog(LOG_WARNING, "FILE IO: File name provided is not valid");
+            TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
 
         return success;

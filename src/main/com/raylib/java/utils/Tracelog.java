@@ -36,9 +36,26 @@ public class Tracelog{
     /**
      * Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
      * @param logType TracelogType enum type that specifies what kind of trace log is to be called.
-     * @param text rText to be printed.
+     * @param text text to be printed.
      */
-    public static void Tracelog(int logType, String text){
+    public static void TRACELOG(int logType, String text) {
+        new Tracelog(logType, text);
+    }
+
+    /**
+     * Prints trace log without a log type
+     * @param text text to be printed
+     */
+    public static void TRACELOG(String text) {
+        new Tracelog(text);
+    }
+
+    /**
+     * Show trace log messages (LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_DEBUG)
+     * @param logType TracelogType enum type that specifies what kind of trace log is to be called.
+     * @param text text to be printed.
+     */
+    private Tracelog(int logType, String text){
         if(SUPPORT_TRACELOG){
             // Message has level below current threshold, don't emit
             if (logType < logTypeLevel){
@@ -72,11 +89,11 @@ public class Tracelog{
 
             buffer.append(text).append("\n");
             if(logType != LOG_DEBUG){
-                System.out.print(buffer.toString());
+                System.out.print(buffer);
             }
 
             if (logType == LOG_DEBUG && SUPPORT_TRACELOG_DEBUG){
-                System.out.print(buffer.toString());
+                System.out.print(buffer);
             }
 
             if (logType == LOG_FATAL){
@@ -88,9 +105,9 @@ public class Tracelog{
 
     /**
      * Prints trace log without a log type
-     * @param text rText to be printed
+     * @param text text to be printed
      */
-    public static void Tracelog(String text){
+    private Tracelog(String text){
         if(SUPPORT_TRACELOG && logTypeLevel <= LOG_DEBUG){
             System.out.println(text);
         }

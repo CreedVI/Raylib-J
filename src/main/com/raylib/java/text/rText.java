@@ -17,7 +17,6 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
@@ -25,7 +24,7 @@ import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
-import static com.raylib.java.utils.Tracelog.Tracelog;
+import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 
@@ -284,7 +283,7 @@ public class rText{
 
         defaultFont.baseSize = (int)defaultFont.recs[0].height;
 
-        Tracelog(LOG_INFO, "FONT: Default font loaded successfully (" + defaultFont.glyphCount + " glyphs)");
+        TRACELOG(LOG_INFO, "FONT: Default font loaded successfully (" + defaultFont.glyphCount + " glyphs)");
     }
 
     // Unload raylib default font
@@ -330,12 +329,12 @@ public class rText{
         }
 
         if (font.texture.getId() == 0) {
-            Tracelog(LOG_WARNING, "FONT: [" + fileName + "] Failed to load font texture -> Using default font");
+            TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load font texture -> Using default font");
             font = GetFontDefault();
         }
         else{
             context.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT); // By default we set point filter (best performance)
-            Tracelog(LOG_INFO, "FONT: Data loaded successfully (" + FONT_TTF_DEFAULT_SIZE + " pixel size | " + FONT_TTF_DEFAULT_NUMCHARS + " glyphs)");
+            TRACELOG(LOG_INFO, "FONT: Data loaded successfully (" + FONT_TTF_DEFAULT_SIZE + " pixel size | " + FONT_TTF_DEFAULT_NUMCHARS + " glyphs)");
         }
 
         return font;
@@ -522,7 +521,7 @@ public class rText{
                     }
 
                     context.textures.UnloadImage(atlas);
-                    Tracelog(LOG_INFO, "FONT: Data loaded successfully (" + font.baseSize + " pixel size | " + font.glyphCount + " glyphs)");
+                    TRACELOG(LOG_INFO, "FONT: Data loaded successfully (" + font.baseSize + " pixel size | " + font.glyphCount + " glyphs)");
                 }
                 else {
                     font = GetFontDefault();
@@ -704,7 +703,7 @@ public class rText{
                         }
                     }
                     else{
-                        Tracelog(LOG_WARNING, "FONT: Failed to process TTF font data");
+                        TRACELOG(LOG_WARNING, "FONT: Failed to process TTF font data");
                     }
                 }
             }
@@ -719,7 +718,7 @@ public class rText{
         Image atlas = new Image();
         if (SUPPORT_FILEFORMAT_TTF) {
             if (font.glyphs == null) {
-                Tracelog(LOG_WARNING, "FONT: Provided chars info not valid, returning empty image atlas");
+                TRACELOG(LOG_WARNING, "FONT: Provided chars info not valid, returning empty image atlas");
                 return atlas;
             }
 
@@ -791,7 +790,7 @@ public class rText{
 
                         if (offsetY > (atlas.height - font.baseSize - font.glyphPadding)) {
                             for (int j = i + 1; j < font.glyphCount; j++) {
-                                Tracelog(LOG_WARNING, "FONT: Failed to package character (" + j + ")");
+                                TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + j + ")");
                                 // make sure remaining recs contain valid data
                                 recs[j].x = 0;
                                 recs[j].y = 0;
@@ -850,7 +849,7 @@ public class rText{
                         }
                     }
                     else{
-                        Tracelog(LOG_WARNING, "FONT: Failed to package character (" + i + ")");
+                        TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + i + ")");
                     }
                 }
             }
@@ -924,7 +923,7 @@ public class rText{
         // NOTE: This mechanism is highly coupled to raylib
         Image image = context.textures.LoadImageFromTexture(font.texture);
         if (image.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
-            Tracelog(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
+            TRACELOG(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
         }
         int imageDataSize = context.textures.GetPixelDataSize(image.width, image.height, image.format);
 
@@ -1043,11 +1042,11 @@ public class rText{
         // NOTE: Text data size exported is determined by '\0' (NULL) character
         try {
             success = FileIO.SaveFileText(fileName, txtData.toString());
-            Tracelog(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
+            TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
         }
         catch (IOException e) {
             success = false;
-            Tracelog(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export font as code");
+            TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export font as code");
         }
 
         return success;
@@ -1618,18 +1617,18 @@ public class rText{
         imHeight = Integer.parseInt(fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("scaleH=") + 7,
                                                                      fileLines[lineTracker].indexOf("pages=") - 1));
         lineTracker++;
-        Tracelog.Tracelog("FONT: [" + fileName + "] Loaded font info:");
-        Tracelog.Tracelog("    > Base size: " + fontSize);
-        Tracelog.Tracelog("    > Texture scale: " + imWidth + "x" + imHeight);
+        Tracelog.TRACELOG("FONT: [" + fileName + "] Loaded font info:");
+        Tracelog.TRACELOG("    > Base size: " + fontSize);
+        Tracelog.TRACELOG("    > Texture scale: " + imWidth + "x" + imHeight);
 
         imFileName = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("file=\"") + 6,
                                                       fileLines[lineTracker].lastIndexOf("\""));
         lineTracker++;
-        Tracelog.Tracelog("    > Texture filename: " + imFileName);
+        Tracelog.TRACELOG("    > Texture filename: " + imFileName);
 
         charsCount = Integer.parseInt(fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("count=") + 6));
         lineTracker++;
-        Tracelog.Tracelog("    > Chars count: " + charsCount);
+        Tracelog.TRACELOG("    > Chars count: " + charsCount);
 
         String imPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + imFileName;
 
@@ -1732,10 +1731,10 @@ public class rText{
         if (font.texture.getId() == 0){
             UnloadFont(font);
             font = GetFontDefault();
-            Tracelog(LOG_WARNING, "FONT: [" + fileName + "] Failed to load texture, reverted to default font");
+            TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load texture, reverted to default font");
         }
         else{
-            Tracelog(LOG_INFO, "FONT: [" + fileName + "] Font loaded successfully");
+            TRACELOG(LOG_INFO, "FONT: [" + fileName + "] Font loaded successfully");
         }
 
         return font;
