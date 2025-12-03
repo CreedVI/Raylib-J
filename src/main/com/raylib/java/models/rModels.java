@@ -1,6 +1,10 @@
 package com.raylib.java.models;
 
 import com.creedvi.utils.gltfj.gltf.*;
+import com.creedvi.utils.gltfj.gltf.animation.gltfj_Animation;
+import com.creedvi.utils.gltfj.gltf.animation.gltfj_AnimationChannel;
+import com.creedvi.utils.gltfj.gltf.animation.gltfj_AnimationSampler;
+import com.creedvi.utils.gltfj.gltf.mesh.gltfj_Mesh;
 import com.creedvi.utils.gltfj.gltf.mesh.gltfj_Primitive;
 import com.creedvi.utils.gltfj.gltfj;
 import com.raylib.java.Raylib;
@@ -15,6 +19,7 @@ import com.raylib.java.structs.*;
 import com.raylib.java.structs.iqm.*;
 import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.OBJLoader;
+import com.raylib.java.utils.Tracelog;
 import com.raylib.java.utils.VoxLoader;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
@@ -41,6 +46,7 @@ import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFOR
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
 import static com.raylib.java.utils.Tracelog.TRACELOG;
 import static com.raylib.java.utils.Tracelog.TracelogType.*;
+import static org.lwjgl.system.libc.LibCString.memcpy;
 
 public class rModels{
 
@@ -69,6 +75,9 @@ public class rModels{
 
     final static int MAX_MESH_VERTEX_BUFFERS = 7;    // Maximum vertex buffers (VBO) per mesh
 
+    final static int GLTF_ANIMDELAY = 17;    // Animation frames delay, (~1000 ms/60 FPS = 16.666666* ms)
+
+
     final private Raylib context;
 
     //----------------------------------------------------------------------------------
@@ -92,81 +101,81 @@ public class rModels{
         // WARNING: Be careful with internal buffer vertex alignment
         // when using RL_LINES or RL_TRIANGLES, data is aligned to fit
         // lines-triangles-quads in the same indexed buffers!!!
-        RLGL.rlCheckRenderBatchLimit(8);
+        rlCheckRenderBatchLimit(8);
 
-        RLGL.rlBegin(RLGL.RL_LINES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
-        RLGL.rlVertex3f(startPos.x, startPos.y, startPos.z);
-        RLGL.rlVertex3f(endPos.x, endPos.y, endPos.z);
-        RLGL.rlEnd();
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlVertex3f(startPos.x, startPos.y, startPos.z);
+        rlVertex3f(endPos.x, endPos.y, endPos.z);
+        rlEnd();
     }
 
     // Draw a point in 3D space, actually a small line
     public void DrawPoint3D(Vector3 position, Color color){
-        RLGL.rlCheckRenderBatchLimit(8);
+        rlCheckRenderBatchLimit(8);
 
-        RLGL.rlPushMatrix();
-        RLGL.rlTranslatef(position.x, position.y, position.z);
-        RLGL.rlBegin(RLGL.RL_LINES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
-        RLGL.rlVertex3f(0.0f, 0.0f, 0.0f);
-        RLGL.rlVertex3f(0.0f, 0.0f, 0.1f);
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+        rlPushMatrix();
+        rlTranslatef(position.x, position.y, position.z);
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlVertex3f(0.0f, 0.0f, 0.0f);
+        rlVertex3f(0.0f, 0.0f, 0.1f);
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw a circle in 3D world space
     public void DrawCircle3D(Vector3 center, float radius, Vector3 rotationAxis, float rotationAngle, Color color){
-        RLGL.rlCheckRenderBatchLimit(2 * 36);
+        rlCheckRenderBatchLimit(2 * 36);
 
-        RLGL.rlPushMatrix();
-        RLGL.rlTranslatef(center.x, center.y, center.z);
-        RLGL.rlRotatef(rotationAngle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
+        rlPushMatrix();
+        rlTranslatef(center.x, center.y, center.z);
+        rlRotatef(rotationAngle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
 
-        RLGL.rlBegin(RLGL.RL_LINES);
+        rlBegin(RL_LINES);
         for (int i = 0; i < 360; i += 10){
-            RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+            rlColor4ub(color.r, color.g, color.b, color.a);
 
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radius, (float) Math.cos(Raymath.DEG2RAD * i) * radius, 0.0f);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 10)) * radius, (float) Math.cos(Raymath.DEG2RAD * (i + 10)) * radius, 0.0f);
+            rlVertex3f((float) Math.sin(DEG2RAD * i) * radius, (float) Math.cos(DEG2RAD * i) * radius, 0.0f);
+            rlVertex3f((float) Math.sin(DEG2RAD * (i + 10)) * radius, (float) Math.cos(DEG2RAD * (i + 10)) * radius, 0.0f);
         }
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw a color-filled triangle (vertex in counter-clockwise order!)
     public void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color){
-        RLGL.rlCheckRenderBatchLimit(8);
+        rlCheckRenderBatchLimit(8);
 
-        RLGL.rlBegin(RLGL.RL_TRIANGLES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
-        RLGL.rlVertex3f(v1.x, v1.y, v1.z);
-        RLGL.rlVertex3f(v2.x, v2.y, v2.z);
-        RLGL.rlVertex3f(v3.x, v3.y, v3.z);
-        RLGL.rlEnd();
+        rlBegin(RL_TRIANGLES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlVertex3f(v1.x, v1.y, v1.z);
+        rlVertex3f(v2.x, v2.y, v2.z);
+        rlVertex3f(v3.x, v3.y, v3.z);
+        rlEnd();
     }
 
     // Draw a triangle strip defined by points
     public void DrawTriangleStrip3D(Vector3[] points, int pointsCount, Color color){
         if (pointsCount >= 3){
-            RLGL.rlCheckRenderBatchLimit(3 * (pointsCount - 2));
+            rlCheckRenderBatchLimit(3 * (pointsCount - 2));
 
-            RLGL.rlBegin(RLGL.RL_TRIANGLES);
-            RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+            rlBegin(RL_TRIANGLES);
+            rlColor4ub(color.r, color.g, color.b, color.a);
 
             for (int i = 2; i < pointsCount; i++){
                 if ((i % 2) == 0){
-                    RLGL.rlVertex3f(points[i].x, points[i].y, points[i].z);
-                    RLGL.rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
-                    RLGL.rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
+                    rlVertex3f(points[i].x, points[i].y, points[i].z);
+                    rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
+                    rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
                 }
                 else{
-                    RLGL.rlVertex3f(points[i].x, points[i].y, points[i].z);
-                    RLGL.rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
-                    RLGL.rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
+                    rlVertex3f(points[i].x, points[i].y, points[i].z);
+                    rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
+                    rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
                 }
             }
-            RLGL.rlEnd();
+            rlEnd();
         }
     }
 
@@ -177,72 +186,72 @@ public class rModels{
         float y = 0.0f;
         float z = 0.0f;
 
-        RLGL.rlCheckRenderBatchLimit(36);
+        rlCheckRenderBatchLimit(36);
 
-        RLGL.rlPushMatrix();
+        rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> rotate -> translate)
-        RLGL.rlTranslatef(position.x, position.y, position.z);
+        rlTranslatef(position.x, position.y, position.z);
         //rlRotatef(45, 0, 1, 0);
         //rlScalef(1.0f, 1.0f, 1.0f);   // NOTE: Vertices are directly scaled on definition
 
-        RLGL.rlBegin(RLGL.RL_TRIANGLES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_TRIANGLES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
         // Front face
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
 
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
 
         // Back face
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
 
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
 
         // Top face
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
 
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
 
         // Bottom face
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
 
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
 
         // Right face
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
 
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
 
         // Left face
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Right
 
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw cube (Vector version)
@@ -256,67 +265,67 @@ public class rModels{
         float y = 0.0f;
         float z = 0.0f;
 
-        RLGL.rlCheckRenderBatchLimit(36);
+        rlCheckRenderBatchLimit(36);
 
-        RLGL.rlPushMatrix();
-        RLGL.rlTranslatef(position.x, position.y, position.z);
+        rlPushMatrix();
+        rlTranslatef(position.x, position.y, position.z);
 
-        RLGL.rlBegin(RLGL.RL_LINES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
         // Front Face -----------------------------------------------------
         // Bottom Line
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
 
         // Left Line
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
 
         // Top Line
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
 
         // Right Line
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
 
         // Back Face ------------------------------------------------------
         // Bottom Line
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
 
         // Left Line
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
 
         // Top Line
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
 
         // Right Line
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
 
         // Top Face -------------------------------------------------------
         // Left Line
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left Front
-        RLGL.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left Back
+        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left Front
+        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left Back
 
         // Right Line
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right Front
-        RLGL.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right Back
+        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right Front
+        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right Back
 
         // Bottom Face  ---------------------------------------------------
         // Left Line
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Top Left Front
-        RLGL.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left Back
+        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Top Left Front
+        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left Back
 
         // Right Line
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Top Right Front
-        RLGL.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right Back
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Top Right Front
+        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right Back
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw cube wires (vector version)
@@ -332,82 +341,84 @@ public class rModels{
     // Draw sphere with extended parameters
     public void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color){
         int numVertex = (rings + 2) * slices * 6;
-        RLGL.rlCheckRenderBatchLimit(numVertex);
+        rlCheckRenderBatchLimit(numVertex);
 
-        RLGL.rlPushMatrix();
+        rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> translate)
-        RLGL.rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        RLGL.rlScalef(radius, radius, radius);
+        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        rlScalef(radius, radius, radius);
 
-        RLGL.rlBegin(RLGL.RL_TRIANGLES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_TRIANGLES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
         for (int i = 0; i < (rings + 2); i++){
             for (int j = 0; j < slices; j++){
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
 
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
             }
         }
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw sphere wires
     public void DrawSphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color){
         int numVertex = (rings + 2) * slices * 6;
-        RLGL.rlCheckRenderBatchLimit(numVertex);
+        rlCheckRenderBatchLimit(numVertex);
 
-        RLGL.rlPushMatrix();
+        rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> translate)
-        RLGL.rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        RLGL.rlScalef(radius, radius, radius);
+        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        rlScalef(radius, radius, radius);
 
-        RLGL.rlBegin(RLGL.RL_LINES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
         for (int i = 0; i < (rings + 2); i++){
             for (int j = 0; j < slices; j++){
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
 
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * ((j + 1) * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * ((j + 1) * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
 
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
-                RLGL.rlVertex3f((float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(Raymath.DEG2RAD * (j * 360 / slices)),
-                        (float) Math.sin(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                        (float) Math.cos(Raymath.DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(Raymath.DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
             }
         }
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw a cylinder
@@ -416,50 +427,51 @@ public class rModels{
         if (sides < 3) sides = 3;
 
         int numVertex = sides * 6;
-        RLGL.rlCheckRenderBatchLimit(numVertex);
+        rlCheckRenderBatchLimit(numVertex);
 
-        RLGL.rlPushMatrix();
-        RLGL.rlTranslatef(position.x, position.y, position.z);
+        rlPushMatrix();
+        rlTranslatef(position.x, position.y, position.z);
 
-        RLGL.rlBegin(RLGL.RL_TRIANGLES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_TRIANGLES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
         if (radiusTop > 0){
             // Draw Body -------------------------------------------------------------------------------------
             for (int i = 0; i < 360; i += 360 / sides){
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * i) * radiusBottom); //Bottom Left
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom); //Bottom Right
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
+                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom); //Bottom Left
+                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom); //Bottom Right
+                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
 
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * i) * radiusTop); //Top Left
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * i) * radiusBottom); //Bottom Left
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
+                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop); //Top Left
+                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom); //Bottom Left
+                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
             }
 
             // Draw Cap --------------------------------------------------------------------------------------
             for (int i = 0; i < 360; i += 360 / sides){
-                RLGL.rlVertex3f(0, height, 0);
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * i) * radiusTop);
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop);
+                rlVertex3f(0, height, 0);
+                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
+                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
             }
         }
         else{
             // Draw Cone -------------------------------------------------------------------------------------
             for (int i = 0; i < 360; i += 360 / sides){
-                RLGL.rlVertex3f(0, height, 0);
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * i) * radiusBottom);
-                RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom);
+                rlVertex3f(0, height, 0);
+                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
+                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
             }
         }
 
         // Draw Base -----------------------------------------------------------------------------------------
         for (int i = 0; i < 360; i += 360 / sides){
-            RLGL.rlVertex3f(0, 0, 0);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * i) * radiusBottom);
+            rlVertex3f(0, 0, 0);
+            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
+            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
         }
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw a wired cylinder
@@ -468,29 +480,30 @@ public class rModels{
         if (sides < 3) sides = 3;
 
         int numVertex = sides * 8;
-        RLGL.rlCheckRenderBatchLimit(numVertex);
+        rlCheckRenderBatchLimit(numVertex);
 
-        RLGL.rlPushMatrix();
-        RLGL.rlTranslatef(position.x, position.y, position.z);
+        rlPushMatrix();
+        rlTranslatef(position.x, position.y, position.z);
 
-        RLGL.rlBegin(RLGL.RL_LINES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
         for (int i = 0; i < 360; i += 360 / sides){
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * i) * radiusBottom);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom);
+            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
+            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
 
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusBottom);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop);
+            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
+            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
 
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * (i + 360 / sides)) * radiusTop);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * i) * radiusTop);
+            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
+            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
 
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusTop, height, (float) Math.cos(Raymath.DEG2RAD * i) * radiusTop);
-            RLGL.rlVertex3f((float) Math.sin(Raymath.DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(Raymath.DEG2RAD * i) * radiusBottom);
+            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
+            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
         }
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw a capsule with the center of its sphere caps at startPos and endPos
@@ -523,7 +536,6 @@ public class rModels{
         for (int c = 0; c < 2; c++) {
             for (int i = 0; i < rings; i++) {
                 for (int j = 0; j < slices; j++) {
-
                     // we build up the rings from capCenter in the direction of the 'direction' vector we computed earlier
 
                     // as we iterate through the rings they must be placed higher above the center, the height we need is sin(angle(i))
@@ -667,7 +679,6 @@ public class rModels{
         for (int c = 0; c < 2; c++) {
             for (int i = 0; i < rings; i++){
                 for (int j = 0; j < slices; j++) {
-
                     // we build up the rings from capCenter in the direction of the 'direction' vector we computed earlier
 
                     // as we iterate through the rings they must be placed higher above the center, the height we need is sin(angle(i))
@@ -733,33 +744,33 @@ public class rModels{
                 float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
                 float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
                 Vector3 w1 = new Vector3(
-                        startPos.x + ringSin1*b1.x + ringCos1*b2.x,
-                        startPos.y + ringSin1*b1.y + ringCos1*b2.y,
-                        startPos.z + ringSin1*b1.z + ringCos1*b2.z
+                    startPos.x + ringSin1*b1.x + ringCos1*b2.x,
+                    startPos.y + ringSin1*b1.y + ringCos1*b2.y,
+                    startPos.z + ringSin1*b1.z + ringCos1*b2.z
                 );
 
                 float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*radius);
                 float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*radius);
                 Vector3 w2 = new Vector3(
-                        startPos.x + ringSin2*b1.x + ringCos2*b2.x,
-                        startPos.y + ringSin2*b1.y + ringCos2*b2.y,
-                        startPos.z + ringSin2*b1.z + ringCos2*b2.z
+                    startPos.x + ringSin2*b1.x + ringCos2*b2.x,
+                    startPos.y + ringSin2*b1.y + ringCos2*b2.y,
+                    startPos.z + ringSin2*b1.z + ringCos2*b2.z
                 );
 
                 float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
                 float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
                 Vector3 w3 = new Vector3(
-                        endPos.x + ringSin3*b1.x + ringCos3*b2.x,
-                        endPos.y + ringSin3*b1.y + ringCos3*b2.y,
-                        endPos.z + ringSin3*b1.z + ringCos3*b2.z
+                    endPos.x + ringSin3*b1.x + ringCos3*b2.x,
+                    endPos.y + ringSin3*b1.y + ringCos3*b2.y,
+                    endPos.z + ringSin3*b1.z + ringCos3*b2.z
                 );
 
                 float ringSin4 = (float) (Math.sin(baseSliceAngle*(j + 1))*radius);
                 float ringCos4 = (float) (Math.cos(baseSliceAngle*(j + 1))*radius);
                 Vector3 w4 = new Vector3(
-                        endPos.x + ringSin4*b1.x + ringCos4*b2.x,
-                        endPos.y + ringSin4*b1.y + ringCos4*b2.y,
-                        endPos.z + ringSin4*b1.z + ringCos4*b2.z
+                    endPos.x + ringSin4*b1.x + ringCos4*b2.x,
+                    endPos.y + ringSin4*b1.y + ringCos4*b2.y,
+                    endPos.z + ringSin4*b1.z + ringCos4*b2.z
                 );
 
                 rlVertex3f(w1.x, w1.y, w1.z);
@@ -777,66 +788,66 @@ public class rModels{
 
     // Draw a plane
     public void DrawPlane(Vector3 centerPos, Vector2 size, Color color){
-        RLGL.rlCheckRenderBatchLimit(4);
+        rlCheckRenderBatchLimit(4);
 
         // NOTE: Plane is always created on XZ ground
-        RLGL.rlPushMatrix();
-        RLGL.rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        RLGL.rlScalef(size.x, 1.0f, size.y);
+        rlPushMatrix();
+        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        rlScalef(size.x, 1.0f, size.y);
 
-        RLGL.rlBegin(RLGL.RL_QUADS);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
-        RLGL.rlNormal3f(0.0f, 1.0f, 0.0f);
+        rlBegin(RL_QUADS);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlNormal3f(0.0f, 1.0f, 0.0f);
 
-        RLGL.rlVertex3f(-0.5f, 0.0f, -0.5f);
-        RLGL.rlVertex3f(-0.5f, 0.0f, 0.5f);
-        RLGL.rlVertex3f(0.5f, 0.0f, 0.5f);
-        RLGL.rlVertex3f(0.5f, 0.0f, -0.5f);
-        RLGL.rlEnd();
-        RLGL.rlPopMatrix();
+        rlVertex3f(-0.5f, 0.0f, -0.5f);
+        rlVertex3f(-0.5f, 0.0f, 0.5f);
+        rlVertex3f(0.5f, 0.0f, 0.5f);
+        rlVertex3f(0.5f, 0.0f, -0.5f);
+        rlEnd();
+        rlPopMatrix();
     }
 
     // Draw a ray line
     public void DrawRay(Ray ray, Color color){
         float scale = 10000;
 
-        RLGL.rlBegin(RLGL.RL_LINES);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
-        RLGL.rlColor4ub(color.r, color.g, color.b, color.a);
+        rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlColor4ub(color.r, color.g, color.b, color.a);
 
-        RLGL.rlVertex3f(ray.position.x, ray.position.y, ray.position.z);
-        RLGL.rlVertex3f(ray.position.x + ray.direction.x * scale, ray.position.y + ray.direction.y * scale, ray.position.z + ray.direction.z * scale);
-        RLGL.rlEnd();
+        rlVertex3f(ray.position.x, ray.position.y, ray.position.z);
+        rlVertex3f(ray.position.x + ray.direction.x * scale, ray.position.y + ray.direction.y * scale, ray.position.z + ray.direction.z * scale);
+        rlEnd();
     }
 
     // Draw a grid centered at (0, 0, 0)
     public void DrawGrid(int slices, float spacing){
         int halfSlices = slices / 2;
 
-        RLGL.rlCheckRenderBatchLimit((slices + 2) * 4);
+        rlCheckRenderBatchLimit((slices + 2) * 4);
 
-        RLGL.rlBegin(RLGL.RL_LINES);
+        rlBegin(RL_LINES);
         for (int i = -halfSlices; i <= halfSlices; i++){
             if (i == 0){
-                RLGL.rlColor3f(0.5f, 0.5f, 0.5f);
-                RLGL.rlColor3f(0.5f, 0.5f, 0.5f);
-                RLGL.rlColor3f(0.5f, 0.5f, 0.5f);
-                RLGL.rlColor3f(0.5f, 0.5f, 0.5f);
+                rlColor3f(0.5f, 0.5f, 0.5f);
+                rlColor3f(0.5f, 0.5f, 0.5f);
+                rlColor3f(0.5f, 0.5f, 0.5f);
+                rlColor3f(0.5f, 0.5f, 0.5f);
             }
             else{
-                RLGL.rlColor3f(0.75f, 0.75f, 0.75f);
-                RLGL.rlColor3f(0.75f, 0.75f, 0.75f);
-                RLGL.rlColor3f(0.75f, 0.75f, 0.75f);
-                RLGL.rlColor3f(0.75f, 0.75f, 0.75f);
+                rlColor3f(0.75f, 0.75f, 0.75f);
+                rlColor3f(0.75f, 0.75f, 0.75f);
+                rlColor3f(0.75f, 0.75f, 0.75f);
+                rlColor3f(0.75f, 0.75f, 0.75f);
             }
 
-            RLGL.rlVertex3f((float) i * spacing, 0.0f, (float) -halfSlices * spacing);
-            RLGL.rlVertex3f((float) i * spacing, 0.0f, (float) halfSlices * spacing);
+            rlVertex3f((float) i * spacing, 0.0f, (float) -halfSlices * spacing);
+            rlVertex3f((float) i * spacing, 0.0f, (float) halfSlices * spacing);
 
-            RLGL.rlVertex3f((float) -halfSlices * spacing, 0.0f, (float) i * spacing);
-            RLGL.rlVertex3f((float) halfSlices * spacing, 0.0f, (float) i * spacing);
+            rlVertex3f((float) -halfSlices * spacing, 0.0f, (float) i * spacing);
+            rlVertex3f((float) halfSlices * spacing, 0.0f, (float) i * spacing);
         }
-        RLGL.rlEnd();
+        rlEnd();
     }
 
     public Model LoadModel(String fileName) {
@@ -857,7 +868,7 @@ public class rModels{
             model = LoadVOX(fileName);
         }
         // Make sure model transform is set to identity matrix!
-        model.transform = Raymath.MatrixIdentity();
+        model.transform = MatrixIdentity();
 
         if (model.meshCount == 0) {
             model.meshCount = 1;
@@ -899,7 +910,7 @@ public class rModels{
     public Model LoadModelFromMesh(Mesh mesh) {
         Model model = new Model();
 
-        model.transform = Raymath.MatrixIdentity();
+        model.transform = MatrixIdentity();
 
         model.meshCount = 1;
         model.meshes = new Mesh[model.meshCount];
@@ -990,7 +1001,7 @@ public class rModels{
         mesh.vboId[6] = 0;     // Vertex buffer: indices
 
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
-            mesh.vaoId = RLGL.rlLoadVertexArray();
+            mesh.vaoId = rlLoadVertexArray();
             rlEnableVertexArray(mesh.vaoId);
 
             // NOTE: Attributes must be uploaded considering default locations points
@@ -1016,8 +1027,8 @@ public class rModels{
             else {
                 // Default color vertex attribute set to WHITE
                 float[] value ={1.0f, 1.0f, 1.0f} ;
-                RLGL.rlSetVertexAttributeDefault(2, value, RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
-                RLGL.rlDisableVertexAttribute(2);
+                rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
+                rlDisableVertexAttribute(2);
             }
 
             if (mesh.colors != null) {
@@ -1052,16 +1063,16 @@ public class rModels{
             } else {
                 // Default texcoord2 vertex attribute
                 float[] value = {0.0f, 0.0f} ;
-                rlSetVertexAttributeDefault(5, value, RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
+                rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
                 rlDisableVertexAttribute(5);
             }
 
             if (mesh.indices != null) {
-                mesh.vboId[6] = RLGL.rlLoadVertexBufferElement(mesh.indices, dynamic);
+                mesh.vboId[6] = rlLoadVertexBufferElement(mesh.indices, dynamic);
             }
 
             if (mesh.indicesS != null) {
-                mesh.vboId[6] = RLGL.rlLoadVertexBufferElement(mesh.indicesS, dynamic);
+                mesh.vboId[6] = rlLoadVertexBufferElement(mesh.indicesS, dynamic);
             }
 
             if (mesh.vaoId > 0) {
@@ -1077,7 +1088,7 @@ public class rModels{
 
     // Update mesh vertex data in GPU for a specific buffer index
     public void UpdateMeshBuffer(Mesh mesh, int index, byte[] data, int offset) {
-        RLGL.rlUpdateVertexBuffer(mesh.vboId[index], data, offset);
+        rlUpdateVertexBuffer(mesh.vboId[index], data, offset);
     }
 
     // Draw a 3d mesh with material and transform
@@ -1088,12 +1099,12 @@ public class rModels{
             final int GL_COLOR_ARRAY = 0x8076;
             final int GL_TEXTURE_COORD_ARRAY = 0x8078;
 
-            RLGL.rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE].texture.id);
+            rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE].texture.id);
 
-            RLGL.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
-            RLGL.rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
-            RLGL.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
-            RLGL.rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
+            rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
+            rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
+            rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
+            rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
 
             rlPushMatrix();
             rlMultMatrixf(MatrixToFloat(transform));
@@ -1103,17 +1114,17 @@ public class rModels{
                     material.maps[MATERIAL_MAP_DIFFUSE].color.a);
 
             if (mesh.indices != null) {
-                RLGL.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
+                rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
             }
             else {
-                RLGL.rlDrawVertexArray(0, mesh.vertexCount);
+                rlDrawVertexArray(0, mesh.vertexCount);
             }
             rlPopMatrix();
 
-            RLGL.rlDisableStatePointer(GL_VERTEX_ARRAY);
-            RLGL.rlDisableStatePointer(GL_TEXTURE_COORD_ARRAY);
-            RLGL.rlDisableStatePointer(GL_NORMAL_ARRAY);
-            RLGL.rlDisableStatePointer(GL_COLOR_ARRAY);
+            rlDisableStatePointer(GL_VERTEX_ARRAY);
+            rlDisableStatePointer(GL_TEXTURE_COORD_ARRAY);
+            rlDisableStatePointer(GL_NORMAL_ARRAY);
+            rlDisableStatePointer(GL_COLOR_ARRAY);
 
             rlDisableTexture();
         }
@@ -1153,10 +1164,10 @@ public class rModels{
             // NOTE: At this point the modelview matrix just contains the view matrix (camera)
             // That's because BeginMode3D() sets it and there is no model-drawing function
             // that modifies it, all use rlPushMatrix() and rlPopMatrix()
-            Matrix matModel = Raymath.MatrixIdentity();
-            Matrix matView = RLGL.rlGetMatrixModelview();
-            Matrix matModelView = Raymath.MatrixIdentity();
-            Matrix matProjection = RLGL.rlGetMatrixProjection();
+            Matrix matModel = MatrixIdentity();
+            Matrix matView = rlGetMatrixModelview();
+            Matrix matModelView = MatrixIdentity();
+            Matrix matProjection = rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
             if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1) {
@@ -1174,10 +1185,10 @@ public class rModels{
             // Accumulate several model transformations:
             //    transform: model transformation provided (includes DrawModel() params combined with model.transform)
             //    rlGetMatrixTransform(): rlgl internal transform matrix due to push/pop matrix stack
-            matModel = Raymath.MatrixMultiply(transform, RLGL.rlGetMatrixTransform());
+            matModel = MatrixMultiply(transform, rlGetMatrixTransform());
 
             // Get model-view matrix
-            matModelView = Raymath.MatrixMultiply(matModel, matView);
+            matModelView = MatrixMultiply(matModel, matView);
 
             // Upload model normal matrix (if locations available)
             if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] != -1) {
@@ -1193,7 +1204,7 @@ public class rModels{
 
                     // Enable texture for active slot
                     if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
-                        RLGL.rlEnableTextureCubemap(material.maps[i].texture.id);
+                        rlEnableTextureCubemap(material.maps[i].texture.id);
                     }
                     else {
                         rlEnableTexture(material.maps[i].texture.id);
@@ -1250,13 +1261,13 @@ public class rModels{
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
                 if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] != -1) {
-                    RLGL.rlEnableVertexBuffer(mesh.vboId[5]);
+                    rlEnableVertexBuffer(mesh.vboId[5]);
                     rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02], 2, RL_FLOAT, false, 0, 0);
                     rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02]);
                 }
 
                 if (mesh.indices != null || mesh.indicesS != null) {
-                    RLGL.rlEnableVertexBufferElement(mesh.vboId[6]);
+                    rlEnableVertexBufferElement(mesh.vboId[6]);
                 }
             }
 
@@ -1264,24 +1275,24 @@ public class rModels{
             if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
 
             int eyeCount = 1;
-            if (RLGL.rlIsStereoRendererEnabled()) {
+            if (rlIsStereoRendererEnabled()) {
                 eyeCount = 2;
             }
 
             for (int eye = 0; eye < eyeCount; eye++) {
                 // Calculate model-view-projection matrix (MVP)
-                Matrix matModelViewProjection = Raymath.MatrixIdentity();
+                Matrix matModelViewProjection = MatrixIdentity();
                 if (eyeCount == 1) {
-                    matModelViewProjection = Raymath.MatrixMultiply(matModelView, matProjection);
+                    matModelViewProjection = MatrixMultiply(matModelView, matProjection);
                 }
                 else {
                     // Setup current eye viewport (half screen width)
-                    rlViewport(eye * RLGL.rlGetFramebufferWidth() / 2, 0, rlGetFramebufferWidth() / 2, RLGL.rlGetFramebufferHeight());
-                    matModelViewProjection = Raymath.MatrixMultiply(Raymath.MatrixMultiply(matModelView, RLGL.rlGetMatrixViewOffsetStereo(eye)), RLGL.rlGetMatrixProjectionStereo(eye));
+                    rlViewport(eye * rlGetFramebufferWidth() / 2, 0, rlGetFramebufferWidth() / 2, rlGetFramebufferHeight());
+                    matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, rlGetMatrixViewOffsetStereo(eye)), rlGetMatrixProjectionStereo(eye));
                 }
 
                 // Send combined model-view-projection matrix to shader
-                RLGL.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP], matModelViewProjection);
+                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP], matModelViewProjection);
 
                 // Draw mesh
                 if (mesh.indices != null || mesh.indicesS != null) {
@@ -1295,11 +1306,11 @@ public class rModels{
             // Unbind all bound texture maps
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 // Select current shader texture slot
-                RLGL.rlActiveTextureSlot(i);
+                rlActiveTextureSlot(i);
 
                 // Disable texture for active slot
-                if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MaterialMapIndex.MATERIAL_MAP_PREFILTER) || (i == MaterialMapIndex.MATERIAL_MAP_CUBEMAP)) {
-                    RLGL.rlDisableTextureCubemap();
+                if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
+                    rlDisableTextureCubemap();
                 }
                 else {
                     rlDisableTexture();
@@ -1308,11 +1319,11 @@ public class rModels{
 
             // Disable all possible vertex array objects (or VBOs)
             rlDisableVertexArray();
-            RLGL.rlDisableVertexBuffer();
-            RLGL.rlDisableVertexBufferElement();
+            rlDisableVertexBuffer();
+            rlDisableVertexBufferElement();
 
             // Disable shader program
-            RLGL.rlDisableShader();
+            rlDisableShader();
 
             // Restore rlgl internal modelview and projection matrices
             rlSetMatrixModelview(matView);
@@ -1492,7 +1503,7 @@ public class rModels{
             }
 
             int eyeCount = 1;
-            if (RLGL.rlIsStereoRendererEnabled()) {
+            if (rlIsStereoRendererEnabled()) {
                 eyeCount = 2;
             }
 
@@ -1553,11 +1564,11 @@ public class rModels{
     // Unload mesh from memory (RAM and VRAM)
     public void UnloadMesh(Mesh mesh) {
         // Unload rlgl mesh vboId data
-        RLGL.rlUnloadVertexArray(mesh.vaoId);
+        rlUnloadVertexArray(mesh.vaoId);
 
         if (mesh.vboId != null){
             for (int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
-                RLGL.rlUnloadVertexBuffer(mesh.vboId[i]);
+                rlUnloadVertexBuffer(mesh.vboId[i]);
             }
         }
         mesh = null;
@@ -1622,7 +1633,7 @@ public class rModels{
 
             txtData.append( "\n");
 
-            // NOTE: Text data length exported is determined by '\0' (NULL) character
+            // NOTE: Text data length exported is determined by '\0' (null) character
             try {
                 success = FileIO.SaveFileText(fileName, txtData.toString());
             } catch (IOException e) {
@@ -1721,8 +1732,8 @@ public class rModels{
         }
 
         // Using rlgl default shader
-        material.shader.id = RLGL.rlGetShaderIdDefault();
-        material.shader.locs = RLGL.rlGetShaderLocsDefault();
+        material.shader.id = rlGetShaderIdDefault();
+        material.shader.locs = rlGetShaderLocsDefault();
 
         // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
         material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
@@ -3059,8 +3070,8 @@ public class rModels{
             maxVertex = new Vector3(mesh.vertices[0], mesh.vertices[1], mesh.vertices[2]);
 
             for (int i = 1; i < mesh.vertexCount; i++) {
-                minVertex = Raymath.Vector3Min(minVertex, new Vector3(mesh.vertices[i*3], mesh.vertices[i*3 + 1], mesh.vertices[i*3 + 2]));
-                maxVertex = Raymath.Vector3Max(maxVertex, new Vector3(mesh.vertices[i*3], mesh.vertices[i*3 + 1], mesh.vertices[i*3 + 2]));
+                minVertex = Vector3Min(minVertex, new Vector3(mesh.vertices[i*3], mesh.vertices[i*3 + 1], mesh.vertices[i*3 + 2]));
+                maxVertex = Vector3Max(maxVertex, new Vector3(mesh.vertices[i*3], mesh.vertices[i*3 + 1], mesh.vertices[i*3 + 2]));
             }
         }
 
@@ -3131,36 +3142,36 @@ public class rModels{
 
             // TODO: Review, not sure if tangent computation is right, just used reference proposed maths...
             if(COMPUTE_TANGENTS_METHOD_01) {
-                Vector3 tmp = Raymath.Vector3Subtract(tangent, Raymath.Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
-                tmp = Raymath.Vector3Normalize(tmp);
+                Vector3 tmp = Vector3Subtract(tangent, Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
+                tmp = Vector3Normalize(tmp);
                 mesh.tangents[i * 4 + 0] = tmp.x;
                 mesh.tangents[i * 4 + 1] = tmp.y;
                 mesh.tangents[i * 4 + 2] = tmp.z;
                 mesh.tangents[i * 4 + 3] = 1.0f;
             }
             else {
-                Raymath.Vector3OrthoNormalize(normal, tangent);
+                Vector3OrthoNormalize(normal, tangent);
                 mesh.tangents[i * 4 + 0] = tangent.x;
                 mesh.tangents[i * 4 + 1] = tangent.y;
                 mesh.tangents[i * 4 + 2] = tangent.z;
-                mesh.tangents[i * 4 + 3] = (Vector3DotProduct(Raymath.Vector3CrossProduct(normal, tangent), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
+                mesh.tangents[i * 4 + 3] = (Vector3DotProduct(Vector3CrossProduct(normal, tangent), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
             }
         }
 
         if (mesh.vboId != null) {
-            if (mesh.vboId[RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] != 0) {
+            if (mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT] != 0) {
                 // Upate existing vertex buffer
-                RLGL.rlUpdateVertexBuffer(mesh.vboId[RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT], mesh.tangents, mesh.vertexCount*4);
+                rlUpdateVertexBuffer(mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT], mesh.tangents, mesh.vertexCount*4);
             }
             else {
                 // Load a new tangent attributes buffer
-                mesh.vboId[RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VERTEX_TANGENT] = RLGL.rlLoadVertexBuffer(mesh.tangents, false);
+                mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT] = rlLoadVertexBuffer(mesh.tangents, false);
             }
 
-            RLGL.rlEnableVertexArray(mesh.vaoId);
-            RLGL.rlSetVertexAttribute(4, 4, RLGL.RL_FLOAT, false, 0, 0);
-            RLGL.rlEnableVertexAttribute(4);
-            RLGL.rlDisableVertexArray();
+            rlEnableVertexArray(mesh.vaoId);
+            rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
+            rlEnableVertexAttribute(4);
+            rlDisableVertexArray();
         }
 
         TRACELOG(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
@@ -3178,13 +3189,13 @@ public class rModels{
     public void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
         // Calculate transformation matrix from function parameters
         // Get transform matrix (rotation -> scale -> translation)
-        Matrix matScale = Raymath.MatrixScale(scale.x, scale.y, scale.z);
-        Matrix matRotation = Raymath.MatrixRotate(rotationAxis, rotationAngle*Raymath.DEG2RAD);
-        Matrix matTranslation = Raymath.MatrixTranslate(position.x, position.y, position.z);
-        Matrix matTransform = Raymath.MatrixMultiply(Raymath.MatrixMultiply(matScale, matRotation), matTranslation);
+        Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
+        Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle* DEG2RAD);
+        Matrix matTranslation = MatrixTranslate(position.x, position.y, position.z);
+        Matrix matTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
         Matrix modTransform = model.transform;
         // Combine model transformation matrix (model.transform) with matrix generated by function parameters (matTransform)
-        model.transform = Raymath.MatrixMultiply(model.transform, matTransform);
+        model.transform = MatrixMultiply(model.transform, matTransform);
 
         for (int i = 0; i < model.meshCount; i++) {
             Color color = model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
@@ -3205,20 +3216,20 @@ public class rModels{
 
     // Draw a model wires (with texture if set)
     public void DrawModelWires(Model model, Vector3 position, float scale, Color tint) {
-        RLGL.rlEnableWireMode();
+        rlEnableWireMode();
 
         DrawModel(model, position, scale, tint);
 
-        RLGL.rlDisableWireMode();
+        rlDisableWireMode();
     }
 
     // Draw a model wires (with texture if set) with extended parameters
     public void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
-        RLGL.rlEnableWireMode();
+        rlEnableWireMode();
 
         DrawModelEx(model, position, rotationAxis, rotationAngle, scale, tint);
 
-        RLGL.rlDisableWireMode();
+        rlDisableWireMode();
     }
 
     // Draw a billboard
@@ -3233,31 +3244,31 @@ public class rModels{
         // NOTE: Billboard locked on axis-Y
         Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
 
-        DrawBillboardPro(camera, texture, source, position, up, size, Raymath.Vector2Zero(), 0.0f, tint);
+        DrawBillboardPro(camera, texture, source, position, up, size, Vector2Zero(), 0.0f, tint);
     }
 
     public void DrawBillboardPro(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint) {
         // NOTE: Billboard size will maintain source rectangle aspect ratio, size will represent billboard width
         Vector2 sizeRatio = new Vector2(size.x*source.width/source.height, size.y );
 
-        Matrix matView = Raymath.MatrixLookAt(camera.position, camera.target, camera.up);
+        Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
 
         Vector3 right = new Vector3(matView.m0, matView.m4, matView.m8);
 
-        Vector3 rightScaled = Raymath.Vector3Scale(right, sizeRatio.x/2);
-        Vector3 upScaled = Raymath.Vector3Scale(up, sizeRatio.y/2);
+        Vector3 rightScaled = Vector3Scale(right, sizeRatio.x/2);
+        Vector3 upScaled = Vector3Scale(up, sizeRatio.y/2);
 
-        Vector3 p1 = Raymath.Vector3Add(rightScaled, upScaled);
-        Vector3 p2 = Raymath.Vector3Subtract(rightScaled, upScaled);
+        Vector3 p1 = Vector3Add(rightScaled, upScaled);
+        Vector3 p2 = Vector3Subtract(rightScaled, upScaled);
 
-        Vector3 topLeft = Raymath.Vector3Scale(p2, -1);
+        Vector3 topLeft = Vector3Scale(p2, -1);
         Vector3 topRight = p1;
         Vector3 bottomRight = p2;
-        Vector3 bottomLeft = Raymath.Vector3Scale(p1, -1);
+        Vector3 bottomLeft = Vector3Scale(p1, -1);
 
         if (rotation != 0.0f) {
-            float sinRotation = (float) Math.sin(rotation*Raymath.DEG2RAD);
-            float cosRotation = (float) Math.cos(rotation*Raymath.DEG2RAD);
+            float sinRotation = (float) Math.sin(rotation* DEG2RAD);
+            float cosRotation = (float) Math.cos(rotation* DEG2RAD);
 
             // NOTE: (-1, 1) is the range where origin.x, origin.y is inside the texture
             float rotateAboutX = sizeRatio.x*origin.x/2;
@@ -3270,58 +3281,58 @@ public class rModels{
             ytvalue = Vector3DotProduct(up, topLeft) - rotateAboutY;
             rotatedX = xtvalue*cosRotation - ytvalue*sinRotation + rotateAboutX; // Rotate about the point origin
             rotatedY = xtvalue*sinRotation + ytvalue*cosRotation + rotateAboutY;
-            topLeft = Raymath.Vector3Add(Raymath.Vector3Scale(up, rotatedY), Raymath.Vector3Scale(right, rotatedX)); // Translate back to cartesian coordinates
+            topLeft = Vector3Add(Vector3Scale(up, rotatedY), Vector3Scale(right, rotatedX)); // Translate back to cartesian coordinates
 
             xtvalue = Vector3DotProduct(right, topRight) - rotateAboutX;
             ytvalue = Vector3DotProduct(up, topRight) - rotateAboutY;
             rotatedX = xtvalue*cosRotation - ytvalue*sinRotation + rotateAboutX;
             rotatedY = xtvalue*sinRotation + ytvalue*cosRotation + rotateAboutY;
-            topRight = Raymath.Vector3Add(Raymath.Vector3Scale(up, rotatedY), Raymath.Vector3Scale(right, rotatedX));
+            topRight = Vector3Add(Vector3Scale(up, rotatedY), Vector3Scale(right, rotatedX));
 
             xtvalue = Vector3DotProduct(right, bottomRight) - rotateAboutX;
             ytvalue = Vector3DotProduct(up, bottomRight) - rotateAboutY;
             rotatedX = xtvalue*cosRotation - ytvalue*sinRotation + rotateAboutX;
             rotatedY = xtvalue*sinRotation + ytvalue*cosRotation + rotateAboutY;
-            bottomRight = Raymath.Vector3Add(Raymath.Vector3Scale(up, rotatedY), Raymath.Vector3Scale(right, rotatedX));
+            bottomRight = Vector3Add(Vector3Scale(up, rotatedY), Vector3Scale(right, rotatedX));
 
             xtvalue = Vector3DotProduct(right, bottomLeft)-rotateAboutX;
             ytvalue = Vector3DotProduct(up, bottomLeft)-rotateAboutY;
             rotatedX = xtvalue*cosRotation - ytvalue*sinRotation + rotateAboutX;
             rotatedY = xtvalue*sinRotation + ytvalue*cosRotation + rotateAboutY;
-            bottomLeft = Raymath.Vector3Add(Raymath.Vector3Scale(up, rotatedY), Raymath.Vector3Scale(right, rotatedX));
+            bottomLeft = Vector3Add(Vector3Scale(up, rotatedY), Vector3Scale(right, rotatedX));
         }
 
         // Translate points to the draw center (position)
-        topLeft = Raymath.Vector3Add(topLeft, position);
-        topRight = Raymath.Vector3Add(topRight, position);
-        bottomRight = Raymath.Vector3Add(bottomRight, position);
-        bottomLeft = Raymath.Vector3Add(bottomLeft, position);
+        topLeft = Vector3Add(topLeft, position);
+        topRight = Vector3Add(topRight, position);
+        bottomRight = Vector3Add(bottomRight, position);
+        bottomLeft = Vector3Add(bottomLeft, position);
 
-        RLGL.rlCheckRenderBatchLimit(8);
+        rlCheckRenderBatchLimit(8);
 
-        RLGL.rlSetTexture(texture.id);
+        rlSetTexture(texture.id);
 
-        RLGL.rlBegin(RLGL.RL_QUADS);
-        RLGL.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+        rlBegin(RL_QUADS);
+        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
 
         // Bottom-left corner for texture and quad
-        RLGL.rlTexCoord2f(source.x/texture.width, source.y/texture.height);
-        RLGL.rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
+        rlTexCoord2f(source.x/texture.width, source.y/texture.height);
+        rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
 
         // Top-left corner for texture and quad
-        RLGL.rlTexCoord2f(source.x/texture.width, (source.y + source.height)/texture.height);
-        RLGL.rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
+        rlTexCoord2f(source.x/texture.width, (source.y + source.height)/texture.height);
+        rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
 
         // Top-right corner for texture and quad
-        RLGL.rlTexCoord2f((source.x + source.width)/texture.width, (source.y + source.height)/texture.height);
-        RLGL.rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
+        rlTexCoord2f((source.x + source.width)/texture.width, (source.y + source.height)/texture.height);
+        rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
 
         // Bottom-right corner for texture and quad
-        RLGL.rlTexCoord2f((source.x + source.width)/texture.width, source.y/texture.height);
-        RLGL.rlVertex3f(topRight.x, topRight.y, topRight.z);
-        RLGL.rlEnd();
+        rlTexCoord2f((source.x + source.width)/texture.width, source.y/texture.height);
+        rlVertex3f(topRight.x, topRight.y, topRight.z);
+        rlEnd();
 
-        RLGL.rlSetTexture(0);
+        rlSetTexture(0);
     }
 
     // Draw a bounding box with wires
@@ -3629,6 +3640,27 @@ public class rModels{
     // Module specific Functions Definition
     //----------------------------------------------------------------------------------
 
+    private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, int poseCount, Transform[] transforms) {
+        Transform[] result = new Transform[poseCount];
+
+        for (int i = 0; i < bones.length; i++) {
+            transforms[i] = new Transform();
+
+            if (bones[i].parent >= 0) {
+                if (bones[i].parent > i) {
+                    TRACELOG(LOG_WARNING, "Assumes bones are toplogically sorted, but bone " + i + " has parent " + bones[i].parent + ". Skipping.");
+                    continue;
+                }
+                transforms[i].rotation = QuaternionMultiply(transforms[bones[i].parent].rotation, transforms[i].rotation);
+                transforms[i].scale = Vector3Multiply(transforms[i].scale, transforms[bones[i].parent].scale);
+                transforms[i].translation = Vector3Multiply(transforms[i].translation, transforms[bones[i].parent].scale);
+                transforms[i].translation = Vector3RotateByQuaternion(transforms[i].translation, transforms[bones[i].parent].rotation);
+                transforms[i].translation = Vector3Add(transforms[i].translation, transforms[bones[i].parent].translation);
+            }
+        }
+
+        return result;
+    }
 
     private Model LoadOBJ(String fileName) {
 
@@ -3792,7 +3824,7 @@ public class rModels{
             byte[] blendi;
             byte[] blendw;
             byte[] color;
-            byte[] intbuffer = new byte[Integer.BYTES];
+            byte[] intBuffer = new byte[Integer.BYTES];
             byte[] floatBuffer = new byte[Float.BYTES];
             byte[] tmpMagic = new byte[header.magic.length];
 
@@ -3801,60 +3833,60 @@ public class rModels{
             for (int i = 0; i < header.magic.length; i++) {
                 header.magic[i] = (char) tmpMagic[i];
             }
-            fileDataPtr += fileData.read(intbuffer);
-            header.version = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.filesize = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.flags = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_text = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_text = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_meshes = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_meshes = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_vertexarrays = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_vertexes = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_vertexarrays = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_triangles = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_triangles = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_adjacency = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_joints = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_joints = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_poses = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_poses = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_anims = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_anims = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_frames = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_framechannels = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_frames = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_bounds = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_comment = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_comment = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.num_extensions = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            header.ofs_extensions = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.version = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.filesize = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.flags = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_text = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_text = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_meshes = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_meshes = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_vertexarrays = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_vertexes = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_vertexarrays = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_triangles = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_triangles = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_adjacency = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_joints = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_joints = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_poses = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_poses = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_anims = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_anims = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_frames = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_framechannels = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_frames = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_bounds = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_comment = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_comment = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.num_extensions = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            header.ofs_extensions = IQM_toInt(intBuffer);
 
             if (!IQM_MAGIC.equals(String.valueOf(header.magic))) {
                 TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
@@ -3869,18 +3901,18 @@ public class rModels{
                 imesh[i] = new IQMMesh();
                 fileData.reset();
                 fileData.skip( header.ofs_meshes + off);
-                fileData.read(intbuffer);
-                imesh[i].name = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                imesh[i].material = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                imesh[i].first_vertex = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                imesh[i].num_vertexes = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                imesh[i].first_triangle = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                imesh[i].num_triangles = IQM_toInt(intbuffer);
+                fileData.read(intBuffer);
+                imesh[i].name = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                imesh[i].material = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                imesh[i].first_vertex = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                imesh[i].num_vertexes = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                imesh[i].first_triangle = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                imesh[i].num_triangles = IQM_toInt(intBuffer);
                 off += 24;
             }
             fileData.reset();
@@ -3944,8 +3976,8 @@ public class rModels{
             for (int i = 0; i < tri.length; i++) {
                 tri[i] = new IQMTriangle();
                 for (int j = 0; j < tri[i].vertex.length; j++) {
-                    fileData.read(intbuffer);
-                    tri[i].vertex[j] = IQM_toInt(intbuffer);
+                    fileData.read(intBuffer);
+                    tri[i].vertex[j] = IQM_toInt(intBuffer);
                 }
             }
 
@@ -3969,16 +4001,16 @@ public class rModels{
             fileData.skip(header.ofs_vertexarrays);
             for (int i = 0; i < va.length; i++) {
                 va[i] = new IQMVertexArray();
-                fileData.read(intbuffer);
-                va[i].type = IQMVertexDataType.values()[IQM_toInt(intbuffer)];
-                fileData.read(intbuffer);
-                va[i].flags = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                va[i].format = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                va[i].size = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                va[i].offset = IQM_toInt(intbuffer);
+                fileData.read(intBuffer);
+                va[i].type = IQMVertexDataType.values()[IQM_toInt(intBuffer)];
+                fileData.read(intBuffer);
+                va[i].flags = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                va[i].format = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                va[i].size = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                va[i].offset = IQM_toInt(intBuffer);
             }
             
             for (int i = 0; i < header.num_vertexarrays; i++) {
@@ -4092,10 +4124,10 @@ public class rModels{
             fileData.skip(header.ofs_joints);
             for (int i = 0; i < joint.length; i++) {
                 joint[i] = new IQMJoint();
-                fileData.read(intbuffer);
-                joint[i].name = IQM_toInt(intbuffer);
-                fileData.read(intbuffer);
-                joint[i].parent = IQM_toInt(intbuffer);
+                fileData.read(intBuffer);
+                joint[i].name = IQM_toInt(intBuffer);
+                fileData.read(intBuffer);
+                joint[i].parent = IQM_toInt(intBuffer);
                 for (int j = 0; j < joint[i].translate.length; j++) {
                     fileData.read(floatBuffer);
                     joint[i].translate[j] = IQM_toFloat(floatBuffer);
@@ -4144,15 +4176,7 @@ public class rModels{
                 model.bindPose[i].scale.z = joint[i].scale[2];
             }
 
-            // Build bind pose from parent joints
-            for (int i = 0; i < model.boneCount; i++) {
-                if (model.bones[i].parent >= 0) {
-                    model.bindPose[i].rotation = QuaternionMultiply(model.bindPose[model.bones[i].parent].rotation, model.bindPose[i].rotation);
-                    model.bindPose[i].translation = Vector3RotateByQuaternion(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].rotation);
-                    model.bindPose[i].translation = Vector3Add(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation);
-                    model.bindPose[i].scale = Vector3Multiply(model.bindPose[i].scale, model.bindPose[model.bones[i].parent].scale);
-                }
-            }
+            model.bindPose = BuildPoseFromParentJoints(model.bones, header.num_joints, model.bindPose);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -4176,7 +4200,7 @@ public class rModels{
 
             IQMHeader iqmHeader = new IQMHeader();
             
-            byte[] intbuffer = new byte[Integer.BYTES];
+            byte[] intBuffer = new byte[Integer.BYTES];
             byte[] floatBuffer = new byte[Float.BYTES];
             byte[] shortbuffer = new byte[Short.BYTES];
             byte[] tmpMagic = new byte[iqmHeader.magic.length];
@@ -4186,60 +4210,60 @@ public class rModels{
             for (int i = 0; i < iqmHeader.magic.length; i++) {
                 iqmHeader.magic[i] = (char) tmpMagic[i];
             }
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.version = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.filesize = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.flags = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_text = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_text = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_meshes = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_meshes = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_vertexarrays = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_vertexes = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_vertexarrays = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_triangles = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_triangles = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_adjacency = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_joints = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_joints = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_poses = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_poses = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_anims = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_anims = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_frames = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_framechannels = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_frames = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_bounds = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_comment = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_comment = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.num_extensions = IQM_toInt(intbuffer);
-            fileDataPtr += fileData.read(intbuffer);
-            iqmHeader.ofs_extensions = IQM_toInt(intbuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.version = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.filesize = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.flags = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_text = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_text = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_meshes = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_meshes = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_vertexarrays = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_vertexes = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_vertexarrays = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_triangles = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_triangles = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_adjacency = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_joints = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_joints = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_poses = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_poses = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_anims = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_anims = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_frames = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_framechannels = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_frames = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_bounds = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_comment = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_comment = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.num_extensions = IQM_toInt(intBuffer);
+            fileDataPtr += fileData.read(intBuffer);
+            iqmHeader.ofs_extensions = IQM_toInt(intBuffer);
 
             if (!IQM_MAGIC.equals(String.valueOf(iqmHeader.magic))) {
                 TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
@@ -4255,10 +4279,10 @@ public class rModels{
             fileDataPtr = iqmHeader.ofs_poses;
             for (int i = 0; i < poses.length; i++) {
                 poses[i] = new IQMPose();
-                fileDataPtr += fileData.read(intbuffer);
-                poses[i].parent = IQM_toInt(intbuffer);
-                fileDataPtr += fileData.read(intbuffer);
-                poses[i].mask = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(intBuffer);
+                poses[i].parent = IQM_toInt(intBuffer);
+                fileDataPtr += fileData.read(intBuffer);
+                poses[i].mask = IQM_toInt(intBuffer);
                 for (int j = 0; j < poses[i].channeloffset.length; j++) {
                     fileDataPtr += fileData.read(floatBuffer);
                     poses[i].channeloffset[j] = IQM_toFloat(floatBuffer);
@@ -4279,16 +4303,16 @@ public class rModels{
             fileDataPtr = iqmHeader.ofs_anims;
             for (int i = 0; i < anim.length; i++) {
                 anim[i] = new IQMAnim();
-                fileDataPtr += fileData.read(intbuffer);
-                anim[i].name = IQM_toInt(intbuffer);
-                fileDataPtr += fileData.read(intbuffer);
-                anim[i].first_frame = IQM_toInt(intbuffer);
-                fileDataPtr += fileData.read(intbuffer);
-                anim[i].num_frames = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(intBuffer);
+                anim[i].name = IQM_toInt(intBuffer);
+                fileDataPtr += fileData.read(intBuffer);
+                anim[i].first_frame = IQM_toInt(intBuffer);
+                fileDataPtr += fileData.read(intBuffer);
+                anim[i].num_frames = IQM_toInt(intBuffer);
                 fileDataPtr += fileData.read(floatBuffer);
                 anim[i].framerate = IQM_toFloat(floatBuffer);
-                fileDataPtr += fileData.read(intbuffer);
-                anim[i].flags = IQM_toInt(intbuffer);
+                fileDataPtr += fileData.read(intBuffer);
+                anim[i].flags = IQM_toInt(intBuffer);
             }
 
             animations = new ModelAnimation[iqmHeader.num_anims];
@@ -4481,6 +4505,32 @@ public class rModels{
         return image;
     }
 
+    // Load bone info from GLTF skin data
+    private BoneInfo[] LoadBoneInfoGLTF(gltfj_glTF gltf, gltfj_Skin skin) {
+        int boneCount = skin.jointsCount;
+        BoneInfo[] bones = new BoneInfo[boneCount];
+
+        for (int i = 0; i < skin.jointsCount; i++) {
+            bones[i] = new BoneInfo();
+            gltfj_Node node = gltf.nodes.get(skin.joints[i]);
+            bones[i].name = node.name;
+
+            // Find parent bone index
+            int parentIndex = -1;
+
+            for (int j = 0; j < skin.jointsCount; j++) {
+                if (skin.joints[j] == node.parent) {
+                    parentIndex = j;
+                    break;
+                }
+            }
+
+            bones[i].parent = parentIndex;
+        }
+
+        return bones;
+    }
+
     // Load glTF file into model struct, .gltf and .glb supported
     private Model LoadGLTF(String fileName) {
 
@@ -4509,7 +4559,6 @@ public class rModels{
          ***********************************************************************************************/
 
         Model model = new Model();
-        int dataSize;
 
         gltfj_glTF gltf = gltfj.Read(fileName);
 
@@ -4670,7 +4719,7 @@ public class rModels{
                                     for (int f = 0; f < fBuffer.length; f++) {
                                         fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + vo + f];
                                     }
-                                    model.meshes[meshIndex].vertices[v] = glFT_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].vertices[v] = glTF_ByteArrayToFloat(fBuffer);
                                 }
                             }
                             else {
@@ -4694,7 +4743,7 @@ public class rModels{
                                     for (int f = 0; f < fBuffer.length; f++) {
                                         fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + no + f];
                                     }
-                                    model.meshes[meshIndex].normals[n] = glFT_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].normals[n] = glTF_ByteArrayToFloat(fBuffer);
                                 }
                             }
                             else {
@@ -4718,7 +4767,7 @@ public class rModels{
                                     for (int f = 0; f < fBuffer.length; f++) {
                                         fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + to + f];
                                     }
-                                    model.meshes[meshIndex].tangents[t] = glFT_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].tangents[t] = glTF_ByteArrayToFloat(fBuffer);
                                 }
                             }
                             else {
@@ -4744,7 +4793,7 @@ public class rModels{
                                     for (int f = 0; f < fBuffer.length; f++) {
                                         fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + to + f];
                                     }
-                                    model.meshes[meshIndex].texcoords[t] = glFT_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].texcoords[t] = glTF_ByteArrayToFloat(fBuffer);
                                 }
                             }
                             else {
@@ -4785,7 +4834,7 @@ public class rModels{
                                     for (int f = 0; f < sBuffer.length; f++) {
                                         sBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + co + f];
                                     }
-                                    temp[c] = glFT_ByteArrayToShort(sBuffer);
+                                    temp[c] = glTF_ByteArrayToShort(sBuffer);
                                 }
 
                                 // Convert data to raylib color data type (4 bytes)
@@ -4810,7 +4859,7 @@ public class rModels{
                                     for (int f = 0; f < fBuffer.length; f++) {
                                         fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + co + f];
                                     }
-                                    temp[c] = glFT_ByteArrayToFloat(fBuffer);
+                                    temp[c] = glTF_ByteArrayToFloat(fBuffer);
                                 }
 
                                 // Convert data to raylib color data type (4 bytes), we expect the color data normalized
@@ -4844,7 +4893,7 @@ public class rModels{
                                 for (int s = 0; s < sBuffer.length; s++) {
                                     sBuffer[s] = buffer.data[bufferView.offset + attribute.byteOffset + iso + s];
                                 }
-                                model.meshes[meshIndex].indicesS[is] = glFT_ByteArrayToShort(sBuffer);
+                                model.meshes[meshIndex].indicesS[is] = glTF_ByteArrayToShort(sBuffer);
                             }
 
                         }
@@ -4863,7 +4912,7 @@ public class rModels{
                                 for (int ib = 0; ib < iBuffer.length; ib++) {
                                     iBuffer[ib] = buffer.data[bufferView.offset + attribute.byteOffset + ino + ib];
                                 }
-                                temp[in] = glFT_ByteArrayToInt(iBuffer);
+                                temp[in] = glTF_ByteArrayToInt(iBuffer);
                             }
                             // Convert data to raylib indices data type (unsigned short)
                             for (int d = 0; d < attribute.count; d++) {
@@ -4898,16 +4947,346 @@ public class rModels{
                 }
             }
 
-            //todo: Load glTF meshes animation data
+            // Load glTF meshes animation data
+            // REF: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#skins
+            // REF: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#skinned-mesh-attributes
+            //
+            // LIMITATIONS:
+            //  - Only supports 1 armature per file, and skips loading it if there are multiple armatures
+            //  - Only supports linear interpolation (default method in Blender when checked "Always Sample Animations" when exporting a GLTF file)
+            //  - Only supports translation/rotation/scale animation channel.path, weights not considered (i.e. morph targets)
+            //----------------------------------------------------------------------------------------------------
+            if (gltf.skinCount == 1) {
+                gltfj_Skin skin = gltf.skins.get(0);
+                model.bones = LoadBoneInfoGLTF(gltf, skin);
+                model.bindPose = new Transform[model.boneCount];
 
+                for (int i = 0; i < model.boneCount; i++) {
+                    gltfj_Node node = gltf.nodes.get(skin.joints[i]);
+                    model.bindPose[i] = new Transform();
+
+                    model.bindPose[i].translation.x = (float) node.translation[0];
+                    model.bindPose[i].translation.y = (float) node.translation[1];
+                    model.bindPose[i].translation.z = (float) node.translation[2];
+
+                    model.bindPose[i].rotation.x = (float) node.rotation[0];
+                    model.bindPose[i].rotation.y = (float) node.rotation[1];
+                    model.bindPose[i].rotation.z = (float) node.rotation[2];
+                    model.bindPose[i].rotation.w = (float) node.rotation[3];
+
+                    model.bindPose[i].scale.x = (float) node.scale[0];
+                    model.bindPose[i].scale.y = (float) node.scale[1];
+                    model.bindPose[i].scale.z = (float) node.scale[2];
+                }
+
+                model.bindPose = BuildPoseFromParentJoints(model.bones, model.boneCount, model.bindPose);
+            }
+            else if (gltf.skinCount > 1) {
+                TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.skinCount);
+            }
+
+            for (int i = 0, meshIndex = 0; i < gltf.meshCount; i++) {
+                for (int p = 0; p < gltf.meshes.get(i).primitivesCount; p++) {
+                    // NOTE: We only support primitives defined by triangles
+                    if (gltf.meshes.get(i).primitives.get(p).type != gltfj_Primitive.PrimitiveType.TRIANGLES) {
+                        continue;
+                    }
+
+                    for (int j = 0; j < gltf.meshes.get(i).primitives.get(p).attributesCount; j++) {
+                        // NOTE: JOINTS_1 + WEIGHT_1 will be used for +4 joints influencing a vertex -> Not supported by raylib
+
+                        if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.JOINTS) {
+                            // JOINTS_n (vec4: 4 bones max per vertex / u8, u16)
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).data);
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_BYTE) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                                // Init raylib mesh bone ids to copy glTF attribute data
+                                model.meshes[meshIndex].boneIds = new byte[model.meshes[meshIndex].vertexCount*4];
+
+                                // Load 4 components of unsigned char data type into mesh.boneIds
+                                // for cgltf_attribute_type_joints we have:
+                                //   - data.meshes[0] (256 vertices)
+                                //   - 256 values, provided as cgltf_type_vec4 of bytes (4 byte per joint, stride 4)
+                                int n = 0;
+                                gltfj_Buffer buffer = gltf.buffers.get(attribute.bufferView);
+                                for (int k = 0; k < attribute.count; k++) {
+                                    for (int l = 0; l < 4; l++) {
+                                        model.meshes[meshIndex].boneIds[4 * k + l] = buffer.data[n + l];
+                                    }
+                                    n += 4;
+                                }
+                            }
+                            else {
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported, use vec4 u8");
+                            }
+                        }
+                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.WEIGHTS) {
+                            // WEIGHTS_n (vec4 / u8, u16, f32)
+
+                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).data);
+
+                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                                // Init raylib mesh bone weight to copy glTF attribute data
+                                model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount*4];
+
+                                // Load 4 components of float data type into mesh.boneWeights
+                                // for cgltf_attribute_type_weights we have:
+                                //   - data.meshes[0] (256 vertices)
+                                //   - 256 values, provided as cgltf_type_vec4 of float (4 byte per joint, stride 16)
+                                int n = 0; 
+                                gltfj_Buffer buffer = gltf.buffers.get(attribute.bufferView);
+                                for (int k = 0; k < attribute.count; k++) {
+                                    for (int l = 0; l < 4; l++) {
+                                        byte[] floatBuffer = new byte[Float.BYTES];
+                                        for (int m = 0; m < Float.BYTES; m++) {
+                                            floatBuffer[m] = buffer.data[n + l];
+                                        }
+                                        float weight = glTF_ByteArrayToFloat(floatBuffer);
+                                        model.meshes[meshIndex].boneWeights[4 * k + l] = weight;
+                                    } 
+                                    n += 4;
+                                }
+                            }
+                            else {
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint weight attribute data format not supported, use vec4 float");
+                            }
+                        }
+                    }
+
+                    // Animated vertex data
+                    model.meshes[meshIndex].animVertices = model.meshes[meshIndex].vertices;
+                    model.meshes[meshIndex].animNormals = model.meshes[meshIndex].normals;
+
+                    meshIndex++;       // Move to next mesh
+                }
+
+            }
         }
         else {
-            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] failed to load glTF data");
+            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
         }
 
         return model;
     }
 
+    // Get interpolated pose for bone sampler at a specific time. Returns true on success
+    private float[] GetPoseAtTimeGLTF(gltfj_glTF gltf, gltfj_Accessor input, gltfj_Accessor output, float time) {
+        float[] pose = new float[0];
+
+        // Input and output should have the same count
+        float[] tStart = new float[0];
+        float[] tEnd = new float[0];
+        int keyframe = 0;       // Defaults to first pose
+
+        for (int i = 0; i < input.count - 1; i++) {
+           tStart = gltf.AccessorReadFloat(input, i, 1);
+            if (tStart == null) {
+                return null;
+            }
+
+            tEnd = gltf.AccessorReadFloat(input, i + 1, 1);
+            if (tEnd == null) {
+                return null;
+            }
+
+            if ((tStart[0] <= time) && (time < tEnd[0])) {
+                keyframe = i;
+                break;
+            }
+        }
+
+        float t = (time - tStart[0])/(tEnd[0] - tStart[0]);
+        t = (t < 0.0f)? 0.0f : t;
+        t = (t > 1.0f)? 1.0f : t;
+
+        if (output.componentType != gltfj_Accessor.AccessorDataType.FLOAT) {
+            return null;
+        }
+
+        if (output.type == gltfj_Accessor.AccessorType.VEC3) {
+            float[] tmp = new float[3];
+            tmp = gltf.AccessorReadFloat(output, keyframe, 3);
+            Vector3 v1 = new Vector3(tmp[0], tmp[1], tmp[2]);
+            tmp = gltf.AccessorReadFloat(output, keyframe+1, 3);
+            Vector3 v2 = new Vector3(tmp[0], tmp[1], tmp[2]);
+
+            Vector3 r = Vector3Lerp(v1, v2, t);
+            pose = new float[]{r.x, r.y, r.z};
+        }
+        else if (output.type == gltfj_Accessor.AccessorType.VEC4) {
+            float[] tmp = new float[4];
+            tmp = gltf.AccessorReadFloat(output, keyframe, 4);
+            Quaternion v1 = new Quaternion(tmp[0], tmp[1], tmp[2], tmp[3]);
+            tmp = gltf.AccessorReadFloat(output, keyframe+1, 4);
+            Quaternion v2 = new Quaternion(tmp[0], tmp[1], tmp[2], tmp[3]);
+
+            // Only v4 is for rotations, so we know it's a quat
+            Quaternion r = QuaternionSlerp(v1, v2, t);
+            pose = new float[]{r.x, r.y, r.z, r.w};
+        }
+
+        return pose;
+    }
+
+    private static class Channels {
+        gltfj_AnimationChannel translate;
+        gltfj_AnimationChannel rotate;
+        gltfj_AnimationChannel scale;
+
+        Channels() {
+        }
+    }
+
+    private ModelAnimation[] LoadModelAnimationsGLTF(String fileName) {
+        ModelAnimation[] animations = null;
+
+        // glTF data loading
+        gltfj_glTF gltf = gltfj.Read(fileName);
+
+        if (gltf.result != gltfj_glTF.ResultType.SUCCESS) {
+            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
+            TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load animation buffers");
+            return null;
+        }
+
+        else {
+            if (gltf.skinCount == 1) {
+                gltfj_Skin skin = gltf.skins.get(0);
+                animations = new ModelAnimation[gltf.animationCount];
+
+                for (int i = 0; i < gltf.animationCount; i++) {
+                    animations[i] = new ModelAnimation();
+                    animations[i].bones = LoadBoneInfoGLTF(gltf, skin);
+
+                    gltfj_Animation animData = gltf.animations.get(i);
+                    Channels[] boneChannels = new Channels[animations[i].boneCount];
+                    for (int j = 0; j < boneChannels.length; j++) {
+                        boneChannels[j] = new Channels();
+                    }
+
+                    float animDuration = 0.0f;
+
+                    for (int j = 0; j < animData.channelCount; j++) {
+                        gltfj_AnimationChannel channel = animData.channels.get(j);
+                        int boneIndex = -1;
+
+                        for (int k = 0; k < skin.jointsCount; k++) {
+                            if (animData.channels.get(j).targetNode == skin.joints[k]) {
+                                boneIndex = k;
+                                break;
+                            }
+                        }
+
+                        if (boneIndex == -1) {
+                            // Animation channel for a node not in the armature
+                            continue;
+                        }
+
+                        if (animData.samplers.get(animData.channels.get(j).sampler).interpolation == gltfj_AnimationSampler.InterpolationType.LINEAR) {
+                            if (channel.targetPath == gltfj_AnimationChannel.AnimationPathType.TRANSLATION) {
+                                boneChannels[boneIndex].translate = animData.channels.get(j);
+                            }
+                            else if (channel.targetPath == gltfj_AnimationChannel.AnimationPathType.ROTATION) {
+                                boneChannels[boneIndex].rotate = animData.channels.get(j);
+                            }
+                            else if (channel.targetPath == gltfj_AnimationChannel.AnimationPathType.SCALE) {
+                                boneChannels[boneIndex].scale = animData.channels.get(j);
+                            }
+                            else {
+                                TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Unsupported target_path on channel " + j + "'s sampler for animation " + i + ". Skipping.");
+                            }
+                        }
+                        else {
+                            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Only linear interpolation curves are supported for GLTF animation.");
+                        }
+
+                        float t = glTF_AccessorReadFloat(gltf, gltf.accessors.get(channel.sampler));
+
+                        if (t == -1.0f) {
+                            TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load input time");
+                            continue;
+                        }
+
+                        animDuration = (t > animDuration)? t : animDuration;
+                    }
+
+                    animations[i].frameCount = (int)(animDuration*1000.0f/GLTF_ANIMDELAY);
+                    animations[i].framePoses = new Transform[animations[i].frameCount][];
+
+                    for (int j = 0; j < animations[i].frameCount; j++) {
+                        animations[i].framePoses[j] = new Transform[animations[i].boneCount];
+                        float time = ((float) j*GLTF_ANIMDELAY)/1000.0f;
+
+                        for (int k = 0; k < animations[i].boneCount; k++) {
+                            Vector3 translation = new Vector3();
+                            Quaternion rotation = new Quaternion(0, 0, 0, 1);
+                            Vector3 scale = new Vector3(1, 1, 1);
+
+                            if (boneChannels[k].translate != null) {
+                                float[] tTranslate = GetPoseAtTimeGLTF(
+                                        gltf,
+                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].translate.sampler).input),
+                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].translate.sampler).output),
+                                        time
+                                );
+                                if (tTranslate != null) {
+                                    scale = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
+                                }
+                                else {
+                                    TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load translate pose data for bone " + animations[i].bones[k].name);
+                                }
+                            }
+
+                            if (boneChannels[k].rotate != null) {
+                                float[] tRotate = GetPoseAtTimeGLTF(
+                                        gltf,
+                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].rotate.sampler).input),
+                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].rotate.sampler).output),
+                                        time
+                                );
+                                if (tRotate != null) {
+                                    scale = new Vector3(tRotate[0], tRotate[1], tRotate[2]);
+                                }
+                                else {
+                                    TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load rotate pose data for bone " + animations[i].bones[k].name);
+                                }
+                            }
+
+                            if (boneChannels[k].scale != null) {
+                                float[] tScale = GetPoseAtTimeGLTF(
+                                        gltf,
+                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].scale.sampler).input),
+                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].scale.sampler).output),
+                                        time
+                                );
+                                if (tScale != null) {
+                                    scale = new Vector3(tScale[0], tScale[1], tScale[2]);
+                                }
+                                else {
+                                    TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load scale pose data for bone " + animations[i].bones[k].name);
+                                }
+                            }
+
+                            animations[i].framePoses[j][k] = new Transform();
+                            animations[i].framePoses[j][k].translation = translation;
+                            animations[i].framePoses[j][k].rotation = rotation;
+                            animations[i].framePoses[j][k].scale = scale;
+                        }
+
+                        animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].frameCount, animations[i].framePoses[j]);
+                    }
+
+                    TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.name + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
+                }
+            }
+            else {
+                TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] expected exactly one skin to load animation data from, but found " + gltf.skinCount);
+            }
+        }
+
+        return animations;
+    }
+    
     // Load VOX (MagicaVoxel) mesh data
     private Model LoadVOX(String fileName) {
         Model model = new Model();
@@ -5029,9 +5408,25 @@ public class rModels{
         return model;
     }
 
-    private float glFT_ByteArrayToFloat(byte[] floatBuffer) { return ByteBuffer.wrap(floatBuffer).order(ByteOrder.LITTLE_ENDIAN).getFloat(); }
+    private float glTF_ByteArrayToFloat(byte[] floatBuffer) { return ByteBuffer.wrap(floatBuffer).order(ByteOrder.LITTLE_ENDIAN).getFloat(); }
 
-    private short glFT_ByteArrayToShort(byte[] shortBuffer) { return ByteBuffer.wrap(shortBuffer).order(ByteOrder.LITTLE_ENDIAN).getShort(); }
+    private short glTF_ByteArrayToShort(byte[] shortBuffer) { return ByteBuffer.wrap(shortBuffer).order(ByteOrder.LITTLE_ENDIAN).getShort(); }
 
-    private int glFT_ByteArrayToInt(byte[] intBuffer) { return ByteBuffer.wrap(intBuffer).order(ByteOrder.LITTLE_ENDIAN).getInt(); }
+    private int glTF_ByteArrayToInt(byte[] intBuffer) { return ByteBuffer.wrap(intBuffer).order(ByteOrder.LITTLE_ENDIAN).getInt(); }
+
+    private float glTF_AccessorReadFloat(gltfj_glTF gltf, gltfj_Accessor accessor) {
+        float result = 0.0f;
+
+        if (accessor.sparse != null) {
+            // TODO: sparse access
+        }
+        else if (gltf.buffers.get(accessor.bufferView) == null) {
+            return -1.0f;
+        }
+        else {
+            result = glTF_ByteArrayToFloat(gltf.buffers.get(accessor.bufferView).data);
+        }
+
+        return result;
+    }
 }
