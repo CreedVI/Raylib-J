@@ -26,9 +26,9 @@ public  class State{                    // Renderer state
     public int defaultVShaderId;      // Default vertex shader id (used by default shader program)
     public int defaultFShaderId;      // Default fragment shader id (used by default shader program)
     public int defaultShaderId;       // Default shader program id, supports vertex color and diffuse texture
-    public int[] defaultShaderLocs;     // Default shader locations pointer to be used on rendering
+    public int[] defaultShaderLocs;   // Default shader locations pointer to be used on rendering
     public int currentShaderId;       // Current shader id to be used on rendering (by default, defaultShaderId)
-    public int[] currentShaderLocs;     // Current shader locations pointer to be used on rendering (by default, defaultShaderLocs)
+    public int[] currentShaderLocs;   // Current shader locations pointer to be used on rendering (by default, defaultShaderLocs)
 
     public boolean stereoRender;              // Stereo rendering flag
     public Matrix[] projectionStereo;         // VR stereo rendering eyes projection matrices
@@ -38,6 +38,13 @@ public  class State{                    // Renderer state
     public int glBlendSrcFactor;               // Blending source factor
     public int glBlendDstFactor;               // Blending destination factor
     public int glBlendEquation;                // Blending equation
+    public int glBlendSrcFactorRGB;                   // Blending source RGB factor
+    public int glBlendDestFactorRGB;                  // Blending destination RGB factor
+    public int glBlendSrcFactorAlpha;                 // Blending source alpha factor
+    public int glBlendDestFactorAlpha;                // Blending destination alpha factor
+    public int glBlendEquationRGB;                    // Blending equation for RGB
+    public int glBlendEquationAlpha;                  // Blending equation for alpha
+    public boolean glCustomBlendModeModified;         // Custom blending factor and equation modification
 
     public int framebufferWidth;               // Current framebuffer width
     public int framebufferHeight;              // Current framebuffer height

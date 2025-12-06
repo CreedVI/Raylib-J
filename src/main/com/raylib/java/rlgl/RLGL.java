@@ -4,6 +4,7 @@ import com.raylib.java.structs.Matrix;
 import com.raylib.java.rlgl.data.rlglData;
 import com.raylib.java.structs.Texture2D;
 import com.raylib.java.utils.Tracelog;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
@@ -113,6 +114,7 @@ public class RLGL{
     public static final int RL_TEXTURE_FILTER_LINEAR_MIP_NEAREST = 0x2701;     // GL_LINEAR_MIPMAP_NEAREST
     public static final int RL_TEXTURE_FILTER_MIP_LINEAR = 0x2703;      // GL_LINEAR_MIPMAP_LINEAR
     public static final int RL_TEXTURE_FILTER_ANISOTROPIC = 0x3000;      // Anisotropic filter (custom identifier)
+    public static final int RL_TEXTURE_MIPMAP_BIAS_RATIO = 0x4000; // Texture mipmap bias, percentage ratio (custom identifier)
 
     public static final int RL_TEXTURE_WRAP_REPEAT = 0x2901;      // GL_REPEAT
     public static final int RL_TEXTURE_WRAP_CLAMP = 0x812F;      // GL_CLAMP_TO_EDGE
@@ -193,6 +195,11 @@ public class RLGL{
             RL_ATTACHMENT_RENDERBUFFER = 200;
     }
 
+    public enum rlCullMode {
+        RL_FRONT,
+        RL_BACK
+    }
+
     /**
      * Texture formats (support depends on OpenGL version)
      */
@@ -237,13 +244,14 @@ public class RLGL{
     // Color blending modes (pre-defined)
     public static class rlBlendMode{
         public static final int
-                RL_BLEND_ALPHA = 0,                // Blend textures considering alpha  = default)
+                RL_BLEND_ALPHA = 0,                    // Blend textures considering alpha  = default)
                 RL_BLEND_ADDITIVE = 1,                 // Blend textures adding colors
                 RL_BLEND_MULTIPLIED = 2,               // Blend textures multiplying colors
                 RL_BLEND_ADD_COLORS = 3,               // Blend textures adding colors (alternative)
                 RL_BLEND_SUBTRACT_COLORS = 4,          // Blend textures subtracting colors (alternative)
-                RL_BLEND_ALPHA_PREMULTIPLY = 5,         // Blend premultiplied textures considering alpha
-                RL_BLEND_CUSTOM = 6;                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
+                RL_BLEND_ALPHA_PREMULTIPLY = 5,        // Blend premultiplied textures considering alpha
+                RL_BLEND_CUSTOM = 6,                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
+                RL_BLEND_CUSTOM_SEPARATE = 7;          // Blend textures using custom src/dst factors (use rlSetBlendFactorsSeparate())
 
     }
 
@@ -656,6 +664,62 @@ public class RLGL{
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    public void rlCubemapParameters(int id, int param, int value) {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+        if(!GRAPHICS_API_OPENGL_11) {
+            // Reset anisotropy filter, in case it was set
+            glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
+        }
+
+        switch (param)
+        {
+            case RL_TEXTURE_WRAP_S:
+            case RL_TEXTURE_WRAP_T:
+                if (value == RL_TEXTURE_WRAP_MIRROR_CLAMP) {
+                    if(!GRAPHICS_API_OPENGL_11) {
+                        if (rlglData.getExtSupported().texMirrorClamp) {
+                            glTexParameteri(GL_TEXTURE_CUBE_MAP, param, value);
+                        }
+                        else {
+                            TRACELOG(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
+                        }
+                    }
+                }
+                else {
+                    glTexParameteri(GL_TEXTURE_CUBE_MAP, param, value);
+                }
+                break;
+            case RL_TEXTURE_MAG_FILTER:
+            case RL_TEXTURE_MIN_FILTER:
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, param, value);
+                break;
+            case RL_TEXTURE_FILTER_ANISOTROPIC:
+                if(!GRAPHICS_API_OPENGL_11) {
+                    if (value <= rlglData.getExtSupported().maxAnisotropyLevel) {
+                        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
+                    }
+                    else if (rlglData.getExtSupported().maxAnisotropyLevel > 0.0f) {
+                        TRACELOG(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " + rlglData.getExtSupported().maxAnisotropyLevel);
+                        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
+                    }
+                    else {
+                        TRACELOG(LOG_WARNING, "GL: Anisotropic filtering not supported");
+                    }
+                }
+                break;
+            case RL_TEXTURE_MIPMAP_BIAS_RATIO:
+                if(GRAPHICS_API_OPENGL_33) {
+                    glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_LOD_BIAS, value / 100.0f);
+                }
+                break;
+            default:
+                break;
+        }
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    }
+
     // Enable shader program usage
     public static void rlEnableShader(int id){
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -739,23 +803,34 @@ public class RLGL{
     }
 
     // Enable depth write
-    void rlEnableDepthMask(){
+    public void rlEnableDepthMask(){
         glDepthMask(true);
     }
 
     // Disable depth write
-    void rlDisableDepthMask(){
+    public void rlDisableDepthMask(){
         glDepthMask(false);
     }
 
     // Enable backface culling
-    void rlEnableBackfaceCulling(){
+    public void rlEnableBackfaceCulling(){
         glEnable(GL_CULL_FACE);
     }
 
     // Disable backface culling
-    void rlDisableBackfaceCulling(){
+    public void rlDisableBackfaceCulling(){
         glDisable(GL_CULL_FACE);
+    }
+
+    public void rlCullFace(rlCullMode mode) {
+        switch (mode) {
+            case RL_BACK:
+                glCullFace(GL_BACK);
+                break;
+            case RL_FRONT:
+                glCullFace(GL_FRONT);
+                break;
+        }
     }
 
     // Enable scissor test
@@ -885,7 +960,10 @@ public class RLGL{
     // Set blend mode
     public void rlSetBlendMode(int mode){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            if (rlglData.getState().getCurrentBlendMode() != mode){
+            if (rlglData.getState().getCurrentBlendMode() != mode ||
+                    ((mode == rlBlendMode.RL_BLEND_CUSTOM || mode == rlBlendMode.RL_BLEND_CUSTOM_SEPARATE) &&
+                    rlglData.getState().glCustomBlendModeModified))
+            {
                 rlDrawRenderBatch(rlglData.getCurrentBatch());
 
                 switch (mode){
@@ -918,6 +996,11 @@ public class RLGL{
                         glBlendFunc(rlglData.getState().glBlendSrcFactor, rlglData.getState().glBlendDstFactor);
                         glBlendEquation(rlglData.getState().glBlendEquation);
                         break;
+                    case rlBlendMode.RL_BLEND_CUSTOM_SEPARATE:
+                        // NOTE: Using GL blend src/dst factors and GL equation configured with rlSetBlendFactorsSeparate()
+                        glBlendFuncSeparate(rlglData.getState().glBlendSrcFactorRGB, rlglData.getState().glBlendDestFactorRGB, rlglData.getState().glBlendSrcFactorAlpha, rlglData.getState().glBlendDestFactorAlpha);
+                        glBlendEquationSeparate(rlglData.getState().glBlendEquationRGB, rlglData.getState().glBlendEquationAlpha);
+                        break;
                     default:
                         break;
                 }
@@ -927,12 +1010,43 @@ public class RLGL{
         }
     }
 
+    // Set blending mode factor and equation used by glBlendFuncSeparate and glBlendEquationSeparate
+    void rlSetBlendFactorsSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha, int modeRGB, int modeAlpha) {
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+            if (rlglData.getState().glBlendSrcFactorRGB == srcRGB
+                    && rlglData.getState().glBlendDestFactorRGB == dstRGB
+                    && rlglData.getState().glBlendSrcFactorAlpha == srcAlpha
+                    && rlglData.getState().glBlendDestFactorAlpha == dstAlpha
+                    && rlglData.getState().glBlendEquationRGB == modeRGB
+                    && rlglData.getState().glBlendEquationAlpha == modeAlpha) {
+                return;
+            }
+            else {
+                rlglData.getState().glBlendSrcFactorRGB = srcRGB;
+                rlglData.getState().glBlendDestFactorRGB = dstRGB;
+                rlglData.getState().glBlendSrcFactorAlpha = srcAlpha;
+                rlglData.getState().glBlendDestFactorAlpha = dstAlpha;
+                rlglData.getState().glBlendEquationRGB = modeRGB;
+                rlglData.getState().glBlendEquationAlpha = modeAlpha;
+                rlglData.getState().glCustomBlendModeModified = true;
+            }
+        }
+    }
+
     // Set blending mode factor and equation
     public void rlSetBlendFactors(int glSrcFactor, int glDstFactor, int glEquation){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-            rlglData.getState().setGlBlendSrcFactor(glSrcFactor);
-            rlglData.getState().setGlBlendDstFactor(glDstFactor);
-            rlglData.getState().setGlBlendEquation(glEquation);
+            if (rlglData.getState().glBlendSrcFactor == glSrcFactor
+                    && rlglData.getState().glBlendDstFactor == glDstFactor
+                    && rlglData.getState().glBlendEquation == glEquation) {
+                return;
+            }
+            else {
+                rlglData.getState().setGlBlendSrcFactor(glSrcFactor);
+                rlglData.getState().setGlBlendDstFactor(glDstFactor);
+                rlglData.getState().setGlBlendEquation(glEquation);
+                rlglData.getState().glCustomBlendModeModified = true;
+            }
         }
     }
 
@@ -1043,6 +1157,9 @@ public class RLGL{
 
             TRACELOG(LOG_INFO, "RLGL: Default OpenGL state initialized successfully");
         }
+
+        // Init state: custom blend factor and equation modification flag
+        rlglData.getState().glCustomBlendModeModified = false;
 
         // Init state: Color/Depth buffers clear
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // Set clear color (black)
@@ -1184,55 +1301,79 @@ public class RLGL{
 
                 // Check NPOT textures support
                 // NOTE: Only check on OpenGL ES, OpenGL 3.3 has NPOT textures full support as core feature
-                if (extList[i].equals("GL_OES_texture_npot"))
+                if (extList[i].equals("GL_OES_texture_npot")) {
                     rlglData.getExtSupported().setTexNPOT(true);
+                }
 
                 // Check texture float support
-                if (extList[i].equals("GL_OES_texture_float"))
+                if (extList[i].equals("GL_OES_texture_float")) {
                     rlglData.getExtSupported().setTexFloat32(true);
+                }
 
                 // Check depth texture support
-                if (extList[i].equals("GL_OES_depth_texture") || extList[i].equals("GL_WEBGL_depth_texture"))
+                if (extList[i].equals("GL_OES_depth_texture")) {
                     rlglData.getExtSupported().setTexDepth(true);
+                }
+                if (extList[i].equals("GL_WEBGL_depth_texture")) {
+                    rlglData.getExtSupported().setTexDepthWebGL(true); // WebGL requires unsized internal format
+                }
+                if (rlglData.getExtSupported().texDepthWebGL) {
+                    rlglData.getExtSupported().setTexDepth(true);
+                }
 
-                if (extList[i].equals("GL_OES_depth24"))
+                if (extList[i].equals("GL_OES_depth24")) {
+                    rlglData.getExtSupported().maxDepthBits = 24;   // Not available on WebGL
+                }
+                if (extList[i].equals("GL_OES_depth32")) {
+                    rlglData.getExtSupported().maxDepthBits = 32;   // Not available on WebGL
+                }
+
+                if (extList[i].equals("GL_OES_depth24")) {
                     rlglData.getExtSupported().setMaxDepthBits(24);
-                if (extList[i].equals("GL_OES_depth32"))
+                }
+                if (extList[i].equals("GL_OES_depth32")) {
                     rlglData.getExtSupported().setMaxDepthBits(32);
+                }
 
                 // Check texture compression support: DXT
-                if (extList[i].equals("GL_EXT_texture_compression_s3tc") || extList[i].equals(
-                        "GL_WEBGL_compressed_texture_s3tc")  || extList[i].equals("GL_WEBKIT_WEBGL_compressed_texture_s3tc"))
+                if (extList[i].equals("GL_EXT_texture_compression_s3tc") ||
+                        extList[i].equals("GL_WEBGL_compressed_texture_s3tc")  ||
+                        extList[i].equals("GL_WEBKIT_WEBGL_compressed_texture_s3tc")) {
+
                     rlglData.getExtSupported().setTexCompDXT(true);
+                }
 
                 // Check texture compression support: ETC1
-                if (extList[i].equals("GL_OES_compressed_ETC1_RGB8_texture") || extList[i].equals("GL_WEBGL_compressed_texture_etc1"))
+                if (extList[i].equals("GL_OES_compressed_ETC1_RGB8_texture") ||
+                        extList[i].equals("GL_WEBGL_compressed_texture_etc1")) {
                     rlglData.getExtSupported().setTexCompETC1(true);
+                }
 
                 // Check texture compression support: ETC2/EAC
-                if (extList[i].equals("GL_ARB_ES3_compatibility"))
+                if (extList[i].equals("GL_ARB_ES3_compatibility")) {
                     rlglData.getExtSupported().setTexCompETC2(true);
+                }
 
                 // Check texture compression support: PVR
-                if (extList[i].equals("GL_IMG_texture_compression_pvrtc"))
+                if (extList[i].equals("GL_IMG_texture_compression_pvrtc")) {
                     rlglData.getExtSupported().setTexCompPVRT(true);
+                }
 
                 // Check texture compression support: ASTC
-                if (extList[i].equals("GL_KHR_texture_compression_astc_hdr"))
+                if (extList[i].equals("GL_KHR_texture_compression_astc_hdr")) {
                     rlglData.getExtSupported().setTexCompASTC(true);
+                }
 
                 // Check anisotropic texture filter support
-                if (extList[i].equals("GL_EXT_texture_filter_anisotropic"))
+                if (extList[i].equals("GL_EXT_texture_filter_anisotropic")) {
                     rlglData.getExtSupported().setTexAnisoFilter(true);
+                }
 
                 // Check clamp mirror wrap mode support
-                if (extList[i].equals("GL_EXT_texture_mirror_clamp"))
+                if (extList[i].equals("GL_EXT_texture_mirror_clamp")) {
                     rlglData.getExtSupported().setTexMirrorClamp(true);
+                }
             }
-
-            // Free extensions pointers
-            extList = null;
-            extensionsDup = null;    // Duplicated string must be deallocated
         }  // GRAPHICS_API_OPENGL_ES2
 
         // Check OpenGL information and capabilities
@@ -1290,26 +1431,39 @@ public class RLGL{
             else{   // SUPPORT_GL_DETAILS_INFO
                 // Show some basic info about GL supported features
                 if (GRAPHICS_API_OPENGL_ES2){
-                    if (rlglData.getExtSupported().isVao())
+                    if (rlglData.getExtSupported().isVao()) {
                         TRACELOG(LOG_INFO, "GL: VAO extension detected, VAO functions loaded successfully");
-                    else
+                    }
+                    else {
                         TRACELOG(LOG_WARNING, "GL: VAO extension not found, VAO not supported");
+                    }
 
-                    if (rlglData.getExtSupported().isTexNPOT())
+                    if (rlglData.getExtSupported().isTexNPOT()) {
                         TRACELOG(LOG_INFO, "GL: NPOT textures extension detected, full NPOT textures supported");
-                    else
+                    }
+                    else {
                         TRACELOG(LOG_WARNING, "GL: NPOT textures extension not found, limited NPOT support (no-mipmaps, no-repeat)");
+                    }
                 }
-                if (rlglData.getExtSupported().isTexCompDXT())
+                if (rlglData.getExtSupported().isTexCompDXT()) {
                     TRACELOG(LOG_INFO, "GL: DXT compressed textures supported");
-                if (rlglData.getExtSupported().isTexCompETC1())
+                }
+
+                if (rlglData.getExtSupported().isTexCompETC1()) {
                     TRACELOG(LOG_INFO, "GL: ETC1 compressed textures supported");
-                if (rlglData.getExtSupported().isTexCompETC2())
+                }
+
+                if (rlglData.getExtSupported().isTexCompETC2()) {
                     TRACELOG(LOG_INFO, "GL: ETC2/EAC compressed textures supported");
-                if (rlglData.getExtSupported().isTexCompPVRT())
+                }
+
+                if (rlglData.getExtSupported().isTexCompPVRT()) {
                     TRACELOG(LOG_INFO, "GL: PVRT compressed textures supported");
-                if (rlglData.getExtSupported().isTexCompASTC())
+                }
+
+                if (rlglData.getExtSupported().isTexCompASTC()) {
                     TRACELOG(LOG_INFO, "GL: ASTC compressed textures supported");
+                }
             }  // SUPPORT_GL_DETAILS_INFO
         }  // GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2
     }
@@ -1994,7 +2148,7 @@ public class RLGL{
     }
 
     // Load depth texture/renderbuffer (to be attached to fbo)
-    // WARNING: OpenGL ES 2.0 requires GL_OES_depth_texture/WEBGL_depth_texture extensions
+    // WARNING: OpenGL ES 2.0 requires GL_OES_depth_texture and WebGL requires WEBGL_depth_texture extensions
     public static int rlLoadTextureDepth(int width, int height, boolean useRenderBuffer){
         int id = 0;
 
@@ -2009,14 +2163,16 @@ public class RLGL{
             int glInternalFormat = GL_DEPTH_COMPONENT;
 
             if (GRAPHICS_API_OPENGL_ES2){
-                if (rlglData.getExtSupported().getMaxDepthBits() == 32){
-                    glInternalFormat = GL_DEPTH_COMPONENT32_OES;
-                }
-                else if (rlglData.getExtSupported().getMaxDepthBits() == 24){
-                    glInternalFormat = GL_DEPTH_COMPONENT24_OES;
-                }
-                else{
-                    glInternalFormat = GL_DEPTH_COMPONENT16;
+                if(!rlglData.getExtSupported().texDepthWebGL) {
+                    if (rlglData.getExtSupported().getMaxDepthBits() == 32) {
+                        glInternalFormat = GL_DEPTH_COMPONENT32_OES;
+                    }
+                    else if (rlglData.getExtSupported().getMaxDepthBits() == 24) {
+                        glInternalFormat = GL_DEPTH_COMPONENT24_OES;
+                    }
+                    else {
+                        glInternalFormat = GL_DEPTH_COMPONENT16;
+                    }
                 }
             }
 
@@ -2399,46 +2555,6 @@ public class RLGL{
         boolean texIsPOT = ((texture.getWidth() > 0) && ((texture.getWidth() & (texture.getWidth() - 1)) == 0)) &&
                 ((texture.getHeight() > 0) && ((texture.getHeight() & (texture.getHeight() - 1)) == 0));
 
-        if (GRAPHICS_API_OPENGL_11){
-            if (texIsPOT){
-                // WARNING: Manual mipmap generation only works for RGBA 32bit textures!
-                if (texture.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
-                    // Retrieve texture data from VRAM
-                    byte[] texData = rlReadTexturePixels(texture.id, texture.width, texture.height, texture.format);
-
-                    // NOTE: Texture data size is reallocated to fit mipmaps data
-                    // NOTE: CPU mipmap generation only supports RGBA 32bit data
-                    int mipmapCount = rlGenTextureMipmapsData(texData, texture.getWidth(), texture.getHeight());
-
-                    int size = texture.getWidth() * texture.getHeight() * 4;
-                    int offset = size;
-
-                    int mipWidth = texture.getWidth() / 2;
-                    int mipHeight = texture.getHeight() / 2;
-
-                    // Load the mipmaps
-                    for (int level = 1; level < mipmapCount; level++){
-                        glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA8, mipWidth, mipHeight, 0, GL_RGBA,
-                                GL_UNSIGNED_BYTE, texData.length + offset);
-
-                        size = mipWidth * mipHeight * 4;
-                        offset += size;
-
-                        mipWidth /= 2;
-                        mipHeight /= 2;
-                    }
-
-                    texture.setMipmaps(mipmapCount + 1);
-                    texData = null;
-                    // Once mipmaps have been generated and data has been uploaded to GPU VRAM, we can discard RAM data
-
-                    TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.getId() + "] Mipmaps generated manually on CPU side, total: " + texture.getMipmaps());
-                }
-                else{
-                    TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.getId() + "] Failed to generate mipmaps for provided texture format");
-                }
-            }
-        }
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if ((texIsPOT) || (rlglData.getExtSupported().isTexNPOT())){
                 //glHint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE);   // Hint for mipmaps generation algorithm: GL_FASTEST, GL_NICEST, GL_DONT_CARE
@@ -2684,6 +2800,8 @@ public class RLGL{
             int depthIdU = depthId;
             if (depthType == GL_RENDERBUFFER){
                 glDeleteRenderbuffers(depthIdU);
+            }
+            else if (depthType == GL_TEXTURE) {
                 glDeleteTextures(depthIdU);
             }
 

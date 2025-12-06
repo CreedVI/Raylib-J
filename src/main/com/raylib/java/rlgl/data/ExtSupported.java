@@ -5,7 +5,8 @@ public class ExtSupported{
     public boolean vao;                           // VAO support (OpenGL ES2 could not support VAO extension) (GL_ARB_vertex_array_object)
     public boolean instancing;                    // Instancing supported (GL_ANGLE_instanced_arrays, GL_EXT_draw_instanced + GL_EXT_instanced_arrays)
     public boolean texNPOT;                       // NPOT textures full support (GL_ARB_texture_non_power_of_two, GL_OES_texture_npot)
-    public boolean texDepth;                      // Depth textures supported (GL_ARB_depth_texture, GL_WEBGL_depth_texture, GL_OES_depth_texture)
+    public boolean texDepth;                      // Depth textures supported (GL_ARB_depth_texture, GL_OES_depth_texture)
+    public boolean texDepthWebGL;                 // Depth textures supported WebGL specific (GL_WEBGL_depth_texture)
     public boolean texFloat32;                    // float textures support (32 bit per channel) (GL_OES_texture_float)
     public boolean texCompDXT;                    // DDS texture compression support (GL_EXT_texture_compression_s3tc, GL_WEBGL_compressed_texture_s3tc, GL_WEBKIT_WEBGL_compressed_texture_s3tc)
     public boolean texCompETC1;                   // ETC1 texture compression support (GL_OES_compressed_ETC1_RGB8_texture, GL_WEBGL_compressed_texture_etc1)
@@ -50,6 +51,14 @@ public class ExtSupported{
 
     public void setTexDepth(boolean texDepth) {
         this.texDepth = texDepth;
+    }
+
+    public boolean isTexDepthWebGL() {
+        return texDepthWebGL;
+    }
+
+    public void setTexDepthWebGL(boolean texDepthWebGL) {
+        this.texDepthWebGL = texDepthWebGL;
     }
 
     public boolean isTexFloat32() {
