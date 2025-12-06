@@ -926,6 +926,11 @@ public class rModels{
         return model;
     }
 
+    // Check if a model is ready
+    public boolean IsModelReady(Model model) {
+        return model.meshes != null && model.materials != null && model.meshMaterial != null && model.meshCount > 0 && model.materialCount > 0;
+    }
+
     // Unload model (meshes/materials) from memory (RAM and/or VRAM)
     // NOTE: This function takes care of all model elements, for a detailed control
     // over them, use UnloadMesh() and UnloadMaterial()
@@ -1744,6 +1749,11 @@ public class rModels{
         material.maps[MATERIAL_MAP_SPECULAR].color = WHITE;   // Specular color
 
         return material;
+    }
+
+    // Check if a material is ready
+    public boolean IsMaterialReady(Material material) {
+        return material.maps != null;
     }
 
     // Unload material from memory

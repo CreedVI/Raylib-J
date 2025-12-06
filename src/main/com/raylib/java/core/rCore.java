@@ -1607,7 +1607,7 @@ public class rCore{
 
     // Check if a shader is ready
     public boolean IsShaderReady(Shader shader){
-        return (shader.getId() > 0 && shader.getLocs() != null);
+        return shader.getLocs() != null;
     }
 
     // Unload shader from GPU memory (VRAM)

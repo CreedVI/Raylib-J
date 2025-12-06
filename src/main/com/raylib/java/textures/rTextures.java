@@ -314,6 +314,11 @@ public class rTextures{
         return image;
     }
 
+    // Check if an image is ready
+    public boolean IsImageReady(Image image) {
+        return image.data != null && image.width > 0 && image.height > 0 && image.format > 0;
+    }
+
     public Image UnloadImage(Image image) {
         image.data = null;
         return image;
@@ -3119,12 +3124,23 @@ public class rTextures{
         return target;
     }
 
+    // Check if a texture is ready
+    public boolean IsTextureReady(Texture2D texture) {
+        return texture.id > 0 && texture.width > 0 && texture.height > 0 && texture.format > 0;
+    }
+
+    // Unload texture from GPU memory (VRAM)
     public void UnloadTexture(Texture2D texture) {
         if (texture.getId() > 0) {
             RLGL.rlUnloadTexture(texture.getId());
 
             TRACELOG(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Unloaded texture data from VRAM (GPU)");
         }
+    }
+
+    // Check if a render texture is ready
+    public boolean IsRenderTextureReady(RenderTexture target) {
+        return target.id > 0 && IsTextureReady(target.depth) && IsTextureReady(target.texture);
     }
 
     //Unload render texture from GPU memory (VRAM)

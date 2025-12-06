@@ -535,6 +535,11 @@ public class rText{
         return font;
     }
 
+    // Check if a font is ready
+    public boolean isFontReady(Font font) {
+        return font.glyphs != null;
+    }
+
     // Load font data for further use
     // NOTE: Requires TTF font memory data and can generate SDF data
     public GlyphInfo[] LoadFontData(byte[] fileData, int dataSize, int fontSize, int[] fontChars, int charsCount, int type) {
