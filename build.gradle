@@ -1,5 +1,6 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'com.vanniktech.maven.publish' version "0.36.0"
 }
 
 project.ext.lwjglVersion = "3.3.3"
@@ -27,8 +28,8 @@ switch (org.gradle.internal.os.OperatingSystem.current()) {
         break
 }
 
-group = 'com.raylib'
-version = '0.5.2'
+group = 'io.github.creedvi'
+version = '0.5.5'
 
 repositories {
     mavenCentral()
@@ -37,6 +38,7 @@ repositories {
 dependencies {
     implementation fileTree(dir: 'native', include: '*.jar')
     implementation 'fr.delthas:javamp3:1.0.1'
+    implementation 'io.github.creedvi:M3D-J:0.1.0a'
     implementation 'org.jetbrains:annotations:24.1.0'
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
@@ -49,6 +51,7 @@ dependencies {
     implementation "org.lwjgl:lwjgl-opengles"
     implementation "org.lwjgl:lwjgl-par"
     implementation "org.lwjgl:lwjgl-stb"
+
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
@@ -85,5 +88,37 @@ sourceSets {
     test {
         java.srcDir('src/tests')
         resources.srcDir('src/test/resources')
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates(group.toString(), "Raylib-J", version.toString())
+
+    pom {
+        name = "Raylib-J"
+        description = "Hand-crafted Java binding for the raylib library."
+        inceptionYear = "2021"
+        url = "https://github.com/CreedVI/Raylib-J"
+        licenses {
+            license {
+                name = "The Apache License, Version 2.0"
+                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            }
+        }
+        developers {
+            developer {
+                id = "CreedVI"
+                name = "Calvin Day"
+                url = "https://github.com/CreedVI"
+            }
+        }
+        scm {
+            url = "https://github.com/CreedVI/Raylib-J/"
+            connection = "scm:git:git://github.com/CreedVI/Raylib-J.git"
+            developerConnection = "scm:git:ssh://git@github.com/CreedVI/Raylib-J.git"
+        }
     }
 }
