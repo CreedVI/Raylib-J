@@ -15,7 +15,6 @@ import java.util.List;
 
 import static com.raylib.java.Config.SUPPORT_FILEFORMAT_MP3;
 import static com.raylib.java.Config.SUPPORT_FILEFORMAT_OGG;
-import static com.raylib.java.core.rCore.IsFileExtension;
 import static com.raylib.java.raudioal.rAudioAL.MusicContextType.MUSIC_AUDIO_OGG;
 import static com.raylib.java.raudioal.rAudioAL.MusicContextType.MUSIC_MODULE_MP3;
 import static com.raylib.java.utils.Tracelog.TRACELOG;
@@ -228,19 +227,19 @@ public class rAudioAL {
     public Wave LoadWave(String fileName) {
         Wave wave = null;
 
-        if (IsFileExtension(fileName, ".wav")) {
+        if (context.core.IsFileExtension(fileName, ".wav")) {
             wave = LoadWAV(fileName);
         }
-        else if (IsFileExtension(fileName, ".ogg")) {
+        else if (context.core.IsFileExtension(fileName, ".ogg")) {
             wave = LoadOGG(fileName);
         }
-        else if (IsFileExtension(fileName, ".mp3")) {
+        else if (context.core.IsFileExtension(fileName, ".mp3")) {
             wave = LoadMP3(fileName);
         }
-        else if (IsFileExtension(fileName, ".flac")) {
+        else if (context.core.IsFileExtension(fileName, ".flac")) {
             //wave = LoadFLAC(fileName);
         }
-        /*else if (IsFileExtension(fileName, ".rres")) {
+        /*else if (context.core.IsFileExtension(fileName, ".rres")) {
             RRES rres = LoadResource(fileName, 0);
 
 
@@ -645,7 +644,7 @@ public class rAudioAL {
 
         //TODO: .wav ?
 
-        if (SUPPORT_FILEFORMAT_OGG && IsFileExtension(fileName, ".ogg")) {
+        if (SUPPORT_FILEFORMAT_OGG && context.core.IsFileExtension(fileName, ".ogg")) {
             // Open ogg audio stream
             IntBuffer errorBuffer = IntBuffer.allocate(1);
             music.ctxOgg = stb_vorbis_open_filename(fileName, errorBuffer, null);
@@ -680,7 +679,7 @@ public class rAudioAL {
 
             }
         }
-        else if(SUPPORT_FILEFORMAT_MP3 && IsFileExtension(fileName, ".mp3")) {
+        else if(SUPPORT_FILEFORMAT_MP3 && context.core.IsFileExtension(fileName, ".mp3")) {
             try {
                 byte[] fileData = FileIO.LoadFileData(fileName);
                 fr.delthas.javamp3.Sound mp3Sound = new fr.delthas.javamp3.Sound(new ByteArrayInputStream(fileData));
@@ -704,7 +703,7 @@ public class rAudioAL {
             }
         }
         /*
-        else if (IsFileExtension(fileName, ".flac")) {
+        else if (context.core.IsFileExtension(fileName, ".flac")) {
             music.ctxFlac = drflac_open_file(fileName);
 
 
@@ -725,7 +724,7 @@ public class rAudioAL {
         }
         /*
         #if defined(SUPPORT_FILEFORMAT_XM)
-            else if (IsFileExtension(fileName, ".xm")) {
+            else if (context.core.IsFileExtension(fileName, ".xm")) {
                 int result = jar_xm_create_context_from_file(&music.ctxXm, 48000, fileName);
 
                 if (!result)    // XM context created successfully
@@ -746,7 +745,7 @@ public class rAudioAL {
             }
         #endif
         #if defined(SUPPORT_FILEFORMAT_MOD)
-            else if (IsFileExtension(fileName, ".mod")) {
+            else if (context.core.IsFileExtension(fileName, ".mod")) {
                 jar_mod_init(&music.ctxMod);
 
                 if (jar_mod_load_file(&music.ctxMod, fileName))

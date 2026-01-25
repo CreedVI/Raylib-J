@@ -3107,7 +3107,7 @@ public class RLGL{
 
     // Load shader from code strings
     // NOTE: If shader string is NULL, using default vertex/fragment shaders
-    public int rlLoadShaderCode(String vsCode, String fsCode){
+    public static int rlLoadShaderCode(String vsCode, String fsCode){
         int id = 0;
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -3403,7 +3403,7 @@ public class RLGL{
     }
 
     // Set shader value uniform sampler
-    public void rlSetUniformSampler(int locIndex, int textureId) {
+    public static void rlSetUniformSampler(int locIndex, int textureId) {
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // Check if texture is already active
             for (int i = 0; i < RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS; i++){

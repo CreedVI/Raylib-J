@@ -7,17 +7,17 @@ public class Config{
      * This file defines all the configuration flags for the different raylib modules.txt
      */
 
-    public static final String RAYLIB_VERSION = "4.2";
+    public static final String RAYLIB_VERSION = "4.5";
 
     //------------------------------------------------------------------------------------
-// Module selection - Some modules could be avoided
-// Mandatory modules: rcore, rlgl, utils
-//------------------------------------------------------------------------------------
-            public static boolean SUPPORT_MODULE_RSHAPES   = true;
-            public static boolean SUPPORT_MODULE_RTEXTURES = true;
-            public static boolean SUPPORT_MODULE_RTEXT     = true;          // WARNING: It requires SUPPORT_MODULE_RTEXTURES to load sprite font textures
-            public static boolean SUPPORT_MODULE_RMODELS   = true;
-            public static boolean SUPPORT_MODULE_RAUDIO    = true;
+    // Module selection - Some modules could be avoided
+    // Mandatory modules: rcore, rlgl, utils
+    //------------------------------------------------------------------------------------
+    public static boolean SUPPORT_MODULE_RSHAPES   = true;
+    public static boolean SUPPORT_MODULE_RTEXTURES = true;
+    public static boolean SUPPORT_MODULE_RTEXT     = true;          // WARNING: It requires SUPPORT_MODULE_RTEXTURES to load sprite font textures
+    public static boolean SUPPORT_MODULE_RMODELS   = true;
+    public static boolean SUPPORT_MODULE_RAUDIO    = true;
 
     //------------------------------------------------------------------------------------
     // Module: core - Configuration Flags
@@ -103,9 +103,10 @@ public class Config{
     public final static int MAX_GAMEPAD_AXIS = 8;                   // Max number of axis supported (per gamepad)
     public final static int MAX_GAMEPAD_BUTTONS = 32;               // Max number of buttons supported (per gamepad)
     public final static int MAX_TOUCH_POINTS = 10;                  // Maximum number of touch points supported
-    public final static int MAX_KEY_PRESSED_QUEUE = 16;             // Max number of characters in the key input queue
+    public final static int MAX_KEY_PRESSED_QUEUE = 16;             // Max number of keys in the key input queue
+    public final static int MAX_CHAR_PRESSED_QUEUE = 16;            // Max number of characters in the char input queue
     public final static String STORAGE_DATA_FILE = "storage.data";  // Automatic storage filename
-    public final static int MAX_DECOMPRESSION_SIZE = 64;                   // Max size allocated for decompression in MB
+    public final static int MAX_DECOMPRESSION_SIZE = 64;            // Max size allocated for decompression in MB
 
 
     //------------------------------------------------------------------------------------
@@ -249,6 +250,11 @@ public class Config{
      * Select .iqm to be supported for loading
      */
     public static boolean SUPPORT_FILEFORMAT_IQM = true;
+
+    /**
+     * Select .gltf to be supported for loading
+     */
+    public static boolean SUPPORT_FILEFORMAT_M3D = true;
 
     /**
      * Select .gltf to be supported for loading

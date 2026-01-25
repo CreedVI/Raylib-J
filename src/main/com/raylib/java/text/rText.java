@@ -2,7 +2,6 @@ package com.raylib.java.text;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.Color;
-import com.raylib.java.core.rCore;
 import com.raylib.java.structs.Vector2;
 import com.raylib.java.structs.Rectangle;
 import com.raylib.java.structs.Image;
@@ -311,12 +310,12 @@ public class rText{
         Font font = null;
 
         if (SUPPORT_FILEFORMAT_TTF) {
-            if (rCore.IsFileExtension(fileName, ".ttf") || rCore.IsFileExtension(fileName, ".otf")) {
+            if (context.core.IsFileExtension(fileName, ".ttf") || context.core.IsFileExtension(fileName, ".otf")) {
                 font = LoadFontEx(fileName, FONT_TTF_DEFAULT_SIZE, null, FONT_TTF_DEFAULT_NUMCHARS);
             }
         }
         if (SUPPORT_FILEFORMAT_FNT) {
-            if (rCore.IsFileExtension(fileName, ".fnt")) {
+            if (context.core.IsFileExtension(fileName, ".fnt")) {
                 font = LoadBMFont(fileName);
             }
         }
@@ -358,7 +357,7 @@ public class rText{
 
         if (fileData != null) {
             // Loading font from memory data
-            font = LoadFontFromMemory(rCore.GetFileExtension(fileName), fileData, fileSize, fontSize, fontChars, charsCount);
+            font = LoadFontFromMemory(context.core.GetFileExtension(fileName), fileData, fileSize, fontSize, fontChars, charsCount);
         }
         else{
             font = GetFontDefault();
@@ -897,7 +896,7 @@ public class rText{
         int MAX_FONT_DATA_SIZE = 1024*1024;
 
         // Get file name from path
-        String fileNamePascal = TextToPascal(rCore.GetFileNameWithoutExt(fileName));
+        String fileNamePascal = TextToPascal(context.core.GetFileNameWithoutExt(fileName));
 
         // NOTE: Text data buffer size is estimated considering image data size in bytes
         // and requiring 6 char bytes for every byte: "0x00, "
@@ -944,8 +943,8 @@ public class rText{
 
             // Compress font image data
             int compDataSize = 0;
-            // TODO: 11/14/23 rCore CompressData
-            //    byte[] compData = rCore.CompressData(image.getData(), imageDataSize);
+            // TODO: 11/14/23 context.core CompressData
+            //    byte[] compData = context.core.CompressData(image.getData(), imageDataSize);
             byte[] compData = new byte[0];
 
             // Save font image data (compressed)

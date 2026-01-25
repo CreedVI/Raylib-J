@@ -15,8 +15,8 @@ public class Keyboard{
     public int[] keyPressedQueue;     // Input keys queue
     public int keyPressedQueueCount;       // Input keys queue count
 
-    int[] charPressedQueue;   // Input characters queue
-    int charPressedQueueCount;      // Input characters queue count
+    public int[] charPressedQueue;   // Input characters queue
+    public int charPressedQueueCount;      // Input characters queue count
 
     public static int
         // Alphanumeric keys

@@ -1,13 +1,12 @@
 package com.raylib.java.core;
 
-import com.raylib.java.Config;
 import com.raylib.java.Raylib;
+import com.raylib.java.core.callback.Callbacks;
 import com.raylib.java.core.input.Input;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.rlgl.RLGL;
-import com.raylib.java.structs.*;
 import com.raylib.java.utils.FileIO;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
@@ -47,6 +46,7 @@ import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow;
 import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -55,16 +55,16 @@ public class rCore{
 
     public RLGL rlgl;
 
-    private final Window window;
-    private final Input input;
-    private final Time time;
+    protected final Window window;
+    protected final Input input;
+    protected final Time time;
 
-    private Callbacks callback;
+    public Callbacks callbacks;
 
     ArrayList<AutomationEvent> events;
     int eventCount = 0;                 // Events count
-    boolean eventsPlaying = false;      // Play events
-    boolean eventsRecording = false;    // Record events
+    public boolean eventsPlaying = false;      // Play events
+    public boolean eventsRecording = false;    // Record events
     short eventsEnabled = 0b0000001111111111;    // Events enabled for checking
 
     String[] dirFilesPath;
@@ -74,7 +74,7 @@ public class rCore{
 
     public int gifFrameCounter = 0; // GIF frames counter
 
-    //Gloabls required for FPS calculation
+    //Globals required for FPS calculation
     static int index = 0;
     static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     static float average = 0, last = 0;
@@ -86,6 +86,7 @@ public class rCore{
     public rCore(Raylib context){
         this.context = context;
 
+        callbacks = new Callbacks(this);
         window = new Window();
         input = new Input();
         time = new Time();
@@ -94,11 +95,11 @@ public class rCore{
         events = new ArrayList<>();
     }
 
-    Window getWindow(){
+    public Window getWindow(){
         return window;
     }
 
-    Input getInput(){
+    public Input getInput(){
         return input;
     }
 
@@ -173,7 +174,7 @@ public class rCore{
         input.keyboard.setExitKey(KEY_ESCAPE);
         input.mouse.setScale(new Vector2(1.0f, 1.0f));
         input.mouse.setCursor(MOUSE_CURSOR_ARROW.ordinal());
-        input.gamepad.setLastButtonPressed(-1);
+        input.gamepad.setLastButtonPressed(0);
 
         if (SUPPORT_EVENTS_WAITING) {
             window.eventWaiting = true;
@@ -460,7 +461,7 @@ public class rCore{
      * Set window state: minimized (only PLATFORM_DESKTOP)
      */
     public void MinimizeWindow(){
-        // NOTE: Following function launches callback that sets appropiate flag!
+        // NOTE: Following function launches callback that sets appropriate flag!
         glfwIconifyWindow(window.handle);
     }
 
@@ -687,7 +688,11 @@ public class rCore{
         }
     }
 
-    // Set icon for window (multiple images, RGBA 32bit, only PLATFORM_DESKTOP)
+
+    // Set icon for window (multiple images, only PLATFORM_DESKTOP)
+    // NOTE 1: Images must be in RGBA format, 8bit per channel
+    // NOTE 2: The multiple images are used depending on provided sizes
+    // Standard Windows icon sizes: 256, 128, 96, 64, 48, 32, 24, 16
     @SuppressWarnings("resource") // Reason: Buffer is explicitly allocated and freed
     public void SetWindowIcons(List<Image> images){
         int count = images.size();
@@ -706,7 +711,8 @@ public class rCore{
                             image.height,
                             ByteBuffer.wrap(image.getData())
                     );
-                } else{
+                }
+                else{
                     TRACELOG(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
                 }
             }
@@ -837,8 +843,11 @@ public class rCore{
         if (__WINDOWS__){
             return glfwGetWin32Window(window.handle);
         }
+        else if (__APPLE__) {
+            return glfwGetCocoaWindow(window.handle);
+        }
         else{
-            return 0;
+            return window.handle;
         }
     }
 
@@ -998,8 +1007,8 @@ public class rCore{
             int monitorCount = monitors.sizeof();
 
             if ((monitor >= 0) && (monitor < monitorCount)) {
-                GLFWVidMode vidmode = glfwGetVideoMode(monitors.get(monitor));
-                return vidmode.refreshRate();
+                GLFWVidMode vidMode = glfwGetVideoMode(monitors.get(monitor));
+                return vidMode != null ? vidMode.refreshRate() : 0;
             }
             else {
                 TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
@@ -1008,7 +1017,7 @@ public class rCore{
         /*
         if (PLATFORM_DRM) {
             if ((CORE.Window.connector) && (CORE.Window.modeIndex >= 0)) {
-                return CORE.Window.connector->modes[CORE.Window.modeIndex].vrefresh;
+                return CORE.Window.connector->modes[CORE.Window.modeIndex].vRefresh;
             }
         }
         */
@@ -1018,7 +1027,7 @@ public class rCore{
     // Get window position XY on monitor
     public Vector2 GetWindowPosition() {
         // Memory-safe get window position
-        try (MemoryStack stack = MemoryStack.stackPush()){
+        try (MemoryStack stack = stackPush()){
             IntBuffer xBuffer = stack.mallocInt(1);
             IntBuffer yBuffer = stack.mallocInt(1);
             if (PLATFORM_DESKTOP){
@@ -1037,8 +1046,8 @@ public class rCore{
 
         if(PLATFORM_DESKTOP) {
             try (MemoryStack stack = stackPush()){
-                FloatBuffer xdpi = stack.mallocFloat(1);
-                FloatBuffer ydpi = stack.mallocFloat(1);
+                FloatBuffer xDpi = stack.mallocFloat(1);
+                FloatBuffer yDpi = stack.mallocFloat(1);
                 Vector2 windowPos = GetWindowPosition();
 
                 PointerBuffer monitors = glfwGetMonitors();
@@ -1046,20 +1055,20 @@ public class rCore{
 
                 // Check window monitor
                 for (int i = 0; i < monitorCount; i++){
-                    glfwGetMonitorContentScale(monitors.get(i), xdpi, ydpi);
+                    glfwGetMonitorContentScale(monitors.get(i), xDpi, yDpi);
 
-                    IntBuffer xpos, ypos, width, height;
-                    xpos = stack.mallocInt(1);
-                    ypos = stack.mallocInt(1);
+                    IntBuffer xPos, yPos, width, height;
+                    xPos = stack.mallocInt(1);
+                    yPos = stack.mallocInt(1);
                     width = stack.mallocInt(1);
                     height = stack.mallocInt(1);
 
-                    glfwGetMonitorWorkarea(monitors.get(i), xpos, ypos, width, height);
+                    glfwGetMonitorWorkarea(monitors.get(i), xPos, yPos, width, height);
 
-                    if ((windowPos.x >= xpos.get(0)) && (windowPos.x < xpos.get(0) + width.get(0)) &&
-                            (windowPos.y >= ypos.get(0)) && (windowPos.y < ypos.get(0) + height.get(0))){
-                        scale.x = xdpi.get(i);
-                        scale.y = ydpi.get(i);
+                    if ((windowPos.x >= xPos.get(0)) && (windowPos.x < xPos.get(0) + width.get(0)) &&
+                            (windowPos.y >= yPos.get(0)) && (windowPos.y < yPos.get(0) + height.get(0))){
+                        scale.x = xDpi.get(i);
+                        scale.y = yDpi.get(i);
                         break;
                     }
                 }
@@ -1149,8 +1158,8 @@ public class rCore{
      * @param color Color to fill the background
      */
     public void ClearBackground(Color color){
-        RLGL.rlClearColor(color.getR(), color.getG(), color.getB(), color.getA());   // Set clear color
-        RLGL.rlClearScreenBuffers();                             // Clear current framebuffers
+        rlClearColor(color.getR(), color.getG(), color.getB(), color.getA());   // Set clear color
+        rlClearScreenBuffers();                             // Clear current framebuffers
     }
 
     /**
@@ -1274,30 +1283,30 @@ public class rCore{
     public void BeginMode2D(Camera2D camera){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlLoadIdentity();                   // Reset current matrix (modelview)
 
         // Apply 2d camera transformation to modelview
-        RLGL.rlMultMatrixf(MatrixToFloat(GetCameraMatrix2D(camera)));
+        rlMultMatrixf(MatrixToFloat(GetCameraMatrix2D(camera)));
 
         // Apply screen scaling if required
-        RLGL.rlMultMatrixf(MatrixToFloat(window.getScreenScale()));
+        rlMultMatrixf(MatrixToFloat(window.getScreenScale()));
     }
 
     // Ends 2D mode with custom camera
     public void EndMode2D(){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
-        RLGL.rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
+        rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
     }
 
     // Initializes 3D mode with custom camera (3D)
     public void BeginMode3D(Camera3D camera){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        RLGL.rlMatrixMode(RLGL.RL_PROJECTION);        // Switch to projection matrix
-        RLGL.rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
-        RLGL.rlLoadIdentity();                   // Reset current matrix (projection)
+        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
+        rlLoadIdentity();                   // Reset current matrix (projection)
 
         float aspect = (float) window.currentFbo.getWidth() / (float) window.currentFbo.getHeight();
 
@@ -1306,7 +1315,7 @@ public class rCore{
             double top = RL_CULL_DISTANCE_NEAR * Math.tan(camera.fovy * 0.5 * DEG2RAD);
             double right = top * aspect;
 
-            RLGL.rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
 
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC){
@@ -1314,17 +1323,17 @@ public class rCore{
             double top = camera.fovy / 2.0;
             double right = top * aspect;
 
-            RLGL.rlOrtho(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            rlOrtho(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
 
         // NOTE: zNear and zFar values are important when computing depth buffer values
 
-        RLGL.rlMatrixMode(RLGL.RL_MODELVIEW);         // Switch back to modelview matrix
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        rlLoadIdentity();                   // Reset current matrix (modelview)
 
         // Setup rCamera view
         Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
-        RLGL.rlMultMatrixf(MatrixToFloat(matView));      // Multiply modelview matrix by view matrix (camera)
+        rlMultMatrixf(MatrixToFloat(matView));      // Multiply modelview matrix by view matrix (camera)
         rlgl.rlEnableDepthTest();                // Enable DEPTH_TEST for 3D
     }
 
@@ -1332,13 +1341,13 @@ public class rCore{
     public void EndMode3D(){
         rlgl.rlDrawRenderBatchActive();                         // Process internal buffers (update + draw)
 
-        RLGL.rlMatrixMode(RLGL.RL_PROJECTION);        // Switch to projection matrix
-        RLGL.rlPopMatrix();                      // Restore previous matrix (projection) from matrix stack
+        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        rlPopMatrix();                      // Restore previous matrix (projection) from matrix stack
 
-        RLGL.rlMatrixMode(RLGL.RL_MODELVIEW);         // Switch back to modelview matrix
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        rlLoadIdentity();                   // Reset current matrix (modelview)
 
-        RLGL.rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
+        rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
 
         rlgl.rlDisableDepthTest();               // Disable DEPTH_TEST for 2D
     }
@@ -1347,22 +1356,22 @@ public class rCore{
     public void BeginTextureMode(RenderTexture target){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        RLGL.rlEnableFramebuffer(target.getId());     // Enable render target
+        rlEnableFramebuffer(target.getId());     // Enable render target
 
         // Set viewport and RLGL internal framebuffer size
-        RLGL.rlViewport(0, 0, target.texture.width, target.texture.height);
+        rlViewport(0, 0, target.texture.width, target.texture.height);
         rlSetFramebufferWidth(target.texture.width);
         rlSetFramebufferHeight(target.texture.height);
 
-        RLGL.rlMatrixMode(RLGL.RL_PROJECTION);        // Switch to projection matrix
-        RLGL.rlLoadIdentity();                   // Reset current matrix (projection)
+        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        rlLoadIdentity();                   // Reset current matrix (projection)
 
         // Set orthographic projection to current framebuffer size
         // NOTE: Configured top-left corner as (0, 0)
-        RLGL.rlOrtho(0, target.texture.width, target.texture.height, 0, 0.0f, 1.0f);
+        rlOrtho(0, target.texture.width, target.texture.height, 0, 0.0f, 1.0f);
 
-        RLGL.rlMatrixMode(RLGL.RL_MODELVIEW);         // Switch back to modelview matrix
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        rlLoadIdentity();                   // Reset current matrix (modelview)
 
         //rlScalef(0.0f, -1.0f, 0.0f);      // Flip Y-drawing (?)
 
@@ -1376,7 +1385,7 @@ public class rCore{
     public void EndTextureMode(){
         rlgl.rlDrawRenderBatchActive();                 // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        RLGL.rlDisableFramebuffer();     // Disable render target (fbo)
+        rlDisableFramebuffer();     // Disable render target (fbo)
 
         // Set viewport to default framebuffer size
         SetupViewport(window.render.width, window.render.height);
@@ -1442,8 +1451,8 @@ public class rCore{
         rlgl.rlEnableStereoRenderer();
 
         // Set stereo render matrices
-        RLGL.rlSetMatrixProjectionStereo(config.projection[0], config.projection[1]);
-        RLGL.rlSetMatrixViewOffsetStereo(config.viewOffset[0], config.viewOffset[1]);
+        rlSetMatrixProjectionStereo(config.projection[0], config.projection[1]);
+        rlSetMatrixViewOffsetStereo(config.viewOffset[0], config.viewOffset[1]);
 
     }
 
@@ -1456,7 +1465,7 @@ public class rCore{
     public VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device){
         VrStereoConfig config = new VrStereoConfig();
 
-        if (RLGL.GRAPHICS_API_OPENGL_33 || RLGL.GRAPHICS_API_OPENGL_ES2){
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // Compute aspect ratio
             float aspect = ((float) device.gethResolution() * 0.5f) / (float) device.getvResolution();
 
@@ -1487,14 +1496,14 @@ public class rCore{
             config.scale[0] = normScreenWidth * 0.5f / distortionScale;
             config.scale[1] = normScreenHeight * 0.5f * aspect / distortionScale;
 
-            // Fovy is normally computed with: 2*atan2f(device.vScreenSize, 2*device.eyeToScreenDistance)
+            // Fovy is normally computed with: 2*atan2(device.vScreenSize, 2*device.eyeToScreenDistance)
             // ...but with lens distortion it is increased (see Oculus SDK Documentation)
-            float fovy = (float) (2.0f*Math.atan2(device.vScreenSize*0.5f*distortionScale, device.eyeToScreenDistance));     // Really need distortionScale?
-            //float fovy = 2.0f * (float) Math.atan2(device.vScreenSize * 0.5f, device.eyeToScreenDistance);
+            float fovY = (float) (2.0f*Math.atan2(device.vScreenSize*0.5f*distortionScale, device.eyeToScreenDistance));     // Really need distortionScale?
+            //float fovY = 2.0f * (float) Math.atan2(device.vScreenSize * 0.5f, device.eyeToScreenDistance);
 
             // Compute camera projection matrices
             float projOffset = 4.0f * lensShift;      // Scaled to projection space coordinates [-1..1]
-            Matrix proj = MatrixPerspective(fovy, aspect, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            Matrix proj = MatrixPerspective(fovY, aspect, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
 
             config.projection[0] = MatrixMultiply(proj, MatrixTranslate(projOffset, 0.0f, 0.0f));
             config.projection[1] = MatrixMultiply(proj, MatrixTranslate(-projOffset, 0.0f, 0.0f));
@@ -1561,12 +1570,8 @@ public class rCore{
     // Load shader from code strings and bind default locations
     public Shader LoadShaderFromMemory(String vsCode, String fsCode){
         Shader shader = new Shader();
-        shader.locs = new int[RLGL.MAX_SHADER_LOCATIONS];
 
-        // NOTE: All locations must be reseted to -1 (no location)
-        for (int i = 0; i < RL_MAX_SHADER_LOCATIONS; i++) shader.locs[i] = -1;
-
-        shader.setId(rlgl.rlLoadShaderCode(vsCode, fsCode));
+        shader.id = rlLoadShaderCode(vsCode, fsCode);
 
         // After shader loading, we TRY to set default location names
         if (shader.getId() > 0){
@@ -1579,8 +1584,14 @@ public class rCore{
             //          vertex texcoord2 location   = 5
 
             // NOTE: If any location is not found, loc point becomes -1
+            shader.locs = new int[RL_MAX_SHADER_LOCATIONS];
 
-            // Get handles to GLSL input attibute locations
+            // All locations reset to -1 (no location)
+            for (int i = 0; i < RL_MAX_SHADER_LOCATIONS; i++) {
+                shader.locs[i] = -1;
+            }
+
+            // Get handles to GLSL input attribute locations
             shader.locs[RL_SHADER_LOC_VERTEX_POSITION] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
             shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
             shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
@@ -1620,12 +1631,12 @@ public class rCore{
 
     // Get shader uniform location
     public static int GetShaderLocation(Shader shader, String uniformName){
-        return RLGL.rlGetLocationUniform(shader.getId(), uniformName);
+        return rlGetLocationUniform(shader.getId(), uniformName);
     }
 
     // Get shader attribute location
     public int GetShaderLocationAttrib(Shader shader, String attribName){
-        return rlgl.rlGetLocationAttrib(shader.id, attribName);
+        return rlGetLocationAttrib(shader.id, attribName);
     }
 
     // Set shader uniform value
@@ -1635,23 +1646,29 @@ public class rCore{
 
     // Set shader uniform value vector
     public static void SetShaderValueV(Shader shader, int locIndex, float[] value, int uniformType, int count){
-        RLGL.rlEnableShader(shader.getId());
-        RLGL.rlSetUniform(locIndex, value, uniformType, count);
-        //rlDisableShader();      // Avoid reseting current shader program, in case other uniforms are set
+        if(locIndex > -1) {
+            rlEnableShader(shader.getId());
+            rlSetUniform(locIndex, value, uniformType, count);
+            //rlDisableShader();      // Avoid resting current shader program, in case other uniforms are set
+        }
     }
 
     // Set shader uniform value (matrix 4x4)
     public void SetShaderValueMatrix(Shader shader, int locIndex, Matrix mat){
-        rlEnableShader(shader.getId());
-        rlgl.rlSetUniformMatrix(locIndex, mat);
-        //rlDisableShader();
+        if(locIndex > -1) {
+            rlEnableShader(shader.getId());
+            rlSetUniformMatrix(locIndex, mat);
+            //rlDisableShader();
+        }
     }
 
     // Set shader uniform value for texture
     public void SetShaderValueTexture(Shader shader, int locIndex, Texture2D texture){
-        rlEnableShader(shader.getId());
-        rlgl.rlSetUniformSampler(locIndex, texture.getId());
-        //rlDisableShader();
+        if(locIndex > -1) {
+            rlEnableShader(shader.getId());
+            rlSetUniformSampler(locIndex, texture.getId());
+            //rlDisableShader();
+        }
     }
 
     // Get a ray trace from screen position (i.e. mouse)
@@ -1659,7 +1676,7 @@ public class rCore{
         return GetScreenToWorldRayEx(position, camera, GetScreenWidth(), GetScreenHeight());
     }
 
-    // Get a ray trace from the screen position (i.e mouse) within a specific section of the screen
+    // Get a ray trace from the screen position (i.e. mouse) within a specific section of the screen
     public Ray GetScreenToWorldRayEx(Vector2 position, Camera3D camera, int width, int height){
         Ray ray = new Ray();
 
@@ -1757,7 +1774,7 @@ public class rCore{
                                             matView);
 
         // Unproject the mouse cursor in the near plane.
-        // We need this as the source position because orthographic projects, compared to perspect doesn't have a
+        // We need this as the source position because orthographic projects, compared to perspective doesn't have a
         // convergence point, meaning that the "eye" of the camera is more like a plane than a point.
         Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), -1.0f),
                                                          matProj, matView);
@@ -1897,14 +1914,14 @@ public class rCore{
 
     /**
      * Returns current FPS
-     * NOTE: We calculate an average framerate
+     * NOTE: We calculate an average frame rate
      *
-     * @return Current average framerate
+     * @return Current average frame rate
      */
     public int GetFPS(){
 
         int FPS_CAPTURE_FRAMES_COUNT = 30;      // 30 captures
-        float FPS_AVERAGE_TIME_SECONDS = 0.5f;     // 500 millisecondes
+        float FPS_AVERAGE_TIME_SECONDS = 0.5f;     // 500 milliseconds
         float FPS_STEP = (FPS_AVERAGE_TIME_SECONDS / FPS_CAPTURE_FRAMES_COUNT);
 
         float fpsFrame = GetFrameTime();
@@ -1954,7 +1971,7 @@ public class rCore{
 
     // Takes a screenshot of current screen (saved a .png)
     // NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB
-    // have their own internal file-systems, to dowload image to user file-system some additional mechanism is required
+    // have their own internal file-systems, to download image to user file-system some additional mechanism is required
     public void TakeScreenshot(String fileName){
         if (SUPPORT_MODULE_RTEXTURES) {
             if (fileName.contains("\\")) {
@@ -2056,7 +2073,7 @@ public class rCore{
 
     // Check file extension
     // NOTE: Extensions checking is not case-sensitive
-    public static boolean IsFileExtension(String fileName, String ext){
+    public boolean IsFileExtension(String fileName, String ext){
         String fileExt = GetFileExtension(fileName);
         return fileExt.equals(ext);
     }
@@ -2072,7 +2089,7 @@ public class rCore{
         return (int) tmp.length();
     }
 
-    public static String GetFileExtension(String fileName){
+    public String GetFileExtension(String fileName){
         return fileName.substring(fileName.lastIndexOf('.'));
     }
 
@@ -2154,7 +2171,7 @@ public class rCore{
         FilePathList files = new FilePathList();
 
         if(scanSubdirs) {
-            files = ScanDirectroyFilesRecursively(basePath, filter);
+            files = ScanDirectoryFilesRecursively(basePath, filter);
         }
         else {
             files = ScanDirectoryFiles(basePath, filter);
@@ -2311,8 +2328,41 @@ public class rCore{
         return decodedData;
     }
 
-    //TODO:
-    // OpenURL
+    public void OpenURL(String url) {
+        if (url.contains("'")) {
+            TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid ['] character");
+        }
+        else {
+            if (PLATFORM_DESKTOP) {
+                Runtime rt = Runtime.getRuntime();
+
+                if (__WINDOWS__) {
+                    try {
+                        rt.exec(new String[]{"rundll32 url.dll,FileProtocolHandler " + url});
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                else if (__APPLE__) {
+                    try {
+                        rt.exec(new String[]{"open " + url});
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                else if (__LINUX__) {
+                    try {
+                        rt.exec(new String[]{"xdg-open " + url});
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    }
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition - Input (Keyboard, Mouse, Gamepad) Functions
@@ -2347,22 +2397,20 @@ public class rCore{
     }
 
     // Get the last key pressed
-    public int GetKeyPressed(){
+    public int GetKeyPressed() {
         int value = 0;
-
-        if (input.keyboard.getKeyPressedQueueCount() > 0){
+        if (input.keyboard.keyPressedQueueCount > 0) {
             // Get character from the queue head
-            value = input.keyboard.getKeyPressedQueue()[0];
-
+            value = input.keyboard.keyPressedQueue[0];
             // Shift elements 1 step toward the head.
-            for (int i = 0; i < (input.keyboard.getKeyPressedQueueCount() - 1); i++){
-                input.keyboard.getKeyPressedQueue()[i] = input.keyboard.getKeyPressedQueue()[i + 1];
+            for (int i = 0; i < (input.keyboard.keyPressedQueueCount - 1); i++) {
+                input.keyboard.keyPressedQueue[i] = input.keyboard.keyPressedQueue[i + 1];
             }
-
-            // Reset last character in the queue
-            input.keyboard.getKeyPressedQueue()[input.keyboard.getKeyPressedQueueCount()] = 0;
-            input.keyboard.setKeyPressedQueueCount(input.keyboard.getKeyPressedQueueCount() - 1);
         }
+
+        // Reset last character in the queue
+        input.keyboard.charPressedQueue[input.keyboard.charPressedQueueCount - 1] = 0;
+        input.keyboard.charPressedQueueCount--;
 
         return value;
     }
@@ -2709,10 +2757,9 @@ public class rCore{
         window.setScreenScale(MatrixIdentity());  // No draw scaling required by default
 
         // NOTE: Framebuffer (render area - window.render.getWidth(), window.render.height) could include black bars...
-        // ...in top-down or left-right to match display aspect ratio (no weird scalings)
+        // ...in top-down or left-right to match display aspect ratio (no weird scaling)
 
-        callback = new Callbacks(this);
-        glfwSetErrorCallback(callback.errorCallback);
+        glfwSetErrorCallback(callbacks.errorCallback);
 
         if (!glfwInit()){
             TRACELOG(LOG_WARNING, "GLFW: Failed to initialize GLFW");
@@ -2748,7 +2795,7 @@ public class rCore{
         //glfwWindowHint(GLFW_DEPTH_BITS, 24);          // Depthbuffer bits
         //glfwWindowHint(GLFW_REFRESH_RATE, 0);         // Refresh rate for fullscreen window
         //glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API); // OpenGL API to use. Alternative: GLFW_OPENGL_ES_API
-        //glfwWindowHint(GLFW_AUX_BUFFERS, 0);          // Number of auxiliar buffers
+        //glfwWindowHint(GLFW_AUX_BUFFERS, 0);          // Number of auxiliary buffers
 
         // Check window creation flags
         if ((window.getFlags() & FLAG_FULLSCREEN_MODE) > 0){
@@ -2840,11 +2887,11 @@ public class rCore{
 
         // Check selection OpenGL version
 
-        if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_21){
+        if (rlGetVersion() == rlGlVersion.OPENGL_21){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);          // Choose OpenGL minor version (just hint)
         }
-        else if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_33){
+        else if (rlGetVersion() == rlGlVersion.OPENGL_33){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);          // Choose OpenGL minor version (just hint)
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Profiles Hint: Only 3.3 and above!
@@ -2856,7 +2903,7 @@ public class rCore{
             }
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
-        else if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_ES_20){
+        else if (rlGetVersion() == rlGlVersion.OPENGL_ES_20){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -2868,7 +2915,7 @@ public class rCore{
             }
         }
 
-        if (Config.MAX_GAMEPADS > 0){
+        if (MAX_GAMEPADS > 0){
             // NOTE: GLFW 3.4+ defers initialization of the Joystick subsystem on the first call to any Joystick related functions.
             // Forcing this initialization here avoids doing it on `PollInputEvents` called by `EndDrawing` after first frame has been just drawn.
             // The initialization will still happen and possible delays still occur, but before the window is shown, which is a nicer experience.
@@ -2877,9 +2924,17 @@ public class rCore{
         }
 
         if (window.fullscreen){
-            // remember center for switchinging from fullscreen to window
-            window.position.setX(window.display.getWidth() / 2 - window.screen.getWidth() / 2);
-            window.position.setY(window.display.getHeight() / 2 - window.screen.getHeight() / 2);
+            // remember center for switching from fullscreen to window
+            if ((window.screen.height == window.display.height) && (window.screen.width == window.display.width)) {
+                // If screen width/height equal to the display, we can't calculate the window pos for toggling fullscreened/windowed.
+                // Toggling fullscreened/windowed with pos(0, 0) can cause problems in some platforms, such as X11.
+                window.position.x = window.display.width/4;
+                window.position.y = window.display.height/4;
+            }
+            else {
+                window.position.x = window.display.width/2 - window.screen.width/2;
+                window.position.y = window.display.height/2 - window.screen.height/2;
+            }
 
             if (window.position.getX() < 0){
                 window.position.setX(0);
@@ -2892,7 +2947,7 @@ public class rCore{
             int count = 0;
             GLFWVidMode.Buffer modes = glfwGetVideoModes(glfwGetPrimaryMonitor());
             count = modes != null ? modes.sizeof() : 0;
-            // Get closest video mode to desired window.screen.getWidth()/window.screen.getHeight()
+            // Get the closest video mode to desired window.screen.getWidth()/window.screen.getHeight()
             for (int i = 0; i < count; i++){
                 if (modes.width() >= window.screen.getWidth()){
                     if (modes.height() >= window.screen.getHeight()){
@@ -2936,15 +2991,6 @@ public class rCore{
                     ? window.title : " ", NULL, NULL);
 
             if (window.handle > 0){
-                // Center window on screen
-                int windowPosX = window.display.getWidth() / 2 - window.screen.getWidth() / 2;
-                int windowPosY = window.display.getHeight() / 2 - window.screen.getHeight() / 2;
-
-                if (windowPosX < 0) windowPosX = 0;
-                if (windowPosY < 0) windowPosY = 0;
-
-                glfwSetWindowPos(window.handle, windowPosX, windowPosY);
-
                 window.render.setWidth(window.screen.getWidth());
                 window.render.setHeight(window.screen.getHeight());
             }
@@ -2967,21 +3013,24 @@ public class rCore{
         }
 
         // Set window callback events
-        glfwSetWindowMaximizeCallback(window.handle, callback.windowMaximizeCallback);
-        glfwSetWindowSizeCallback(window.handle, callback.windowSizeCallback);
-        // NOTE: Resizing not allowed by default!
-        glfwSetWindowIconifyCallback(window.handle, callback.windowIconifyCallback);
-        glfwSetWindowFocusCallback(window.handle, callback.windowFocusCallback);
-        glfwSetDropCallback(window.handle, callback.windowDropCallback);
+        glfwSetWindowMaximizeCallback(window.handle, callbacks.windowMaximizeCallback);
+        glfwSetWindowSizeCallback(window.handle, callbacks.windowSizeCallback); // NOTE: Resizing not allowed by default!
+
+        glfwSetWindowIconifyCallback(window.handle, callbacks.windowIconifyCallback);
+        glfwSetWindowFocusCallback(window.handle, callbacks.windowFocusCallback);
+        glfwSetDropCallback(window.handle, callbacks.windowDropCallback);
+
         // Set input callback events
         // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window.handle, callback.keyCallback);
-        glfwSetCharCallback(window.handle, callback.charCallback);
-        glfwSetMouseButtonCallback(window.handle, callback.mouseButtonCallback);
-        glfwSetCursorPosCallback(window.handle, callback.mouseCursorPosCallback);
+        glfwSetKeyCallback(window.handle, callbacks.keyCallback);
+        glfwSetCharCallback(window.handle, callbacks.charCallback);
+
+        glfwSetMouseButtonCallback(window.handle, callbacks.mouseButtonCallback);
+        glfwSetCursorPosCallback(window.handle, callbacks.mouseCursorPosCallback);
+
         // Track mouse position changes
-        glfwSetScrollCallback(window.handle, callback.mouseScrollCallback);
-        glfwSetCursorEnterCallback(window.handle, callback.cursorEnterCallback);
+        glfwSetScrollCallback(window.handle, callbacks.mouseScrollCallback);
+        glfwSetCursorEnterCallback(window.handle, callbacks.cursorEnterCallback);
 
         glfwMakeContextCurrent(window.handle);
         GL.createCapabilities();
@@ -2990,11 +3039,11 @@ public class rCore{
         // NOTE: GLFW loader function is passed as parameter
         //TODO - rlLoadExtensions uses GLAD.
         //rlLoadExtensions(glfwGetProcAddress());
-        RLGL.rlLoadExtensions();
+        rlLoadExtensions();
 
         // Initialize OpenGL context (states and resources)
         // NOTE: window.screen.getWidth() and window.screen.getHeight() not used, just stored as globals in rlgl
-        RLGL.rlglInit(window.screen.getWidth(), window.screen.getHeight());
+        rlglInit(window.screen.getWidth(), window.screen.getHeight());
 
         int fbWidth = window.render.getWidth();
         int fbHeight = window.render.getHeight();
@@ -3021,31 +3070,30 @@ public class rCore{
         return true;
     }
 
-     void SetupViewport(int width, int height){
+     public void SetupViewport(int width, int height){
         window.render.setWidth(width);
         window.render.setHeight(height);
 
         // Set viewport width and height
         // NOTE: We consider render size and offset in case black bars are required and
         // render area does not match full display area (this situation is only applicable on fullscreen mode)
-        RLGL.rlViewport((int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
+        rlViewport((int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
                         (int) (window.render.getWidth() - window.renderOffset.getX()),
                         (int) (window.render.getHeight() - window.renderOffset.getY()));
 
-        RLGL.rlMatrixMode(RLGL.RL_PROJECTION);        // Switch to projection matrix
-        RLGL.rlLoadIdentity();                   // Reset current matrix (projection)
+        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        rlLoadIdentity();                   // Reset current matrix (projection)
 
         // Set orthographic projection to current framebuffer size
         // NOTE: Configured top-left corner as (0, 0)
-        RLGL.rlOrtho(0, window.render.getWidth(), window.render.getHeight(), 0, 0.0f, 1.0f);
+        rlOrtho(0, window.render.getWidth(), window.render.getHeight(), 0, 0.0f, 1.0f);
 
-        RLGL.rlMatrixMode(RLGL.RL_MODELVIEW);         // Switch back to modelview matrix
-        RLGL.rlLoadIdentity();                   // Reset current matrix (modelview)
+        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        rlLoadIdentity();                   // Reset current matrix (modelview)
     }
 
     // Compute framebuffer size relative to screen size and display size
-    // NOTE: Global variables CORE.Window.render.width/CORE.Window.render.height and
-    // CORE.Window.renderOffset.x/CORE.Window.renderOffset.y can be modified
+    // NOTE: Global variables window.render.width/window.render.height and window.renderOffset.x/window.renderOffset.y can be modified
     void SetupFramebuffer(int width, int height){
         // Calculate window.render.getWidth() and window.render.getHeight(), we have the display size (input params) and the desired screen size (global var)
         if ((window.screen.getWidth() > window.display.getWidth()) || (window.screen.getHeight() > window.display.getHeight())){
@@ -3299,7 +3347,7 @@ public class rCore{
     }
 
     //todo
-    private FilePathList ScanDirectroyFilesRecursively(String basePath, String filter) {
+    private FilePathList ScanDirectoryFilesRecursively(String basePath, String filter) {
         FilePathList files = new FilePathList();
 
 
@@ -3446,7 +3494,7 @@ public class rCore{
     // EndDrawing() -> After PollInputEvents()
     // Check event in current frame and save into the events[i] array
     public void RecordAutomationEvent(int frame) {
-        for (int key = 0; key < Config.MAX_KEYBOARD_KEYS; key++) {
+        for (int key = 0; key < MAX_KEYBOARD_KEYS; key++) {
             // INPUT_KEY_UP (only saved once)
             if (input.keyboard.previousKeyState[key] && !input.keyboard.currentKeyState[key]) {
                 events.get(eventCount).frame = frame;
@@ -3640,7 +3688,7 @@ public class rCore{
     public void PlayAutomationEvent(int frame) {
         for (int i = 0; i < eventCount; i++) {
             if (events.get(i).frame == frame) {
-                switch (AutomationEvent.AutomationEventType.values()[events.get(i).type]) {
+                switch (values()[events.get(i).type]) {
                     // Input events
                     case INPUT_KEY_UP:    // param[0]: key
                         input.keyboard.currentKeyState[events.get(i).params[0]] = false;

@@ -172,8 +172,4 @@ public class FileIO{
 
         return success;
     }
-
-    private static InputStream getFileFromResourceAsStream(String fileName){
-        return FileIO.class.getResourceAsStream(fileName);
-    }
 }

@@ -5,7 +5,7 @@ import com.raylib.java.structs.Point;
 import com.raylib.java.structs.Size;
 
 public class Window{
-    long handle;
+    public long handle;
 
     //EGLDisplay device;                  // Native display device (physical screen connection)
     //EGLSurface surface;                 // Surface to draw on, framebuffers (connected to context)
@@ -13,7 +13,7 @@ public class Window{
     //EGLConfig config;                   // Graphic config
 
     String title;                  // window text title const pointer
-    int flags;                 // Configuration flags (bit based), keeps window state
+    public int flags;                 // Configuration flags (bit based), keeps window state
     boolean ready;                         // Check if window has been initialized successfully
     boolean fullscreen;                    // Check if fullscreen mode is enabled
     boolean shouldClose;                   // Check if window set for closing
