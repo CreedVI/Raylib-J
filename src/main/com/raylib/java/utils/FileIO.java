@@ -104,19 +104,18 @@ public class FileIO{
      * @throws IOException If Java fails to load file form disk
      */
     public static String LoadFileText(String fileName) throws IOException{
-        StringBuilder text = new StringBuilder();
+        String text = new String();
 
         if (fileName != null){
             if (SUPPORT_STANDARD_FILEIO){
+                Path path = Paths.get(fileName);
+
                 try {
-                    BufferedReader buffer = new BufferedReader(new FileReader(fileName));
-                    String line;
-                    while ((line = buffer.readLine()) != null) {
-                        text.append(line);
-                    }
+                    text = Files.readString(path);
                 }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
+                catch (IOException exception) {
+                    TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + path);
+                    throw exception;
                 }
                 finally {
                     TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + fileName);
@@ -129,7 +128,7 @@ public class FileIO{
         else{
             TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
         }
-        return text.toString();
+        return text;
     }
 
     /**
@@ -145,21 +144,29 @@ public class FileIO{
         boolean success = false;
 
         if (fileName != null){
-
-            //TODO: Check if file exists and warn overwrite
-
             if (SUPPORT_STANDARD_FILEIO){
-                try {
-                    BufferedWriter buffer = new BufferedWriter(new FileWriter(fileName));
-                    buffer.write(text);
-                    buffer.close();
-                    success = true;
+                Path path = Paths.get(fileName);
+
+                if (!path.toFile().exists()){
+                    try{
+                        Files.writeString(path, text);
+                    } catch (IOException exception){
+                        TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
+                        throw exception;
+                    } finally{
+                        success = true;
+                    }
                 }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                finally {
-                    TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
+                else{
+                    TRACELOG(LOG_INFO, "FILE IO: Overwriting file: " + fileName);
+                    try{
+                        Files.writeString(path, text);
+                    } catch (IOException exception){
+                        TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + fileName);
+                        throw exception;
+                    } finally{
+                        success = true;
+                    }
                 }
             }
             else{

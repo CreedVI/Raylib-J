@@ -3688,10 +3688,8 @@ public class rModels{
         Model model = new Model();
 
         try {
-            String filetext = FileIO.LoadFileText(fileName);
-
             OBJLoader loader = new OBJLoader();
-            boolean success = loader.ReadOBJ(filetext, true);
+            boolean success = loader.ReadOBJ(fileName, true);
 
             if(success) {
                 TRACELOG(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
@@ -5433,24 +5431,31 @@ public class rModels{
             if (gltf.skinCount == 1) {
                 gltfj_Skin skin = gltf.skins.get(0);
                 model.bones = LoadBoneInfoGLTF(gltf, skin);
+                model.boneCount = model.bones.length;
                 model.bindPose = new Transform[model.boneCount];
 
                 for (int i = 0; i < model.boneCount; i++) {
                     gltfj_Node node = gltf.nodes.get(skin.joints[i]);
                     model.bindPose[i] = new Transform();
 
-                    model.bindPose[i].translation.x = (float) node.translation[0];
-                    model.bindPose[i].translation.y = (float) node.translation[1];
-                    model.bindPose[i].translation.z = (float) node.translation[2];
+                    if (node.translation.length > 0) {
+                        model.bindPose[i].translation.x = (float) node.translation[0];
+                        model.bindPose[i].translation.y = (float) node.translation[1];
+                        model.bindPose[i].translation.z = (float) node.translation[2];
+                    }
 
-                    model.bindPose[i].rotation.x = (float) node.rotation[0];
-                    model.bindPose[i].rotation.y = (float) node.rotation[1];
-                    model.bindPose[i].rotation.z = (float) node.rotation[2];
-                    model.bindPose[i].rotation.w = (float) node.rotation[3];
+                    if (node.rotation.length > 0) {
+                        model.bindPose[i].rotation.x = (float) node.rotation[0];
+                        model.bindPose[i].rotation.y = (float) node.rotation[1];
+                        model.bindPose[i].rotation.z = (float) node.rotation[2];
+                        model.bindPose[i].rotation.w = (float) node.rotation[3];
+                    }
 
-                    model.bindPose[i].scale.x = (float) node.scale[0];
-                    model.bindPose[i].scale.y = (float) node.scale[1];
-                    model.bindPose[i].scale.z = (float) node.scale[2];
+                    if (node.scale.length > 0) {
+                        model.bindPose[i].scale.x = (float) node.scale[0];
+                        model.bindPose[i].scale.y = (float) node.scale[1];
+                        model.bindPose[i].scale.z = (float) node.scale[2];
+                    }
                 }
 
                 model.bindPose = BuildPoseFromParentJoints(model.bones, model.boneCount, model.bindPose);

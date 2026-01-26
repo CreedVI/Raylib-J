@@ -152,9 +152,9 @@ public class OBJLoader {
 
     public OBJShape[] shapes;
 
-    public static final int FLAG_TRIANGULATE = (1<<0);
+    public boolean ReadOBJ(String fileName, boolean triangulate) throws IOException {
+        String fileText = FileIO.LoadFileText(fileName);
 
-    public boolean ReadOBJ(String fileText, boolean triangulate) {
         objInfo = new OBJInfo();
         cmds = parseLines(fileText, triangulate);
 
@@ -183,13 +183,14 @@ public class OBJLoader {
 
         /* Load material(if exits) */
         if (mtllibLineIndex >= 0 && cmds[mtllibLineIndex].mtllibName != null && cmds[mtllibLineIndex].mtllibName.length() > 0) {
+            String dir = fileName.substring(0, fileName.lastIndexOf('/') + 1);
             String filename = cmds[mtllibLineIndex].mtllibName;
 
-            boolean ret = ReadMTL(filename);
+            boolean ret = ReadMTL(dir + filename);
 
             if (!ret) {
                 /* warning. */
-                System.out.println("OB-J: Failed to parse material file " + filename);
+                System.out.println("OB-J: Failed to parse material file " + dir + filename);
             }
 
         }
