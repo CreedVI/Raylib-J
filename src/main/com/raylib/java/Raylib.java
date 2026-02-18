@@ -1,6 +1,7 @@
 package com.raylib.java;
 
 import com.raylib.java.core.rCore;
+import com.raylib.java.io.FileIO;
 import com.raylib.java.models.rModels;
 import com.raylib.java.extras.physac.Physac;
 import com.raylib.java.raudioal.rAudioAL;
@@ -12,6 +13,7 @@ public class Raylib{
 
     public rAudioAL audio;
     public rCore core;
+    public FileIO files;
     public Config config;
     public rText text;
     public rShapes shapes;
@@ -25,6 +27,7 @@ public class Raylib{
     public Raylib(){
         config = new Config();
         core = new rCore(this);
+        files = new FileIO(this);
         textures = new rTextures(this);
         text = new rText(this);
         audio = new rAudioAL(this);
@@ -42,6 +45,7 @@ public class Raylib{
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
         config = new Config();
         core = new rCore(this);
+        files = new FileIO(this);
         textures = new rTextures(this);
         text = new rText(this);
         audio = new rAudioAL(this);

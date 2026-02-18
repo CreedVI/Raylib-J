@@ -15,10 +15,10 @@ public class WindowMaximizeCallback extends GLFWWindowMaximizeCallback {
     @Override
     public void invoke(long window, boolean maximized){
         if (maximized){
-            context.getWindow().flags |= FLAG_WINDOW_MAXIMIZED;  // The window was maximized
+            context.window.flags |= FLAG_WINDOW_MAXIMIZED;  // The window was maximized
         }
         else{
-            context.getWindow().flags &= ~FLAG_WINDOW_MAXIMIZED;           // The window was restored
+            context.window.flags &= ~FLAG_WINDOW_MAXIMIZED;           // The window was restored
         }
     }
 }

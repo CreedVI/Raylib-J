@@ -5,7 +5,9 @@ import com.raylib.java.structs.Matrix;
 import com.raylib.java.structs.Vector2;
 import com.raylib.java.structs.Vector3;
 
+import static com.raylib.java.core.input.Gamepad.GamepadAxis.*;
 import static com.raylib.java.core.input.Keyboard.*;
+import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_MIDDLE;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.*;
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.*;
 import static com.raylib.java.raymath.Raymath.*;
@@ -32,6 +34,8 @@ public class Camera3D {
 
     private final float CAMERA_MOVE_SPEED = 0.09f;
     private final float CAMERA_ROTATION_SPEED = 0.03f;
+    private final float CAMERA_PAN_SPEED = 0.2f;
+
 
     // Camera mouse movement sensitivity
     private final float CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003f;    // TODO: it should be independant of framerate
@@ -57,9 +61,9 @@ public class Camera3D {
 
     public Camera3D(Raylib context){
         this.context = context;
-        position = new Vector3();
-        target = new Vector3();
-        up = new Vector3();
+        this.position = new Vector3();
+        this.target = new Vector3();
+        this.up = new Vector3();
 
         CAMERA_CULL_DISTANCE_NEAR = context.config.RL_CULL_DISTANCE_NEAR;
         CAMERA_CULL_DISTANCE_FAR = context.config.RL_CULL_DISTANCE_FAR;
@@ -86,7 +90,7 @@ public class Camera3D {
     }
 
     /**
-     * Returns the camera's up vector (normalised)
+     * Returns the camera's up vector (normalised) <br/>
      * NOTE: The up vector might not be perpendicular to the forward vector.
      * @return normalised up vector
      */
@@ -138,8 +142,8 @@ public class Camera3D {
         up = Vector3Scale(up, distance);
 
         // Move position and target
-        this.position = Vector3Add(this.position, up);
-        this.target = Vector3Add(this.target, up);
+        this.position = Vector3Add(position, up);
+        this.target = Vector3Add(target, up);
     }
 
     /**
@@ -148,7 +152,7 @@ public class Camera3D {
      * @param moveInWorldPlane normalises the camera's right vector
      */
     public void MoveRight(float distance, boolean moveInWorldPlane) {
-        Vector3 right = GetCameraRight();
+        Vector3 right = this.GetCameraRight();
 
         if (moveInWorldPlane) {
             // Project vector onto world plane
@@ -160,8 +164,8 @@ public class Camera3D {
         right = Vector3Scale(right, distance);
 
         // Move position and target
-        this.position = Vector3Add(this.position, right);
-        this.target = Vector3Add(this.target, right);
+        this.position = Vector3Add(position, right);
+        this.target = Vector3Add(target, right);
     }
 
     /**
@@ -169,21 +173,23 @@ public class Camera3D {
      * @param delta units the camera should move towards or away from the camera target
      */
     public void CameraMoveToTarget(float delta) {
-        float distance = Vector3Distance(this.position, this.target);
+        float distance = Vector3Distance(position, target);
 
         // Apply delta
         distance += delta;
 
         // Distance must be greater than 0
-        if (distance < 0) distance = 0.001f;
+        if (distance < 0) {
+            distance = 0.001f;
+        }
 
         // Set new distance by moving the position along the forward vector
         Vector3 forward = this.GetCameraForward();
-        this.position = Vector3Add(this.target, Vector3Scale(forward, -distance));
+        this.position = Vector3Add(target, Vector3Scale(forward, -distance));
     }
 
     /**
-     * Rotates the camera around its up vector
+     * Rotates the camera around its up vector <br/>
      * Yaw is "looking left and right"
      * @param angle angle of rotation in radians
      * @param rotateAroundTarget If rotateAroundTarget is false, the camera rotates around its position
@@ -200,7 +206,7 @@ public class Camera3D {
 
         if (rotateAroundTarget) {
             // Move position relative to target
-            this.position = Vector3Subtract(this.target, targetPosition);
+            this.position = Vector3Subtract(target, targetPosition);
         }
         // rotate around camera.position
         else {
@@ -210,7 +216,7 @@ public class Camera3D {
     }
 
     /**
-     * Rotates the camera around its right vector
+     * Rotates the camera around its right vector<br/>
      * Pitch is "looking up or down."
      * @param angle angle of rotation in radians
      * @param lockView prevent camera from overrotation (aka "somersaults")
@@ -222,10 +228,9 @@ public class Camera3D {
         Vector3 up = this.GetCameraUp();
 
         // View vector
-        Vector3 targetPosition = Vector3Subtract(this.target, this.position);
+        Vector3 targetPosition = Vector3Subtract(target, position);
 
-        if (lockView)
-        {
+        if (lockView) {
             // In these camera modes we clamp the Pitch angle
             // to allow only viewing straight up or down.
 
@@ -251,26 +256,24 @@ public class Camera3D {
         // Rotate view vector around right axis
         targetPosition = Vector3RotateByAxisAngle(targetPosition, right, angle);
 
-        if (rotateAroundTarget)
-        {
+        if (rotateAroundTarget) {
             // Move position relative to target
-            this.position = Vector3Subtract(this.target, targetPosition);
+            this.position = Vector3Subtract(target, targetPosition);
         }
-        else // rotate around camera.position
-        {
+        // rotate around camera.position
+        else {
             // Move target relative to position
             this.target = Vector3Add(this.position, targetPosition);
         }
 
-        if (rotateUp)
-        {
+        if (rotateUp) {
             // Rotate up direction around right axis
-            this.up = Vector3RotateByAxisAngle(this.up, right, angle);
+            this.up = Vector3RotateByAxisAngle(up, right, angle);
         }
     }
 
     /**
-     * Rotates the camera around its forward vector
+     * Rotates the camera around its forward vector<br/>
      * Roll is tilting to the left or right
      * @param angle angle of roll in radians
       */
@@ -279,7 +282,7 @@ public class Camera3D {
         Vector3 forward = GetCameraForward();
 
         // Rotate up direction around forward axis
-        this.up = Vector3RotateByAxisAngle(this.up, forward, angle);
+        this.up = Vector3RotateByAxisAngle(up, forward, angle);
     }
 
     /**
@@ -287,7 +290,7 @@ public class Camera3D {
      * @return camera view matrix
      */
     public Matrix GetCameraViewMatrix() {
-        return MatrixLookAt(this.position, this.target, this.up);
+        return MatrixLookAt(position, target, up);
     }
 
     /**
@@ -295,15 +298,12 @@ public class Camera3D {
      * @param aspect camera's aspect ratio as a decimal (width/height)
      * @return Camera's projection matrix.
      */
-    public Matrix GetCameraProjectionMatrix(float aspect)
-    {
-        if (this.projection == CAMERA_PERSPECTIVE)
-        {
-            return MatrixPerspective(this.fovy*DEG2RAD, aspect, CAMERA_CULL_DISTANCE_NEAR, CAMERA_CULL_DISTANCE_FAR);
+    public Matrix GetCameraProjectionMatrix(float aspect) {
+        if (projection == CAMERA_PERSPECTIVE) {
+            return MatrixPerspective(fovy*DEG2RAD, aspect, CAMERA_CULL_DISTANCE_NEAR, CAMERA_CULL_DISTANCE_FAR);
         }
-        else if (this.projection == CAMERA_ORTHOGRAPHIC)
-        {
-            double top = this.fovy/2.0;
+        else if (projection == CAMERA_ORTHOGRAPHIC) {
+            double top = fovy/2.0;
             double right = top*aspect;
 
             return MatrixOrtho(-right, right, -top, top, CAMERA_CULL_DISTANCE_NEAR, CAMERA_CULL_DISTANCE_FAR);
@@ -317,46 +317,86 @@ public class Camera3D {
      * @param mode camera mode defined in `CameraMode` class: CAMERA_FREE, CAMERA_FIRST_PERSON, CAMERA_THIRD_PERSON, CAMERA_ORBITAL or CUSTOM
      */
     public void Update(int mode) {
-        Vector2 mousePositionDelta = this.context.core.GetMouseDelta();
+        Vector2 mousePositionDelta = context.core.GetMouseDelta();
 
         boolean moveInWorldPlane = ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON));
         boolean rotateAroundTarget = ((mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL));
         boolean lockView = ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL));
         boolean rotateUp = (mode == CAMERA_FREE);
 
+
+        // Camera speeds based on frame time
+        float cameraMoveSpeed = CAMERA_MOVE_SPEED*context.core.GetFrameTime();
+        float cameraRotationSpeed = CAMERA_ROTATION_SPEED*context.core.GetFrameTime();
+        float cameraPanSpeed = CAMERA_PAN_SPEED*context.core.GetFrameTime();
+        float cameraOrbitalSpeed = CAMERA_ORBITAL_SPEED*context.core.GetFrameTime();
+
         if (mode == CAMERA_ORBITAL) {
             // Orbital can just orbit
-            Matrix rotation = MatrixRotate(this.GetCameraUp(), CAMERA_ORBITAL_SPEED * this.context.core.GetFrameTime());
-            Vector3 view = Vector3Subtract(this.position, this.target);
+            Matrix rotation = MatrixRotate(GetCameraUp(), cameraOrbitalSpeed);
+            Vector3 view = Vector3Subtract(position, target);
             view = Vector3Transform(view, rotation);
-            this.position = Vector3Add(this.target, view);
+            position = Vector3Add(target, view);
         }
         else {
             // Camera rotation
-            if (this.context.core.IsKeyDown(KEY_DOWN)) this.Pitch(-CAMERA_ROTATION_SPEED, lockView, rotateAroundTarget, rotateUp);
-            if (this.context.core.IsKeyDown(KEY_UP)) this.Pitch(CAMERA_ROTATION_SPEED, lockView, rotateAroundTarget, rotateUp);
-            if (this.context.core.IsKeyDown(KEY_RIGHT)) this.Yaw(-CAMERA_ROTATION_SPEED, rotateAroundTarget);
-            if (this.context.core.IsKeyDown(KEY_LEFT)) this.Yaw(CAMERA_ROTATION_SPEED, rotateAroundTarget);
-            if (this.context.core.IsKeyDown(KEY_Q)) this.Roll(-CAMERA_ROTATION_SPEED);
-            if (this.context.core.IsKeyDown(KEY_E)) this.Roll(CAMERA_ROTATION_SPEED);
-
-            this.Yaw(-mousePositionDelta.x*CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
-            this.Pitch(-mousePositionDelta.y*CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
+            if (context.core.IsKeyDown(KEY_DOWN)) Pitch(-cameraRotationSpeed, lockView, rotateAroundTarget, rotateUp);
+            if (context.core.IsKeyDown(KEY_UP)) Pitch(cameraRotationSpeed, lockView, rotateAroundTarget, rotateUp);
+            if (context.core.IsKeyDown(KEY_RIGHT)) Yaw(-cameraRotationSpeed, rotateAroundTarget);
+            if (context.core.IsKeyDown(KEY_LEFT)) Yaw(cameraRotationSpeed, rotateAroundTarget);
+            if (context.core.IsKeyDown(KEY_Q)) Roll(-cameraRotationSpeed);
+            if (context.core.IsKeyDown(KEY_E)) Roll(cameraRotationSpeed);
 
             // Camera movement
-            if (this.context.core.IsKeyDown(KEY_W)) this.MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
-            if (this.context.core.IsKeyDown(KEY_A)) this.MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
-            if (this.context.core.IsKeyDown(KEY_S)) this.MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
-            if (this.context.core.IsKeyDown(KEY_D)) this.MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
-            //if (this.context.core.IsKeyDown(KEY_SPACE)) CameraMoveUp(CAMERA_MOVE_SPEED);
-            //if (this.context.core.IsKeyDown(KEY_LEFT_CONTROL)) CameraMoveUp(-CAMERA_MOVE_SPEED);
+            // Camera pan (for CAMERA_FREE)
+            if ((mode == CAMERA_FREE) && (context.core.IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))) {
+                Vector2 mouseDelta = context.core.GetMouseDelta();
+                if (mouseDelta.x > 0.0f) MoveRight(cameraPanSpeed, moveInWorldPlane);
+                if (mouseDelta.x < 0.0f) MoveRight(cameraPanSpeed, moveInWorldPlane);
+                if (mouseDelta.y > 0.0f) MoveUp(-cameraPanSpeed);
+                if (mouseDelta.y < 0.0f) MoveUp(cameraPanSpeed);
+            }
+            else {
+                // Mouse support
+                Yaw(-mousePositionDelta.x * CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
+                Pitch(-mousePositionDelta.y * CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
+            }
+            // Camera movement
+            if (context.core.IsKeyDown(KEY_W)) MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
+            if (context.core.IsKeyDown(KEY_A)) MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+            if (context.core.IsKeyDown(KEY_S)) MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+            if (context.core.IsKeyDown(KEY_D)) MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
+            //if (context.core.IsKeyDown(KEY_SPACE)) CameraMoveUp(CAMERA_MOVE_SPEED);
+            //if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) CameraMoveUp(-CAMERA_MOVE_SPEED);
+
+            // Gamepad movement
+            if (context.core.IsGamepadAvailable(0)) {
+                // Gamepad controller support
+                Yaw(-(context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_X) * 2) * CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
+                Pitch(-(context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y) * 2) * CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
+
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) <= -0.25f)
+                    MoveForward(cameraMoveSpeed, moveInWorldPlane);
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) <= -0.25f)
+                    MoveRight(-cameraMoveSpeed, moveInWorldPlane);
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) >= 0.25f)
+                    MoveForward(-cameraMoveSpeed, moveInWorldPlane);
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) >= 0.25f)
+                    MoveRight(cameraMoveSpeed, moveInWorldPlane);
+            }
+
+            if (mode == CameraMode.CAMERA_FREE) {
+                if (context.core.IsKeyDown(KEY_SPACE)) MoveUp(cameraMoveSpeed);
+                if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) MoveUp(-cameraMoveSpeed);
+            }
         }
+
 
         if ((mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL)) {
             // Zoom target distance
-            CameraMoveToTarget(-this.context.core.GetMouseWheelMove());
-            if (this.context.core.IsKeyPressed(KEY_KP_SUBTRACT)) CameraMoveToTarget(2.0f);
-            if (this.context.core.IsKeyPressed(KEY_KP_ADD)) CameraMoveToTarget(-2.0f);
+            CameraMoveToTarget(-context.core.GetMouseWheelMove());
+            if (context.core.IsKeyPressed(KEY_KP_SUBTRACT)) CameraMoveToTarget(2.0f);
+            if (context.core.IsKeyPressed(KEY_KP_ADD)) CameraMoveToTarget(-2.0f);
         }
     }
 

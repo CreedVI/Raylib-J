@@ -17,17 +17,17 @@ public class WindowSizeCallback extends GLFWWindowSizeCallback {
     public void invoke(long window, int width, int height){
         TRACELOG(LOG_DEBUG, "Window Size Callback Triggered");
         context.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-        context.getWindow().getCurrentFbo().setWidth(width);
-        context.getWindow().getCurrentFbo().setHeight(height);
-        context.getWindow().setResizedLastFrame(true);
+        context.window.getCurrentFbo().setWidth(width);
+        context.window.getCurrentFbo().setHeight(height);
+        context.window.setResizedLastFrame(true);
 
         if(context.IsWindowFullscreen()){
             return;
         }
 
         // Set current screen size
-        context.getWindow().getScreen().setWidth(width);
-        context.getWindow().getScreen().setHeight(height);
+        context.window.getScreen().setWidth(width);
+        context.window.getScreen().setHeight(height);
         // NOTE: Postprocessing texture is not scaled to new size
     }
 }

@@ -18,10 +18,10 @@ public class WindowFocusCallback extends GLFWWindowFocusCallback {
     public void invoke(long window, boolean focused){
         TRACELOG(LOG_DEBUG, "Focus Callback Triggered");
         if (focused){
-            context.getWindow().flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
+            context.window.flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
         }
         else{
-            context.getWindow().flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
+            context.window.flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
         }
     }
 }

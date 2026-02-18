@@ -3,8 +3,6 @@ package com.raylib.java.textures;
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.*;
 import com.raylib.java.rlgl.RLGL;
-import com.raylib.java.structs.*;
-import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.Tracelog;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBImage;
@@ -68,7 +66,7 @@ public class rTextures{
         byte[] fileData = null;
 
         try{
-            fileData = FileIO.LoadFileData(fileName);
+            fileData = context.files.LoadFileData(fileName);
         } catch(IOException e) {
             e.printStackTrace();
         }
@@ -98,7 +96,7 @@ public class rTextures{
         byte[] fileData = null;
 
         try{
-            fileData = FileIO.LoadFileData(fileName);
+            fileData = context.files.LoadFileData(fileName);
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -391,7 +389,7 @@ public class rTextures{
                 // Export raw pixel data (without header)
                 // NOTE: It's up to the user to track image parameters
                 try{
-                    success = FileIO.SaveFileData(fileName, image.getData());
+                    success = context.files.SaveFileData(fileName, image.getData());
                 } catch (IOException exception) {
                     exception.printStackTrace();
                 }
@@ -463,7 +461,7 @@ public class rTextures{
 
             // NOTE: Text data size exported is determined by '\0' (NULL) character
             try {
-                success = FileIO.SaveFileText(fileName, txtData);
+                success = context.files.SaveFileText(fileName, txtData);
             }
             catch (IOException e) {
                 throw new RuntimeException(e);

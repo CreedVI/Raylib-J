@@ -121,10 +121,4 @@ public class Tracelog{
         logTypeLevel = logType;
     }
 
-    // Set a trace log callback to enable custom logging
-    public static void SetTraceLogCallback(Method callback){
-        logCallback = callback;
-    }
-
-
 }

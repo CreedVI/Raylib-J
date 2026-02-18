@@ -12,29 +12,29 @@ public class Window{
     //EGLContext context;                 // Graphic context, mode in which drawing can be done
     //EGLConfig config;                   // Graphic config
 
-    String title;                  // window text title const pointer
-    public int flags;                 // Configuration flags (bit based), keeps window state
-    boolean ready;                         // Check if window has been initialized successfully
-    boolean fullscreen;                    // Check if fullscreen mode is enabled
-    boolean shouldClose;                   // Check if window set for closing
-    boolean resizedLastFrame;              // Check if window has been resized last frame
+    protected String title;                           // window text title const pointer
+    public int flags;                       // Configuration flags (bit based), keeps window state
+    protected boolean ready;                          // Check if window has been initialized successfully
+    protected boolean fullscreen;                     // Check if fullscreen mode is enabled
+    protected boolean shouldClose;                    // Check if window set for closing
+    protected boolean resizedLastFrame;               // Check if window has been resized last frame
 
-    boolean eventWaiting;               // Wait for events before ending frame
+    protected boolean eventWaiting;               // Wait for events before ending frame
 
-    Point position;                     // window position on screen (required on fullscreen toggle)
-    Point previousPosition;             // Window previous position (required on borderless windowed toggle)
-    Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
-    Size screen;                        // Screen width and height (used render area)
-    Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
-    Size currentFbo;                    // Current render width and height, it could change on BeginTextureMode()
-    Size render;                        // Framebuffer width and height (render area, including black bars if required)
-    Point renderOffset;                 // Offset from render area (must be divided by 2)
-    Size screenMin;                     // Screen minimum width and height (for resizable window)
-    Size screenMax;                     // Screen maximum width and height (for resizable window)
-    Matrix screenScale;                 // Matrix to scale screen (framebuffer rendering)
+    protected Point position;                     // window position on screen (required on fullscreen toggle)
+    protected Point previousPosition;             // Window previous position (required on borderless windowed toggle)
+    protected Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
+    protected Size screen;                        // Screen width and height (used render area)
+    protected Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
+    protected Size currentFbo;                    // Current render width and height, it could change on BeginTextureMode()
+    protected Size render;                        // Framebuffer width and height (render area, including black bars if required)
+    protected Point renderOffset;                 // Offset from render area (must be divided by 2)
+    protected Size screenMin;                     // Screen minimum width and height (for resizable window)
+    protected Size screenMax;                     // Screen maximum width and height (for resizable window)
+    protected Matrix screenScale;                 // Matrix to scale screen (framebuffer rendering)
 
-    String[] dropFilePaths;               // Store dropped files paths as strings
-    int dropFilesCount;                 // Count dropped files strings
+    protected String[] dropFilePaths;               // Store dropped files paths as strings
+    protected int dropFilesCount;                   // Count dropped files strings
 
     public Window(){
         handle = 0;

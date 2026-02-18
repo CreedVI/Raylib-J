@@ -20,22 +20,22 @@ public class KeyCallback extends GLFWKeyCallback {
     public void invoke(long window, int key, int scancode, int action, int mods){
         // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
         // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
-        context.getInput().keyboard.currentKeyState[key] = action != GLFW_RELEASE;
+        context.input.keyboard.currentKeyState[key] = action != GLFW_RELEASE;
 
         // Check if there is space available in the key queue
-        if ((context.getInput().keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)){
+        if ((context.input.keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)){
             // Add character to the queue
-            context.getInput().keyboard.keyPressedQueue[context.getInput().keyboard.keyPressedQueueCount] = key;
-            context.getInput().keyboard.keyPressedQueueCount++;
+            context.input.keyboard.keyPressedQueue[context.input.keyboard.keyPressedQueueCount] = key;
+            context.input.keyboard.keyPressedQueueCount++;
         }
 
-        if ((context.getInput().keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_REPEAT)){
-            context.getInput().keyboard.keyRepeatInFrame[key] = true;
+        if ((context.input.keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_REPEAT)){
+            context.input.keyboard.keyRepeatInFrame[key] = true;
         }
 
         // Check the exit key to set close window
-        if ((key == context.getInput().keyboard.exitKey) && (action == GLFW_PRESS)){
-            glfwSetWindowShouldClose(context.getWindow().handle, true);
+        if ((key == context.input.keyboard.exitKey) && (action == GLFW_PRESS)){
+            glfwSetWindowShouldClose(context.window.handle, true);
         }
 
         if(SUPPORT_SCREEN_CAPTURE){

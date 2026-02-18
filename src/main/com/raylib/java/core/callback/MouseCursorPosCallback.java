@@ -1,6 +1,7 @@
 package com.raylib.java.core.callback;
 
 import com.raylib.java.core.rCore;
+import com.raylib.java.structs.Vector2;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 
 import static com.raylib.java.utils.Tracelog.TRACELOG;
@@ -16,9 +17,6 @@ public class MouseCursorPosCallback extends GLFWCursorPosCallback {
     @Override
     public void invoke(long window, double xpos, double ypos){
         TRACELOG(LOG_DEBUG, "Cursor Position Callback Triggered");
-        context.getInput().mouse.previousPosition.x = context.getInput().mouse.currentPosition.x;
-        context.getInput().mouse.previousPosition.y = context.getInput().mouse.currentPosition.y;
-        context.getInput().mouse.currentPosition.x = (float) xpos;
-        context.getInput().mouse.currentPosition.y = (float) ypos;
+        context.input.mouse.currentPosition = new Vector2(xpos, ypos);
     }
 }

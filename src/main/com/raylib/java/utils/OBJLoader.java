@@ -1,5 +1,7 @@
 package com.raylib.java.utils;
 
+import com.raylib.java.Raylib;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,8 +154,8 @@ public class OBJLoader {
 
     public OBJShape[] shapes;
 
-    public boolean ReadOBJ(String fileName, boolean triangulate) throws IOException {
-        String fileText = FileIO.LoadFileText(fileName);
+    public boolean ReadOBJ(Raylib context, String fileName, boolean triangulate) throws IOException {
+        String fileText = context.files.LoadFileText(fileName);
 
         objInfo = new OBJInfo();
         cmds = parseLines(fileText, triangulate);
@@ -186,7 +188,7 @@ public class OBJLoader {
             String dir = fileName.substring(0, fileName.lastIndexOf('/') + 1);
             String filename = cmds[mtllibLineIndex].mtllibName;
 
-            boolean ret = ReadMTL(dir + filename);
+            boolean ret = ReadMTL(context, dir + filename);
 
             if (!ret) {
                 /* warning. */
@@ -356,11 +358,11 @@ public class OBJLoader {
         return true;
     }
 
-    public boolean ReadMTL(String filetext) {
+    public boolean ReadMTL(Raylib context, String filetext) {
         mtlInfo = new MTLInfo();
         String[] token;
         try {
-            token = FileIO.LoadFileText(filetext).split("(\\r\\n|\\r|\\n)");
+            token = context.files.LoadFileText(filetext).split("(\\r\\n|\\r|\\n)");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

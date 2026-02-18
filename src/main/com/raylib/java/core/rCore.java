@@ -2,12 +2,13 @@ package com.raylib.java.core;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.core.callback.Callbacks;
+import com.raylib.java.core.input.Gamepad;
 import com.raylib.java.core.input.Input;
+import com.raylib.java.core.input.Mouse;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.rlgl.RLGL;
-import com.raylib.java.utils.FileIO;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
@@ -55,9 +56,9 @@ public class rCore{
 
     public RLGL rlgl;
 
-    protected final Window window;
-    protected final Input input;
-    protected final Time time;
+    public final Window window;
+    public final Input input;
+    public final Time time;
 
     public Callbacks callbacks;
 
@@ -79,7 +80,7 @@ public class rCore{
     static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     static float average = 0, last = 0;
 
-    private final Random random = new Random();
+    private final Random random;
 
     private final Raylib context;
 
@@ -92,15 +93,9 @@ public class rCore{
         time = new Time();
         rlgl = new RLGL();
 
+        this.random = new Random();
+
         events = new ArrayList<>();
-    }
-
-    public Window getWindow(){
-        return window;
-    }
-
-    public Input getInput(){
-        return input;
     }
 
     //ANDROID
@@ -115,7 +110,7 @@ public class rCore{
     //END RPI | DRM
 
     /**
-     * Initialize window and OpenGL context.
+     * Initialize window and OpenGL context. <br/>
      * NOTE: data parameter could be used to pass any kind of required data to the initialization
      *
      * @param width  Window width in pixels
@@ -181,7 +176,7 @@ public class rCore{
         }
 
         // Init graphics device (display device and OpenGL context)
-        // NOTE: returns true if window and graphic device has been initialized successfully
+        // NOTE: returns true if the window and graphic device has been initialized successfully
         window.ready = InitGraphicsDevice(width, height);
 
         if (!window.ready){
@@ -198,8 +193,8 @@ public class rCore{
             context.text.LoadFontDefault();
             Rectangle rec = context.text.GetFontDefault().getRecs()[95];
             // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
-            context.shapes.SetShapesTexture(context.text.GetFontDefault().getTexture(), new Rectangle(rec.getX() + 1, rec.getY() + 1,
-                                                                                        rec.getWidth() - 2, rec.getHeight() - 2));
+            context.shapes.SetShapesTexture(context.text.GetFontDefault().getTexture(), new Rectangle(rec.x + 1, rec.y + 1,
+                                                                                        rec.width - 2, rec.height - 2));
         }
         else if (SUPPORT_MODULE_RSHAPES){
             // Set default texture and rectangle to be used for shapes drawing
@@ -239,7 +234,7 @@ public class rCore{
     /**
      * Check if KEY_ESCAPE pressed or close icon pressed
      *
-     * @return <code>true</code> if window is ready to close.
+     * @return <code>true</code> if the window is ready to close.
      * NOTE: Must be inverted for use in a while loop
      */
     public boolean WindowShouldClose(){
@@ -262,48 +257,59 @@ public class rCore{
     }
 
     /**
-     * Check if window has been initialized successfully
+     * Check if the window has been initialized successfully
      *
-     * @return <code>true</code> if window was initialized successfully
+     * @return <code>true</code> if the window was initialized successfully
      */
     public boolean IsWindowReady(){
         return window.ready;
     }
 
     /**
-     * Check if window is currently fullscreen
+     * Check if the window is currently fullscreen
      *
-     * @return <code>true</code> if window is fullscreen
+     * @return <code>true</code> if the window is fullscreen
      */
     public boolean IsWindowFullscreen(){
         return window.fullscreen;
     }
 
     /**
-     * Check if window is currently hidden
+     * Check if the window is currently hidden
      *
-     * @return <code>true</code> if window is hidden
+     * @return <code>true</code> if the window is hidden
      */
     public boolean IsWindowHidden(){
         return ((window.flags & FLAG_WINDOW_HIDDEN) > 0);
     }
 
-    // Check if window has been minimized
+    /**
+     * Check if the window has been minimized
+     */
     public boolean IsWindowMinimized(){
         return ((window.flags & FLAG_WINDOW_MINIMIZED) > 0);
     }
 
-    // Check if window has been maximized (only PLATFORM_DESKTOP)
+    /**
+     * Check if the window has been maximized (only PLATFORM_DESKTOP)
+     * @return <code>true</code> if the window is maximized.
+     */
     public boolean IsWindowMaximized(){
         return ((window.flags & FLAG_WINDOW_MAXIMIZED) > 0);
     }
 
-    // Check if window has the focus
+    /**
+     * Check if the window has the focus
+     * @return <code>true</code> if the window is focused.
+     */
     public boolean IsWindowFocused(){
-        return ((window.flags & FLAG_WINDOW_UNFOCUSED) == 0);      // TODO!
+        return ((window.flags & FLAG_WINDOW_UNFOCUSED) == 0);
     }
 
-    // Check if window has been resizedLastFrame
+    /**
+     * Check if the window has been resized since the last frame.
+     * @return <code>true</code> if the window was resized since the last frame.
+     */
     public boolean IsWindowResized(){
         return window.resizedLastFrame;
     }
@@ -325,8 +331,8 @@ public class rCore{
         if (!window.fullscreen){
             // Store previous window position (in case we exit fullscreen)
             Vector2 windowPositionVector = GetWindowPosition();
-            window.position.setX(windowPositionVector.getX());
-            window.position.setY(windowPositionVector.getY());
+            window.position.setX(windowPositionVector.x);
+            window.position.setY(windowPositionVector.y);
 
 
             int monitorCount;
@@ -340,23 +346,23 @@ public class rCore{
                 window.setFullscreen(false);
                 window.flags &= ~FLAG_FULLSCREEN_MODE;
 
-                glfwSetWindowMonitor(window.handle, GetCurrentMonitor(), 0, 0, window.screen.getWidth(),
-                                     window.screen.getHeight(), GLFW_DONT_CARE); // NOTE: Resizing not allowed by default!
+                glfwSetWindowMonitor(window.handle, GetCurrentMonitor(), 0, 0, window.screen.width,
+                                     window.screen.height, GLFW_DONT_CARE); // NOTE: Resizing not allowed by default!
                 return;
             }
             else {
                 window.setFullscreen(true);
                 window.flags |= FLAG_FULLSCREEN_MODE;
 
-                glfwSetWindowMonitor(window.handle, monitor, 0, 0, window.screen.getWidth(), window.screen.getHeight(), GLFW_DONT_CARE);
+                glfwSetWindowMonitor(window.handle, monitor, 0, 0, window.screen.width, window.screen.height, GLFW_DONT_CARE);
             }
         }
         else{
             window.setFullscreen(false);
             window.flags &= ~FLAG_FULLSCREEN_MODE;
 
-            glfwSetWindowMonitor(window.handle, 0, (int) window.position.getX(), (int) window.position.getY(),
-                                 window.screen.getWidth(), window.screen.getHeight(), GLFW_DONT_CARE);
+            glfwSetWindowMonitor(window.handle, 0, (int) window.position.x, (int) window.position.y,
+                                 window.screen.width, window.screen.height, GLFW_DONT_CARE);
         }
 
         // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
@@ -373,8 +379,8 @@ public class rCore{
 
         boolean wasOnFullscreen = false;
         if (window.fullscreen) {
-            window.previousPosition.setX(window.position.getX());
-            window.previousPosition.setY(window.position.getY());
+            window.previousPosition.setX(window.position.x);
+            window.previousPosition.setY(window.position.y);
             ToggleFullscreen();
             wasOnFullscreen = true;
         }
@@ -394,12 +400,12 @@ public class rCore{
                     // setting it here
                     if (!wasOnFullscreen) {
                         Vector2 windowPositionVector = GetWindowPosition();
-                        window.previousPosition.setX(windowPositionVector.getX());
-                        window.previousPosition.setY(windowPositionVector.getY());
+                        window.previousPosition.setX(windowPositionVector.x);
+                        window.previousPosition.setY(windowPositionVector.y);
                     }
 
-                    window.previousScreen.setWidth(window.screen.getWidth());
-                    window.previousScreen.setHeight(window.screen.getHeight());
+                    window.previousScreen.setWidth(window.screen.width);
+                    window.previousScreen.setHeight(window.screen.height);
 
                     // Set undecorated and topmost modes and flags
                     glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
@@ -477,7 +483,10 @@ public class rCore{
         }
     }
 
-    // Set window configuration state using flags
+    /**
+     * Set the window's configuration state using flags.
+     * @param flags <code>int</code> whose binary value represents the flags to set.
+     */
     public void SetWindowState(int flags){
         // Check previous state and requested state to apply required changes
         // NOTE: In most cases the functions already change the flags internally
@@ -554,7 +563,6 @@ public class rCore{
         }
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
-
         if (((window.flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) != (flags & FLAG_WINDOW_MOUSE_PASSTHROUGH)) && ((flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0)) {
             glfwSetWindowAttrib(window.handle, GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
             window.flags |= FLAG_WINDOW_MOUSE_PASSTHROUGH;
@@ -573,7 +581,10 @@ public class rCore{
         }
     }
 
-    // Clear window configuration state flags
+    /**
+     * Clear window configuration state flags
+     * @param flags <code>int</code> whose binary value represents the flags to clear.
+     */
     public void ClearWindowState(int flags){
         // Check previous state and requested state to apply required changes
         // NOTE: In most cases the functions already change the flags internally
@@ -663,8 +674,10 @@ public class rCore{
         }
     }
 
-    // Set icon for window (only PLATFORM_DESKTOP)
-    // NOTE: Image must be in RGBA format, 8bit per channel
+    /**
+     * Set icon for window (only PLATFORM_DESKTOP)
+     * @param image RGBA, 8 bits per channel formatted image
+     */
     public void SetWindowIcon(Image image){
         if (image.getFormat() == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
             byte[] imgData = image.getData();
@@ -688,12 +701,13 @@ public class rCore{
         }
     }
 
-
-    // Set icon for window (multiple images, only PLATFORM_DESKTOP)
-    // NOTE 1: Images must be in RGBA format, 8bit per channel
-    // NOTE 2: The multiple images are used depending on provided sizes
-    // Standard Windows icon sizes: 256, 128, 96, 64, 48, 32, 24, 16
-    @SuppressWarnings("resource") // Reason: Buffer is explicitly allocated and freed
+    /**
+     * Set icons for window (multiple images, only PLATFORM_DESKTOP)<br/>
+     * The images are used depending on provided sizes<br/>
+     * Standard Windows icon sizes: 256, 128, 96, 64, 48, 32, 24, 16
+     *
+     * @param images <code>List</code> of RGBA, 8 bits per channel formatted images to set as window icons.
+     */
     public void SetWindowIcons(List<Image> images){
         int count = images.size();
 
@@ -723,18 +737,37 @@ public class rCore{
         }
     }
 
-    // Set title for window (only PLATFORM_DESKTOP)
+    /**
+     * Set title for window (only PLATFORM_DESKTOP)
+     *
+     * @param title String to be displayed on window title bar
+     */
     public void SetWindowTitle(String title){
         window.title = title;
         glfwSetWindowTitle(window.handle, title);
     }
 
-    // Set window position on screen (windowed mode)
+    /**
+     * Set window position on screen (windowed mode)
+     * @param x position on the x-axis of the screen for the top-left corner of the window
+     * @param y position on the y-axis of the screen for the top-left corner of the window
+     */
     public void SetWindowPosition(int x, int y){
         glfwSetWindowPos(window.handle, x, y);
     }
 
-    // Set monitor for the current window (fullscreen mode)
+    /**
+     * Set window position on screen (windowed mode)
+     * @param position x,y coordinate pair for the top-left corner of the window
+     */
+    public void SetWindowPosition(Vector2 position) {
+        SetWindowPosition((int) position.x, (int) position.y);
+    }
+
+    /**
+     * Set monitor for the current window (fullscreen mode)
+     * @param monitor GLFW monitor handle to display on.
+     */
     public void SetWindowMonitor(long monitor){
         int monitorCount = 0;
         PointerBuffer monitors = glfwGetMonitors();
@@ -750,7 +783,9 @@ public class rCore{
         }
     }
 
-    // Set the window size limits based on the current screenMin and screenMax
+    /**
+     * Set the window size limits based on the current screenMin and screenMax
+     */
     private void UpdateWindowSizeLimits(){
         int minWidth = window.screenMin.width == 0 ? GLFW_DONT_CARE : window.screenMin.width;
         int minHeight = window.screenMin.height == 0 ? GLFW_DONT_CARE : window.screenMin.height;
@@ -760,7 +795,11 @@ public class rCore{
         glfwSetWindowSizeLimits(window.handle, minWidth, minHeight, maxWidth, maxHeight);
     }
 
-    // Set window minimum dimensions (FLAG_WINDOW_RESIZABLE)
+    /**
+     * Set window minimum dimensions (FLAG_WINDOW_RESIZABLE)
+     * @param width minimum width (in pixels) the window must be
+     * @param height minimum height (in pixels) the window must be
+     */
     public void SetWindowMinSize(int width, int height){
         window.screenMin.width = width;
         window.screenMin.height = height;
@@ -768,7 +807,11 @@ public class rCore{
         UpdateWindowSizeLimits();
     }
 
-    // Set window maximum dimensions (FLAG_WINDOW_RESIZABLE)
+    /**
+     * Set window maximum dimensions (FLAG_WINDOW_RESIZABLE)
+     * @param width maximum width (in pixels) the window must be
+     * @param height maximum height (in pixels) the window must be
+     */
     public void SetWindowMaxSize(int width, int height){
         window.screenMax.width = width;
         window.screenMax.height = height;
@@ -776,12 +819,21 @@ public class rCore{
         UpdateWindowSizeLimits();
     }
 
-    // Set window dimensions
+    /**
+     * Set window dimensions
+     * @param width width (in pixels) the window should be
+     * @param height height (in pixels) the window should be
+     */
     public void SetWindowSize(int width, int height){
         glfwSetWindowSize(window.handle, width, height);
     }
 
-    // Set window opacity, value opacity is between 0.0 and 1.0
+    /**
+     * Set window opacity
+     * @param opacity Normalised (between 0.0 and 1.0) value.<br/>
+     *                <code>1.0f</code> is fully opaque <br/>
+     *                <code>0.0f</code> is fully transparent
+     */
     public void SetWindowOpacity(float opacity) {
         if(PLATFORM_DESKTOP) {
             if (opacity >= 1.0f) {
@@ -795,7 +847,9 @@ public class rCore{
         }
     }
 
-    // Set window focused (only PLATFORM_DESKTOP)
+    /**
+     * Set window focused (only PLATFORM_DESKTOP)
+     */
     public void SetWindowFocused(){
         glfwFocusWindow(window.handle);
     }
@@ -806,7 +860,7 @@ public class rCore{
      * @return Width of current window
      */
     public int GetScreenWidth(){
-        return window.currentFbo.getWidth();
+        return window.currentFbo.width;
     }
 
     /**
@@ -815,10 +869,13 @@ public class rCore{
      * @return Height of current window
      */
     public int GetScreenHeight(){
-        return window.currentFbo.getHeight();
+        return window.currentFbo.height;
     }
 
-    // Get current render width (it considers HiDPI)
+    /**
+     * Get current render width
+     * @return Current render width taking HiDPI into account
+     */
     public int GetRenderWidth(){
         if (__APPLE__){
             Vector2 scale = GetWindowScaleDPI();
@@ -828,7 +885,10 @@ public class rCore{
         }
     }
 
-    // Get current render height (it considers HiDPI)
+    /**
+     * Get current render height
+     * @return Current render height taking HiDPI into account
+     */
     public int GetRenderHeight(){
         if (__APPLE__){
             Vector2 scale = GetWindowScaleDPI();
@@ -838,7 +898,10 @@ public class rCore{
         }
     }
 
-    // Get native window handle
+    /**
+     *  Get native window handle
+     * @return native (GLFW) window handle
+     */
     public long GetWindowHandle(){
         if (__WINDOWS__){
             return glfwGetWin32Window(window.handle);
@@ -851,7 +914,10 @@ public class rCore{
         }
     }
 
-    // Get number of monitors
+    /**
+     * Get number of monitors
+     * @return number of monitors detected
+     */
     public int GetMonitorCount(){
         int monitorCount = 0;
         PointerBuffer pb = glfwGetMonitors();
@@ -859,7 +925,10 @@ public class rCore{
         return monitorCount;
     }
 
-    // Get number of monitors
+    /**
+     * Get monitor the window is presently on
+     * @return monitor the window is rendered on
+     */
     public int GetCurrentMonitor(){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -902,7 +971,11 @@ public class rCore{
         return 0;
     }
 
-    // Get selected monitor position
+    /**
+     * Get selected monitor position
+     * @param monitor desired monitor number
+     * @return x,y pair that defines monitor's upper left corner in pixel-space
+     */
     public Vector2 GetMonitorPosition(int monitor){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -919,7 +992,11 @@ public class rCore{
         return null;
     }
 
-    // Get selected monitor width (currently used by monitor)
+    /**
+     * Get selected monitor width (currently used by monitor)
+     * @param monitor desired monitor number
+     * @return monitor width
+     */
     public int GetMonitorWidth(int monitor){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -942,7 +1019,11 @@ public class rCore{
         return 0;
     }
 
-    // Get selected monitor height (currently used by monitor)
+    /**
+     * Get selected monitor height (currently used by monitor)
+     * @param monitor desired monitor number
+     * @return monitor height
+     */
     public int GetMonitorHeight(int monitor){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -966,7 +1047,11 @@ public class rCore{
         return 0;
     }
 
-    // Get selected monitor physical width in millimetres
+    /**
+     *  Get selected monitor physical width in millimetres
+     * @param monitor Monitor to evaluate
+     * @return Width in millimeters
+     */
     public int GetMonitorPhysicalWidth(int monitor){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -983,7 +1068,11 @@ public class rCore{
         return 0;
     }
 
-    // Get primary monitor physical height in millimetres
+    /**
+     *  Get selected monitor physical height in millimetres
+     * @param monitor Monitor to evaluate
+     * @return Height in millimeters
+     */
     public int GetMonitorPhysicalHeight(int monitor){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -999,8 +1088,12 @@ public class rCore{
         }
         return 0;
     }
-  
-    // Get selected monitor refresh rate
+
+    /**
+     * Get selected monitor refresh rate
+     * @param monitor Monitor to evaluate
+     * @return Refresh rate (in hertz)
+     */
     public int GetMonitorRefreshRate(int monitor) {
         if (PLATFORM_DESKTOP) {
             PointerBuffer monitors = glfwGetMonitors();
@@ -1024,7 +1117,10 @@ public class rCore{
         return 0;
     }
 
-    // Get window position XY on monitor
+    /**
+     *  Get window position
+     * @return x,y coordinate of window's top left corner
+     */
     public Vector2 GetWindowPosition() {
         // Memory-safe get window position
         try (MemoryStack stack = stackPush()){
@@ -1040,7 +1136,10 @@ public class rCore{
         }
     }
 
-    // Get window scale DPI factor
+    /**
+     * Get window scale DPI factor
+     * @return DPI scale factor
+     */
     public Vector2 GetWindowScaleDPI() {
         Vector2 scale = new Vector2(1f,1f);
 
@@ -1078,7 +1177,11 @@ public class rCore{
         return scale;
     }
 
-    // Get the human-readable, UTF-8 encoded name of the primary monitor
+    /**
+     * Get the human-readable, UTF-8 encoded name of the primary monitor
+     * @param monitor monitor to evaluate
+     * @return Monitor name
+     */
     public String GetMonitorName(int monitor){
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -1093,61 +1196,81 @@ public class rCore{
         return "";
     }
 
-    // Get clipboard text content
-    // NOTE: returned string is allocated and freed by GLFW
+    /**
+     * Get the clipboard content
+     * @return clipboard content
+     */
     public String GetClipboardText(){
         return glfwGetClipboardString(window.handle);
     }
 
-    // Set clipboard text content
+    /**
+     * Set clipboard text content
+     * @param text clipboard content
+     */
     public void SetClipboardText(String text){
         glfwSetClipboardString(window.handle, text);
     }
 
-    // Enable waiting for events on EndDrawing(), no automatic event polling
-
+    /**
+     * Enable waiting for events on EndDrawing(), no automatic event polling
+     */
     public void EnableEventWaiting() {
         window.eventWaiting = true;
     }
 
-    // Disable waiting for events on EndDrawing(), automatic events polling
+    /**
+     * Disable waiting for events on EndDrawing(), automatic events polling
+     */
     public void DisableEventWaiting() {
         window.eventWaiting = false;
     }
 
-    // Show mouse cursor
+    /**
+     * Show the mouse cursor
+     */
     public void ShowCursor(){
         glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         input.mouse.setCursorHidden(false);
     }
 
-    // Hides mouse cursor
+    /**
+     * Hide the mouse cursor
+     */
     public void HideCursor(){
         glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
         input.mouse.setCursorHidden(true);
     }
 
-    // Check if cursor is not visible
+    /**
+     * Check if mouse cursor is not visible
+     * @return <code>true</code> if cursor is hidden
+     */
     public boolean IsCursorHidden(){
         return input.mouse.isCursorHidden();
     }
 
-    // Enables cursor (unlock cursor)
+    /**
+     * Enable mouse cursor
+     */
     public void EnableCursor(){
         glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         input.mouse.setCursorHidden(false);
     }
 
-    // Disables cursor (lock cursor)
+    /**
+     * Disable mouse cursor
+     */
     public void DisableCursor(){
         glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         input.mouse.setCursorHidden(true);
     }
 
     /**
+     *  Check if cursor is on the current screen.
+     *
      * @return <code>true</code> if cursor is within window bounds
      */
-    // Check if cursor is on the current screen.
     public boolean IsCursorOnScreen(){
         return input.mouse.isCursorOnScreen();
     }
@@ -1279,7 +1402,10 @@ public class rCore{
         time.frameCounter++;
     }
 
-    // Initialize 2D mode with custom camera (2D)
+    /**
+     * Initialize 2D mode with custom camera
+     * @param camera rendering camera
+     */
     public void BeginMode2D(Camera2D camera){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
@@ -1292,7 +1418,9 @@ public class rCore{
         rlMultMatrixf(MatrixToFloat(window.getScreenScale()));
     }
 
-    // Ends 2D mode with custom camera
+    /**
+     * Ends 2D mode with custom camera
+     */
     public void EndMode2D(){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
@@ -1300,7 +1428,10 @@ public class rCore{
         rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
     }
 
-    // Initializes 3D mode with custom camera (3D)
+    /**
+     * Initializes 3D mode with custom camera
+     * @param camera rendering camera
+     */
     public void BeginMode3D(Camera3D camera){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
@@ -1308,7 +1439,7 @@ public class rCore{
         rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
         rlLoadIdentity();                   // Reset current matrix (projection)
 
-        float aspect = (float) window.currentFbo.getWidth() / (float) window.currentFbo.getHeight();
+        float aspect = (float) window.currentFbo.width / (float) window.currentFbo.height;
 
         if (camera.projection == CAMERA_PERSPECTIVE){
             // Setup perspective projection
@@ -1337,7 +1468,9 @@ public class rCore{
         rlgl.rlEnableDepthTest();                // Enable DEPTH_TEST for 3D
     }
 
-    // Ends 3D mode and returns to default 2D orthographic mode
+    /**
+     * Ends 3D mode and returns to default 2D orthographic mode
+     */
     public void EndMode3D(){
         rlgl.rlDrawRenderBatchActive();                         // Process internal buffers (update + draw)
 
@@ -1352,7 +1485,10 @@ public class rCore{
         rlgl.rlDisableDepthTest();               // Disable DEPTH_TEST for 2D
     }
 
-    // Initializes render texture for drawing
+    /**
+     * Initializes render texture for drawing
+     * @param target render texture target
+     */
     public void BeginTextureMode(RenderTexture target){
         rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
@@ -1381,7 +1517,9 @@ public class rCore{
         window.currentFbo.setHeight(target.texture.height);
     }
 
-    // Ends drawing to render texture
+    /**
+     * Ends drawing to render texture
+     */
     public void EndTextureMode(){
         rlgl.rlDrawRenderBatchActive();                 // Draw Buffers (Only OpenGL 3+ and ES2)
 
@@ -1395,29 +1533,45 @@ public class rCore{
         window.currentFbo.height = window.render.height;
     }
 
-    // Begin custom shader mode
+    /**
+     * Begin custom shader mode
+     * @param shader Shader to render
+     */
     public void BeginShaderMode(Shader shader){
         rlgl.rlSetShader(shader.getId(), shader.getLocs());
     }
 
-    // End custom shader mode (returns to default shader)
+    /**
+     * End custom shader mode and return to default shader
+     */
     public void EndShaderMode(){
         rlgl.rlSetShader(rlgl.rlGetShaderIdDefault(), rlgl.rlGetShaderLocsDefault());
     }
 
-    // Begin blending mode (alpha, additive, multiplied)
-    // NOTE: Only 3 blending modes supported, default blend mode is alpha
+    /**
+     * Begin blending mode (alpha, additive, multiplied)<br/>
+     * NOTE: Only 3 blending modes supported, default blend mode is alpha
+     * @param mode
+     */
     public void BeginBlendMode(int mode){
         rlgl.rlSetBlendMode(mode);
     }
 
-    // End blending mode (reset to default: alpha blending)
+    /**
+     * End blending mode <br/>
+     * Resets to default blending mode (alpha blending)
+     */
     public void EndBlendMode(){
         rlgl.rlSetBlendMode(rlBlendMode.RL_BLEND_ALPHA);
     }
 
-    // Begin scissor mode (define screen area for following drawing)
-    // NOTE: Scissor rec refers to bottom-left corner, we change it to upper-left
+    /**
+     * Begin scissor mode (define screen area for following drawing)<br/>
+     * @param x x coordinate for the top-left of the screen area
+     * @param y y coordinate for the top-left of the screen area
+     * @param width width of the screen area
+     * @param height height of the screen area
+     */
     public void BeginScissorMode(int x, int y, int width, int height){
         rlgl.rlDrawRenderBatchActive(); // Force drawing elements
 
@@ -1440,13 +1594,18 @@ public class rCore{
 
     }
 
-    // End scissor mode
+    /**
+     * End scissor mode
+     */
     public void EndScissorMode(){
         rlgl.rlDrawRenderBatchActive(); // Force drawing elements
         rlgl.rlDisableScissorTest();
     }
 
-    // Begin VR drawing configuration
+    /**
+     * Begin VR drawing configuration
+     * @param config <code>VrStereoConfig</code> to use in rendering
+     */
     public void BeginVrStereoMode(VrStereoConfig config){
         rlgl.rlEnableStereoRenderer();
 
@@ -1456,12 +1615,18 @@ public class rCore{
 
     }
 
-    // End VR drawing process (and desktop mirror)
+    /**
+     *  End VR drawing process (and desktop mirror)
+     */
     public void EndVrStereoMode(){
         rlgl.rlDisableStereoRenderer();
     }
 
-    // Load VR stereo config for VR simulator device parameters
+    /**
+     * Load VR stereo config for VR simulator device parameters
+     * @param device
+     * @return
+     */
     public VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device){
         VrStereoConfig config = new VrStereoConfig();
 
@@ -1535,11 +1700,20 @@ public class rCore{
         return config;
     }
 
-    // Unload VR stereo config properties
+    /**
+     * Unload VR stereo config properties
+     * @param config
+     */
     public void UnloadVrStereoConfig(VrStereoConfig config){
         //...
     }
 
+    /**
+     * Load shader from files and bind default locations
+     * @param vsFileName path to vertex shader file
+     * @param fsFileName path to fragment shader file
+     * @return Compiled Shader
+     */
     public Shader LoadShader(String vsFileName, String fsFileName){
         Shader shader = new Shader();
 
@@ -1548,7 +1722,7 @@ public class rCore{
 
         if (vsFileName != null){
             try{
-                vShaderStr = FileIO.LoadFileText(vsFileName);
+                vShaderStr = context.files.LoadFileText(vsFileName);
             } catch (IOException e){
                 e.printStackTrace();
             }
@@ -1556,7 +1730,7 @@ public class rCore{
 
         if (fsFileName != null){
             try{
-                fShaderStr = FileIO.LoadFileText(fsFileName);
+                fShaderStr = context.files.LoadFileText(fsFileName);
             } catch (IOException e){
                 e.printStackTrace();
             }
@@ -1567,7 +1741,12 @@ public class rCore{
         return shader;
     }
 
-    // Load shader from code strings and bind default locations
+    /**
+     * Load shader from code strings and bind default locations
+     * @param vsCode vertex shader code
+     * @param fsCode fragment shader code
+     * @return Compiled Shader
+     */
     public Shader LoadShaderFromMemory(String vsCode, String fsCode){
         Shader shader = new Shader();
 
@@ -1616,36 +1795,66 @@ public class rCore{
         return shader;
     }
 
-    // Check if a shader is ready
+    /**
+     * Check if a shader is ready
+     * @param shader Shader to check
+     * @return <code>true</code> if shader is ready for use
+     */
     public boolean IsShaderReady(Shader shader){
         return shader.getLocs() != null;
     }
 
-    // Unload shader from GPU memory (VRAM)
-    public static void UnloadShader(Shader shader){
+    /**
+     * Unload shader from GPU memory (VRAM)
+     * @param shader Shader to free
+     */
+    public void UnloadShader(Shader shader){
         if (shader.getId() != rlGetShaderIdDefault()){
             rlUnloadShaderProgram(shader.getId());
             shader.setLocs(null);
         }
     }
 
-    // Get shader uniform location
-    public static int GetShaderLocation(Shader shader, String uniformName){
+    /**
+     * Get shader uniform location
+     * @param shader Shader to evaluate
+     * @param uniformName Name of uniform to locate
+     * @return position of shader uniform
+     */
+    public int GetShaderLocation(Shader shader, String uniformName){
         return rlGetLocationUniform(shader.getId(), uniformName);
     }
 
-    // Get shader attribute location
+    /**
+     * Get shader attribute location
+     * @param shader Shader to evaluate
+     * @param attribName Name of attribute to locate
+     * @return position of shader attribute
+     */
     public int GetShaderLocationAttrib(Shader shader, String attribName){
         return rlGetLocationAttrib(shader.id, attribName);
     }
 
-    // Set shader uniform value
-    public static void SetShaderValue(Shader shader, int locIndex, float[] value, int uniformType){
+    /**
+     * Set shader uniform value
+     * @param shader
+     * @param locIndex
+     * @param value
+     * @param uniformType
+     */
+    public void SetShaderValue(Shader shader, int locIndex, float[] value, int uniformType){
         SetShaderValueV(shader, locIndex, value, uniformType, 1);
     }
 
-    // Set shader uniform value vector
-    public static void SetShaderValueV(Shader shader, int locIndex, float[] value, int uniformType, int count){
+    /**
+     * Set shader uniform value vector
+     * @param shader
+     * @param locIndex
+     * @param value
+     * @param uniformType
+     * @param count
+     */
+    public void SetShaderValueV(Shader shader, int locIndex, float[] value, int uniformType, int count){
         if(locIndex > -1) {
             rlEnableShader(shader.getId());
             rlSetUniform(locIndex, value, uniformType, count);
@@ -1653,12 +1862,17 @@ public class rCore{
         }
     }
 
-    // Set shader uniform value (matrix 4x4)
+    /**
+     * Set shader uniform value (matrix 4x4)
+     * @param shader
+     * @param locIndex
+     * @param mat
+     */
     public void SetShaderValueMatrix(Shader shader, int locIndex, Matrix mat){
         if(locIndex > -1) {
             rlEnableShader(shader.getId());
             rlSetUniformMatrix(locIndex, mat);
-            //rlDisableShader();
+            //rlDisableShader();    // Avoid resting current shader program, in case other uniforms are set
         }
     }
 
@@ -1667,23 +1881,35 @@ public class rCore{
         if(locIndex > -1) {
             rlEnableShader(shader.getId());
             rlSetUniformSampler(locIndex, texture.getId());
-            //rlDisableShader();
+            //rlDisableShader();    // Avoid resting current shader program, in case other uniforms are set
         }
     }
 
-    // Get a ray trace from screen position (i.e. mouse)
+    /**
+     * Get a ray trace from screen position (i.e. mouse)
+     * @param position
+     * @param camera
+     * @return
+     */
     public Ray GetScreenToWorldRay(Vector2 position, Camera3D camera){
         return GetScreenToWorldRayEx(position, camera, GetScreenWidth(), GetScreenHeight());
     }
 
-    // Get a ray trace from the screen position (i.e. mouse) within a specific section of the screen
+    /**
+     * Get a ray trace from the screen position (i.e. mouse) within a specific section of the screen
+     * @param position
+     * @param camera
+     * @param width
+     * @param height
+     * @return
+     */
     public Ray GetScreenToWorldRayEx(Vector2 position, Camera3D camera, int width, int height){
         Ray ray = new Ray();
 
         // Calculate normalized device coordinates
         // NOTE: y value is negative
-        float x = (2.0f * position.getX()) / (float) width - 1.0f;
-        float y = 1.0f - (2.0f * position.getY()) / (float) height;
+        float x = (2.0f * position.x) / (float) width - 1.0f;
+        float y = 1.0f - (2.0f * position.y) / (float) height;
         float z = 1.0f;
 
         // Store values in a vector
@@ -1711,14 +1937,14 @@ public class rCore{
         }
 
         // Unproject far/near points
-        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 0.0f), matProj, matView);
-        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 1.0f), matProj, matView);
+        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, 0.0f), matProj, matView);
+        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, 1.0f), matProj, matView);
 
         // Unproject the mouse cursor in the near plane
         // We need this as the source position because orthographic projects,
         // compared to perspective doesn't have a convergence point,
         // meaning that the "eye" of the camera is more like a plane than a point
-        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), -1.0f), matProj, matView);
+        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, -1.0f), matProj, matView);
 
         // Calculate normalized direction vector
         Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
@@ -1735,14 +1961,19 @@ public class rCore{
         return ray;
     }
 
-    // Returns a ray trace from mouse position
+    /**
+     * Returns a ray trace from mouse position
+     * @param mouse
+     * @param camera
+     * @return
+     */
     public Ray GetMouseRay(Vector2 mouse, Camera3D camera){
         Ray ray = new Ray();
 
         // Calculate normalized device coordinates
         // NOTE: y value is negative
-        float x = (2.0f * mouse.getX()) / (float) GetScreenWidth() - 1.0f;
-        float y = 1.0f - (2.0f * mouse.getY()) / (float) GetScreenHeight();
+        float x = (2.0f * mouse.x) / (float) GetScreenWidth() - 1.0f;
+        float y = 1.0f - (2.0f * mouse.y) / (float) GetScreenHeight();
         float z = 1.0f;
 
         // Store values in a vector
@@ -1759,7 +1990,7 @@ public class rCore{
                                         ((double) GetScreenWidth() / (double) GetScreenHeight()), RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC){
-            float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
+            float aspect = (float) window.screen.width / (float) window.screen.height;
             double top = camera.fovy / 2.0;
             double right = top * aspect;
 
@@ -1768,15 +1999,15 @@ public class rCore{
         }
 
         // Unproject far/near points
-        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 0.0f), matProj,
+        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, 0.0f), matProj,
                                              matView);
-        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), 1.0f), matProj,
+        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, 1.0f), matProj,
                                             matView);
 
         // Unproject the mouse cursor in the near plane.
         // We need this as the source position because orthographic projects, compared to perspective doesn't have a
         // convergence point, meaning that the "eye" of the camera is more like a plane than a point.
-        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.getX(), deviceCoords.getY(), -1.0f),
+        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, -1.0f),
                                                          matProj, matView);
 
         // Calculate normalized direction vector
@@ -1795,15 +2026,19 @@ public class rCore{
         return ray;
     }
 
-    // Get transform matrix for camera
+    /**
+     * Get transform matrix for camera
+     * @param camera camera to evaluate
+     * @return transform matrix
+     */
     public Matrix GetCameraMatrix(Camera3D camera){
         return MatrixLookAt(camera.position, camera.target, camera.up);
     }
 
     /**
-     * Returns camera 2d transform matrix
+     * Returns camera 2D transform matrix
      *
-     * @param camera
+     * @param camera 2D camera to evaluate
      * @return Transform matrix
      */
     public Matrix GetCameraMatrix2D(Camera2D camera){
@@ -1822,23 +2057,35 @@ public class rCore{
         //   1. Move to offset
         //   2. Rotate and Scale
         //   3. Move by -target
-        Matrix matOrigin = MatrixTranslate(-camera.target.getX(), -camera.target.getY(), 0.0f);
+        Matrix matOrigin = MatrixTranslate(-camera.target.x, -camera.target.y, 0.0f);
         Matrix matRotation = MatrixRotate(new Vector3(0.0f, 0.0f, 1.0f), camera.getRotation() * DEG2RAD);
         Matrix matScale = MatrixScale(camera.getZoom(), camera.getZoom(), 1.0f);
-        Matrix matTranslation = MatrixTranslate(camera.getOffset().getX(), camera.getOffset().getY(), 0.0f);
+        Matrix matTranslation = MatrixTranslate(camera.offset.x, camera.offset.y, 0.0f);
 
         matTransform = MatrixMultiply(MatrixMultiply(matOrigin, MatrixMultiply(matScale, matRotation)), matTranslation);
 
         return matTransform;
     }
 
-    // Returns the screen space position from a 3d world space position
+    /**
+     * Returns the screen space position from a 3d world space position
+     * @param position
+     * @param camera
+     * @return
+     */
     public Vector2 GetWorldToScreen(Vector3 position, Camera3D camera){
 
         return GetWorldToScreenEx(position, camera, GetScreenWidth(), GetScreenHeight());
     }
 
-    // Returns size position for a 3d world space position (useful for texture drawing)
+    /**
+     * Returns size position for a 3d world space position (useful for texture drawing)
+     * @param position
+     * @param camera
+     * @param width
+     * @param height
+     * @return
+     */
     public Vector2 GetWorldToScreenEx(Vector3 position, Camera3D camera, int width, int height){
         // Calculate projection matrix (from perspective instead of frustum
         Matrix matProj = MatrixIdentity();
@@ -1849,7 +2096,7 @@ public class rCore{
                                         RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC){
-            float aspect = (float) window.screen.getWidth() / (float) window.screen.getHeight();
+            float aspect = (float) window.screen.width / (float) window.screen.height;
             double top = camera.fovy / 2.0;
             double right = top * aspect;
 
@@ -1861,7 +2108,7 @@ public class rCore{
         Matrix matView = MatrixLookAt(camera.position, camera.position, camera.up);
 
         // Convert world position vector to quaternion
-        Quaternion worldPos = new Quaternion(position.getX(), position.getY(), position.getZ(), 1.0f);
+        Quaternion worldPos = new Quaternion(position.x, position.y, position.getZ(), 1.0f);
 
         // Transform world position to view
         worldPos = QuaternionTransform(worldPos, matView);
@@ -1870,30 +2117,40 @@ public class rCore{
         worldPos = QuaternionTransform(worldPos, matProj);
 
         // Calculate normalized device coordinates (inverted y)
-        Vector3 ndcPos = new Vector3(worldPos.getX() / worldPos.getW(), -worldPos.getY() / worldPos.getW(),
+        Vector3 ndcPos = new Vector3(worldPos.x / worldPos.getW(), -worldPos.y / worldPos.getW(),
                                      worldPos.getZ() / worldPos.getW());
 
         // Calculate 2d screen position vector
-        Vector2 screenPosition = new Vector2((ndcPos.getX() + 1.0f) / 2.0f * (float) width,
-                                             (ndcPos.getY() + 1.0f) / 2.0f * (float) height);
+        Vector2 screenPosition = new Vector2((ndcPos.x + 1.0f) / 2.0f * (float) width,
+                                             (ndcPos.y + 1.0f) / 2.0f * (float) height);
 
         return screenPosition;
     }
 
-    // Returns the screen space position for a 2d camera world space position
+    /**
+     * Returns the screen space position for a 2d camera world space position
+     * @param position
+     * @param camera
+     * @return
+     */
     public Vector2 GetWorldToScreen2D(Vector2 position, Camera2D camera){
         Matrix matCamera = GetCameraMatrix2D(camera);
-        Vector3 transform = Vector3Transform(new Vector3(position.getX(), position.getY(), 0), matCamera);
+        Vector3 transform = Vector3Transform(new Vector3(position.x, position.y, 0), matCamera);
 
-        return new Vector2(transform.getX(), transform.getY());
+        return new Vector2(transform.x, transform.y);
     }
 
-    // Returns the world space position for a 2d camera screen space position
+    /**
+     * Returns the world space position for a 2d camera screen space position
+     * @param position
+     * @param camera
+     * @return
+     */
     public Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera){
         Matrix invMatCamera = MatrixInvert(GetCameraMatrix2D(camera));
-        Vector3 transform = Vector3Transform(new Vector3(position.getX(), position.getY(), 0), invMatCamera);
+        Vector3 transform = Vector3Transform(new Vector3(position.x, position.y, 0), invMatCamera);
 
-        return new Vector2(transform.getX(), transform.getY());
+        return new Vector2(transform.x, transform.y);
     }
 
     /**
@@ -1949,8 +2206,8 @@ public class rCore{
     }
 
     /**
-     * Get elapsed time measure in seconds since InitTimer()
-     * NOTE: On PLATFORM_DESKTOP InitTimer() is called on InitWindow()
+     * Get elapsed time measure in seconds since InitTimer()<br/>
+     * NOTE: On PLATFORM_DESKTOP InitTimer() is called on InitWindow()<br/>
      * NOTE: On PLATFORM_DESKTOP, timer is initialized on glfwInit()
      *
      * @return Time program has been running in seconds
@@ -1959,19 +2216,24 @@ public class rCore{
         return glfwGetTime();
     }
 
-    // Setup window configuration flags (view FLAGS)
-    // NOTE: This function is expected to be called before window creation,
-    // because it sets up some flags for the window creation process.
-    // To configure window states after creation, just use SetWindowState()
+    /**
+     * Setup window configuration flags (view FLAGS)<br/>
+     * NOTE: This function is expected to be called before window creation, because it sets up some flags for the window creation process.<br/>
+     * To configure window states after creation, just use SetWindowState()
+     * @param flags
+     */
     public void SetConfigFlags(int flags){
         // Selected flags are set but not evaluated at this point,
         // flag evaluation happens at InitWindow() or SetWindowState()
         window.flags |= flags;
     }
 
-    // Takes a screenshot of current screen (saved a .png)
-    // NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB
-    // have their own internal file-systems, to download image to user file-system some additional mechanism is required
+    /**
+     * Takes a screenshot of current screen (saved a .png)<br/>
+     * NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB have their own internal file-systems,
+     * to download image to user file-system some additional mechanism is required
+     * @param fileName
+     */
     public void TakeScreenshot(String fileName){
         if (SUPPORT_MODULE_RTEXTURES) {
             if (fileName.contains("\\")) {
@@ -1999,7 +2261,10 @@ public class rCore{
         }
     }
 
-    // Set the seed for the random number generator
+    /**
+     * Set the seed for the random number generator
+      * @param seed RNG seed
+     */
     public void SetRandomSeed(long seed){
         random.setSeed(seed);
     }
@@ -2009,7 +2274,7 @@ public class rCore{
      *
      * @param min Minimum value of random number
      * @param max Maximum value of random number
-     * @return Random value between the <code>min/code> and <code>max</code>
+     * @return Random value between the <code>min</code> and <code>max</code>
      */
     public int GetRandomValue(int min, int max){
         if (min > max){
@@ -2021,7 +2286,13 @@ public class rCore{
         return (int) (random.nextDouble() * (max - min + 1) + min);
     }
 
-    // Load random values sequence, no values repeated
+    /**
+     * Load random values sequence, no values repeated
+     * @param count
+     * @param min
+     * @param max
+     * @return
+     */
     public int[] LoadRandomSequence(long count, int min, int max){
         int[] values = new int[(int) count];
 
@@ -2055,40 +2326,61 @@ public class rCore{
 
     /**
      * Unload random values sequence
-     *
-     * @implNote It is not possible (nor required) to explicitly free memory in Java. All we can do is nullify the reference
-     * to indicate to the garbage collector that the memory can be collected.
      */
     public void UnloadRandomSequence(@SuppressWarnings({"ReassignedVariable", "ParameterCanBeLocal"}) int[] sequence){
         // noinspection UnusedAssignment
         sequence = null;
     }
 
-    // Check if the file exists
+    /**
+     * Check if the file exists
+     * @param fileName
+     * @return
+     */
     public boolean FileExists(String fileName){
         File file = new File(fileName);
 
         return file.exists();
     }
 
-    // Check file extension
-    // NOTE: Extensions checking is not case-sensitive
+    /**
+     * Check file extension <br/>
+     * NOTE: Extensions checking is not case-sensitive
+     * @param fileName
+     * @param ext
+     * @return
+     */
     public boolean IsFileExtension(String fileName, String ext){
         String fileExt = GetFileExtension(fileName);
         return fileExt.equals(ext);
     }
 
-    public boolean DirectoryExists(String fileName){
-        File tmp = new File(fileName);
+    /**
+     * Check if directory exists <br/>
+     * NOTE: Extensions checking is not case-sensitive
+     * @param directoryName
+     * @return
+     */
+    public boolean DirectoryExists(String directoryName){
+        File tmp = new File(directoryName);
         return tmp.isDirectory();
     }
 
-    //Get file length in byres
+    /**
+     * Get file length in byres
+     * @param fileName
+     * @return
+     */
     public int GetFileLength(String fileName) {
         File tmp = new File(fileName);
         return (int) tmp.length();
     }
 
+    /**
+     *
+     * @param fileName
+     * @return
+     */
     public String GetFileExtension(String fileName){
         return fileName.substring(fileName.lastIndexOf('.'));
     }
@@ -2098,7 +2390,11 @@ public class rCore{
         return string.substring(right, right + charset.length());
     }
 
-    // Get filename for a path string
+    /**
+     * Get filename for a path string
+     * @param filePath
+     * @return
+     */
     public String GetFileName(String filePath){
         filePath = filePath.replace('\\', '/');
 
@@ -2110,7 +2406,11 @@ public class rCore{
         }
     }
 
-    // Get filename string without extension (uses static string)
+    /**
+     * Get filename string without extension (uses static string)
+     * @param filePath
+     * @return
+     */
     public static String GetFileNameWithoutExt(String filePath){
 
         filePath = filePath.replace('\\', '/');
@@ -2118,7 +2418,11 @@ public class rCore{
         return filePath.substring(filePath.lastIndexOf('/'), filePath.lastIndexOf('.'));
     }
 
-    // Get directory for a given filePath
+    /**
+     * Get directory for a given filePath
+     * @param filePath
+     * @return
+     */
     public static String GetDirectoryPath(String filePath) {
         String dirPath = "";
 
@@ -2132,7 +2436,11 @@ public class rCore{
         return dirPath;
     }
 
-    // Get previous directory path for a given path
+    /**
+     * Get previous directory path for a given path
+     * @param dirPath
+     * @return
+     */
     public String GetPrevDirectoryPath(String dirPath) {
         String prevDirPath = "";
 
@@ -2154,11 +2462,19 @@ public class rCore{
         return Paths.get("").toAbsolutePath() + "/";
     }
 
+    /**
+     *
+     * @return
+     */
     public String GetApplicationDirectory() {
-        return System.clearProperty("user.dir");
+        return System.getProperty("user.dir");
     }
 
-    // Get filenames in a directory path (max 512 files)
+    /**
+     * Get filenames in a directory path (max 512 files)
+     * @param dirPath
+     * @return
+     */
     public FilePathList LoadDirectoryFiles(String dirPath) {
         FilePathList files = new FilePathList();
 
@@ -2167,6 +2483,13 @@ public class rCore{
         return files;
     }
 
+    /**
+     *
+     * @param basePath
+     * @param filter
+     * @param scanSubdirs
+     * @return
+     */
     public FilePathList LoadDirectoryFilesEx(String basePath, String filter, boolean scanSubdirs) {
         FilePathList files = new FilePathList();
 
@@ -2180,7 +2503,9 @@ public class rCore{
         return files;
     }
 
-    // Clear directory files paths buffers
+    /**
+     * Clear directory files paths buffers
+     */
     public void UnloadDirectoryFiles() {
         if (dirFileCount > 0) {
             dirFilesPath = null;
@@ -2190,20 +2515,33 @@ public class rCore{
 
     // ChangeDirectory
 
-    // Check if a file has been dropped into window
+    /**
+     * Check if a file has been dropped into window
+     * @return
+     */
     public boolean IsFileDropped(){
         return (window.dropFilesCount > 0);
     }
 
-    // Get dropped files names
+    /**
+     * Get dropped files names
+     * @return
+     */
     public String[] LoadDroppedFiles(){
         return window.dropFilePaths;
     }
 
+    /**
+     * Get number of dropped files
+     * @return
+     */
     public int GetDroppedFilesCount(){
         return window.dropFilesCount;
     }
 
+    /**
+     *
+     */
     public void ClearDroppedFiles(){
         if (window.getDropFilesCount() > 0){
             for (int i = 0; i < window.getDropFilesCount(); i++){
@@ -2216,8 +2554,12 @@ public class rCore{
         }
     }
 
-    // Get file modification time (last write time)
-    public long GetFileModTime(String fileName){
+    /**
+     * Get file modification time (last write time)
+     * @param fileName
+     * @return
+     */
+    public long GetFileModTime(String fileName) {
         long result = 0L;
 
         if (FileExists(fileName)){
@@ -2233,9 +2575,14 @@ public class rCore{
     // DecompressData
 
 
-    // Encode data to Base64 string
-    public byte[] EncodeDataBase64(byte[] data, int dataLength, int outputLength)
-    {
+    /**
+     * Encode data to Base64 string
+     * @param data
+     * @param dataLength
+     * @param outputLength
+     * @return
+     */
+    public byte[] EncodeDataBase64(byte[] data, int dataLength, int outputLength) {
         char[] base64encodeTable = {
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
             'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
@@ -2273,7 +2620,12 @@ public class rCore{
         return encodedData;
     }
 
-    // Decode Base64 string data
+    /**
+     * Decode Base64 string data
+     * @param data
+     * @param outputLength
+     * @return
+     */
     public byte[] DecodeDataBase64(byte[] data, int outputLength) {
         byte[] base64decodeTable = {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2328,6 +2680,10 @@ public class rCore{
         return decodedData;
     }
 
+    /**
+     *
+     * @param url
+     */
     public void OpenURL(String url) {
         if (url.contains("'")) {
             TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid ['] character");
@@ -2367,6 +2723,7 @@ public class rCore{
     //----------------------------------------------------------------------------------
     // Module Functions Definition - Input (Keyboard, Mouse, Gamepad) Functions
     //----------------------------------------------------------------------------------
+
     // Detect if a key has been pressed once
     public boolean IsKeyPressed(int key){
         return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
@@ -2468,53 +2825,60 @@ public class rCore{
         return input.gamepad.getAxisCount();
     }
 
+    public float GetGamepadAxisMovement(int gamepad, Gamepad.GamepadAxis axis) {
+        return GetGamepadAxisMovement(gamepad, axis.GetValue());
+    }
+
     // Return axis movement vector for a gamepad
     public float GetGamepadAxisMovement(int gamepad, int axis){
         float value = 0;
 
         if ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (axis < MAX_GAMEPAD_AXIS) &&
                 (Math.abs(input.gamepad.getAxisState()[gamepad][axis]) > 0.1f)){
-            value =
-                    input.gamepad.getAxisState()[gamepad][axis];      // 0.1f = GAMEPAD_AXIS_MINIMUM_DRIFT/DELTA
+            value = input.gamepad.getAxisState()[gamepad][axis];      // 0.1f = GAMEPAD_AXIS_MINIMUM_DRIFT/DELTA
         }
 
         return value;
     }
 
+    public boolean IsGamepadButtonPressed(int gamepad, Gamepad.GamepadButton button) {
+        return IsGamepadButtonPressed(gamepad, button.GetValue());
+    }
+
     // Detect if a gamepad button has been pressed once
     public boolean IsGamepadButtonPressed(int gamepad, int button){
-        boolean pressed = false;
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad.previousButtonState[gamepad][button] == 0) && (input.gamepad.currentButtonState[gamepad][button] == 1));
+    }
 
-        pressed = (gamepad < MAX_GAMEPADS) && input.gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.previousButtonState[gamepad][button] == 0) && (input.gamepad.currentButtonState[gamepad][button] == 1);
-
-        return pressed;
+    public boolean IsGamepadButtonDown(int gamepad, Gamepad.GamepadButton button) {
+        return IsGamepadButtonDown(gamepad, button.GetValue());
     }
 
     // Detect if a gamepad button is being pressed
     public boolean IsGamepadButtonDown(int gamepad, int button){
-        boolean result = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getCurrentButtonState()[gamepad][button] == 1);
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad.getCurrentButtonState()[gamepad][button] == 1));
+    }
 
-        return result;
+    public boolean IsGamepadButtonReleased(int gamepad, Gamepad.GamepadButton button) {
+        return IsGamepadButtonReleased(gamepad, button.GetValue());
     }
 
     // Detect if a gamepad button has NOT been pressed once
     public boolean IsGamepadButtonReleased(int gamepad, int button){
-        boolean released = false;
-
-        released = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getPreviousButtonState()[gamepad][button] == 1) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 0);
-
-        return released;
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad.getPreviousButtonState()[gamepad][button] == 1) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 0));
     }
 
-    // Detect if a mouse button is NOT being pressed
-    public boolean IsGamepadButtonUp(int gamepad, int button){
-        boolean result = (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getCurrentButtonState()[gamepad][button] == 0);
+    public boolean IsGamepadButtonUp(int gamepad, Gamepad.GamepadButton button) {
+        return IsGamepadButtonUp(gamepad, button.GetValue());
+    }
 
-        return result;
+    // Detect if a gamepad button is NOT being pressed
+    public boolean IsGamepadButtonUp(int gamepad, int button){
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad.getCurrentButtonState()[gamepad][button] == 0));
     }
 
     // Get the last gamepad button pressed
@@ -2536,6 +2900,10 @@ public class rCore{
         return result;
     }
 
+    public boolean IsMouseButtonPressed(Mouse.MouseButton button) {
+        return IsMouseButtonPressed(button.GetValue());
+    }
+
     // Detect if a mouse button has been pressed once
     public boolean IsMouseButtonPressed(int button){
         boolean pressed = (input.mouse.getCurrentButtonState()[button] == 1) &&
@@ -2551,6 +2919,10 @@ public class rCore{
         return pressed;
     }
 
+    public boolean IsMouseButtonDown(Mouse.MouseButton button) {
+        return IsMouseButtonDown(button.GetValue());
+    }
+
     // Detect if a mouse button is being pressed
     public boolean IsMouseButtonDown(int button){
         boolean down = input.mouse.getCurrentButtonState()[button] == 1;
@@ -2562,6 +2934,10 @@ public class rCore{
         */
 
         return down;
+    }
+
+    public boolean IsMouseButtonReleased(Mouse.MouseButton button) {
+        return IsMouseButtonReleased(button.GetValue());
     }
 
     // Detect if a mouse button has been released once
@@ -2579,6 +2955,10 @@ public class rCore{
         return released;
     }
 
+    public boolean IsMouseButtonUp(Mouse.MouseButton button) {
+        return !IsMouseButtonDown(button.GetValue());
+    }
+
     // Detect if a mouse button is NOT being pressed
     public boolean IsMouseButtonUp(int button){
         return !IsMouseButtonDown(button);
@@ -2591,7 +2971,7 @@ public class rCore{
             return (int)input.Touch.position[0].x;
         #else
         */
-        return (int) ((input.mouse.currentPosition.x + input.mouse.getOffset().getX()) * input.mouse.getScale().getX());
+        return (int) ((input.mouse.currentPosition.x + input.mouse.offset.x) * input.mouse.scale.x);
         //#endif
     }
 
@@ -2602,7 +2982,7 @@ public class rCore{
             return (int)input.Touch.position[0].y;
         #else
         */
-        return (int) ((input.mouse.currentPosition.y + input.mouse.getOffset().getY()) * input.mouse.getScale().getY());
+        return (int) ((input.mouse.currentPosition.y + input.mouse.offset.y) * input.mouse.scale.y);
         //#endif
     }
 
@@ -2616,8 +2996,8 @@ public class rCore{
         position = GetTouchPosition(0);
         #else
         */
-        position.setX((input.mouse.currentPosition.x + input.mouse.getOffset().getX()) * input.mouse.getScale().getX());
-        position.setY((input.mouse.currentPosition.y + input.mouse.getOffset().getY()) * input.mouse.getScale().getY());
+        position.x = ((input.mouse.currentPosition.x + input.mouse.offset.x) * input.mouse.scale.x);
+        position.y = ((input.mouse.currentPosition.y + input.mouse.offset.y) * input.mouse.scale.y);
         //#endif
 
         return position;
@@ -2635,7 +3015,9 @@ public class rCore{
 
     // Set mouse position XY
     public void SetMousePosition(int x, int y){
-        input.mouse.setCurrentPosition(new Vector2((float) x, (float) y));
+        input.mouse.currentPosition = new Vector2(x, y);
+        input.mouse.previousPosition = input.mouse.currentPosition;
+
         // NOTE: emscripten not implemented
         glfwSetCursorPos(window.handle, input.mouse.currentPosition.x, input.mouse.currentPosition.y);
     }
@@ -2669,6 +3051,10 @@ public class rCore{
     // Get mouse wheel movement X/Y as a vector
     public Vector2 GetMouseWheelMoveV() {
        return input.mouse.currentWheelMove;
+    }
+
+    public void SetMouseCursor(Mouse.MouseCursor cursor) {
+        SetMouseCursor(cursor.GetValue());
     }
 
     // Set mouse cursor
@@ -2747,16 +3133,22 @@ public class rCore{
     // Module specific Functions Definition
     //----------------------------------------------------------------------------------
 
-    // Initialize display device and framebuffer
-    // NOTE: width and height represent the screen (framebuffer) desired size, not actual display size
-    // If width or height are 0, default display size will be used for framebuffer size
-    // NOTE: returns false in case graphic device could not be created
-    boolean InitGraphicsDevice(int width, int height){
+    /**
+     * Initialize display device and framebuffer <br/>
+     * NOTE: width and height represent the screen (framebuffer) desired size, not actual display size.
+     * If width or height are 0, default display size will be used for framebuffer size <br/>
+     * NOTE: returns false in case graphic device could not be created
+     *
+     * @param width
+     * @param height
+     * @return
+     */
+    protected boolean InitGraphicsDevice(int width, int height){
         window.screen.setWidth(width);            // User desired width
         window.screen.setHeight(height);          // User desired height
         window.setScreenScale(MatrixIdentity());  // No draw scaling required by default
 
-        // NOTE: Framebuffer (render area - window.render.getWidth(), window.render.height) could include black bars...
+        // NOTE: Framebuffer (render area - window.render.width, window.render.height) could include black bars...
         // ...in top-down or left-right to match display aspect ratio (no weird scaling)
 
         glfwSetErrorCallback(callbacks.errorCallback);
@@ -2778,12 +3170,12 @@ public class rCore{
         window.display.setHeight(mode.height());
 
         // Screen size security check
-        if (window.screen.getWidth() == 0){
-            window.screen.setWidth(window.display.getWidth());
+        if (window.screen.width == 0){
+            window.screen.setWidth(window.display.width);
         }
 
-        if (window.screen.getHeight() == 0){
-            window.screen.setHeight(window.display.getHeight());
+        if (window.screen.height == 0){
+            window.screen.setHeight(window.display.height);
         }
 
         glfwDefaultWindowHints();                       // Set default windows hints
@@ -2936,21 +3328,21 @@ public class rCore{
                 window.position.y = window.display.height/2 - window.screen.height/2;
             }
 
-            if (window.position.getX() < 0){
+            if (window.position.x < 0){
                 window.position.setX(0);
             }
-            if (window.position.getX() < 0){
+            if (window.position.x < 0){
                 window.position.setY(0);
             }
 
-            // Obtain recommended window.display.getWidth()/window.display.getHeight() from a valid videomode for the monitor
+            // Obtain recommended window.display.width/window.display.height from a valid videomode for the monitor
             int count = 0;
             GLFWVidMode.Buffer modes = glfwGetVideoModes(glfwGetPrimaryMonitor());
             count = modes != null ? modes.sizeof() : 0;
-            // Get the closest video mode to desired window.screen.getWidth()/window.screen.getHeight()
+            // Get the closest video mode to desired window.screen.width/window.screen.height
             for (int i = 0; i < count; i++){
-                if (modes.width() >= window.screen.getWidth()){
-                    if (modes.height() >= window.screen.getHeight()){
+                if (modes.width() >= window.screen.width){
+                    if (modes.height() >= window.screen.height){
                         window.display.setWidth(modes.width());
                         window.display.setHeight(modes.height());
                         break;
@@ -2958,7 +3350,7 @@ public class rCore{
                 }
             }
 
-            TRACELOG(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.getWidth() + "x" + window.display.getHeight());
+            TRACELOG(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.width + "x" + window.display.height);
 
             // NOTE: ISSUE: Closest video mode could not match monitor aspect-ratio, for example,
             // for a desired screen size of 800x450 (16:9), the closest supported video mode is 800x600 (4:3),
@@ -2967,16 +3359,16 @@ public class rCore{
 
             // Try to setup the most appropriate fullscreen framebuffer for the requested screenWidth/screenHeight
             // It considers device display resolution mode and setups a framebuffer with black bars if required (render size/offset)
-            // Modified global variables: window.screen.getWidth()/window.screen.getHeight() - window.render.getWidth()/window.render.getHeight() - window.renderOffset.x/window.renderOffset.y - window.screenScale
+            // Modified global variables: window.screen.width/window.screen.height - window.render.width/window.render.height - window.renderOffset.x/window.renderOffset.y - window.screenScale
             // TODO: It is a quite cumbersome solution to display size vs requested size, it should be reviewed or removed...
             // HighDPI monitors are properly considered in a following similar function: SetupViewport()
-            SetupFramebuffer(window.display.getWidth(), window.display.getHeight());
+            SetupFramebuffer(window.display.width, window.display.height);
 
-            window.handle = glfwCreateWindow(window.display.getWidth(), window.display.getHeight(),
+            window.handle = glfwCreateWindow(window.display.width, window.display.height,
                                              (window.title != null) ? window.title : " ", glfwGetPrimaryMonitor(), 0);
 
             // NOTE: Full-screen change, not working properly...
-            //glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.getWidth(), window.screen.getHeight(), GLFW_DONT_CARE);
+            //glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.width, window.screen.height, GLFW_DONT_CARE);
         }
         else{
             if (PLATFORM_DESKTOP) {
@@ -2987,12 +3379,12 @@ public class rCore{
             }
 
             // No-fullscreen window creation
-            window.handle = glfwCreateWindow(window.screen.getWidth(), window.screen.getHeight(), (window.title != null)
+            window.handle = glfwCreateWindow(window.screen.width, window.screen.height, (window.title != null)
                     ? window.title : " ", NULL, NULL);
 
             if (window.handle > 0){
-                window.render.setWidth(window.screen.getWidth());
-                window.render.setHeight(window.screen.getHeight());
+                window.render.setWidth(window.screen.width);
+                window.render.setHeight(window.screen.height);
             }
         }
 
@@ -3004,11 +3396,11 @@ public class rCore{
         else{
             TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
             TRACELOG(LOG_INFO,
-                     "    > Display size: " + window.display.getWidth() + " x " + window.display.getHeight());
+                     "    > Display size: " + window.display.width + " x " + window.display.height);
             TRACELOG(LOG_INFO,
-                     "    > Render size:  " + window.render.getWidth() + " x " + window.render.getHeight());
+                     "    > Render size:  " + window.render.width + " x " + window.render.height);
             TRACELOG(LOG_INFO,
-                     "    > Screen size:  " + window.screen.getWidth() + " x " + window.screen.getHeight());
+                     "    > Screen size:  " + window.screen.width + " x " + window.screen.height);
             TRACELOG(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
         }
 
@@ -3042,24 +3434,24 @@ public class rCore{
         rlLoadExtensions();
 
         // Initialize OpenGL context (states and resources)
-        // NOTE: window.screen.getWidth() and window.screen.getHeight() not used, just stored as globals in rlgl
-        rlglInit(window.screen.getWidth(), window.screen.getHeight());
+        // NOTE: window.screen.width and window.screen.height not used, just stored as globals in rlgl
+        rlglInit(window.screen.width, window.screen.height);
 
-        int fbWidth = window.render.getWidth();
-        int fbHeight = window.render.getHeight();
+        int fbWidth = window.render.width;
+        int fbHeight = window.render.height;
 
         if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
             glfwGetFramebufferSize(window.handle, new int[]{fbWidth}, new int[]{fbHeight});
 
             // Screen scaling matrix is required in case desired screen area is different from display area
-            window.screenScale = MatrixScale((float) fbWidth / window.screen.getWidth(), (float) fbHeight / window.screen.getHeight(), 1.0f);
+            window.screenScale = MatrixScale((float) fbWidth / window.screen.width, (float) fbHeight / window.screen.height, 1.0f);
         }
 
         // Setup default viewport
         SetupViewport(fbWidth, fbHeight);
 
-        window.currentFbo.setWidth(window.screen.getWidth());
-        window.currentFbo.setHeight(window.screen.getHeight());
+        window.currentFbo.setWidth(window.screen.width);
+        window.currentFbo.setHeight(window.screen.height);
 
         glfwShowWindow(window.handle);
 
@@ -3070,7 +3462,12 @@ public class rCore{
         return true;
     }
 
-     public void SetupViewport(int width, int height){
+    /**
+     *
+     * @param width
+     * @param height
+     */
+    public void SetupViewport(int width, int height){
         window.render.setWidth(width);
         window.render.setHeight(height);
 
@@ -3078,89 +3475,93 @@ public class rCore{
         // NOTE: We consider render size and offset in case black bars are required and
         // render area does not match full display area (this situation is only applicable on fullscreen mode)
         rlViewport((int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
-                        (int) (window.render.getWidth() - window.renderOffset.getX()),
-                        (int) (window.render.getHeight() - window.renderOffset.getY()));
+                        (int) (window.render.width - window.renderOffset.x),
+                        (int) (window.render.height - window.renderOffset.y));
 
         rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
         rlLoadIdentity();                   // Reset current matrix (projection)
 
         // Set orthographic projection to current framebuffer size
         // NOTE: Configured top-left corner as (0, 0)
-        rlOrtho(0, window.render.getWidth(), window.render.getHeight(), 0, 0.0f, 1.0f);
+        rlOrtho(0, window.render.width, window.render.height, 0, 0.0f, 1.0f);
 
         rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
         rlLoadIdentity();                   // Reset current matrix (modelview)
     }
 
-    // Compute framebuffer size relative to screen size and display size
-    // NOTE: Global variables window.render.width/window.render.height and window.renderOffset.x/window.renderOffset.y can be modified
-    void SetupFramebuffer(int width, int height){
-        // Calculate window.render.getWidth() and window.render.getHeight(), we have the display size (input params) and the desired screen size (global var)
-        if ((window.screen.getWidth() > window.display.getWidth()) || (window.screen.getHeight() > window.display.getHeight())){
-            TRACELOG(LOG_WARNING, "DISPLAY: Downscaling required: Screen size (" + window.screen.getWidth() + "x" +
-                    window.screen.getHeight() + ") is bigger than display size " + "(" + window.display.getWidth() + "x" +
-                    window.display.getHeight() + ")");
+    /**
+     * Compute framebuffer size relative to screen size and display size <br/>
+     * NOTE: Global variables window.render.width/window.render.height and window.renderOffset.x/window.renderOffset.y can be modified
+     * @param width
+     * @param height
+     */
+    public void SetupFramebuffer(int width, int height){
+        // Calculate window.render.width and window.render.height, we have the display size (input params) and the desired screen size (global var)
+        if ((window.screen.width > window.display.width) || (window.screen.height > window.display.height)){
+            TRACELOG(LOG_WARNING, "DISPLAY: Downscaling required: Screen size (" + window.screen.width + "x" +
+                    window.screen.height + ") is bigger than display size " + "(" + window.display.width + "x" +
+                    window.display.height + ")");
 
             // Downscaling to fit display with border-bars
-            float widthRatio = (float) window.display.getWidth() / (float) window.screen.getWidth();
-            float heightRatio = (float) window.display.getHeight() / (float) window.screen.getHeight();
+            float widthRatio = (float) window.display.width / (float) window.screen.width;
+            float heightRatio = (float) window.display.height / (float) window.screen.height;
 
             if (widthRatio <= heightRatio){
-                window.render.setWidth(window.display.getWidth());
-                window.render.setHeight(Math.round((float) window.screen.getHeight() * widthRatio));
+                window.render.setWidth(window.display.width);
+                window.render.setHeight(Math.round((float) window.screen.height * widthRatio));
                 window.renderOffset.x = 0;
-                window.renderOffset.y = (window.display.getHeight() - window.render.getHeight());
+                window.renderOffset.y = (window.display.height - window.render.height);
             }
             else{
-                window.render.setWidth((Math.round((float) window.screen.getWidth() * heightRatio)));
-                window.render.setHeight(window.display.getHeight());
-                window.renderOffset.x = (window.display.getWidth() - window.render.getWidth());
+                window.render.setWidth((Math.round((float) window.screen.width * heightRatio)));
+                window.render.setHeight(window.display.height);
+                window.renderOffset.x = (window.display.width - window.render.width);
                 window.renderOffset.y = 0;
             }
 
             // Screen scaling required
-            float scaleRatio = (float) window.render.getWidth() / (float) window.screen.getWidth();
+            float scaleRatio = (float) window.render.width / (float) window.screen.width;
             window.screenScale = MatrixScale(scaleRatio, scaleRatio, 1.0f);
 
             // NOTE: We render to full display resolution!
             // We just need to calculate above parameters for downscale matrix and offsets
-            window.render.setWidth(window.display.getWidth());
-            window.render.setHeight(window.display.getHeight());
+            window.render.setWidth(window.display.width);
+            window.render.setHeight(window.display.height);
 
             TRACELOG(LOG_WARNING, "DISPLAY: Downscale matrix generated, content will be rendered at (" +
-                    window.render.getWidth() + "x" + window.render.getHeight() + ")");
+                    window.render.width + "x" + window.render.height + ")");
         }
-        else if ((window.screen.getWidth() < window.display.getWidth()) || (window.screen.getHeight() < window.display.getHeight())){
+        else if ((window.screen.width < window.display.width) || (window.screen.height < window.display.height)){
             // Required screen size is smaller than display size
-            TRACELOG(LOG_INFO, "DISPLAY: Upscaling required: Screen size (" + window.screen.getWidth() + "x" +
-                    window.screen.getHeight() + ") smaller than display size (" + window.display.getWidth() + "x" +
-                    window.display.getHeight() + ")");
+            TRACELOG(LOG_INFO, "DISPLAY: Upscaling required: Screen size (" + window.screen.width + "x" +
+                    window.screen.height + ") smaller than display size (" + window.display.width + "x" +
+                    window.display.height + ")");
 
-            if ((window.screen.getWidth() == 0) || (window.screen.getHeight() == 0)){
-                window.screen.setWidth(window.display.getWidth());
-                window.screen.setHeight(window.display.getHeight());
+            if ((window.screen.width == 0) || (window.screen.height == 0)){
+                window.screen.setWidth(window.display.width);
+                window.screen.setHeight(window.display.height);
             }
 
             // Upscaling to fit display with border-bars
-            float displayRatio = (float) window.display.getWidth() / (float) window.display.getHeight();
-            float screenRatio = (float) window.screen.getWidth() / (float) window.screen.getHeight();
+            float displayRatio = (float) window.display.width / (float) window.display.height;
+            float screenRatio = (float) window.screen.width / (float) window.screen.height;
 
             if (displayRatio <= screenRatio){
-                window.render.setWidth(window.screen.getWidth());
-                window.render.setHeight(Math.round((float) window.screen.getWidth() / displayRatio));
+                window.render.setWidth(window.screen.width);
+                window.render.setHeight(Math.round((float) window.screen.width / displayRatio));
                 window.renderOffset.setX(0);
-                window.renderOffset.setY((window.render.getHeight() - window.screen.getHeight()));
+                window.renderOffset.setY((window.render.height - window.screen.height));
             }
             else{
-                window.render.setWidth(Math.round((float) window.screen.getHeight() * displayRatio));
-                window.render.setHeight(window.screen.getHeight());
-                window.renderOffset.setX((window.render.getWidth() - window.screen.getWidth()));
+                window.render.setWidth(Math.round((float) window.screen.height * displayRatio));
+                window.render.setHeight(window.screen.height);
+                window.renderOffset.setX((window.render.width - window.screen.width));
                 window.renderOffset.setY(0);
             }
         }
         else{
-            window.render.setWidth(window.screen.getWidth());
-            window.render.setHeight(window.screen.getHeight());
+            window.render.setWidth(window.screen.width);
+            window.render.setHeight(window.screen.height);
             window.renderOffset.setX(0);
             window.renderOffset.setY(0);
         }
@@ -3169,7 +3570,7 @@ public class rCore{
     /**
      * Initialize hi-resolution timer
      */
-    void InitTimer(){
+    public void InitTimer(){
         time.setPrevious(GetTime());       // Get time as double
     }
 
@@ -3198,7 +3599,7 @@ public class rCore{
     /**
      * Poll (store) all input events
      */
-    void PollInputEvents(){
+    public void PollInputEvents(){
         // Reset keys/chars pressed registered
         input.keyboard.setKeyPressedQueueCount(0);
         input.keyboard.setCharPressedQueueCount(0);
@@ -3210,7 +3611,6 @@ public class rCore{
             input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
             input.keyboard.keyRepeatInFrame[i] = false;
         }
-        ;
 
         // Register previous mouse states
         for (int i = 0; i < input.mouse.previousButtonState.length; i++) {
@@ -3220,6 +3620,9 @@ public class rCore{
         // Register previous mouse wheel state
         input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());
         input.mouse.setCurrentWheelMove(new Vector2());
+
+        // Register previous mouse position
+        input.mouse.previousPosition = input.mouse.currentPosition;
 
         // Check if gamepads are ready
         // NOTE: We do it here in case of disconnection
@@ -3239,13 +3642,12 @@ public class rCore{
                 // NOTE: There is no callback available, so we get it manually
                 // Get remapped buttons
                 GLFWGamepadState state = new GLFWGamepadState(ByteBuffer.allocateDirect(40));
-                glfwGetGamepadState(i, state); // This remaps all gamepads, so they have their buttons mapped like an xbox
-                // controller
+                glfwGetGamepadState(i, state); // This remaps all gamepads, so they have their buttons mapped like an xbox controller
 
                 ByteBuffer buttons = state.buttons();
 
                 for (int k = 0; (buttons != null) && (k < GLFW_GAMEPAD_BUTTON_DPAD_LEFT + 1) && (k < MAX_GAMEPAD_BUTTONS); k++){
-                    int button = -1;
+                    Gamepad.GamepadButton button = null;
 
                     switch (k) {
                         case GLFW_GAMEPAD_BUTTON_Y:
@@ -3301,13 +3703,13 @@ public class rCore{
                             break;
                     }
 
-                    if (button != -1) {  // Check for valid button
+                    if (button != null) {  // Check for valid button
                         if (buttons.get(k) == GLFW_PRESS) {
-                            input.gamepad.currentButtonState[i][button] = 1;
-                            input.gamepad.lastButtonPressed = button;
+                            input.gamepad.currentButtonState[i][button.GetValue()] = 1;
+                            input.gamepad.lastButtonPressed = button.GetValue();
                         }
                         else {
-                            input.gamepad.currentButtonState[i][button] = 0;
+                            input.gamepad.currentButtonState[i][button.GetValue()] = 0;
                         }
                     }
                 }
@@ -3320,10 +3722,10 @@ public class rCore{
                 }
 
                 // Register buttons for 2nd triggers (because GLFW doesn't count these as buttons but rather axis)
-                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_LEFT_TRIGGER] > 0.1 ? 0 : 1);
-                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.1 ? 0 : 1);
+                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2.GetValue()] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_LEFT_TRIGGER.GetValue()] > 0.1 ? 0 : 1);
+                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2.GetValue()] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_RIGHT_TRIGGER.GetValue()] > 0.1 ? 0 : 1);
 
-                input.gamepad.setAxisCount(GLFW_GAMEPAD_AXIS_LAST);
+                input.gamepad.setAxisCount(GLFW_GAMEPAD_AXIS_LAST + 1);
             }
         }
 
@@ -3358,7 +3760,7 @@ public class rCore{
     /**
      * Swap back buffer with front buffer (screen drawing)
      */
-    void SwapScreenBuffer(){
+    public void SwapScreenBuffer(){
         glfwSwapBuffers(window.handle);
     }
 
@@ -3421,7 +3823,7 @@ public class rCore{
         // Load events (text file)
         String[] repFile = new String[0];
         try{
-            repFile = FileIO.LoadFileText(fileName).split("\n");
+            repFile = context.files.LoadFileText(fileName).split("\n");
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -3455,7 +3857,10 @@ public class rCore{
         TRACELOG(LOG_WARNING, "Events loaded: " + eventCount);
     }
 
-    // Export recorded events into a file
+    /**
+     * Export recorded events into a file
+     * @param fileName
+     */
     public void ExportAutomationEvents(String fileName) {
         // Save as binary
         /*
@@ -3483,7 +3888,7 @@ public class rCore{
             }
 
             try{
-                FileIO.SaveFileText(fileName, repFileText.toString());
+                context.files.SaveFileText(fileName, repFileText.toString());
             } catch (IOException e){
                 e.printStackTrace();
             }
@@ -3491,8 +3896,10 @@ public class rCore{
         }
     }
 
-    // EndDrawing() -> After PollInputEvents()
-    // Check event in current frame and save into the events[i] array
+    /**
+     * Check event in current frame and save into the events[i] array
+     * @param frame
+     */
     public void RecordAutomationEvent(int frame) {
         for (int key = 0; key < MAX_KEYBOARD_KEYS; key++) {
             // INPUT_KEY_UP (only saved once)
@@ -3684,11 +4091,14 @@ public class rCore{
         */
     }
 
-    // Play automation event
+    /**
+     * Play automation event
+     * @param frame
+     */
     public void PlayAutomationEvent(int frame) {
         for (int i = 0; i < eventCount; i++) {
             if (events.get(i).frame == frame) {
-                switch (values()[events.get(i).type]) {
+                switch (AutomationEvent.AutomationEventType.values()[events.get(i).type]) {
                     // Input events
                     case INPUT_KEY_UP:    // param[0]: key
                         input.keyboard.currentKeyState[events.get(i).params[0]] = false;

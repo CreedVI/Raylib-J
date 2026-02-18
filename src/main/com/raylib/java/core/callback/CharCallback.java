@@ -24,11 +24,11 @@ public class CharCallback extends GLFWCharCallback {
         // Ref: https://www.glfw.org/docs/latest/input_guide.html#input_char
 
         // Check if there is space available in the queue
-        if (context.getInput().keyboard.getCharPressedQueueCount() < MAX_CHAR_PRESSED_QUEUE){
+        if (context.input.keyboard.getCharPressedQueueCount() < MAX_CHAR_PRESSED_QUEUE){
             // Add character to the queue
-            context.getInput().keyboard.getCharPressedQueue()[context.getInput().keyboard.getCharPressedQueueCount()] =
+            context.input.keyboard.getCharPressedQueue()[context.input.keyboard.getCharPressedQueueCount()] =
                     codepoint;
-            context.getInput().keyboard.setCharPressedQueueCount(context.getInput().keyboard.getCharPressedQueueCount() + 1);
+            context.input.keyboard.setCharPressedQueueCount(context.input.keyboard.getCharPressedQueueCount() + 1);
         }
     }
 }

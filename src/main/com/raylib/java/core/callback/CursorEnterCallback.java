@@ -16,6 +16,6 @@ public class CursorEnterCallback extends GLFWCursorEnterCallback {
     @Override
     public void invoke(long window, boolean entered){
         TRACELOG(LOG_DEBUG, "Cursor Enter Callback Triggered");
-        context.getInput().mouse.setCursorOnScreen(entered);
+        context.input.mouse.setCursorOnScreen(entered);
     }
 }

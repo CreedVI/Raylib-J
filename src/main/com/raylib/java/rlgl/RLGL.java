@@ -4,12 +4,9 @@ import com.raylib.java.structs.Matrix;
 import com.raylib.java.rlgl.data.rlglData;
 import com.raylib.java.structs.Texture2D;
 import com.raylib.java.utils.Tracelog;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;

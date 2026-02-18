@@ -2,14 +2,40 @@ package com.raylib.java.core;
 
 public class Time{
 
-    double current;                     // Current time measure
-    double previous;                    // Previous time measure
-    double update;                      // Time measure for frame update
-    double draw;                        // Time measure for frame draw
-    double frame;                       // Time measure for one frame
-    double target;                      // Desired time for one frame, if 0 not applied
+    /**
+     * Current time measure
+     */
+    double current;
 
-    int frameCounter;          // Frame counter
+    /**
+     *  Previous time measure
+     */
+    double previous;
+
+    /**
+     * Time measure for frame update
+     */
+    double update;
+
+    /**
+     * Time measure for frame draw
+     */
+    double draw;
+
+    /**
+     * Time measure for one frame
+     */
+    double frame;
+
+    /**
+     * Desired time for one frame, if 0 not applied
+     */
+    double target;
+
+    /**
+     * Frame counter
+     */
+    int frameCounter;
 
     public Time(){
 

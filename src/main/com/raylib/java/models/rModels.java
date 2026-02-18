@@ -15,10 +15,6 @@ import com.raylib.java.raymath.Raymath;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.iqm.*;
-import com.raylib.java.raymath.*;
-import com.raylib.java.structs.*;
-import com.raylib.java.structs.iqm.*;
-import com.raylib.java.utils.FileIO;
 import com.raylib.java.utils.OBJLoader;
 import com.raylib.java.utils.VoxLoader;
 import org.lwjgl.util.par.ParShapes;
@@ -1643,7 +1639,7 @@ public class rModels{
 
             // NOTE: Text data length exported is determined by '\0' (null) character
             try {
-                success = FileIO.SaveFileText(fileName, txtData.toString());
+                success = context.files.SaveFileText(fileName, txtData.toString());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -1712,11 +1708,11 @@ public class rModels{
                 OBJLoader loader = new OBJLoader();
                 String fileText;
                 try {
-                    fileText = FileIO.LoadFileText(fileName);
+                    fileText = context.files.LoadFileText(fileName);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                boolean result = loader.ReadMTL(fileText);
+                boolean result = loader.ReadMTL(context, fileText);
                 if (result != true) {
                     TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
                 }
@@ -3689,7 +3685,7 @@ public class rModels{
 
         try {
             OBJLoader loader = new OBJLoader();
-            boolean success = loader.ReadOBJ(fileName, true);
+            boolean success = loader.ReadOBJ(context, fileName, true);
 
             if(success) {
                 TRACELOG(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
@@ -3818,7 +3814,7 @@ public class rModels{
     public Model LoadIQM(String fileName) {
         Model model = new Model();
 
-        try (ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))){
+        try (ByteArrayInputStream fileData = new ByteArrayInputStream(context.files.LoadFileData(fileName))){
 
             int dataSize = fileData.available();
 
@@ -4214,7 +4210,7 @@ public class rModels{
 
         ModelAnimation[] animations;
 
-        try (ByteArrayInputStream fileData = new ByteArrayInputStream(FileIO.LoadFileData(fileName))) {
+        try (ByteArrayInputStream fileData = new ByteArrayInputStream(context.files.LoadFileData(fileName))) {
             fileSize = fileData.available();
 
             IQMHeader iqmHeader = new IQMHeader();
@@ -5776,7 +5772,7 @@ public class rModels{
 
         // Read vox file into buffer
         try {
-            fileData = FileIO.LoadFileData(fileName);
+            fileData = context.files.LoadFileData(fileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

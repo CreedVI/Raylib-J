@@ -7,8 +7,6 @@ import com.raylib.java.structs.Rectangle;
 import com.raylib.java.structs.Image;
 import com.raylib.java.structs.Font;
 import com.raylib.java.structs.GlyphInfo;
-import com.raylib.java.utils.FileIO;
-import com.raylib.java.utils.Tracelog;
 import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -349,7 +347,7 @@ public class rText{
         int fileSize = 0;
         byte[] fileData = null;
         try{
-            fileData = FileIO.LoadFileData(fileName);
+            fileData = context.files.LoadFileData(fileName);
             fileSize = fileData != null ? fileData.length : 0;
         } catch (IOException exception) {
             exception.printStackTrace();
@@ -1045,7 +1043,7 @@ public class rText{
 
         // NOTE: Text data size exported is determined by '\0' (NULL) character
         try {
-            success = FileIO.SaveFileText(fileName, txtData.toString());
+            success = context.files.SaveFileText(fileName, txtData.toString());
             TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
         }
         catch (IOException e) {
@@ -1331,8 +1329,8 @@ public class rText{
 
     // Formatting of text with variables to 'embed'
     // Note: Calls String.format()
-    public String TextFormat(String text, Object args){
-        return String.format(text, args);
+    public String TextFormat(String format, Object... args){
+        return String.format(format, args);
     }
 
     // Get integer value from text
@@ -1606,7 +1604,7 @@ public class rText{
         Font font = new Font();
 
         try{
-            fileText = FileIO.LoadFileText(fileName);
+            fileText = context.files.LoadFileText(fileName);
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -1621,18 +1619,18 @@ public class rText{
         imHeight = Integer.parseInt(fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("scaleH=") + 7,
                                                                      fileLines[lineTracker].indexOf("pages=") - 1));
         lineTracker++;
-        Tracelog.TRACELOG("FONT: [" + fileName + "] Loaded font info:");
-        Tracelog.TRACELOG("    > Base size: " + fontSize);
-        Tracelog.TRACELOG("    > Texture scale: " + imWidth + "x" + imHeight);
+        TRACELOG("FONT: [" + fileName + "] Loaded font info:");
+        TRACELOG("    > Base size: " + fontSize);
+        TRACELOG("    > Texture scale: " + imWidth + "x" + imHeight);
 
         imFileName = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("file=\"") + 6,
                                                       fileLines[lineTracker].lastIndexOf("\""));
         lineTracker++;
-        Tracelog.TRACELOG("    > Texture filename: " + imFileName);
+        TRACELOG("    > Texture filename: " + imFileName);
 
         charsCount = Integer.parseInt(fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("count=") + 6));
         lineTracker++;
-        Tracelog.TRACELOG("    > Chars count: " + charsCount);
+        TRACELOG("    > Chars count: " + charsCount);
 
         String imPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + imFileName;
 

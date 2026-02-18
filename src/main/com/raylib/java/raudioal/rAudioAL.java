@@ -1,7 +1,6 @@
 package com.raylib.java.raudioal;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.utils.FileIO;
 import org.lwjgl.openal.*;
 import org.lwjgl.stb.STBVorbisInfo;
 import org.lwjgl.system.MemoryStack;
@@ -681,7 +680,7 @@ public class rAudioAL {
         }
         else if(SUPPORT_FILEFORMAT_MP3 && context.core.IsFileExtension(fileName, ".mp3")) {
             try {
-                byte[] fileData = FileIO.LoadFileData(fileName);
+                byte[] fileData = context.files.LoadFileData(fileName);
                 fr.delthas.javamp3.Sound mp3Sound = new fr.delthas.javamp3.Sound(new ByteArrayInputStream(fileData));
 
                 byte[] mp3Data = new byte[fileData.length];
@@ -1126,7 +1125,7 @@ public class rAudioAL {
         // Loading file to memory
         byte[] fileData = new byte[0];
         try{
-            fileData = FileIO.LoadFileData(fileName);
+            fileData = context.files.LoadFileData(fileName);
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -1153,7 +1152,7 @@ public class rAudioAL {
         // Loading file to memory
         byte[] fileData = new byte[0];
         try{
-            fileData = FileIO.LoadFileData(fileName);
+            fileData = context.files.LoadFileData(fileName);
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -1189,7 +1188,7 @@ public class rAudioAL {
     public Wave LoadMP3(String filename) {
         Wave wave = new Wave();
         try {
-            byte[] fileData = FileIO.LoadFileData(filename);
+            byte[] fileData = context.files.LoadFileData(filename);
             fr.delthas.javamp3.Sound mp3Sound = new fr.delthas.javamp3.Sound(new ByteArrayInputStream(fileData));
 
             byte[] mp3Data = new byte[fileData.length];

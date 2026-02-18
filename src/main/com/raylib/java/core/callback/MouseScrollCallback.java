@@ -17,6 +17,6 @@ public class MouseScrollCallback extends GLFWScrollCallback {
     @Override
     public void invoke(long window, double xoffset, double yoffset){
         TRACELOG(LOG_DEBUG, "Scroll Callback Triggered");
-        context.getInput().mouse.setCurrentWheelMove(new Vector2((float) xoffset, (float) yoffset));
+        context.input.mouse.setCurrentWheelMove(new Vector2((float) xoffset, (float) yoffset));
     }
 }

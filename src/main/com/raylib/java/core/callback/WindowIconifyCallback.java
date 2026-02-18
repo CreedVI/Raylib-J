@@ -18,10 +18,10 @@ public class WindowIconifyCallback extends GLFWWindowIconifyCallback {
     public void invoke(long window, boolean iconified){
         TRACELOG(LOG_DEBUG, "Iconify Callback Triggered");
         if (iconified){
-            context.getWindow().flags |= FLAG_WINDOW_MINIMIZED;  // The window was iconified
+            context.window.flags |= FLAG_WINDOW_MINIMIZED;  // The window was iconified
         }
         else{
-            context.getWindow().flags &= ~FLAG_WINDOW_MINIMIZED;           // The window was restored
+            context.window.flags &= ~FLAG_WINDOW_MINIMIZED;           // The window was restored
         }
     }
 }

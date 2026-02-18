@@ -1,11 +1,10 @@
 package com.raylib.java;
 
+/**
+ * Raylib configuration <br/>
+ * This module defines all the configuration flags for the different raylib modules
+ */
 public class Config{
-
-    /**
-     * Raylib configuration flags
-     * This file defines all the configuration flags for the different raylib modules.txt
-     */
 
     public static final String RAYLIB_VERSION = "4.5";
 
@@ -99,7 +98,7 @@ public class Config{
     public final static int MAX_FILEPATH_LENGTH = 512;              // Maximum length supported for file paths
     public final static int MAX_KEYBOARD_KEYS = 512;                // Maximum number of keyboard keys supported
     public final static int MAX_MOUSE_BUTTONS = 8;                  // Maximum number of mouse buttons supported
-    public final static int MAX_GAMEPADS = 4;                       // Max number of gamepads supported
+    public final static int MAX_GAMEPADS = 16;                       // Max number of gamepads supported
     public final static int MAX_GAMEPAD_AXIS = 8;                   // Max number of axis supported (per gamepad)
     public final static int MAX_GAMEPAD_BUTTONS = 32;               // Max number of buttons supported (per gamepad)
     public final static int MAX_TOUCH_POINTS = 10;                  // Maximum number of touch points supported
@@ -267,7 +266,7 @@ public class Config{
     public static boolean SUPPORT_FILEFORMAT_VOX = true;
 
     /**
-     * Support procedural mesh generation functions, uses external par_shapes.h library
+     * Support procedural mesh generation functions, uses external par_shapes.h library <br/>
      * NOTE: Some generated meshes DO NOT include generated texture coordinates
      */
     public static boolean SUPPORT_MESH_GENERATION = true;

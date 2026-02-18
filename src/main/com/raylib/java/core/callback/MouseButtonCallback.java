@@ -18,6 +18,6 @@ public class MouseButtonCallback extends GLFWMouseButtonCallback {
         TRACELOG(LOG_DEBUG, "Mouse Button Callback Triggered");
         // WARNING: GLFW could only return GLFW_PRESS (1) or GLFW_RELEASE (0) for now,
         // but future releases may add more actions (i.e. GLFW_REPEAT)
-        context.getInput().mouse.getCurrentButtonState()[button] = action;
+        context.input.mouse.getCurrentButtonState()[button] = action;
     }
 }
