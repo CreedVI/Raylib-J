@@ -19,7 +19,7 @@ public class FileIO {
 
     public FileIO(Raylib context) {
         this.context = context;
-        workingDirectory = context.core.GetApplicationDirectory();
+        workingDirectory = context.core.GetApplicationDirectory() + "/";
     }
 
     /**
