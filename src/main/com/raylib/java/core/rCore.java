@@ -8,7 +8,6 @@ import com.raylib.java.core.input.Mouse;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
 import com.raylib.java.core.rcamera.Camera3D;
-import com.raylib.java.rlgl.RLGL;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
@@ -29,6 +28,8 @@ import java.util.stream.IntStream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
+import static com.raylib.java.rlgl.RLGL.*;
+import static com.raylib.java.rlgl.RLGL.rlBlendMode.RL_BLEND_ALPHA;
 import static com.raylib.java.structs.AutomationEvent.AutomationEventType.*;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_LEFT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER;
@@ -39,7 +40,6 @@ import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_ORTHOGRAPHIC;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.raymath.Raymath.*;
-import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.utils.Tracelog.TRACELOG;
@@ -52,9 +52,7 @@ import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class rCore{
-
-    public RLGL rlgl;
+public class rCore {
 
     public final Window window;
     public final Input input;
@@ -91,7 +89,6 @@ public class rCore{
         window = new Window();
         input = new Input();
         time = new Time();
-        rlgl = new RLGL();
 
         this.random = new Random();
 
@@ -199,7 +196,7 @@ public class rCore{
         else if (SUPPORT_MODULE_RSHAPES){
             // Set default texture and rectangle to be used for shapes drawing
             // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-            Texture2D texture = new Texture2D(rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            Texture2D texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
             context.shapes.SetShapesTexture(texture, new Rectangle(0.0f, 0.0f, 1.0f, 1.0f));    // WARNING: Module required: rshapes
         }
 
@@ -207,8 +204,8 @@ public class rCore{
             if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
                 // Set default font texture filter for HighDPI (blurry)
                 // RL_TEXTURE_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-                rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
-                rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                context.rlgl.rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                context.rlgl.rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
             }
         }
 
@@ -1281,8 +1278,8 @@ public class rCore{
      * @param color Color to fill the background
      */
     public void ClearBackground(Color color){
-        rlClearColor(color.getR(), color.getG(), color.getB(), color.getA());   // Set clear color
-        rlClearScreenBuffers();                             // Clear current framebuffers
+        context.rlgl.rlClearColor(color.getR(), color.getG(), color.getB(), color.getA());   // Set clear color
+        context.rlgl.rlClearScreenBuffers();                             // Clear current framebuffers
     }
 
     /**
@@ -1296,8 +1293,8 @@ public class rCore{
         time.update = time.current - time.previous;
         time.previous = time.current;
 
-        rlLoadIdentity();                   // Reset current matrix (modelview)
-        rlMultMatrixf(MatrixToFloat(window.screenScale)); // Apply screen scaling
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlMultMatrixf(MatrixToFloat(window.screenScale)); // Apply screen scaling
 
         //rlTranslatef(0.375, 0.375, 0);    // HACK to have 2D pixel-perfect drawing on OpenGL 1.1
         // NOTE: Not required with OpenGL 3.3+
@@ -1308,7 +1305,7 @@ public class rCore{
      * End canvas drawing and swap buffers (double buffering)
      */
     public void EndDrawing(){
-        rlgl.rlDrawRenderBatchActive();      // Update and draw internal render batch
+        context.rlgl.rlDrawRenderBatchActive();      // Update and draw internal render batch
 
         if(SUPPORT_GIF_RECORDING) {
             // Draw record indicator
@@ -1407,25 +1404,25 @@ public class rCore{
      * @param camera rendering camera
      */
     public void BeginMode2D(Camera2D camera){
-        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        context.rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
 
         // Apply 2d camera transformation to modelview
-        rlMultMatrixf(MatrixToFloat(GetCameraMatrix2D(camera)));
+        context.rlgl.rlMultMatrixf(MatrixToFloat(GetCameraMatrix2D(camera)));
 
         // Apply screen scaling if required
-        rlMultMatrixf(MatrixToFloat(window.getScreenScale()));
+        context.rlgl.rlMultMatrixf(MatrixToFloat(window.getScreenScale()));
     }
 
     /**
      * Ends 2D mode with custom camera
      */
     public void EndMode2D(){
-        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        context.rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        rlLoadIdentity();                   // Reset current matrix (modelview)
-        rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
     }
 
     /**
@@ -1433,11 +1430,11 @@ public class rCore{
      * @param camera rendering camera
      */
     public void BeginMode3D(Camera3D camera){
-        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        context.rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
-        rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
-        rlLoadIdentity();                   // Reset current matrix (projection)
+        context.rlgl.rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        context.rlgl.rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (projection)
 
         float aspect = (float) window.currentFbo.width / (float) window.currentFbo.height;
 
@@ -1446,7 +1443,7 @@ public class rCore{
             double top = RL_CULL_DISTANCE_NEAR * Math.tan(camera.fovy * 0.5 * DEG2RAD);
             double right = top * aspect;
 
-            rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            context.rlgl.rlFrustum(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
 
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC){
@@ -1454,35 +1451,35 @@ public class rCore{
             double top = camera.fovy / 2.0;
             double right = top * aspect;
 
-            rlOrtho(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            context.rlgl.rlOrtho(-right, right, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
         }
 
         // NOTE: zNear and zFar values are important when computing depth buffer values
 
-        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
-        rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
 
         // Setup rCamera view
         Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
-        rlMultMatrixf(MatrixToFloat(matView));      // Multiply modelview matrix by view matrix (camera)
-        rlgl.rlEnableDepthTest();                // Enable DEPTH_TEST for 3D
+        context.rlgl.rlMultMatrixf(MatrixToFloat(matView));      // Multiply modelview matrix by view matrix (camera)
+        context.rlgl.rlEnableDepthTest();                // Enable DEPTH_TEST for 3D
     }
 
     /**
      * Ends 3D mode and returns to default 2D orthographic mode
      */
     public void EndMode3D(){
-        rlgl.rlDrawRenderBatchActive();                         // Process internal buffers (update + draw)
+        context.rlgl.rlDrawRenderBatchActive();                         // Process internal buffers (update + draw)
 
-        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
-        rlPopMatrix();                      // Restore previous matrix (projection) from matrix stack
+        context.rlgl.rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        context.rlgl.rlPopMatrix();                      // Restore previous matrix (projection) from matrix stack
 
-        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
-        rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
 
-        rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
+        context.rlgl.rlMultMatrixf(MatrixToFloat(window.getScreenScale())); // Apply screen scaling if required
 
-        rlgl.rlDisableDepthTest();               // Disable DEPTH_TEST for 2D
+        context.rlgl.rlDisableDepthTest();               // Disable DEPTH_TEST for 2D
     }
 
     /**
@@ -1490,26 +1487,26 @@ public class rCore{
      * @param target render texture target
      */
     public void BeginTextureMode(RenderTexture target){
-        rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        context.rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        rlEnableFramebuffer(target.getId());     // Enable render target
+        context.rlgl.rlEnableFramebuffer(target.getId());     // Enable render target
 
         // Set viewport and RLGL internal framebuffer size
-        rlViewport(0, 0, target.texture.width, target.texture.height);
-        rlSetFramebufferWidth(target.texture.width);
-        rlSetFramebufferHeight(target.texture.height);
+        context.rlgl.rlViewport(0, 0, target.texture.width, target.texture.height);
+        context.rlgl.rlSetFramebufferWidth(target.texture.width);
+        context.rlgl.rlSetFramebufferHeight(target.texture.height);
 
-        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
-        rlLoadIdentity();                   // Reset current matrix (projection)
+        context.rlgl.rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (projection)
 
         // Set orthographic projection to current framebuffer size
         // NOTE: Configured top-left corner as (0, 0)
-        rlOrtho(0, target.texture.width, target.texture.height, 0, 0.0f, 1.0f);
+        context.rlgl.rlOrtho(0, target.texture.width, target.texture.height, 0, 0.0f, 1.0f);
 
-        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
-        rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
 
-        //rlScalef(0.0f, -1.0f, 0.0f);      // Flip Y-drawing (?)
+        //context.rlgl.rlScalef(0.0f, -1.0f, 0.0f);      // Flip Y-drawing (?)
 
         // Setup current width/height for proper aspect ratio
         // calculation when using BeginMode3D()
@@ -1521,9 +1518,9 @@ public class rCore{
      * Ends drawing to render texture
      */
     public void EndTextureMode(){
-        rlgl.rlDrawRenderBatchActive();                 // Draw Buffers (Only OpenGL 3+ and ES2)
+        context.rlgl.rlDrawRenderBatchActive();                 // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        rlDisableFramebuffer();     // Disable render target (fbo)
+        context.rlgl.rlDisableFramebuffer();     // Disable render target (fbo)
 
         // Set viewport to default framebuffer size
         SetupViewport(window.render.width, window.render.height);
@@ -1538,14 +1535,14 @@ public class rCore{
      * @param shader Shader to render
      */
     public void BeginShaderMode(Shader shader){
-        rlgl.rlSetShader(shader.getId(), shader.getLocs());
+        context.rlgl.rlSetShader(shader.getId(), shader.getLocs());
     }
 
     /**
      * End custom shader mode and return to default shader
      */
     public void EndShaderMode(){
-        rlgl.rlSetShader(rlgl.rlGetShaderIdDefault(), rlgl.rlGetShaderLocsDefault());
+        context.rlgl.rlSetShader(context.rlgl.rlGetShaderIdDefault(), context.rlgl.rlGetShaderLocsDefault());
     }
 
     /**
@@ -1553,8 +1550,8 @@ public class rCore{
      * NOTE: Only 3 blending modes supported, default blend mode is alpha
      * @param mode
      */
-    public void BeginBlendMode(int mode){
-        rlgl.rlSetBlendMode(mode);
+    public void BeginBlendMode(rlBlendMode mode){
+        context.rlgl.rlSetBlendMode(mode);
     }
 
     /**
@@ -1562,7 +1559,7 @@ public class rCore{
      * Resets to default blending mode (alpha blending)
      */
     public void EndBlendMode(){
-        rlgl.rlSetBlendMode(rlBlendMode.RL_BLEND_ALPHA);
+        context.rlgl.rlSetBlendMode(RL_BLEND_ALPHA);
     }
 
     /**
@@ -1573,22 +1570,22 @@ public class rCore{
      * @param height height of the screen area
      */
     public void BeginScissorMode(int x, int y, int width, int height){
-        rlgl.rlDrawRenderBatchActive(); // Force drawing elements
+        context.rlgl.rlDrawRenderBatchActive(); // Force drawing elements
 
-        rlgl.rlEnableScissorTest();
+        context.rlgl.rlEnableScissorTest();
 
         if (__APPLE__) {
             Vector2 scale = GetWindowScaleDPI();
 
-            rlgl.rlScissor((int)(x*scale.x), (int)(GetScreenHeight()*scale.y - (((y + height)*scale.y))), (int)(width*scale.x), (int)(height*scale.y));
+            context.rlgl.rlScissor((int)(x*scale.x), (int)(GetScreenHeight()*scale.y - (((y + height)*scale.y))), (int)(width*scale.x), (int)(height*scale.y));
         }
         else {
             if ((window.flags & FLAG_WINDOW_HIGHDPI) > 0) {
                 Vector2 scale = GetWindowScaleDPI();
-                rlgl.rlScissor((int)(x*scale.x), (int)(window.currentFbo.height - (y + height)*scale.y), (int)(width*scale.x), (int)(height*scale.y));
+                context.rlgl.rlScissor((int)(x*scale.x), (int)(window.currentFbo.height - (y + height)*scale.y), (int)(width*scale.x), (int)(height*scale.y));
             }
             else {
-                rlgl.rlScissor(x, window.currentFbo.height - (y + height), width, height);
+                context.rlgl.rlScissor(x, window.currentFbo.height - (y + height), width, height);
             }
         }
 
@@ -1598,8 +1595,8 @@ public class rCore{
      * End scissor mode
      */
     public void EndScissorMode(){
-        rlgl.rlDrawRenderBatchActive(); // Force drawing elements
-        rlgl.rlDisableScissorTest();
+        context.rlgl.rlDrawRenderBatchActive(); // Force drawing elements
+        context.rlgl.rlDisableScissorTest();
     }
 
     /**
@@ -1607,11 +1604,11 @@ public class rCore{
      * @param config <code>VrStereoConfig</code> to use in rendering
      */
     public void BeginVrStereoMode(VrStereoConfig config){
-        rlgl.rlEnableStereoRenderer();
+        context.rlgl.rlEnableStereoRenderer();
 
         // Set stereo render matrices
-        rlSetMatrixProjectionStereo(config.projection[0], config.projection[1]);
-        rlSetMatrixViewOffsetStereo(config.viewOffset[0], config.viewOffset[1]);
+        context.rlgl.rlSetMatrixProjectionStereo(config.projection[0], config.projection[1]);
+        context.rlgl.rlSetMatrixViewOffsetStereo(config.viewOffset[0], config.viewOffset[1]);
 
     }
 
@@ -1619,7 +1616,7 @@ public class rCore{
      *  End VR drawing process (and desktop mirror)
      */
     public void EndVrStereoMode(){
-        rlgl.rlDisableStereoRenderer();
+        context.rlgl.rlDisableStereoRenderer();
     }
 
     /**
@@ -1750,7 +1747,7 @@ public class rCore{
     public Shader LoadShaderFromMemory(String vsCode, String fsCode){
         Shader shader = new Shader();
 
-        shader.id = rlLoadShaderCode(vsCode, fsCode);
+        shader.id = context.rlgl.rlLoadShaderCode(vsCode, fsCode);
 
         // After shader loading, we TRY to set default location names
         if (shader.getId() > 0){
@@ -1771,25 +1768,25 @@ public class rCore{
             }
 
             // Get handles to GLSL input attribute locations
-            shader.locs[RL_SHADER_LOC_VERTEX_POSITION] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
-            shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
-            shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
-            shader.locs[RL_SHADER_LOC_VERTEX_NORMAL] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
-            shader.locs[RL_SHADER_LOC_VERTEX_TANGENT] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
-            shader.locs[RL_SHADER_LOC_VERTEX_COLOR] = rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
+            shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()] = context.rlgl.rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION);
+            shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()] = context.rlgl.rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD);
+            shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] = context.rlgl.rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
+            shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()] = context.rlgl.rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL);
+            shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] = context.rlgl.rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
+            shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()] = context.rlgl.rlGetLocationAttrib(shader.id, RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
 
             // Get handles to GLSL uniform locations (vertex shader)
-            shader.locs[RL_SHADER_LOC_MATRIX_MVP] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MVP);
-            shader.locs[RL_SHADER_LOC_MATRIX_VIEW] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW);
-            shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION);
-            shader.locs[RL_SHADER_LOC_MATRIX_MODEL] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL);
-            shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL);
+            shader.locs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MVP);
+            shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW);
+            shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION);
+            shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL);
+            shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL);
 
             // Get handles to GLSL uniform locations (fragment shader)
-            shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR);
-            shader.locs[RL_SHADER_LOC_MAP_DIFFUSE] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0);  // SHADER_LOC_MAP_ALBEDO
-            shader.locs[RL_SHADER_LOC_MAP_SPECULAR] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1); // SHADER_LOC_MAP_METALNESS
-            shader.locs[RL_SHADER_LOC_MAP_NORMAL] = rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2);
+            shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR);
+            shader.locs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0);  // SHADER_LOC_MAP_ALBEDO
+            shader.locs[RL_SHADER_LOC_MAP_SPECULAR.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1); // SHADER_LOC_MAP_METALNESS
+            shader.locs[RL_SHADER_LOC_MAP_NORMAL.GetLocation()] = context.rlgl.rlGetLocationUniform(shader.id, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2);
         }
 
         return shader;
@@ -1809,8 +1806,8 @@ public class rCore{
      * @param shader Shader to free
      */
     public void UnloadShader(Shader shader){
-        if (shader.getId() != rlGetShaderIdDefault()){
-            rlUnloadShaderProgram(shader.getId());
+        if (shader.getId() != context.rlgl.rlGetShaderIdDefault()){
+            context.rlgl.rlUnloadShaderProgram(shader.getId());
             shader.setLocs(null);
         }
     }
@@ -1822,7 +1819,7 @@ public class rCore{
      * @return position of shader uniform
      */
     public int GetShaderLocation(Shader shader, String uniformName){
-        return rlGetLocationUniform(shader.getId(), uniformName);
+        return context.rlgl.rlGetLocationUniform(shader.getId(), uniformName);
     }
 
     /**
@@ -1832,7 +1829,7 @@ public class rCore{
      * @return position of shader attribute
      */
     public int GetShaderLocationAttrib(Shader shader, String attribName){
-        return rlGetLocationAttrib(shader.id, attribName);
+        return context.rlgl.rlGetLocationAttrib(shader.id, attribName);
     }
 
     /**
@@ -1842,8 +1839,8 @@ public class rCore{
      * @param value
      * @param uniformType
      */
-    public void SetShaderValue(Shader shader, int locIndex, float[] value, int uniformType){
-        SetShaderValueV(shader, locIndex, value, uniformType, 1);
+    public void SetShaderValue(Shader shader, int locIndex, float[] value, rlShaderUniformDataType uniformType){
+        SetShaderValueV(shader, locIndex, value, uniformType);
     }
 
     /**
@@ -1852,12 +1849,11 @@ public class rCore{
      * @param locIndex
      * @param value
      * @param uniformType
-     * @param count
      */
-    public void SetShaderValueV(Shader shader, int locIndex, float[] value, int uniformType, int count){
+    public void SetShaderValueV(Shader shader, int locIndex, float[] value, rlShaderUniformDataType uniformType){
         if(locIndex > -1) {
-            rlEnableShader(shader.getId());
-            rlSetUniform(locIndex, value, uniformType, count);
+            context.rlgl.rlEnableShader(shader.getId());
+            context.rlgl.rlSetUniform(locIndex, value, uniformType);
             //rlDisableShader();      // Avoid resting current shader program, in case other uniforms are set
         }
     }
@@ -1870,8 +1866,8 @@ public class rCore{
      */
     public void SetShaderValueMatrix(Shader shader, int locIndex, Matrix mat){
         if(locIndex > -1) {
-            rlEnableShader(shader.getId());
-            rlSetUniformMatrix(locIndex, mat);
+            context.rlgl.rlEnableShader(shader.getId());
+            context.rlgl.rlSetUniformMatrix(locIndex, mat);
             //rlDisableShader();    // Avoid resting current shader program, in case other uniforms are set
         }
     }
@@ -1879,8 +1875,8 @@ public class rCore{
     // Set shader uniform value for texture
     public void SetShaderValueTexture(Shader shader, int locIndex, Texture2D texture){
         if(locIndex > -1) {
-            rlEnableShader(shader.getId());
-            rlSetUniformSampler(locIndex, texture.getId());
+            context.rlgl.rlEnableShader(shader.getId());
+            context.rlgl.rlSetUniformSampler(locIndex, texture.getId());
             //rlDisableShader();    // Avoid resting current shader program, in case other uniforms are set
         }
     }
@@ -2243,11 +2239,10 @@ public class rCore{
 
             Vector2 scale = GetWindowScaleDPI();
 
-            short[] imgData = rlgl.rlReadScreenPixels((int)((float)window.render.width*scale.x), (int)((float)window.render.height*scale.y));
+            short[] imgData = context.rlgl.rlReadScreenPixels((int)((float)window.render.width*scale.x), (int)((float)window.render.height*scale.y));
             byte[] dataB = new byte[imgData.length];
             IntStream.range(0, dataB.length).forEach(i -> dataB[i] = (byte) imgData[i]);
-            Image image = new Image(dataB, window.render.width, window.render.height, 1,
-                                    RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            Image image = new Image(dataB, window.render.width, window.render.height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
 
             String path = GetWorkingDirectory() + fileName;
 
@@ -3279,11 +3274,11 @@ public class rCore{
 
         // Check selection OpenGL version
 
-        if (rlGetVersion() == rlGlVersion.OPENGL_21){
+        if (context.rlgl.rlGetVersion() == rlGlVersion.OPENGL_21){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);          // Choose OpenGL minor version (just hint)
         }
-        else if (rlGetVersion() == rlGlVersion.OPENGL_33){
+        else if (context.rlgl.rlGetVersion() == rlGlVersion.OPENGL_33){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);          // Choose OpenGL major version (just hint)
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);          // Choose OpenGL minor version (just hint)
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Profiles Hint: Only 3.3 and above!
@@ -3295,7 +3290,7 @@ public class rCore{
             }
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
-        else if (rlGetVersion() == rlGlVersion.OPENGL_ES_20){
+        else if (context.rlgl.rlGetVersion() == rlGlVersion.OPENGL_ES_20){
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -3431,11 +3426,11 @@ public class rCore{
         // NOTE: GLFW loader function is passed as parameter
         //TODO - rlLoadExtensions uses GLAD.
         //rlLoadExtensions(glfwGetProcAddress());
-        rlLoadExtensions();
+        context.rlgl.rlLoadExtensions();
 
         // Initialize OpenGL context (states and resources)
         // NOTE: window.screen.width and window.screen.height not used, just stored as globals in rlgl
-        rlglInit(window.screen.width, window.screen.height);
+        context.rlgl.rlglInit(window.screen.width, window.screen.height);
 
         int fbWidth = window.render.width;
         int fbHeight = window.render.height;
@@ -3474,19 +3469,19 @@ public class rCore{
         // Set viewport width and height
         // NOTE: We consider render size and offset in case black bars are required and
         // render area does not match full display area (this situation is only applicable on fullscreen mode)
-        rlViewport((int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
+        context.rlgl.rlViewport((int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
                         (int) (window.render.width - window.renderOffset.x),
                         (int) (window.render.height - window.renderOffset.y));
 
-        rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
-        rlLoadIdentity();                   // Reset current matrix (projection)
+        context.rlgl.rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (projection)
 
         // Set orthographic projection to current framebuffer size
         // NOTE: Configured top-left corner as (0, 0)
-        rlOrtho(0, window.render.width, window.render.height, 0, 0.0f, 1.0f);
+        context.rlgl.rlOrtho(0, window.render.width, window.render.height, 0, 0.0f, 1.0f);
 
-        rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
-        rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlMatrixMode(RL_MODELVIEW);         // Switch back to modelview matrix
+        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
     }
 
     /**

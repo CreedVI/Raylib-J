@@ -1,5 +1,6 @@
 package com.raylib.java.structs;
 
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
 public class Texture2D{
@@ -8,7 +9,7 @@ public class Texture2D{
     public int width;              // Texture base width
     public int height;             // Texture base height
     public int mipmaps;            // Mipmap levels, 1 by default
-    public int format;             // Data format (rlPixelFormat type)
+    public rlPixelFormat format;             // Data format (rlPixelFormat type)
 
     public Texture2D(){
         this.width = 1;
@@ -17,7 +18,7 @@ public class Texture2D{
         this.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     }
 
-    public Texture2D(int id, int width, int height, int mipmaps, int format){
+    public Texture2D(int id, int width, int height, int mipmaps, rlPixelFormat format){
         this.id = id;
         this.width = width;
         this.height = height;
@@ -57,11 +58,11 @@ public class Texture2D{
         this.mipmaps = mipmaps;
     }
 
-    public int getFormat(){
+    public rlPixelFormat getFormat(){
         return format;
     }
 
-    public void setFormat(int format){
+    public void setFormat(rlPixelFormat format){
         this.format = format;
     }
 }

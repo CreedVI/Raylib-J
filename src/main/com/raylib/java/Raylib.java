@@ -5,6 +5,7 @@ import com.raylib.java.io.FileIO;
 import com.raylib.java.models.rModels;
 import com.raylib.java.extras.physac.Physac;
 import com.raylib.java.raudioal.rAudioAL;
+import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.rShapes;
 import com.raylib.java.text.rText;
 import com.raylib.java.textures.rTextures;
@@ -12,6 +13,7 @@ import com.raylib.java.textures.rTextures;
 public class Raylib{
 
     public rAudioAL audio;
+    public RLGL rlgl;
     public rCore core;
     public FileIO files;
     public Config config;
@@ -26,6 +28,7 @@ public class Raylib{
      */
     public Raylib(){
         config = new Config();
+        rlgl = new RLGL();
         core = new rCore(this);
         files = new FileIO(this);
         textures = new rTextures(this);
@@ -44,6 +47,7 @@ public class Raylib{
      */
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
         config = new Config();
+        rlgl = new RLGL();
         core = new rCore(this);
         files = new FileIO(this);
         textures = new rTextures(this);

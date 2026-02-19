@@ -2,7 +2,6 @@ package com.raylib.java.textures;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.*;
-import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.utils.Tracelog;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBImage;
@@ -26,8 +25,8 @@ import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.RL_ATTACH
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.RL_ATTACHMENT_TEXTURE2D;
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_COLOR_CHANNEL0;
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_DEPTH;
+import static com.raylib.java.rlgl.RLGL.rlGlVersion.OPENGL_ES_20;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5;
 import static com.raylib.java.structs.NPatchInfo.NPatchType.*;
 import static com.raylib.java.textures.rTextures.CubemapLayoutType.*;
 import static com.raylib.java.utils.Tracelog.TRACELOG;
@@ -89,7 +88,7 @@ public class rTextures{
     }
 
     // Load an image from RAW file data
-    public Image LoadImageRaw(String fileName, int width, int height, int format, int headerSize) {
+    public Image LoadImageRaw(String fileName, int width, int height, rlPixelFormat format, int headerSize) {
         Image image = new Image();
 
         int dataSize = 0;
@@ -303,7 +302,7 @@ public class rTextures{
 
         if (image.data != null) {
             TRACELOG(LOG_INFO, "IMAGE: Data loaded successfully (" + image.width + "x" + image.height + " | " +
-                    rlGetPixelFormatName(image.format) + " | " + image.mipmaps + " mipmaps)");
+                    context.rlgl.rlGetPixelFormatName(image.format) + " | " + image.mipmaps + " mipmaps)");
         }
         else {
             TRACELOG(LOG_WARNING, "IMAGE: Failed to load image data");
@@ -314,7 +313,7 @@ public class rTextures{
 
     // Check if an image is ready
     public boolean IsImageReady(Image image) {
-        return image.data != null && image.width > 0 && image.height > 0 && image.format > 0;
+        return image.data != null && image.width > 0 && image.height > 0 && image.format.GetFormat() > 0;
     }
 
     public Image UnloadImage(Image image) {
@@ -788,7 +787,7 @@ public class rTextures{
         }
 
         if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
@@ -813,7 +812,7 @@ public class rTextures{
     }
 
     // Convert image data to desired format
-    public Image ImageFormat(Image image, int newFormat) {
+    public Image ImageFormat(Image image, rlPixelFormat newFormat) {
         Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
 
         // Security check to avoid program crash
@@ -821,8 +820,8 @@ public class rTextures{
             return result;
         }
 
-        if ((newFormat != 0) && (result.format != newFormat)) {
-            if ((result.format < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) && (newFormat < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB)) {
+        if ((newFormat != null) && (result.format != newFormat)) {
+            if ((result.format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) && (newFormat.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())) {
                 Vector4[] pixels = LoadImageDataNormalized(result);     // Supports 8 to 32 bit per channel
 
                 // WARNING! We loose mipmaps data --> Regenerated at the end...
@@ -1115,7 +1114,7 @@ public class rTextures{
         if (image.mipmaps > 1) {
             TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         }
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
@@ -1196,7 +1195,7 @@ public class rTextures{
         if ((image.width != alphaMask.width) || (image.height != alphaMask.height)) {
             TRACELOG(LOG_WARNING, "IMAGE: Alpha mask must be same size as image");
         }
-        else if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        else if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "IMAGE: Alpha mask can not be applied to compressed data formats");
         }
         else{
@@ -1258,7 +1257,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
         image.setData(pixels);
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
@@ -1397,7 +1396,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
 
         result.setData(pixels);
         result.width = image.width;
@@ -1460,7 +1459,7 @@ public class rTextures{
             stbir_resize_uint8(result.data, result.width, result.height, 0, outputBuffer,
                                newWidth, newHeight, 0, 4);
 
-            int format = result.format;
+            rlPixelFormat format = result.format;
 
             result.setData(outputBuffer);
             result.width = newWidth;
@@ -1499,7 +1498,7 @@ public class rTextures{
             }
         }
 
-        int format = result.format;
+        rlPixelFormat format = result.format;
 
         result.setData(output);
         result.width = newWidth;
@@ -1524,7 +1523,7 @@ public class rTextures{
         if (result.mipmaps > 1) {
             TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         }
-        if (result.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (result.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else if ((newWidth != result.width) || (newHeight != result.height)) {
@@ -1675,7 +1674,7 @@ public class rTextures{
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "IMAGE: Compressed data formats can not be dithered");
             return;
         }
@@ -1702,7 +1701,7 @@ public class rTextures{
                 image.format = RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4;
             }
             else{
-                image.format = 0;
+                image.format = null;
                 TRACELOG(LOG_WARNING, "IMAGE: Unsupported dithered OpenGL internal format: " +
                         (rBpp + gBpp + bBpp + aBpp) + "bpp (R" + rBpp + "G" + gBpp + "B" + bBpp + "A" + aBpp + ")");
             }
@@ -1776,10 +1775,14 @@ public class rTextures{
     // Flip image vertically
     public void ImageFlipVertical(Image image) {
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return;
+        }
 
-        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.mipmaps > 1) {
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        }
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
@@ -1802,7 +1805,7 @@ public class rTextures{
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
         if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
@@ -1829,7 +1832,7 @@ public class rTextures{
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
         if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
@@ -1860,7 +1863,7 @@ public class rTextures{
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
 
         if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
         else{
@@ -1912,7 +1915,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
 
         image.setData(pixels);
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
@@ -1935,7 +1938,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
 
         image.setData(pixels);
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
@@ -1994,7 +1997,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
 
         image.setData(pixels);
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
@@ -2034,7 +2037,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
 
         image.setData(pixels);
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
@@ -2063,7 +2066,7 @@ public class rTextures{
             }
         }
 
-        int format = image.format;
+        rlPixelFormat format = image.format;
 
         image.setData(pixels);
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
@@ -2080,7 +2083,7 @@ public class rTextures{
 
         byte[] pixels = new byte[image.width * image.height * 4];
 
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
@@ -2256,7 +2259,7 @@ public class rTextures{
             pixels[i] = new Vector4();
         }
 
-        if (image.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
@@ -2779,7 +2782,7 @@ public class rTextures{
         if (dst.mipmaps > 1) {
             TRACELOG(LOG_WARNING, "Image drawing only applied to base mipmap level");
         }
-        if (dst.format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
+        if (dst.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image drawing not supported for compressed formats");
         }
         else {
@@ -2957,7 +2960,7 @@ public class rTextures{
         Texture2D texture = new Texture2D();
 
         if ((image.data != null) && (image.width != 0) && (image.height != 0)) {
-            texture.id = rlLoadTexture(image.data, image.width, image.height, image.format, image.mipmaps);
+            texture.id = context.rlgl.rlLoadTexture(image.data, image.width, image.height, image.format, image.mipmaps);
         }
         else{
             TRACELOG(LOG_WARNING, "IMAGE: Data is not valid to load texture");
@@ -3065,7 +3068,7 @@ public class rTextures{
                 // faces = ImageDraw(image, faceRecs[i], new Rectangle(0, (float) size * i, (float) size, (float) size), Color.WHITE);
             }
 
-            cubemap.id = RLGL.rlLoadTextureCubemap(faces.getData(), size, faces.format);
+            cubemap.id = context.rlgl.rlLoadTextureCubemap(faces.getData(), size, faces.format);
             if (cubemap.id == 0) {
                 TRACELOG(LOG_WARNING, "IMAGE: Failed to load cubemap image");
             }
@@ -3084,36 +3087,36 @@ public class rTextures{
     public RenderTexture LoadRenderTexture(int width, int height) {
         RenderTexture target = new RenderTexture();
 
-        target.id = rlLoadFramebuffer(width, height);   // Load an empty framebuffer
+        target.id = context.rlgl.rlLoadFramebuffer(width, height);   // Load an empty framebuffer
 
         if (target.id > 0) {
-            rlEnableFramebuffer(target.id);
+            context.rlgl.rlEnableFramebuffer(target.id);
 
             // Create color texture (default to RGBA)
-            target.texture.id = rlLoadTexture(null, width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+            target.texture.id = context.rlgl.rlLoadTexture(null, width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
             target.texture.width = width;
             target.texture.height = height;
             target.texture.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
             target.texture.mipmaps = 1;
 
             // Create depth renderbuffer/texture
-            target.depth.id = RLGL.rlLoadTextureDepth(width, height, true);
+            target.depth.id = context.rlgl.rlLoadTextureDepth(width, height, true);
             target.depth.width = width;
             target.depth.height = height;
-            target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
+            target.depth.format = RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA;       //DEPTH_COMPONENT_24BIT?
             target.depth.mipmaps = 1;
 
             // Attach color texture and depth renderbuffer/texture to FBO
-            RLGL.rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0,
+            context.rlgl.rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0,
                                      RL_ATTACHMENT_TEXTURE2D);
-            RLGL.rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER);
+            context.rlgl.rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER);
 
             // Check if fbo is complete with attachments (valid)
-            if (RLGL.rlFramebufferComplete(target.id)) {
+            if (context.rlgl.rlFramebufferComplete(target.id)) {
                 TRACELOG(LOG_INFO, "FBO: [ID " + target.id + "] Framebuffer object created successfully");
             }
 
-            rlDisableFramebuffer();
+            context.rlgl.rlDisableFramebuffer();
         }
         else{
             TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
@@ -3124,13 +3127,13 @@ public class rTextures{
 
     // Check if a texture is ready
     public boolean IsTextureReady(Texture2D texture) {
-        return texture.id > 0 && texture.width > 0 && texture.height > 0 && texture.format > 0;
+        return texture.id > 0 && texture.width > 0 && texture.height > 0 && texture.format.GetFormat() > 0;
     }
 
     // Unload texture from GPU memory (VRAM)
     public void UnloadTexture(Texture2D texture) {
         if (texture.getId() > 0) {
-            RLGL.rlUnloadTexture(texture.getId());
+            context.rlgl.rlUnloadTexture(texture.getId());
 
             TRACELOG(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Unloaded texture data from VRAM (GPU)");
         }
@@ -3145,24 +3148,24 @@ public class rTextures{
     public void UnloadRenderTexture(RenderTexture target) {
         if (target.getId() > 0) {
             // Color texture attached to FBO is deleted
-            rlUnloadTexture(target.getTexture().getId());
+            context.rlgl.rlUnloadTexture(target.getTexture().getId());
 
             // NOTE: Depth texture/renderbuffer is automatically
             // queried and deleted before deleting framebuffer
-            rlUnloadFramebuffer(target.getId());
+            context.rlgl.rlUnloadFramebuffer(target.getId());
         }
     }
 
     // Update GPU texture with new data
     // NOTE: pixels data must match texture.format
     public void UpdateTexture(Texture2D texture, byte[] pixels) {
-        rlUpdateTexture(texture.id, 0, 0, texture.width, texture.height, texture.format, pixels);
+        context.rlgl.rlUpdateTexture(texture.id, 0, 0, texture.width, texture.height, texture.format, pixels);
     }
 
     // Update GPU texture rectangle with new data
     // NOTE: pixels data must match texture.format
     public void UpdateTextureRec(Texture2D texture, Rectangle rec, byte[] pixels) {
-        rlUpdateTexture(texture.id, (int) rec.x, (int) rec.y, (int) rec.width, (int) rec.height,
+        context.rlgl.rlUpdateTexture(texture.id, (int) rec.x, (int) rec.y, (int) rec.width, (int) rec.height,
                         texture.format, pixels);
     }
 
@@ -3171,8 +3174,8 @@ public class rTextures{
     public Image LoadImageFromTexture(Texture2D texture) {
         Image image = new Image();
 
-        if (texture.format < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) {
-            image.setData(rlReadTexturePixels(texture.id, texture.width, texture.height, texture.format));
+        if (texture.format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
+            image.setData(context.rlgl.rlReadTexturePixels(texture.id, texture.width, texture.height, texture.format));
 
             if (image.data != null) {
                 image.width = texture.width;
@@ -3180,7 +3183,7 @@ public class rTextures{
                 image.format = texture.format;
                 image.mipmaps = 1;
 
-                if (RLGL.rlGetVersion() == rlGlVersion.OPENGL_ES_20) {
+                if (context.rlgl.rlGetVersion() == OPENGL_ES_20) {
                     // NOTE: Data retrieved on OpenGL ES 2.0 should be RGBA,
                     // coming from FBO color buffer attachment, but it seems
                     // original texture format is retrieved on RPI...
@@ -3207,7 +3210,7 @@ public class rTextures{
         image.height = context.core.GetScreenHeight();
         image.mipmaps = 1;
         image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        image.setData(rlReadScreenPixels(image.width, image.height));
+        image.setData(context.rlgl.rlReadScreenPixels(image.width, image.height));
 
         return image;
     }
@@ -3219,70 +3222,70 @@ public class rTextures{
     public void GenTextureMipmaps(Texture2D texture) {
         // NOTE: NPOT textures support check inside function
         // On WebGL (OpenGL ES 2.0) NPOT textures support is limited
-        rlGenTextureMipmaps(texture);
+        context.rlgl.rlGenTextureMipmaps(texture);
     }
 
     // Set texture scaling filter mode
-    public void SetTextureFilter(Texture2D texture, int filterMode) {
+    public void SetTextureFilter(Texture2D texture, rlTextureFilterMode filterMode) {
         switch (filterMode) {
 
-            case 0:{
+            case RL_TEXTURE_FILTER_POINT:{
                 if (texture.mipmaps > 1) {
                     // RL_FILTER_MIP_NEAREST - tex filter: POINT, mipmaps filter: POINT (sharp switching between mipmaps)
-                    rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_MIP_NEAREST);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_MIP_NEAREST);
 
                     // RL_FILTER_NEAREST - tex filter: POINT (no filter), no mipmaps
-                    rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_NEAREST);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_NEAREST);
                 }
                 else{
                     // RL_FILTER_NEAREST - tex filter: POINT (no filter), no mipmaps
-                    rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_NEAREST);
-                    rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_NEAREST);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_NEAREST);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_NEAREST);
                 }
             }
             break;
-            case 1:{
+            case RL_TEXTURE_FILTER_BILINEAR:{
                 if (texture.mipmaps > 1) {
                     // RL_FILTER_LINEAR_MIP_NEAREST - tex filter: BILINEAR, mipmaps filter: POINT (sharp switching between mipmaps)
                     // Alternative: RL_FILTER_NEAREST_MIP_LINEAR - tex filter: POINT, mipmaps filter: BILINEAR (smooth transition between mipmaps)
-                    rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR_MIP_NEAREST);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR_MIP_NEAREST);
 
                     // RL_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-                    rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
                 }
                 else{
                     // RL_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-                    rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
-                    rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
                 }
             }
             break;
-            case 2:{
+            case RL_TEXTURE_FILTER_TRILINEAR:{
                 if (texture.mipmaps > 1) {
                     // RL_FILTER_MIP_LINEAR - tex filter: BILINEAR, mipmaps filter: BILINEAR (smooth transition between mipmaps)
-                    rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_MIP_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_MIP_LINEAR);
 
                     // RL_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-                    rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
                 }
                 else{
                     TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.id
                             + "] No mipmaps available for TRILINEAR texture filtering");
 
                     // RL_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-                    rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
-                    rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
+                    context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
                 }
             }
             break;
-            case 3:
-                rlTextureParameters(texture.id, RL_TEXTURE_FILTER_ANISOTROPIC, 4);
+            case RL_TEXTURE_FILTER_ANISOTROPIC_4X:
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_FILTER_ANISOTROPIC, 4);
                 break;
-            case 4:
-                rlTextureParameters(texture.id, RL_TEXTURE_FILTER_ANISOTROPIC, 8);
+            case RL_TEXTURE_FILTER_ANISOTROPIC_8X:
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_FILTER_ANISOTROPIC, 8);
                 break;
-            case 5:
-                rlTextureParameters(texture.id, RL_TEXTURE_FILTER_ANISOTROPIC, 16);
+            case RL_TEXTURE_FILTER_ANISOTROPIC_16X:
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_FILTER_ANISOTROPIC, 16);
                 break;
             default:
                 break;
@@ -3294,23 +3297,23 @@ public class rTextures{
         switch (wrapMode) {
             case RL_TEXTURE_WRAP_REPEAT:{
                 // NOTE: It only works if NPOT textures are supported, i.e. OpenGL ES 2.0 could not support it
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_REPEAT);
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_REPEAT);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_REPEAT);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_REPEAT);
             }
             break;
             case RL_TEXTURE_WRAP_CLAMP:{
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_CLAMP);
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_CLAMP);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_CLAMP);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_CLAMP);
             }
             break;
             case RL_TEXTURE_WRAP_MIRROR_REPEAT:{
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_MIRROR_REPEAT);
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_MIRROR_REPEAT);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_MIRROR_REPEAT);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_MIRROR_REPEAT);
             }
             break;
             case RL_TEXTURE_WRAP_MIRROR_CLAMP:{
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_MIRROR_CLAMP);
-                rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_MIRROR_CLAMP);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_S, RL_TEXTURE_WRAP_MIRROR_CLAMP);
+                context.rlgl.rlTextureParameters(texture.id, RL_TEXTURE_WRAP_T, RL_TEXTURE_WRAP_MIRROR_CLAMP);
             }
             break;
             default:
@@ -3402,52 +3405,52 @@ public class rTextures{
                 bottomRight.y = y + (dx + dest.width) * sinRotation + (dy + dest.height) * cosRotation;
             }
 
-            rlCheckRenderBatchLimit(4);     // Make sure there is enough free space on the batch buffer
+            context.rlgl.rlCheckRenderBatchLimit(4);     // Make sure there is enough free space on the batch buffer
 
-            rlSetTexture(texture.id);
-            rlBegin(RL_QUADS);
+            context.rlgl.rlSetTexture(texture.id);
+            context.rlgl.rlBegin(RL_QUADS);
 
-            rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-            rlNormal3f(0.0f, 0.0f, 1.0f);                          // Normal vector pointing towards viewer
+            context.rlgl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+            context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);                          // Normal vector pointing towards viewer
 
             // Top-left corner for texture and quad
             if (flipX) {
-                rlTexCoord2f((source.x + source.width) / width, source.y / height);
+                context.rlgl.rlTexCoord2f((source.x + source.width) / width, source.y / height);
             }
             else{
-                rlTexCoord2f(source.x / width, source.y / height);
+                context.rlgl.rlTexCoord2f(source.x / width, source.y / height);
             }
-            rlVertex2f(topLeft.x, topLeft.y);
+            context.rlgl.rlVertex2f(topLeft.x, topLeft.y);
 
             // Bottom-left corner for texture and quad
             if (flipX) {
-                rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+                context.rlgl.rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
             }
             else{
-                rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+                context.rlgl.rlTexCoord2f(source.x / width, (source.y + source.height) / height);
             }
-            rlVertex2f(bottomLeft.x, bottomLeft.y);
+            context.rlgl.rlVertex2f(bottomLeft.x, bottomLeft.y);
 
             // Bottom-right corner for texture and quad
             if (flipX) {
-                rlTexCoord2f(source.x / width, (source.y + source.height) / height);
+                context.rlgl.rlTexCoord2f(source.x / width, (source.y + source.height) / height);
             }
             else{
-                rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
+                context.rlgl.rlTexCoord2f((source.x + source.width) / width, (source.y + source.height) / height);
             }
-            rlVertex2f(bottomRight.x, bottomRight.y);
+            context.rlgl.rlVertex2f(bottomRight.x, bottomRight.y);
 
             // Top-right corner for texture and quad
             if (flipX) {
-                rlTexCoord2f(source.x / width, source.y / height);
+                context.rlgl.rlTexCoord2f(source.x / width, source.y / height);
             }
             else{
-                rlTexCoord2f((source.x + source.width) / width, source.y / height);
+                context.rlgl.rlTexCoord2f((source.x + source.width) / width, source.y / height);
             }
-            rlVertex2f(topRight.x, topRight.y);
+            context.rlgl.rlVertex2f(topRight.x, topRight.y);
 
-            rlEnd();
-            rlSetTexture(0);
+            context.rlgl.rlEnd();
+            context.rlgl.rlSetTexture(0);
         }
     }
 
@@ -3506,194 +3509,194 @@ public class rTextures{
             coordC = new Vector2((nPatchInfo.source.x + nPatchInfo.source.width - rightBorder) / width, (nPatchInfo.source.y + nPatchInfo.source.height - bottomBorder) / height);
             coordD = new Vector2((nPatchInfo.source.x + nPatchInfo.source.width) / width, (nPatchInfo.source.y + nPatchInfo.source.height) / height);
 
-            rlCheckRenderBatchLimit(9 * 3 * 2);         // Maxium number of verts that could happen
+            context.rlgl.rlCheckRenderBatchLimit(9 * 3 * 2);         // Maxium number of verts that could happen
 
-            RLGL.rlSetTexture(texture.id);
+            context.rlgl.rlSetTexture(texture.id);
 
-            rlPushMatrix();
-            rlTranslatef(dest.x, dest.y, 0.0f);
-            rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
-            rlTranslatef(-origin.x, -origin.y, 0.0f);
+            context.rlgl.rlPushMatrix();
+            context.rlgl.rlTranslatef(dest.x, dest.y, 0.0f);
+            context.rlgl.rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
+            context.rlgl.rlTranslatef(-origin.x, -origin.y, 0.0f);
 
-            rlBegin(RL_QUADS);
-            rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-            rlNormal3f(0.0f, 0.0f, 1.0f);               // Normal vector pointing towards viewer
+            context.rlgl.rlBegin(RL_QUADS);
+            context.rlgl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+            context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);               // Normal vector pointing towards viewer
 
             if (nPatchInfo.type == NPATCH_NINE_PATCH) {
                 // ------------------------------------------------------------
                 // TOP-LEFT QUAD
-                rlTexCoord2f(coordA.x, coordB.y);
-                rlVertex2f(vertA.x, vertB.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordB.x, coordB.y);
-                rlVertex2f(vertB.x, vertB.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordB.x, coordA.y);
-                rlVertex2f(vertB.x, vertA.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordA.x, coordA.y);
-                rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordB.y);
+                context.rlgl.rlVertex2f(vertA.x, vertB.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordB.x, coordB.y);
+                context.rlgl.rlVertex2f(vertB.x, vertB.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordB.x, coordA.y);
+                context.rlgl.rlVertex2f(vertB.x, vertA.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordA.y);
+                context.rlgl.rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
                 if (drawCenter) {
                     // TOP-CENTER QUAD
-                    rlTexCoord2f(coordB.x, coordB.y);
-                    rlVertex2f(vertB.x, vertB.y);  // Bottom-left corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordB.y);
-                    rlVertex2f(vertC.x, vertB.y);  // Bottom-right corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordA.y);
-                    rlVertex2f(vertC.x, vertA.y);  // Top-right corner for texture and quad
-                    rlTexCoord2f(coordB.x, coordA.y);
-                    rlVertex2f(vertB.x, vertA.y);  // Top-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertB.y);  // Bottom-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertB.y);  // Bottom-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordA.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertA.y);  // Top-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordA.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertA.y);  // Top-left corner for texture and quad
                 }
                 // TOP-RIGHT QUAD
-                rlTexCoord2f(coordC.x, coordB.y);
-                rlVertex2f(vertC.x, vertB.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordD.x, coordB.y);
-                rlVertex2f(vertD.x, vertB.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordD.x, coordA.y);
-                rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordC.x, coordA.y);
-                rlVertex2f(vertC.x, vertA.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordC.x, coordB.y);
+                context.rlgl.rlVertex2f(vertC.x, vertB.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordB.y);
+                context.rlgl.rlVertex2f(vertD.x, vertB.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordA.y);
+                context.rlgl.rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordC.x, coordA.y);
+                context.rlgl.rlVertex2f(vertC.x, vertA.y);  // Top-left corner for texture and quad
                 if (drawMiddle) {
                     // ------------------------------------------------------------
                     // MIDDLE-LEFT QUAD
-                    rlTexCoord2f(coordA.x, coordC.y);
-                    rlVertex2f(vertA.x, vertC.y);  // Bottom-left corner for texture and quad
-                    rlTexCoord2f(coordB.x, coordC.y);
-                    rlVertex2f(vertB.x, vertC.y);  // Bottom-right corner for texture and quad
-                    rlTexCoord2f(coordB.x, coordB.y);
-                    rlVertex2f(vertB.x, vertB.y);  // Top-right corner for texture and quad
-                    rlTexCoord2f(coordA.x, coordB.y);
-                    rlVertex2f(vertA.x, vertB.y);  // Top-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordA.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertA.x, vertC.y);  // Bottom-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertC.y);  // Bottom-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertB.y);  // Top-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordA.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertA.x, vertB.y);  // Top-left corner for texture and quad
                     if (drawCenter) {
                         // MIDDLE-CENTER QUAD
-                        rlTexCoord2f(coordB.x, coordC.y);
-                        rlVertex2f(vertB.x, vertC.y);  // Bottom-left corner for texture and quad
-                        rlTexCoord2f(coordC.x, coordC.y);
-                        rlVertex2f(vertC.x, vertC.y);  // Bottom-right corner for texture and quad
-                        rlTexCoord2f(coordC.x, coordB.y);
-                        rlVertex2f(vertC.x, vertB.y);  // Top-right corner for texture and quad
-                        rlTexCoord2f(coordB.x, coordB.y);
-                        rlVertex2f(vertB.x, vertB.y);  // Top-left corner for texture and quad
+                        context.rlgl.rlTexCoord2f(coordB.x, coordC.y);
+                        context.rlgl.rlVertex2f(vertB.x, vertC.y);  // Bottom-left corner for texture and quad
+                        context.rlgl.rlTexCoord2f(coordC.x, coordC.y);
+                        context.rlgl.rlVertex2f(vertC.x, vertC.y);  // Bottom-right corner for texture and quad
+                        context.rlgl.rlTexCoord2f(coordC.x, coordB.y);
+                        context.rlgl.rlVertex2f(vertC.x, vertB.y);  // Top-right corner for texture and quad
+                        context.rlgl.rlTexCoord2f(coordB.x, coordB.y);
+                        context.rlgl.rlVertex2f(vertB.x, vertB.y);  // Top-left corner for texture and quad
                     }
 
                     // MIDDLE-RIGHT QUAD
-                    rlTexCoord2f(coordC.x, coordC.y);
-                    rlVertex2f(vertC.x, vertC.y);  // Bottom-left corner for texture and quad
-                    rlTexCoord2f(coordD.x, coordC.y);
-                    rlVertex2f(vertD.x, vertC.y);  // Bottom-right corner for texture and quad
-                    rlTexCoord2f(coordD.x, coordB.y);
-                    rlVertex2f(vertD.x, vertB.y);  // Top-right corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordB.y);
-                    rlVertex2f(vertC.x, vertB.y);  // Top-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertC.y);  // Bottom-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordD.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertD.x, vertC.y);  // Bottom-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordD.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertD.x, vertB.y);  // Top-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertB.y);  // Top-left corner for texture and quad
                 }
 
                 // ------------------------------------------------------------
                 // BOTTOM-LEFT QUAD
-                rlTexCoord2f(coordA.x, coordD.y);
-                rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordB.x, coordD.y);
-                rlVertex2f(vertB.x, vertD.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordB.x, coordC.y);
-                rlVertex2f(vertB.x, vertC.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordA.x, coordC.y);
-                rlVertex2f(vertA.x, vertC.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordD.y);
+                context.rlgl.rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordB.x, coordD.y);
+                context.rlgl.rlVertex2f(vertB.x, vertD.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordB.x, coordC.y);
+                context.rlgl.rlVertex2f(vertB.x, vertC.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordC.y);
+                context.rlgl.rlVertex2f(vertA.x, vertC.y);  // Top-left corner for texture and quad
                 if (drawCenter) {
                     // BOTTOM-CENTER QUAD
-                    rlTexCoord2f(coordB.x, coordD.y);
-                    rlVertex2f(vertB.x, vertD.y);  // Bottom-left corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordD.y);
-                    rlVertex2f(vertC.x, vertD.y);  // Bottom-right corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordC.y);
-                    rlVertex2f(vertC.x, vertC.y);  // Top-right corner for texture and quad
-                    rlTexCoord2f(coordB.x, coordC.y);
-                    rlVertex2f(vertB.x, vertC.y);  // Top-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordD.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertD.y);  // Bottom-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordD.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertD.y);  // Bottom-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertC.y);  // Top-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertC.y);  // Top-left corner for texture and quad
                 }
 
                 // BOTTOM-RIGHT QUAD
-                rlTexCoord2f(coordC.x, coordD.y);
-                rlVertex2f(vertC.x, vertD.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordD.x, coordD.y);
-                rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordD.x, coordC.y);
-                rlVertex2f(vertD.x, vertC.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordC.x, coordC.y);
-                rlVertex2f(vertC.x, vertC.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordC.x, coordD.y);
+                context.rlgl.rlVertex2f(vertC.x, vertD.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordD.y);
+                context.rlgl.rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordC.y);
+                context.rlgl.rlVertex2f(vertD.x, vertC.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordC.x, coordC.y);
+                context.rlgl.rlVertex2f(vertC.x, vertC.y);  // Top-left corner for texture and quad
             }
             else if (nPatchInfo.type == NPATCH_THREE_PATCH_VERTICAL) {
                 // TOP QUAD
                 // -----------------------------------------------------------
                 // Texture coords                 Vertices
-                rlTexCoord2f(coordA.x, coordB.y);
-                rlVertex2f(vertA.x, vertB.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordD.x, coordB.y);
-                rlVertex2f(vertD.x, vertB.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordD.x, coordA.y);
-                rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordA.x, coordA.y);
-                rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordB.y);
+                context.rlgl.rlVertex2f(vertA.x, vertB.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordB.y);
+                context.rlgl.rlVertex2f(vertD.x, vertB.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordA.y);
+                context.rlgl.rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordA.y);
+                context.rlgl.rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
                 if (drawCenter) {
                     // MIDDLE QUAD
                     // -----------------------------------------------------------
                     // Texture coords                 Vertices
-                    rlTexCoord2f(coordA.x, coordC.y);
-                    rlVertex2f(vertA.x, vertC.y);  // Bottom-left corner for texture and quad
-                    rlTexCoord2f(coordD.x, coordC.y);
-                    rlVertex2f(vertD.x, vertC.y);  // Bottom-right corner for texture and quad
-                    rlTexCoord2f(coordD.x, coordB.y);
-                    rlVertex2f(vertD.x, vertB.y);  // Top-right corner for texture and quad
-                    rlTexCoord2f(coordA.x, coordB.y);
-                    rlVertex2f(vertA.x, vertB.y);  // Top-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordA.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertA.x, vertC.y);  // Bottom-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordD.x, coordC.y);
+                    context.rlgl.rlVertex2f(vertD.x, vertC.y);  // Bottom-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordD.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertD.x, vertB.y);  // Top-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordA.x, coordB.y);
+                    context.rlgl.rlVertex2f(vertA.x, vertB.y);  // Top-left corner for texture and quad
                 }
                 // BOTTOM QUAD
                 // -----------------------------------------------------------
                 // Texture coords                 Vertices
-                rlTexCoord2f(coordA.x, coordD.y);
-                rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordD.x, coordD.y);
-                rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordD.x, coordC.y);
-                rlVertex2f(vertD.x, vertC.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordA.x, coordC.y);
-                rlVertex2f(vertA.x, vertC.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordD.y);
+                context.rlgl.rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordD.y);
+                context.rlgl.rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordC.y);
+                context.rlgl.rlVertex2f(vertD.x, vertC.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordC.y);
+                context.rlgl.rlVertex2f(vertA.x, vertC.y);  // Top-left corner for texture and quad
             }
             else if (nPatchInfo.type == NPATCH_THREE_PATCH_HORIZONTAL) {
                 // LEFT QUAD
                 // -----------------------------------------------------------
                 // Texture coords                 Vertices
-                rlTexCoord2f(coordA.x, coordD.y);
-                rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordB.x, coordD.y);
-                rlVertex2f(vertB.x, vertD.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordB.x, coordA.y);
-                rlVertex2f(vertB.x, vertA.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordA.x, coordA.y);
-                rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordD.y);
+                context.rlgl.rlVertex2f(vertA.x, vertD.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordB.x, coordD.y);
+                context.rlgl.rlVertex2f(vertB.x, vertD.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordB.x, coordA.y);
+                context.rlgl.rlVertex2f(vertB.x, vertA.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordA.x, coordA.y);
+                context.rlgl.rlVertex2f(vertA.x, vertA.y);  // Top-left corner for texture and quad
                 if (drawCenter) {
                     // CENTER QUAD
                     // -----------------------------------------------------------
                     // Texture coords                 Vertices
-                    rlTexCoord2f(coordB.x, coordD.y);
-                    rlVertex2f(vertB.x, vertD.y);  // Bottom-left corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordD.y);
-                    rlVertex2f(vertC.x, vertD.y);  // Bottom-right corner for texture and quad
-                    rlTexCoord2f(coordC.x, coordA.y);
-                    rlVertex2f(vertC.x, vertA.y);  // Top-right corner for texture and quad
-                    rlTexCoord2f(coordB.x, coordA.y);
-                    rlVertex2f(vertB.x, vertA.y);  // Top-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordD.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertD.y);  // Bottom-left corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordD.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertD.y);  // Bottom-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordC.x, coordA.y);
+                    context.rlgl.rlVertex2f(vertC.x, vertA.y);  // Top-right corner for texture and quad
+                    context.rlgl.rlTexCoord2f(coordB.x, coordA.y);
+                    context.rlgl.rlVertex2f(vertB.x, vertA.y);  // Top-left corner for texture and quad
                 }
                 // RIGHT QUAD
                 // -----------------------------------------------------------
                 // Texture coords                 Vertices
-                rlTexCoord2f(coordC.x, coordD.y);
-                rlVertex2f(vertC.x, vertD.y);  // Bottom-left corner for texture and quad
-                rlTexCoord2f(coordD.x, coordD.y);
-                rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
-                rlTexCoord2f(coordD.x, coordA.y);
-                rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
-                rlTexCoord2f(coordC.x, coordA.y);
-                rlVertex2f(vertC.x, vertA.y);  // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordC.x, coordD.y);
+                context.rlgl.rlVertex2f(vertC.x, vertD.y);  // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordD.y);
+                context.rlgl.rlVertex2f(vertD.x, vertD.y);  // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordD.x, coordA.y);
+                context.rlgl.rlVertex2f(vertD.x, vertA.y);  // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f(coordC.x, coordA.y);
+                context.rlgl.rlVertex2f(vertC.x, vertA.y);  // Top-left corner for texture and quad
             }
-            rlEnd();
-            rlPopMatrix();
+            context.rlgl.rlEnd();
+            context.rlgl.rlPopMatrix();
 
-            rlDisableTexture();
+            context.rlgl.rlDisableTexture();
         }
     }
 
@@ -3914,7 +3917,7 @@ public class rTextures{
     }
 
     // Get color from a pixel from certain format
-    public Color GetPixelColor(byte[] srcPtr, int format) {
+    public Color GetPixelColor(byte[] srcPtr, rlPixelFormat format) {
         Color color = new Color();
 
         switch (format) {
@@ -3977,7 +3980,7 @@ public class rTextures{
     }
 
     //Set pixel color formatted into destination pointer
-    private byte[] SetPixelColor(Color color, int format) {
+    private byte[] SetPixelColor(Color color, rlPixelFormat format) {
         byte[] result = new byte[4];
         switch (format) {
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:{
@@ -4066,7 +4069,7 @@ public class rTextures{
 
     // Get pixel data size in bytes for certain format
     // NOTE: Size can be requested for Image or Texture data
-    public int GetPixelDataSize(int width, int height, int format) {
+    public int GetPixelDataSize(int width, int height, rlPixelFormat format) {
         int dataSize;       // Size in bytes
         int bpp = 0;            // Bits per pixel
 
@@ -4121,10 +4124,10 @@ public class rTextures{
         // Most compressed formats works on 4x4 blocks,
         // if texture is smaller, minimum dataSize is 8 or 16
         if ((width < 4) && (height < 4)) {
-            if ((format >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) && (format < RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA)) {
+            if ((format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) && (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA.GetFormat())) {
                 dataSize = 8;
             }
-            else if ((format >= RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA) && (format < RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA)) {
+            else if ((format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA.GetFormat()) && (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA.GetFormat())) {
                 dataSize = 16;
             }
         }

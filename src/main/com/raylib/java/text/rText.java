@@ -1145,15 +1145,15 @@ public class rText{
     // Draw text using Font and pro parameters (rotation)
     public void DrawTextPro(Font font, String text, Vector2 position, Vector2 origin, float rotation, float fontSize,
                          float spacing, Color tint) {
-        rlPushMatrix();
+        context.rlgl.rlPushMatrix();
 
-        rlTranslatef(position.x, position.y, 0.0f);
-        rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
-        rlTranslatef(-origin.x, -origin.y, 0.0f);
+        context.rlgl.rlTranslatef(position.x, position.y, 0.0f);
+        context.rlgl.rlRotatef(rotation, 0.0f, 0.0f, 1.0f);
+        context.rlgl.rlTranslatef(-origin.x, -origin.y, 0.0f);
 
         DrawTextEx(font, text, new Vector2(), fontSize, spacing, tint);
 
-        rlPopMatrix();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw one character (codepoint)

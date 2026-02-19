@@ -1,5 +1,6 @@
 package com.raylib.java.structs;
 
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
 public class TextureCubemap{
@@ -7,8 +8,8 @@ public class TextureCubemap{
     public int id;                 // OpenGL texture id
     public int width;              // Texture base width
     public int height;             // Texture base height
-    int mipmaps;            // Mipmap levels, 1 by default
-    int format;             // Data format (rlPixelFormat type)
+    public int mipmaps;            // Mipmap levels, 1 by default
+    public rlPixelFormat format;             // Data format (rlPixelFormat type)
 
     public TextureCubemap(){
         this.width = 1;
@@ -49,11 +50,11 @@ public class TextureCubemap{
         this.mipmaps = mipmaps;
     }
 
-    public int getFormat(){
+    public rlPixelFormat getFormat() {
         return format;
     }
 
-    public void setFormat(int format){
+    public void setFormat(rlPixelFormat format) {
         this.format = format;
     }
 

@@ -1,5 +1,7 @@
 package com.raylib.java.structs;
 
+import com.raylib.java.rlgl.RLGL.rlPixelFormat;
+
 import java.nio.ByteBuffer;
 
 public class Image{
@@ -8,16 +10,16 @@ public class Image{
     public int width;                        // Image base width
     public int height;                       // Image base height
     public int mipmaps;                      // Mipmap levels, 1 by default
-    public int format;                       // Data format (rlPixelFormat type)
+    public rlPixelFormat format;                       // Data format (rlPixelFormat type)
 
     public Image(){
         width = 0;
         height = 0;
         mipmaps = 0;
-        format = 0;
+        format = null;
     }
 
-    public Image(Color[] pixels, int width, int height, int pixForInt, int mipmaps){
+    public Image(Color[] pixels, int width, int height, rlPixelFormat pixForInt, int mipmaps){
         byte[] dataB = new byte[pixels.length*4];
         for(int i = 0, j = 0; j < pixels.length; i+=4, j++){
             dataB[i] = (byte) pixels[j].getR();
@@ -34,7 +36,7 @@ public class Image{
         this.mipmaps = mipmaps;
     }
 
-    public Image(byte[] data, int width, int height, int pixForInt, int mipmaps){
+    public Image(byte[] data, int width, int height, rlPixelFormat pixForInt, int mipmaps){
         this.data = ByteBuffer.allocate(data.length);
         this.data.put(data);
         this.data.flip();
@@ -129,11 +131,11 @@ public class Image{
         this.mipmaps = mipmaps;
     }
 
-    public int getFormat(){
+    public rlPixelFormat getFormat(){
         return format;
     }
 
-    public void setFormat(int format){
+    public void setFormat(rlPixelFormat format){
         this.format = format;
     }
 }

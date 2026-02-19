@@ -11,7 +11,7 @@ import static com.raylib.java.utils.Tracelog.TracelogType.LOG_ERROR;
 
 public class GL_33{
 
-    static void rlBegin(int mode){
+    static void rlBegin(RLGL rlgl, int mode){
         // Draw mode can be RL_LINES, RL_TRIANGLES and RL_QUADS
         // NOTE: In all three cases, vertex are accumulated over default internal vertex buffer
         if (rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode != mode) {
@@ -31,14 +31,14 @@ public class GL_33{
                     rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexAlignment = 0;
                 }
 
-                if (!rlCheckRenderBatchLimit(rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexAlignment)) {
+                if (!rlgl.rlCheckRenderBatchLimit(rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexAlignment)) {
                     rlglData.getState().vertexCounter += rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexAlignment;
                     rlglData.getCurrentBatch().drawCounter++;
                 }
             }
 
             if (rlglData.getCurrentBatch().drawCounter >= RL_DEFAULT_BATCH_DRAWCALLS) {
-                rlDrawRenderBatch(rlglData.getCurrentBatch());
+                rlgl.rlDrawRenderBatch(rlglData.getCurrentBatch());
             }
 
             rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode = mode;
@@ -48,7 +48,7 @@ public class GL_33{
     }
 
     // Finish vertex providing
-    static void rlEnd(){
+    static void rlEnd(RLGL rlgl){
         // NOTE: Depth increment is dependant on rlOrtho(): z-near and z-far values,
         // as well as depth buffer bit-depth (16bit or 24bit or 32bit)
         // Correct increment formula would be: depthInc = (zfar - znear)/pow(2, bits)
@@ -63,7 +63,7 @@ public class GL_33{
             for (int i = rlglData.getState().getStackCounter(); i >= 0; i--){
                 rlPopMatrix();
             }
-            rlDrawRenderBatch(rlglData.getCurrentBatch());
+            rlgl.rlDrawRenderBatch(rlglData.getCurrentBatch());
         }
     }
 

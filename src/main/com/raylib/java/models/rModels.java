@@ -97,81 +97,81 @@ public class rModels{
         // WARNING: Be careful with internal buffer vertex alignment
         // when using RL_LINES or RL_TRIANGLES, data is aligned to fit
         // lines-triangles-quads in the same indexed buffers!!!
-        rlCheckRenderBatchLimit(8);
+        context.rlgl.rlCheckRenderBatchLimit(8);
 
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlVertex3f(startPos.x, startPos.y, startPos.z);
-        rlVertex3f(endPos.x, endPos.y, endPos.z);
-        rlEnd();
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlVertex3f(startPos.x, startPos.y, startPos.z);
+        context.rlgl.rlVertex3f(endPos.x, endPos.y, endPos.z);
+        context.rlgl.rlEnd();
     }
 
     // Draw a point in 3D space, actually a small line
     public void DrawPoint3D(Vector3 position, Color color){
-        rlCheckRenderBatchLimit(8);
+        context.rlgl.rlCheckRenderBatchLimit(8);
 
-        rlPushMatrix();
-        rlTranslatef(position.x, position.y, position.z);
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlVertex3f(0.0f, 0.0f, 0.0f);
-        rlVertex3f(0.0f, 0.0f, 0.1f);
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlPushMatrix();
+        context.rlgl.rlTranslatef(position.x, position.y, position.z);
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlVertex3f(0.0f, 0.0f, 0.0f);
+        context.rlgl.rlVertex3f(0.0f, 0.0f, 0.1f);
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw a circle in 3D world space
     public void DrawCircle3D(Vector3 center, float radius, Vector3 rotationAxis, float rotationAngle, Color color){
-        rlCheckRenderBatchLimit(2 * 36);
+        context.rlgl.rlCheckRenderBatchLimit(2 * 36);
 
-        rlPushMatrix();
-        rlTranslatef(center.x, center.y, center.z);
-        rlRotatef(rotationAngle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
+        context.rlgl.rlPushMatrix();
+        context.rlgl.rlTranslatef(center.x, center.y, center.z);
+        context.rlgl.rlRotatef(rotationAngle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
 
-        rlBegin(RL_LINES);
+        context.rlgl.rlBegin(RL_LINES);
         for (int i = 0; i < 360; i += 10){
-            rlColor4ub(color.r, color.g, color.b, color.a);
+            context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-            rlVertex3f((float) Math.sin(DEG2RAD * i) * radius, (float) Math.cos(DEG2RAD * i) * radius, 0.0f);
-            rlVertex3f((float) Math.sin(DEG2RAD * (i + 10)) * radius, (float) Math.cos(DEG2RAD * (i + 10)) * radius, 0.0f);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radius, (float) Math.cos(DEG2RAD * i) * radius, 0.0f);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 10)) * radius, (float) Math.cos(DEG2RAD * (i + 10)) * radius, 0.0f);
         }
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw a color-filled triangle (vertex in counter-clockwise order!)
     public void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color){
-        rlCheckRenderBatchLimit(8);
+        context.rlgl.rlCheckRenderBatchLimit(8);
 
-        rlBegin(RL_TRIANGLES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlVertex3f(v1.x, v1.y, v1.z);
-        rlVertex3f(v2.x, v2.y, v2.z);
-        rlVertex3f(v3.x, v3.y, v3.z);
-        rlEnd();
+        context.rlgl.rlBegin(RL_TRIANGLES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlVertex3f(v1.x, v1.y, v1.z);
+        context.rlgl.rlVertex3f(v2.x, v2.y, v2.z);
+        context.rlgl.rlVertex3f(v3.x, v3.y, v3.z);
+        context.rlgl.rlEnd();
     }
 
     // Draw a triangle strip defined by points
     public void DrawTriangleStrip3D(Vector3[] points, int pointsCount, Color color){
         if (pointsCount >= 3){
-            rlCheckRenderBatchLimit(3 * (pointsCount - 2));
+            context.rlgl.rlCheckRenderBatchLimit(3 * (pointsCount - 2));
 
-            rlBegin(RL_TRIANGLES);
-            rlColor4ub(color.r, color.g, color.b, color.a);
+            context.rlgl.rlBegin(RL_TRIANGLES);
+            context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
             for (int i = 2; i < pointsCount; i++){
                 if ((i % 2) == 0){
-                    rlVertex3f(points[i].x, points[i].y, points[i].z);
-                    rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
-                    rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
+                    context.rlgl.rlVertex3f(points[i].x, points[i].y, points[i].z);
+                    context.rlgl.rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
+                    context.rlgl.rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
                 }
                 else{
-                    rlVertex3f(points[i].x, points[i].y, points[i].z);
-                    rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
-                    rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
+                    context.rlgl.rlVertex3f(points[i].x, points[i].y, points[i].z);
+                    context.rlgl.rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
+                    context.rlgl.rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
                 }
             }
-            rlEnd();
+            context.rlgl.rlEnd();
         }
     }
 
@@ -182,72 +182,72 @@ public class rModels{
         float y = 0.0f;
         float z = 0.0f;
 
-        rlCheckRenderBatchLimit(36);
+        context.rlgl.rlCheckRenderBatchLimit(36);
 
-        rlPushMatrix();
+        context.rlgl.rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> rotate -> translate)
-        rlTranslatef(position.x, position.y, position.z);
-        //rlRotatef(45, 0, 1, 0);
-        //rlScalef(1.0f, 1.0f, 1.0f);   // NOTE: Vertices are directly scaled on definition
+        context.rlgl.rlTranslatef(position.x, position.y, position.z);
+        //context.rlgl.rlRotatef(45, 0, 1, 0);
+        //context.rlgl.rlScalef(1.0f, 1.0f, 1.0f);   // NOTE: Vertices are directly scaled on definition
 
-        rlBegin(RL_TRIANGLES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_TRIANGLES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         // Front face
-        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
 
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
 
         // Back face
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
 
-        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
 
         // Top face
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Bottom Left
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
 
-        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Bottom Right
 
         // Bottom face
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
 
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left
 
         // Right face
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
 
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Left
 
         // Left face
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Right
 
-        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw cube (Vector version)
@@ -261,67 +261,67 @@ public class rModels{
         float y = 0.0f;
         float z = 0.0f;
 
-        rlCheckRenderBatchLimit(36);
+        context.rlgl.rlCheckRenderBatchLimit(36);
 
-        rlPushMatrix();
-        rlTranslatef(position.x, position.y, position.z);
+        context.rlgl.rlPushMatrix();
+        context.rlgl.rlTranslatef(position.x, position.y, position.z);
 
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         // Front Face -----------------------------------------------------
         // Bottom Line
-        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
 
         // Left Line
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
 
         // Top Line
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
 
         // Right Line
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
-        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Bottom Left
 
         // Back Face ------------------------------------------------------
         // Bottom Line
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
 
         // Left Line
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
-        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Bottom Right
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
 
         // Top Line
-        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
 
         // Right Line
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Bottom Left
 
         // Top Face -------------------------------------------------------
         // Left Line
-        rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left Front
-        rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left Back
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z + length / 2);  // Top Left Front
+        context.rlgl.rlVertex3f(x - width / 2, y + height / 2, z - length / 2);  // Top Left Back
 
         // Right Line
-        rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right Front
-        rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right Back
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z + length / 2);  // Top Right Front
+        context.rlgl.rlVertex3f(x + width / 2, y + height / 2, z - length / 2);  // Top Right Back
 
         // Bottom Face  ---------------------------------------------------
         // Left Line
-        rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Top Left Front
-        rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left Back
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z + length / 2);  // Top Left Front
+        context.rlgl.rlVertex3f(x - width / 2, y - height / 2, z - length / 2);  // Top Left Back
 
         // Right Line
-        rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Top Right Front
-        rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right Back
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z + length / 2);  // Top Right Front
+        context.rlgl.rlVertex3f(x + width / 2, y - height / 2, z - length / 2);  // Top Right Back
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw cube wires (vector version)
@@ -337,84 +337,84 @@ public class rModels{
     // Draw sphere with extended parameters
     public void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color){
         int numVertex = (rings + 2) * slices * 6;
-        rlCheckRenderBatchLimit(numVertex);
+        context.rlgl.rlCheckRenderBatchLimit(numVertex);
 
-        rlPushMatrix();
+        context.rlgl.rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> translate)
-        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        rlScalef(radius, radius, radius);
+        context.rlgl.rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        context.rlgl.rlScalef(radius, radius, radius);
 
-        rlBegin(RL_TRIANGLES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_TRIANGLES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         for (int i = 0; i < (rings + 2); i++){
             for (int j = 0; j < slices; j++){
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
 
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
             }
         }
 
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw sphere wires
     public void DrawSphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color){
         int numVertex = (rings + 2) * slices * 6;
-        rlCheckRenderBatchLimit(numVertex);
+        context.rlgl.rlCheckRenderBatchLimit(numVertex);
 
-        rlPushMatrix();
+        context.rlgl.rlPushMatrix();
         // NOTE: Transformation is applied in inverse order (scale -> translate)
-        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        rlScalef(radius, radius, radius);
+        context.rlgl.rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        context.rlgl.rlScalef(radius, radius, radius);
 
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         for (int i = 0; i < (rings + 2); i++){
             for (int j = 0; j < slices; j++){
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
 
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
 
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
-                rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
+                context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
                         (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
                         (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
             }
         }
 
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw a cylinder
@@ -423,51 +423,51 @@ public class rModels{
         if (sides < 3) sides = 3;
 
         int numVertex = sides * 6;
-        rlCheckRenderBatchLimit(numVertex);
+        context.rlgl.rlCheckRenderBatchLimit(numVertex);
 
-        rlPushMatrix();
-        rlTranslatef(position.x, position.y, position.z);
+        context.rlgl.rlPushMatrix();
+        context.rlgl.rlTranslatef(position.x, position.y, position.z);
 
-        rlBegin(RL_TRIANGLES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_TRIANGLES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         if (radiusTop > 0){
             // Draw Body -------------------------------------------------------------------------------------
             for (int i = 0; i < 360; i += 360 / sides){
-                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom); //Bottom Left
-                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom); //Bottom Right
-                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom); //Bottom Left
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom); //Bottom Right
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
 
-                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop); //Top Left
-                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom); //Bottom Left
-                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop); //Top Left
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom); //Bottom Left
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop); //Top Right
             }
 
             // Draw Cap --------------------------------------------------------------------------------------
             for (int i = 0; i < 360; i += 360 / sides){
-                rlVertex3f(0, height, 0);
-                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
-                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
+                context.rlgl.rlVertex3f(0, height, 0);
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
             }
         }
         else{
             // Draw Cone -------------------------------------------------------------------------------------
             for (int i = 0; i < 360; i += 360 / sides){
-                rlVertex3f(0, height, 0);
-                rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
-                rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
+                context.rlgl.rlVertex3f(0, height, 0);
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
+                context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
             }
         }
 
         // Draw Base -----------------------------------------------------------------------------------------
         for (int i = 0; i < 360; i += 360 / sides){
-            rlVertex3f(0, 0, 0);
-            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
-            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
+            context.rlgl.rlVertex3f(0, 0, 0);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
         }
 
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw a wired cylinder
@@ -476,30 +476,30 @@ public class rModels{
         if (sides < 3) sides = 3;
 
         int numVertex = sides * 8;
-        rlCheckRenderBatchLimit(numVertex);
+        context.rlgl.rlCheckRenderBatchLimit(numVertex);
 
-        rlPushMatrix();
-        rlTranslatef(position.x, position.y, position.z);
+        context.rlgl.rlPushMatrix();
+        context.rlgl.rlTranslatef(position.x, position.y, position.z);
 
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         for (int i = 0; i < 360; i += 360 / sides){
-            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
-            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
 
-            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
-            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusBottom);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
 
-            rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
-            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 360 / sides)) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 360 / sides)) * radiusTop);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
 
-            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
-            rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusTop, height, (float) Math.cos(DEG2RAD * i) * radiusTop);
+            context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i) * radiusBottom);
         }
 
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw a capsule with the center of its sphere caps at startPos and endPos
@@ -525,8 +525,8 @@ public class rModels{
         float baseSliceAngle = (2.0f*PI)/slices;
         float baseRingAngle  = PI * 0.5f / rings;
 
-        rlBegin(RL_TRIANGLES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_TRIANGLES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         // render both caps
         for (int c = 0; c < 2; c++) {
@@ -572,22 +572,22 @@ public class rModels{
 
                     // make sure cap triangle normals are facing outwards
                     if(c == 0) {
-                        rlVertex3f(w1.x, w1.y, w1.z);
-                        rlVertex3f(w2.x, w2.y, w2.z);
-                        rlVertex3f(w3.x, w3.y, w3.z);
+                        context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);
+                        context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                        context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
 
-                        rlVertex3f(w2.x, w2.y, w2.z);
-                        rlVertex3f(w4.x, w4.y, w4.z);
-                        rlVertex3f(w3.x, w3.y, w3.z);
+                        context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                        context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);
+                        context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
                     }
                     else {
-                        rlVertex3f(w1.x, w1.y, w1.z);
-                        rlVertex3f(w3.x, w3.y, w3.z);
-                        rlVertex3f(w2.x, w2.y, w2.z);
+                        context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);
+                        context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
+                        context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
 
-                        rlVertex3f(w2.x, w2.y, w2.z);
-                        rlVertex3f(w3.x, w3.y, w3.z);
-                        rlVertex3f(w4.x, w4.y, w4.z);
+                        context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                        context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
+                        context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);
                     }
                 }
             }
@@ -631,18 +631,18 @@ public class rModels{
                     endPos.z + ringSin4*b1.z + ringCos4*b2.z
                 );
                 //          w2 x.-----------x startPos
-                rlVertex3f(w1.x, w1.y, w1.z);                         // |           |\'.  T0    /
-                rlVertex3f(w2.x, w2.y, w2.z);                         // T1          | \ '.     /
-                rlVertex3f(w3.x, w3.y, w3.z);                         // |           |T \  '.  /
+                context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);                         // |           |\'.  T0    /
+                context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);                         // T1          | \ '.     /
+                context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);                         // |           |T \  '.  /
                 //             | 2 \ T 'x w1
-                rlVertex3f(w2.x, w2.y, w2.z);                         // |        w4 x.---\-1-|---x endPos
-                rlVertex3f(w4.x, w4.y, w4.z);                         // T2            '.  \  |T3/
-                rlVertex3f(w3.x, w3.y, w3.z);                         // |               '. \ | /
+                context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);                         // |        w4 x.---\-1-|---x endPos
+                context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);                         // T2            '.  \  |T3/
+                context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);                         // |               '. \ | /
                 //                   '.\|/
                 //                   'x w3
             }
         }
-        rlEnd();
+        context.rlgl.rlEnd();
     }
 
     // Draw capsule wires with the center of its sphere caps at startPos and endPos
@@ -668,8 +668,8 @@ public class rModels{
         float baseSliceAngle = (2.0f*PI)/slices;
         float baseRingAngle  = PI * 0.5f / rings;
 
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         // render both caps
         for (int c = 0; c < 2; c++) {
@@ -713,20 +713,20 @@ public class rModels{
                             (capCenter.z + (Math.sin(baseRingAngle * ( i + 1 ))*b0.z + ringSin4*b1.z + ringCos4*b2.z) * radius)
                     );
 
-                    rlVertex3f(w1.x, w1.y, w1.z);
-                    rlVertex3f(w2.x, w2.y, w2.z);
+                    context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);
+                    context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
 
-                    rlVertex3f(w2.x, w2.y, w2.z);
-                    rlVertex3f(w3.x, w3.y, w3.z);
+                    context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                    context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
 
-                    rlVertex3f(w1.x, w1.y, w1.z);
-                    rlVertex3f(w3.x, w3.y, w3.z);
+                    context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);
+                    context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
 
-                    rlVertex3f(w2.x, w2.y, w2.z);
-                    rlVertex3f(w4.x, w4.y, w4.z);
+                    context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                    context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);
 
-                    rlVertex3f(w3.x, w3.y, w3.z);
-                    rlVertex3f(w4.x, w4.y, w4.z);
+                    context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
+                    context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);
                 }
             }
             capCenter = startPos;
@@ -769,81 +769,81 @@ public class rModels{
                     endPos.z + ringSin4*b1.z + ringCos4*b2.z
                 );
 
-                rlVertex3f(w1.x, w1.y, w1.z);
-                rlVertex3f(w3.x, w3.y, w3.z);
+                context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);
+                context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
 
-                rlVertex3f(w2.x, w2.y, w2.z);
-                rlVertex3f(w4.x, w4.y, w4.z);
+                context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);
 
-                rlVertex3f(w2.x, w2.y, w2.z);
-                rlVertex3f(w3.x, w3.y, w3.z);
+                context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
+                context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
             }
         }
-        rlEnd();
+        context.rlgl.rlEnd();
     }
 
     // Draw a plane
     public void DrawPlane(Vector3 centerPos, Vector2 size, Color color){
-        rlCheckRenderBatchLimit(4);
+        context.rlgl.rlCheckRenderBatchLimit(4);
 
         // NOTE: Plane is always created on XZ ground
-        rlPushMatrix();
-        rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
-        rlScalef(size.x, 1.0f, size.y);
+        context.rlgl.rlPushMatrix();
+        context.rlgl.rlTranslatef(centerPos.x, centerPos.y, centerPos.z);
+        context.rlgl.rlScalef(size.x, 1.0f, size.y);
 
-        rlBegin(RL_QUADS);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlNormal3f(0.0f, 1.0f, 0.0f);
+        context.rlgl.rlBegin(RL_QUADS);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlNormal3f(0.0f, 1.0f, 0.0f);
 
-        rlVertex3f(-0.5f, 0.0f, -0.5f);
-        rlVertex3f(-0.5f, 0.0f, 0.5f);
-        rlVertex3f(0.5f, 0.0f, 0.5f);
-        rlVertex3f(0.5f, 0.0f, -0.5f);
-        rlEnd();
-        rlPopMatrix();
+        context.rlgl.rlVertex3f(-0.5f, 0.0f, -0.5f);
+        context.rlgl.rlVertex3f(-0.5f, 0.0f, 0.5f);
+        context.rlgl.rlVertex3f(0.5f, 0.0f, 0.5f);
+        context.rlgl.rlVertex3f(0.5f, 0.0f, -0.5f);
+        context.rlgl.rlEnd();
+        context.rlgl.rlPopMatrix();
     }
 
     // Draw a ray line
     public void DrawRay(Ray ray, Color color){
         float scale = 10000;
 
-        rlBegin(RL_LINES);
-        rlColor4ub(color.r, color.g, color.b, color.a);
-        rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        rlVertex3f(ray.position.x, ray.position.y, ray.position.z);
-        rlVertex3f(ray.position.x + ray.direction.x * scale, ray.position.y + ray.direction.y * scale, ray.position.z + ray.direction.z * scale);
-        rlEnd();
+        context.rlgl.rlVertex3f(ray.position.x, ray.position.y, ray.position.z);
+        context.rlgl.rlVertex3f(ray.position.x + ray.direction.x * scale, ray.position.y + ray.direction.y * scale, ray.position.z + ray.direction.z * scale);
+        context.rlgl.rlEnd();
     }
 
     // Draw a grid centered at (0, 0, 0)
     public void DrawGrid(int slices, float spacing){
         int halfSlices = slices / 2;
 
-        rlCheckRenderBatchLimit((slices + 2) * 4);
+        context.rlgl.rlCheckRenderBatchLimit((slices + 2) * 4);
 
-        rlBegin(RL_LINES);
+        context.rlgl.rlBegin(RL_LINES);
         for (int i = -halfSlices; i <= halfSlices; i++){
             if (i == 0){
-                rlColor3f(0.5f, 0.5f, 0.5f);
-                rlColor3f(0.5f, 0.5f, 0.5f);
-                rlColor3f(0.5f, 0.5f, 0.5f);
-                rlColor3f(0.5f, 0.5f, 0.5f);
+                context.rlgl.rlColor3f(0.5f, 0.5f, 0.5f);
+                context.rlgl.rlColor3f(0.5f, 0.5f, 0.5f);
+                context.rlgl.rlColor3f(0.5f, 0.5f, 0.5f);
+                context.rlgl.rlColor3f(0.5f, 0.5f, 0.5f);
             }
             else{
-                rlColor3f(0.75f, 0.75f, 0.75f);
-                rlColor3f(0.75f, 0.75f, 0.75f);
-                rlColor3f(0.75f, 0.75f, 0.75f);
-                rlColor3f(0.75f, 0.75f, 0.75f);
+                context.rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                context.rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                context.rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                context.rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
             }
 
-            rlVertex3f((float) i * spacing, 0.0f, (float) -halfSlices * spacing);
-            rlVertex3f((float) i * spacing, 0.0f, (float) halfSlices * spacing);
+            context.rlgl.rlVertex3f((float) i * spacing, 0.0f, (float) -halfSlices * spacing);
+            context.rlgl.rlVertex3f((float) i * spacing, 0.0f, (float) halfSlices * spacing);
 
-            rlVertex3f((float) -halfSlices * spacing, 0.0f, (float) i * spacing);
-            rlVertex3f((float) halfSlices * spacing, 0.0f, (float) i * spacing);
+            context.rlgl.rlVertex3f((float) -halfSlices * spacing, 0.0f, (float) i * spacing);
+            context.rlgl.rlVertex3f((float) halfSlices * spacing, 0.0f, (float) i * spacing);
         }
-        rlEnd();
+        context.rlgl.rlEnd();
     }
 
     public Model LoadModel(String fileName) {
@@ -1005,78 +1005,78 @@ public class rModels{
         mesh.vboId[6] = 0;     // Vertex buffer: indices
 
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
-            mesh.vaoId = rlLoadVertexArray();
-            rlEnableVertexArray(mesh.vaoId);
+            mesh.vaoId = context.rlgl.rlLoadVertexArray();
+            context.rlgl.rlEnableVertexArray(mesh.vaoId);
 
             // NOTE: Attributes must be uploaded considering default locations points
 
             // Enable vertex attributes: position (shader-location = 0)
             float[] vertices = mesh.animVertices != null ? mesh.animVertices : mesh.vertices;
-            mesh.vboId[0] = rlLoadVertexBuffer(vertices, dynamic);
-            rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
-            rlEnableVertexAttribute(0);
+            mesh.vboId[0] = context.rlgl.rlLoadVertexBuffer(vertices, dynamic);
+            context.rlgl.rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
+            context.rlgl.rlEnableVertexAttribute(0);
 
             // Enable vertex attributes: texcoords (shader-location = 1)
-            mesh.vboId[1] = rlLoadVertexBuffer(mesh.texcoords, dynamic);
-            rlSetVertexAttribute(1, 2, RL_FLOAT, false, 0, 0);
-            rlEnableVertexAttribute(1);
+            mesh.vboId[1] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords, dynamic);
+            context.rlgl.rlSetVertexAttribute(1, 2, RL_FLOAT, false, 0, 0);
+            context.rlgl.rlEnableVertexAttribute(1);
 
             if (mesh.normals != null) {
                 // Enable vertex attributes: normals (shader-location = 2)
                 float[] normals = mesh.animNormals != null ? mesh.animNormals : mesh.normals;
-                mesh.vboId[2] = rlLoadVertexBuffer(normals, dynamic);
-                rlSetVertexAttribute(2, 3, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(2);
+                mesh.vboId[2] = context.rlgl.rlLoadVertexBuffer(normals, dynamic);
+                context.rlgl.rlSetVertexAttribute(2, 3, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(2);
             }
             else {
                 // Default color vertex attribute set to WHITE
                 float[] value ={1.0f, 1.0f, 1.0f} ;
-                rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
-                rlDisableVertexAttribute(2);
+                context.rlgl.rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
+                context.rlgl.rlDisableVertexAttribute(2);
             }
 
             if (mesh.colors != null) {
                 // Enable vertex attribute: color (shader-location = 3)
-                mesh.vboId[3] = rlLoadVertexBuffer(mesh.colors, dynamic);
-                rlSetVertexAttribute(3, 4, RL_UNSIGNED_BYTE, true, 0, 0);
-                rlEnableVertexAttribute(3);
+                mesh.vboId[3] = context.rlgl.rlLoadVertexBuffer(mesh.colors, dynamic);
+                context.rlgl.rlSetVertexAttribute(3, 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(3);
             } else {
                 // Default color vertex attribute set to WHITE
                 float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
-                rlSetVertexAttributeDefault(3, value, RL_SHADER_ATTRIB_VEC4, 4);
-                rlDisableVertexAttribute(3);
+                context.rlgl.rlSetVertexAttributeDefault(3, value, RL_SHADER_ATTRIB_VEC4, 4);
+                context.rlgl.rlDisableVertexAttribute(3);
             }
 
             if (mesh.tangents != null) {
                 // Enable vertex attribute: tangent (shader-location = 4)
-                mesh.vboId[4] = rlLoadVertexBuffer(mesh.tangents, dynamic);
-                rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(4);
+                mesh.vboId[4] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, dynamic);
+                context.rlgl.rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(4);
             } else {
                 // Default tangents vertex attribute
                 float[] value ={0.0f, 0.0f, 0.0f, 0.0f} ;
-                rlSetVertexAttributeDefault(4, value, RL_SHADER_ATTRIB_VEC4, 4);
-                rlDisableVertexAttribute(4);
+                context.rlgl.rlSetVertexAttributeDefault(4, value, RL_SHADER_ATTRIB_VEC4, 4);
+                context.rlgl.rlDisableVertexAttribute(4);
             }
 
             if (mesh.texcoords2 != null) {
                 // Enable vertex attribute: texcoord2 (shader-location = 5)
-                mesh.vboId[5] = rlLoadVertexBuffer(mesh.texcoords2, dynamic);
-                rlSetVertexAttribute(5, 2, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(5);
+                mesh.vboId[5] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords2, dynamic);
+                context.rlgl.rlSetVertexAttribute(5, 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(5);
             } else {
                 // Default texcoord2 vertex attribute
                 float[] value = {0.0f, 0.0f} ;
-                rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
-                rlDisableVertexAttribute(5);
+                context.rlgl.rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
+                context.rlgl.rlDisableVertexAttribute(5);
             }
 
             if (mesh.indices != null) {
-                mesh.vboId[6] = rlLoadVertexBufferElement(mesh.indices, dynamic);
+                mesh.vboId[6] = context.rlgl.rlLoadVertexBufferElement(mesh.indices, dynamic);
             }
 
             if (mesh.indicesS != null) {
-                mesh.vboId[6] = rlLoadVertexBufferElement(mesh.indicesS, dynamic);
+                mesh.vboId[6] = context.rlgl.rlLoadVertexBufferElement(mesh.indicesS, dynamic);
             }
 
             if (mesh.vaoId > 0) {
@@ -1086,13 +1086,13 @@ public class rModels{
                 TRACELOG(LOG_INFO, "VBO: Mesh uploaded successfully to VRAM (GPU)");
             }
 
-            rlDisableVertexArray();
+            context.rlgl.rlDisableVertexArray();
         }
     }
 
     // Update mesh vertex data in GPU for a specific buffer index
     public void UpdateMeshBuffer(Mesh mesh, int index, byte[] data, int offset) {
-        rlUpdateVertexBuffer(mesh.vboId[index], data, offset);
+        context.rlgl.rlUpdateVertexBuffer(mesh.vboId[index], data, offset);
     }
 
     // Draw a 3d mesh with material and transform
@@ -1103,44 +1103,44 @@ public class rModels{
             final int GL_COLOR_ARRAY = 0x8076;
             final int GL_TEXTURE_COORD_ARRAY = 0x8078;
 
-            rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE].texture.id);
+            context.rlgl.rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE].texture.id);
 
-            rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
-            rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
-            rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
-            rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
+            context.rlgl.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
+            context.rlgl.rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
+            context.rlgl.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
+            context.rlgl.rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
 
-            rlPushMatrix();
-            rlMultMatrixf(MatrixToFloat(transform));
-            rlColor4ub(material.maps[MATERIAL_MAP_DIFFUSE].color.r,
+            context.rlgl.rlPushMatrix();
+            context.rlgl.rlMultMatrixf(MatrixToFloat(transform));
+            context.rlgl.rlColor4ub(material.maps[MATERIAL_MAP_DIFFUSE].color.r,
                     material.maps[MATERIAL_MAP_DIFFUSE].color.g,
                     material.maps[MATERIAL_MAP_DIFFUSE].color.b,
                     material.maps[MATERIAL_MAP_DIFFUSE].color.a);
 
             if (mesh.indices != null) {
-                rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
+                context.rlgl.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
             }
             else {
-                rlDrawVertexArray(0, mesh.vertexCount);
+                context.rlgl.rlDrawVertexArray(0, mesh.vertexCount);
             }
-            rlPopMatrix();
+            context.rlgl.rlPopMatrix();
 
-            rlDisableStatePointer(GL_VERTEX_ARRAY);
-            rlDisableStatePointer(GL_TEXTURE_COORD_ARRAY);
-            rlDisableStatePointer(GL_NORMAL_ARRAY);
-            rlDisableStatePointer(GL_COLOR_ARRAY);
+            context.rlgl.rlDisableStatePointer(GL_VERTEX_ARRAY);
+            context.rlgl.rlDisableStatePointer(GL_TEXTURE_COORD_ARRAY);
+            context.rlgl.rlDisableStatePointer(GL_NORMAL_ARRAY);
+            context.rlgl.rlDisableStatePointer(GL_COLOR_ARRAY);
 
-            rlDisableTexture();
+            context.rlgl.rlDisableTexture();
         }
 
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             // Bind shader program
-            rlEnableShader(material.shader.id);
+            context.rlgl.rlEnableShader(material.shader.id);
 
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] != -1) {
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
                 float[] values ={
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
@@ -1148,55 +1148,55 @@ public class rModels{
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
                 } ;
 
-                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE], values, RL_SHADER_UNIFORM_VEC4, 1);
+                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
             }
 
             // Upload to shader material.colSpecular (if location available)
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR] != -1) {
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values ={
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.r / 255.0f,
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.g / 255.0f,
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.b / 255.0f,
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.a / 255.0f
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
+                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
                 } ;
 
-                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR], values, RL_SHADER_UNIFORM_VEC4, 1);
+                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
             }
 
             // Get a copy of current matrices to work with,
             // just in case stereo render is required and we need to modify them
             // NOTE: At this point the modelview matrix just contains the view matrix (camera)
             // That's because BeginMode3D() sets it and there is no model-drawing function
-            // that modifies it, all use rlPushMatrix() and rlPopMatrix()
+            // that modifies it, all use context.rlgl.rlPushMatrix() and context.rlgl.rlPopMatrix()
             Matrix matModel = MatrixIdentity();
-            Matrix matView = rlGetMatrixModelview();
+            Matrix matView = context.rlgl.rlGetMatrixModelview();
             Matrix matModelView = MatrixIdentity();
-            Matrix matProjection = rlGetMatrixProjection();
+            Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1) {
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW], matView);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
             }
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1) {
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION], matProjection);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
             }
 
             // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] != -1) {
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL], transform);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()], transform);
             }
 
             // Accumulate several model transformations:
             //    transform: model transformation provided (includes DrawModel() params combined with model.transform)
-            //    rlGetMatrixTransform(): rlgl internal transform matrix due to push/pop matrix stack
-            matModel = MatrixMultiply(transform, rlGetMatrixTransform());
+            //    context.rlgl.rlGetMatrixTransform(): rlgl internal transform matrix due to push/pop matrix stack
+            matModel = MatrixMultiply(transform, context.rlgl.rlGetMatrixTransform());
 
             // Get model-view matrix
             matModelView = MatrixMultiply(matModel, matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] != -1) {
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL], MatrixTranspose(MatrixInvert(matModel)));
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
             //-----------------------------------------------------
 
@@ -1204,17 +1204,17 @@ public class rModels{
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 if (material.maps[i].texture.id > 0) {
                     // Select current shader texture slot
-                    rlActiveTextureSlot(i);
+                    context.rlgl.rlActiveTextureSlot(i);
 
                     // Enable texture for active slot
                     if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
-                        rlEnableTextureCubemap(material.maps[i].texture.id);
+                        context.rlgl.rlEnableTextureCubemap(material.maps[i].texture.id);
                     }
                     else {
-                        rlEnableTexture(material.maps[i].texture.id);
+                        context.rlgl.rlEnableTexture(material.maps[i].texture.id);
                     }
 
-                    rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE + i], new float[]{i}, RL_SHADER_UNIFORM_INT, 1);
+                    context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation() + i], new float[]{i}, RL_SHADER_UNIFORM_INT);
                 }
             }
 
@@ -1222,64 +1222,64 @@ public class rModels{
             // WARNING: UploadMesh() enables all vertex attributes available in mesh and sets default attribute values
             // for shader expected vertex attributes that are not provided by the mesh (i.e. colors)
             // This could be a dangerous approach because different meshes with different shaders can enable/disable some attributes
-            if (!rlEnableVertexArray(mesh.vaoId)) {
+            if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
-                rlEnableVertexBuffer(mesh.vboId[0]);
-                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION], 3, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[0]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                 // Bind mesh VBO data: vertex texcoords (shader-location = 1)
-                rlEnableVertexBuffer(mesh.vboId[1]);
-                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01], 2, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[1]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL] != -1) {
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
-                    rlEnableVertexBuffer(mesh.vboId[2]);
-                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL], 3, RL_FLOAT, false, 0, 0);
-                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[2]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR] != -1) {
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
                     if (mesh.vboId[3] != 0) {
-                        rlEnableVertexBuffer(mesh.vboId[3]);
-                        rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], 4, RL_UNSIGNED_BYTE, true, 0, 0);
-                        rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[3]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                     else {
                         // Set default value for defined vertex attribute in shader but not provided by mesh
                         // WARNING: It could result in GPU undefined behaviour
                         float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
-                        rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], value, RL_SHADER_ATTRIB_VEC4, 4);
-                        rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                        context.rlgl.rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], value, RL_SHADER_ATTRIB_VEC4, 4);
+                        context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                 }
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT] != -1) {
-                    rlEnableVertexBuffer(mesh.vboId[4]);
-                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT], 4, RL_FLOAT, false, 0, 0);
-                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT]);
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[4]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] != -1) {
-                    rlEnableVertexBuffer(mesh.vboId[5]);
-                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02], 2, RL_FLOAT, false, 0, 0);
-                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02]);
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[5]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
                 if (mesh.indices != null || mesh.indicesS != null) {
-                    rlEnableVertexBufferElement(mesh.vboId[6]);
+                    context.rlgl.rlEnableVertexBufferElement(mesh.vboId[6]);
                 }
             }
 
             // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
-            if (mesh.vboId[3] == 0) rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+            if (mesh.vboId[3] == 0) context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
 
             int eyeCount = 1;
-            if (rlIsStereoRendererEnabled()) {
+            if (context.rlgl.rlIsStereoRendererEnabled()) {
                 eyeCount = 2;
             }
 
@@ -1291,47 +1291,47 @@ public class rModels{
                 }
                 else {
                     // Setup current eye viewport (half screen width)
-                    rlViewport(eye * rlGetFramebufferWidth() / 2, 0, rlGetFramebufferWidth() / 2, rlGetFramebufferHeight());
-                    matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, rlGetMatrixViewOffsetStereo(eye)), rlGetMatrixProjectionStereo(eye));
+                    context.rlgl.rlViewport(eye * context.rlgl.rlGetFramebufferWidth() / 2, 0, context.rlgl.rlGetFramebufferWidth() / 2, context.rlgl.rlGetFramebufferHeight());
+                    matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, context.rlgl.rlGetMatrixViewOffsetStereo(eye)), context.rlgl.rlGetMatrixProjectionStereo(eye));
                 }
 
                 // Send combined model-view-projection matrix to shader
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP], matModelViewProjection);
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
 
                 // Draw mesh
                 if (mesh.indices != null || mesh.indicesS != null) {
-                    rlDrawVertexArrayElements(0, mesh.triangleCount * 3, new float[0]);
+                    context.rlgl.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, new float[0]);
                 }
                 else {
-                    rlDrawVertexArray(0, mesh.vertexCount);
+                    context.rlgl.rlDrawVertexArray(0, mesh.vertexCount);
                 }
             }
 
             // Unbind all bound texture maps
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 // Select current shader texture slot
-                rlActiveTextureSlot(i);
+                context.rlgl.rlActiveTextureSlot(i);
 
                 // Disable texture for active slot
                 if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
-                    rlDisableTextureCubemap();
+                    context.rlgl.rlDisableTextureCubemap();
                 }
                 else {
-                    rlDisableTexture();
+                    context.rlgl.rlDisableTexture();
                 }
             }
 
             // Disable all possible vertex array objects (or VBOs)
-            rlDisableVertexArray();
-            rlDisableVertexBuffer();
-            rlDisableVertexBufferElement();
+            context.rlgl.rlDisableVertexArray();
+            context.rlgl.rlDisableVertexBuffer();
+            context.rlgl.rlDisableVertexBufferElement();
 
             // Disable shader program
-            rlDisableShader();
+            context.rlgl.rlDisableShader();
 
             // Restore rlgl internal modelview and projection matrices
-            rlSetMatrixModelview(matView);
-            rlSetMatrixProjection(matProjection);
+            context.rlgl.rlSetMatrixModelview(matView);
+            context.rlgl.rlSetMatrixProjection(matProjection);
         }
     }
 
@@ -1343,12 +1343,12 @@ public class rModels{
             int instancesVboId = 0;
 
             // Bind shader program
-            rlEnableShader(material.shader.id);
+            context.rlgl.rlEnableShader(material.shader.id);
 
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE] != -1) {
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
                 float[] values ={
                     (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
                     (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
@@ -1356,36 +1356,36 @@ public class rModels{
                     (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
                 } ;
 
-                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE], values, RL_SHADER_UNIFORM_VEC4, 1);
+                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
             }
 
             // Upload to shader material.colSpecular (if location available)
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR] != -1) {
+            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values = {
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.r / 255.0f,
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.g / 255.0f,
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.b / 255.0f,
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR].color.a / 255.0f
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
+                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
                 } ;
 
-                rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR], values, RL_SHADER_UNIFORM_VEC4, 1);
+                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
             }
 
             // Get a copy of current matrices to work with,
             // just in case stereo render is required and we need to modify them
             // NOTE: At this point the modelview matrix just contains the view matrix (camera)
             // That's because BeginMode3D() sets it and there is no model-drawing function
-            // that modifies it, all use rlPushMatrix() and rlPopMatrix()
+            // that modifies it, all use context.rlgl.rlPushMatrix() and context.rlgl.rlPopMatrix()
             Matrix matModel = MatrixIdentity();
-            Matrix matView = rlGetMatrixModelview();
+            Matrix matView = context.rlgl.rlGetMatrixModelview();
             Matrix matModelView = MatrixIdentity();
-            Matrix matProjection = rlGetMatrixProjection();
+            Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW] != -1)
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW], matView);
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION] != -1)
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION], matProjection);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1)
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1)
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
 
             // Create instances buffer
             instanceTransforms = new float[instances*16];
@@ -1399,77 +1399,77 @@ public class rModels{
             }
 
             // Enable mesh VAO to attach new buffer
-            rlEnableVertexArray(mesh.vaoId);
+            context.rlgl.rlEnableVertexArray(mesh.vaoId);
 
             // This could alternatively use a static VBO and either glMapBuffer() or glBufferSubData().
             // It isn't clear which would be reliably faster in all cases and on all platforms,
             // anecdotally glMapBuffer() seems very slow (syncs) while glBufferSubData() seems
             // no faster, since we're transferring all the transform matrices anyway
-            instancesVboId = rlLoadVertexBuffer(instanceTransforms, false);
+            instancesVboId = context.rlgl.rlLoadVertexBuffer(instanceTransforms, false);
 
             // Instances transformation matrices are send to shader attribute location: SHADER_LOC_MATRIX_MODEL
             for (int i = 0; i < 4; i++) {
-                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] + i);
-                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] + i, 4, RL_FLOAT, false, 16, i);
-                rlSetVertexAttributeDivisor(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL] + i, 1);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] + i);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 4, RL_FLOAT, false, 16, i);
+                context.rlgl.rlSetVertexAttributeDivisor(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 1);
             }
 
-            rlDisableVertexBuffer();
-            rlDisableVertexArray();
+            context.rlgl.rlDisableVertexBuffer();
+            context.rlgl.rlDisableVertexArray();
 
             // Accumulate internal matrix transform (push/pop) and view matrix
             // NOTE: In this case, model instance transformation must be computed in the shader
-            matModelView = MatrixMultiply(rlGetMatrixTransform(), matView);
+            matModelView = MatrixMultiply(context.rlgl.rlGetMatrixTransform(), matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL] != -1)
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL], MatrixTranspose(MatrixInvert(matModel)));
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1)
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             //-----------------------------------------------------
 
             // Bind active texture maps (if available)
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 if (material.maps[i].texture.id > 0) {
                     // Select current shader texture slot
-                    rlActiveTextureSlot(i);
+                    context.rlgl.rlActiveTextureSlot(i);
 
                     // Enable texture for active slot
                     if ((i == MATERIAL_MAP_IRRADIANCE) || (i == MATERIAL_MAP_PREFILTER) || (i == MATERIAL_MAP_CUBEMAP)) {
-                        rlEnableTextureCubemap(material.maps[i].texture.id);
+                        context.rlgl.rlEnableTextureCubemap(material.maps[i].texture.id);
                     }
                     else {
-                        rlEnableTexture(material.maps[i].texture.id);
+                        context.rlgl.rlEnableTexture(material.maps[i].texture.id);
                     }
 
-                    rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE + i],  new float[]{i}, RL_SHADER_UNIFORM_INT, 1);
+                    context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation() + i],  new float[]{i}, RL_SHADER_UNIFORM_INT);
                 }
             }
 
             // Try binding vertex array objects (VAO)
             // or use VBOs if not possible
-            if (!rlEnableVertexArray(mesh.vaoId)) {
+            if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
-                rlEnableVertexBuffer(mesh.vboId[0]);
-                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION], 3, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[0]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                 // Bind mesh VBO data: vertex texcoords (shader-location = 1)
-                rlEnableVertexBuffer(mesh.vboId[1]);
-                rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01], 2, RL_FLOAT, false, 0, 0);
-                rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[1]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL] != -1) {
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
-                    rlEnableVertexBuffer(mesh.vboId[2]);
-                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL], 3, RL_FLOAT, false, 0, 0);
-                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[2]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR] != -1) {
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
                     if (mesh.vboId[3] != 0) {
-                        rlEnableVertexBuffer(mesh.vboId[3]);
-                        rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], 4, RL_UNSIGNED_BYTE, true, 0, 0);
-                        rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[3]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                     else {
                         // Set default value for unused attribute
@@ -1477,37 +1477,37 @@ public class rModels{
                         float[] value ={
                             1.0f, 1.0f, 1.0f, 1.0f
                         };
-                        rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR], value, RL_SHADER_ATTRIB_VEC4, 4);
-                        rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                        context.rlgl.rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], value, RL_SHADER_ATTRIB_VEC4, 4);
+                        context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                 }
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT] != -1) {
-                    rlEnableVertexBuffer(mesh.vboId[4]);
-                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT], 4, RL_FLOAT, false, 0, 0);
-                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT]);
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[4]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02] != -1) {
-                    rlEnableVertexBuffer(mesh.vboId[5]);
-                    rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02], 2, RL_FLOAT, false, 0, 0);
-                    rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02]);
+                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[5]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
                 if (mesh.indices != null) {
-                    rlEnableVertexBufferElement(mesh.vboId[6]);
+                    context.rlgl.rlEnableVertexBufferElement(mesh.vboId[6]);
                 }
             }
 
             // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
             if (mesh.vboId[3] == 0) {
-                rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR]);
+                context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
             }
 
             int eyeCount = 1;
-            if (rlIsStereoRendererEnabled()) {
+            if (context.rlgl.rlIsStereoRendererEnabled()) {
                 eyeCount = 2;
             }
 
@@ -1517,19 +1517,19 @@ public class rModels{
                 if (eyeCount == 1) matModelViewProjection = MatrixMultiply(matModelView, matProjection);
                 else {
                     // Setup current eye viewport (half screen width)
-                    rlViewport(eye * rlGetFramebufferWidth() / 2, 0, rlGetFramebufferWidth() / 2, rlGetFramebufferHeight());
-                    matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, rlGetMatrixViewOffsetStereo(eye)), rlGetMatrixProjectionStereo(eye));
+                    context.rlgl.rlViewport(eye * context.rlgl.rlGetFramebufferWidth() / 2, 0, context.rlgl.rlGetFramebufferWidth() / 2, context.rlgl.rlGetFramebufferHeight());
+                    matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, context.rlgl.rlGetMatrixViewOffsetStereo(eye)), context.rlgl.rlGetMatrixProjectionStereo(eye));
                 }
 
                 // Send combined model-view-projection matrix to shader
-                rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP], matModelViewProjection);
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
 
                 // Draw mesh instanced
                 if (mesh.indices != null){
-                    rlDrawVertexArrayElementsInstanced(0, mesh.triangleCount * 3, null, instances);
+                    context.rlgl.rlDrawVertexArrayElementsInstanced(0, mesh.triangleCount * 3, null, instances);
                 }
                 else {
-                    rlDrawVertexArrayInstanced(0, mesh.vertexCount, instances);
+                    context.rlgl.rlDrawVertexArrayInstanced(0, mesh.vertexCount, instances);
                 }
             }
 
@@ -1537,30 +1537,30 @@ public class rModels{
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 if (material.maps[i].texture.id > 0) {
                     // Select current shader texture slot
-                    rlActiveTextureSlot(i);
+                    context.rlgl.rlActiveTextureSlot(i);
 
                     // Disable texture for active slot
                     if ((i == MATERIAL_MAP_IRRADIANCE) ||
                             (i == MATERIAL_MAP_PREFILTER) ||
                             (i == MATERIAL_MAP_CUBEMAP)) {
-                        rlDisableTextureCubemap();
+                        context.rlgl.rlDisableTextureCubemap();
                     }
                     else {
-                        rlDisableTexture();
+                        context.rlgl.rlDisableTexture();
                     }
                 }
             }
 
             // Disable all possible vertex array objects (or VBOs)
-            rlDisableVertexArray();
-            rlDisableVertexBuffer();
-            rlDisableVertexBufferElement();
+            context.rlgl.rlDisableVertexArray();
+            context.rlgl.rlDisableVertexBuffer();
+            context.rlgl.rlDisableVertexBufferElement();
 
             // Disable shader program
-            rlDisableShader();
+            context.rlgl.rlDisableShader();
 
             // Remove instance transforms buffer
-            rlUnloadVertexBuffer(instancesVboId);
+            context.rlgl.rlUnloadVertexBuffer(instancesVboId);
             instanceTransforms = null;
         }
     }
@@ -1568,11 +1568,11 @@ public class rModels{
     // Unload mesh from memory (RAM and VRAM)
     public void UnloadMesh(Mesh mesh) {
         // Unload rlgl mesh vboId data
-        rlUnloadVertexArray(mesh.vaoId);
+        context.rlgl.rlUnloadVertexArray(mesh.vaoId);
 
         if (mesh.vboId != null){
             for (int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
-                rlUnloadVertexBuffer(mesh.vboId[i]);
+                context.rlgl.rlUnloadVertexBuffer(mesh.vboId[i]);
             }
         }
         mesh = null;
@@ -1662,7 +1662,7 @@ public class rModels{
 
             // Get default texture, in case no texture is defined
             // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-            materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
             if (loader.mtlInfo.materials[m].diffuse_texname != null) {
                 materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
@@ -1736,11 +1736,11 @@ public class rModels{
         }
 
         // Using rlgl default shader
-        material.shader.id = rlGetShaderIdDefault();
-        material.shader.locs = rlGetShaderLocsDefault();
+        material.shader.id = context.rlgl.rlGetShaderIdDefault();
+        material.shader.locs = context.rlgl.rlGetShaderLocsDefault();
 
         // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
-        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
         //material.maps[MATERIAL_MAP_NORMAL].texture;         // NOTE: By default, not set
         //material.maps[MATERIAL_MAP_SPECULAR].texture;       // NOTE: By default, not set
 
@@ -1758,15 +1758,15 @@ public class rModels{
     // Unload material from memory
     public void UnloadMaterial(Material material) {
         // Unload material shader (avoid unloading default shader, managed by raylib)
-        if (material.shader.id != rlGetShaderIdDefault()) {
+        if (material.shader.id != context.rlgl.rlGetShaderIdDefault()) {
             context.core.UnloadShader(material.shader);
         }
 
         // Unload loaded texture maps (avoid unloading default texture, managed by raylib)
         if (material.maps != null) {
             for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
-                if (material.maps[i].texture.id != rlGetTextureIdDefault()) {
-                    rlUnloadTexture(material.maps[i].texture.id);
+                if (material.maps[i].texture.id != context.rlgl.rlGetTextureIdDefault()) {
+                    context.rlgl.rlUnloadTexture(material.maps[i].texture.id);
                 }
             }
         }
@@ -1904,8 +1904,8 @@ public class rModels{
                 // Upload new vertex data to GPU for model drawing
                 // Only update data when values changed.
                 if (updated){
-                    rlUpdateVertexBuffer(mesh.vboId[0], mesh.animVertices, 0);    // Update vertex position
-                    rlUpdateVertexBuffer(mesh.vboId[2], mesh.animNormals, 0);     // Update vertex normals
+                    context.rlgl.rlUpdateVertexBuffer(mesh.vboId[0], mesh.animVertices, 0);    // Update vertex position
+                    context.rlgl.rlUpdateVertexBuffer(mesh.vboId[2], mesh.animNormals, 0);     // Update vertex normals
                 }
             }
         }
@@ -3176,19 +3176,19 @@ public class rModels{
         }
 
         if (mesh.vboId != null) {
-            if (mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT] != 0) {
+            if (mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
                 // Upate existing vertex buffer
-                rlUpdateVertexBuffer(mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT], mesh.tangents, mesh.vertexCount*4);
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount*4);
             }
             else {
                 // Load a new tangent attributes buffer
-                mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT] = rlLoadVertexBuffer(mesh.tangents, false);
+                mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, false);
             }
 
-            rlEnableVertexArray(mesh.vaoId);
-            rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
-            rlEnableVertexAttribute(4);
-            rlDisableVertexArray();
+            context.rlgl.rlEnableVertexArray(mesh.vaoId);
+            context.rlgl.rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
+            context.rlgl.rlEnableVertexAttribute(4);
+            context.rlgl.rlDisableVertexArray();
         }
 
         TRACELOG(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
@@ -3233,20 +3233,20 @@ public class rModels{
 
     // Draw a model wires (with texture if set)
     public void DrawModelWires(Model model, Vector3 position, float scale, Color tint) {
-        rlEnableWireMode();
+        context.rlgl.rlEnableWireMode();
 
         DrawModel(model, position, scale, tint);
 
-        rlDisableWireMode();
+        context.rlgl.rlDisableWireMode();
     }
 
     // Draw a model wires (with texture if set) with extended parameters
     public void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
-        rlEnableWireMode();
+        context.rlgl.rlEnableWireMode();
 
         DrawModelEx(model, position, rotationAxis, rotationAngle, scale, tint);
 
-        rlDisableWireMode();
+        context.rlgl.rlDisableWireMode();
     }
 
     // Draw a billboard
@@ -3325,31 +3325,31 @@ public class rModels{
         bottomRight = Vector3Add(bottomRight, position);
         bottomLeft = Vector3Add(bottomLeft, position);
 
-        rlCheckRenderBatchLimit(8);
+        context.rlgl.rlCheckRenderBatchLimit(8);
 
-        rlSetTexture(texture.id);
+        context.rlgl.rlSetTexture(texture.id);
 
-        rlBegin(RL_QUADS);
-        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+        context.rlgl.rlBegin(RL_QUADS);
+        context.rlgl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
 
         // Bottom-left corner for texture and quad
-        rlTexCoord2f(source.x/texture.width, source.y/texture.height);
-        rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
+        context.rlgl.rlTexCoord2f(source.x/texture.width, source.y/texture.height);
+        context.rlgl.rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
 
         // Top-left corner for texture and quad
-        rlTexCoord2f(source.x/texture.width, (source.y + source.height)/texture.height);
-        rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
+        context.rlgl.rlTexCoord2f(source.x/texture.width, (source.y + source.height)/texture.height);
+        context.rlgl.rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
 
         // Top-right corner for texture and quad
-        rlTexCoord2f((source.x + source.width)/texture.width, (source.y + source.height)/texture.height);
-        rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
+        context.rlgl.rlTexCoord2f((source.x + source.width)/texture.width, (source.y + source.height)/texture.height);
+        context.rlgl.rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
 
         // Bottom-right corner for texture and quad
-        rlTexCoord2f((source.x + source.width)/texture.width, source.y/texture.height);
-        rlVertex3f(topRight.x, topRight.y, topRight.z);
-        rlEnd();
+        context.rlgl.rlTexCoord2f((source.x + source.width)/texture.width, source.y/texture.height);
+        context.rlgl.rlVertex3f(topRight.x, topRight.y, topRight.z);
+        context.rlgl.rlEnd();
 
-        rlSetTexture(0);
+        context.rlgl.rlSetTexture(0);
     }
 
     // Draw a bounding box with wires
