@@ -170,7 +170,7 @@ public class rShapes{
     }
 
     /**
-     * Draw line using cubic-bezier curves in-out
+     * Draw line using cubic-bezier spline, in-out interpolation, no control points
      *
      * @param startPos X, Y position to begin drawing line
      * @param endPos   X, Y position to end drawing line
@@ -178,10 +178,10 @@ public class rShapes{
      * @param color    color to draw the line
      */
     public void DrawLineBezier(Vector2 startPos, Vector2 endPos, float thick, Color color) {
-        Vector2 previous = startPos;
+        Vector2 previous = new Vector2(startPos.x, startPos.y);
         Vector2 current = new Vector2();
 
-        Vector2[] points = new Vector2[2*BEZIER_LINE_DIVISIONS + 2];
+        Vector2[] points = new Vector2[2 * BEZIER_LINE_DIVISIONS + 2];
         for (int i = 0; i < points.length; i++) {
             points[i] = new Vector2();
         }
@@ -190,25 +190,26 @@ public class rShapes{
             // Cubic easing in-out
             // NOTE: Easing is calculated only for y position value
             current.y = EaseCubicInOut((float)i, startPos.y, endPos.y - startPos.y, (float)BEZIER_LINE_DIVISIONS);
-            current.x = previous.x + (endPos.x - startPos.x)/ (float)BEZIER_LINE_DIVISIONS;
+            current.x = previous.x + (endPos.x - startPos.x)/(float)BEZIER_LINE_DIVISIONS;
 
-            float dy = current.y-previous.y;
-            float dx = current.x-previous.x;
+            float dy = current.y - previous.y;
+            float dx = current.x - previous.x;
             float size = (float) (0.5f*thick/Math.sqrt(dx*dx+dy*dy));
 
             if (i == 1) {
-                points[0].x = previous.x+dy*size;
-                points[0].y = previous.y-dx*size;
-                points[1].x = previous.x-dy*size;
-                points[1].y = previous.y+dx*size;
+                points[0].x = previous.x + dy*size;
+                points[0].y = previous.y - dx*size;
+                points[1].x = previous.x - dy*size;
+                points[1].y = previous.y + dx*size;
             }
 
-            points[2*i+1].x = current.x-dy*size;
-            points[2*i+1].y = current.y+dx*size;
-            points[2*i].x = current.x+dy*size;
-            points[2*i].y = current.y-dx*size;
+            points[2*i + 1].x = current.x - dy*size;
+            points[2*i + 1].y = current.y + dx*size;
+            points[2*i].x = current.x + dy*size;
+            points[2*i].y = current.y - dx*size;
 
-            previous = current;
+            previous.x = current.x;
+            previous.y = current.y;
         }
 
         DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
@@ -226,7 +227,7 @@ public class rShapes{
     public void DrawLineBezierQuad(Vector2 startPos, Vector2 endPos, Vector2 controlPos, float thick, Color color) {
         float step = 1.0f/BEZIER_LINE_DIVISIONS;
 
-        Vector2 previous = startPos;
+        Vector2 previous = new Vector2(startPos.x, startPos.y);
         Vector2 current = new Vector2();
         float t;
 
@@ -261,7 +262,8 @@ public class rShapes{
             points[2*i].x = current.x+dy*size;
             points[2*i].y = current.y-dx*size;
 
-            previous = current;
+            previous.x = current.x;
+            previous.y = current.y;
         }
 
         DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
@@ -280,7 +282,7 @@ public class rShapes{
                                    float thick, Color color) {
         float step = 1.0f/BEZIER_LINE_DIVISIONS;
 
-        Vector2 previous = startPos;
+        Vector2 previous = new Vector2(startPos.x, startPos.y);
         Vector2 current = new Vector2();
         float t;
 
@@ -315,7 +317,8 @@ public class rShapes{
             points[2*i].x = current.x+dy*size;
             points[2*i].y = current.y-dx*size;
 
-            previous = current;
+            previous.x = current.x;
+            previous.y = current.y;
         }
 
         DrawTriangleStrip(points, 2*BEZIER_LINE_DIVISIONS+2, color);
@@ -1712,19 +1715,17 @@ public class rShapes{
      * @param color       color to draw strip
      */
     public void DrawTriangleStrip(Vector2[] points, int pointCount, Color color) {
-        if(pointCount >= 3) {
-            rlCheckRenderBatchLimit(3 * (pointCount - 2));
-
+        if (pointCount >= 3) {
             rlBegin(RL_TRIANGLES);
             rlColor4ub(color.r, color.g, color.b, color.a);
 
-            for(int i = 2; i < pointCount; i++) {
-                if((i % 2) == 0) {
+            for (int i = 2; i < pointCount; i++) {
+                if ((i%2) == 0) {
                     rlVertex2f(points[i].x, points[i].y);
                     rlVertex2f(points[i - 2].x, points[i - 2].y);
                     rlVertex2f(points[i - 1].x, points[i - 1].y);
                 }
-                else{
+                else {
                     rlVertex2f(points[i].x, points[i].y);
                     rlVertex2f(points[i - 1].x, points[i - 1].y);
                     rlVertex2f(points[i - 2].x, points[i - 2].y);
@@ -2183,10 +2184,16 @@ public class rShapes{
     // Cubic easing in-out
     // NOTE: Used by DrawLineBezier() only
     private float EaseCubicInOut(float t, float b, float c, float d) {
-        if ((t /= 0.5f*d) < 1) return 0.5f*c*t*t*t + b;
+        float result = 0.0f;
 
-        t -= 2;
+        if ((t /= 0.5f*d) < 1) {
+            result = 0.5f*c*t*t*t + b;
+        }
+        else {
+            t -= 2;
+            result = 0.5f*c*(t*t*t + 2.0f) + b;
+        }
 
-        return 0.5f*c*(t*t*t + 2.0f) + b;
+        return result;
     }
 }
