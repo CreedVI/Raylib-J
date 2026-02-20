@@ -7,10 +7,10 @@ import java.nio.ByteBuffer;
 public class Image{
 
     public ByteBuffer data;               // Image raw data
-    public int width;                        // Image base width
-    public int height;                       // Image base height
-    public int mipmaps;                      // Mipmap levels, 1 by default
-    public rlPixelFormat format;                       // Data format (rlPixelFormat type)
+    public int width;                     // Image base width
+    public int height;                    // Image base height
+    public int mipmaps;                   // Mipmap levels, 1 by default
+    public rlPixelFormat format;          // Data format (rlPixelFormat type)
 
     public Image(){
         width = 0;
@@ -27,7 +27,7 @@ public class Image{
             dataB[i + 2] = (byte) pixels[j].getB();
             dataB[i + 3] = (byte) pixels[j].getA();
         }
-        this.data = ByteBuffer.allocate(dataB.length);
+        this.data = ByteBuffer.allocateDirect(dataB.length);
         this.data.put(dataB);
         this.data.flip();
         this.width = width;
@@ -37,7 +37,7 @@ public class Image{
     }
 
     public Image(byte[] data, int width, int height, rlPixelFormat pixForInt, int mipmaps){
-        this.data = ByteBuffer.allocate(data.length);
+        this.data = ByteBuffer.allocateDirect(data.length);
         this.data.put(data);
         this.data.flip();
         this.width = width;
