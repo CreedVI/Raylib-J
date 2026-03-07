@@ -4933,14 +4933,13 @@ public class rModels{
                 }
                 else {
                     int b64Size = gltfjImage.uri.length() + i + 1;
-                    int outSize = 3*(b64Size/4);
 
                     String uri = gltfjImage.uri;
                     String encoded = uri.substring(uri.lastIndexOf(",") + 1);
                     byte[] data = Base64.getDecoder().decode(encoded);
 
                     if (data != null) {
-                        image = context.textures.LoadImageFromMemory(".png", data, outSize);
+                        image = context.textures.LoadImageFromMemory(".png", data);
                     }
 
                 }
@@ -4960,10 +4959,10 @@ public class rModels{
             }
 
             if (gltfjImage.mimeType.equals("image\\/png") || gltfjImage.mimeType.equals("image/png")) {
-                image = context.textures.LoadImageFromMemory(".png", data, bufferView.size);
+                image = context.textures.LoadImageFromMemory(".png", data);
             }
             else if (gltfjImage.mimeType.equals("image\\/jpeg") || gltfjImage.mimeType.equals("image/jpeg")) {
-                image = context.textures.LoadImageFromMemory(".jpg", data, bufferView.size);
+                image = context.textures.LoadImageFromMemory(".jpg", data);
             }
             else {
                 TRACELOG(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + gltfjImage.mimeType + ")");

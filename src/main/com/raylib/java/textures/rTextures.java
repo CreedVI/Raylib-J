@@ -41,14 +41,23 @@ public class rTextures{
     final int GAUSSIAN_BLUR_ITERATIONS = 4;
 
     // Cubemap layouts
-    public static class CubemapLayoutType{
-        public static final int
-                CUBEMAP_AUTO_DETECT = 0,            // Automatically detect layout type
-                CUBEMAP_LINE_VERTICAL = 1,          // Layout is defined by a vertical line with faces
-                CUBEMAP_LINE_HORIZONTAL = 2,        // Layout is defined by an horizontal line with faces
-                CUBEMAP_CROSS_THREE_BY_FOUR = 3,    // Layout is defined by a 3x4 cross with cubemap faces
-                CUBEMAP_CROSS_FOUR_BY_THREE = 4,    // Layout is defined by a 4x3 cross with cubemap faces
-                CUBEMAP_PANORAMA = 5;               // Layout is defined by a panorama image (equirectangular map)
+    public enum CubemapLayoutType {
+        CUBEMAP_AUTO_DETECT(0),            // Automatically detect layout type
+        CUBEMAP_LINE_VERTICAL(1),          // Layout is defined by a vertical line with faces
+        CUBEMAP_LINE_HORIZONTAL(2),        // Layout is defined by an horizontal line with faces
+        CUBEMAP_CROSS_THREE_BY_FOUR(3),    // Layout is defined by a 3x4 cross with cubemap faces
+        CUBEMAP_CROSS_FOUR_BY_THREE(4),    // Layout is defined by a 4x3 cross with cubemap faces
+        CUBEMAP_PANORAMA(5);               // Layout is defined by a panorama image (equirectangular map)
+
+        private final int value;
+
+        CubemapLayoutType(int value) {
+            this.value = value;
+        }
+
+        public int GetValue() {
+            return value;
+        }
     }
 
     private final Raylib context;
@@ -72,7 +81,7 @@ public class rTextures{
 
         if (fileData != null) {
             // Loading image from memory data
-            image = LoadImageFromMemory(fileName.substring(fileName.lastIndexOf('.')), fileData, fileSize);
+            image = LoadImageFromMemory(fileName.substring(fileName.lastIndexOf('.')), fileData);
 
             if (image.data != null) {
                 TRACELOG(LOG_INFO, "IMAGE: [" + fileName + "] Data loaded successfully (" +
@@ -146,7 +155,7 @@ public class rTextures{
                         IntBuffer framesBuffer = stack.mallocInt(1);
                         framesBuffer.put(framesCount).flip();
 
-                        ByteBuffer fileDataBuffer = MemoryUtil.memAlloc(fileData.length);
+                        ByteBuffer fileDataBuffer = ByteBuffer.allocateDirect(fileData.length);
                         fileDataBuffer.put(fileData).flip();
 
                         ByteBuffer imgBuffer = STBImage.stbi_load_gif_from_memory(fileDataBuffer, delaysBuffer,
@@ -182,7 +191,7 @@ public class rTextures{
 
     // Load image from memory buffer, fileType refers to extension: i.e. ".png"
     // WARNING: File extension must be provided in lower-case
-    public Image LoadImageFromMemory(String fileType, byte[] fileData, int dataSize) {
+    public Image LoadImageFromMemory(String fileType, byte[] fileData) {
         Image image = new Image();
 
         if (SUPPORT_FILEFORMAT_PNG || SUPPORT_FILEFORMAT_BMP || SUPPORT_FILEFORMAT_TGA || SUPPORT_FILEFORMAT_JPG ||
@@ -198,7 +207,7 @@ public class rTextures{
                         IntBuffer heightBuffer = stack.mallocInt(1);
                         IntBuffer compBuffer = stack.mallocInt(1);
 
-                        ByteBuffer fileDataBuffer = MemoryUtil.memAlloc(fileData.length);
+                        ByteBuffer fileDataBuffer = ByteBuffer.allocateDirect(fileData.length);
                         fileDataBuffer.put(fileData).flip();
 
                         ByteBuffer imgBuffer = STBImage.stbi_load_from_memory(fileDataBuffer, widthBuffer,
@@ -216,7 +225,8 @@ public class rTextures{
                             }
                             image.setData(bytes);
                         }
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -246,7 +256,7 @@ public class rTextures{
                         IntBuffer heightBuffer = stack.mallocInt(1);
                         IntBuffer compBuffer = stack.mallocInt(1);
 
-                        ByteBuffer fileDataBuffer = MemoryUtil.memAlloc(fileData.length);
+                        ByteBuffer fileDataBuffer = ByteBuffer.allocateDirect(fileData.length);
                         fileDataBuffer.put(fileData).flip();
 
                         ByteBuffer imgBuffer = STBImage.stbi_load_from_memory(fileDataBuffer, widthBuffer,
@@ -733,8 +743,9 @@ public class rTextures{
         }
 
         if (image.data != null) {
-            newImage.setData(image.getData());
+            byte[] imgData = image.getData();
 
+            newImage.setData(imgData);
             newImage.width = image.width;
             newImage.height = image.height;
             newImage.mipmaps = image.mipmaps;
@@ -813,23 +824,23 @@ public class rTextures{
 
     // Convert image data to desired format
     public Image ImageFormat(Image image, rlPixelFormat newFormat) {
-        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
+        Image result = new Image();
+        result.width = image.width;
+        result.height = image.height;
+        result.format = newFormat;
 
         // Security check to avoid program crash
-        if ((result.data == null) || (result.width == 0) || (result.height == 0)) {
-            return result;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
         }
 
-        if ((newFormat != null) && (result.format != newFormat)) {
-            if ((result.format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) && (newFormat.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())) {
-                Vector4[] pixels = LoadImageDataNormalized(result);     // Supports 8 to 32 bit per channel
-
-                // WARNING! We loose mipmaps data --> Regenerated at the end...
-                result.format = newFormat;
+        if ((newFormat != null) && (image.format != newFormat)) {
+            if ((image.format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) && (newFormat.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())) {
+                Vector4[] pixels = LoadImageDataNormalized(image);     // Supports 8 to 32 bit per channel
 
                 int k = 0;
 
-                switch (result.format) {
+                switch (newFormat) {
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:{
                         result.data = ByteBuffer.allocateDirect(result.width * result.height);
 
@@ -945,12 +956,11 @@ public class rTextures{
                     default:
                         break;
                 }
-
                 result.data.flip();
 
                 // In case original image had mipmaps, generate mipmaps for formated image
                 // NOTE: Original mipmaps are replaced by new ones, if custom mipmaps were used, they are lost
-                if (result.mipmaps > 1) {
+                if (image.mipmaps >= 1) {
                     result.mipmaps = 1;
                     if (SUPPORT_IMAGE_MANIPULATION) {
                         if (result.data != null) {
@@ -962,6 +972,9 @@ public class rTextures{
             else{
                 TRACELOG(LOG_WARNING, "IMAGE: Data format is compressed, can not be converted");
             }
+        }
+        else {
+            return image;
         }
 
         return result;
@@ -1202,8 +1215,7 @@ public class rTextures{
             // Force mask to be Grayscale
             Image mask = ImageCopy(alphaMask);
             if (mask.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE) {
-                ImageFormat(mask, RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE)
-                ;
+                ImageFormat(mask, RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
             }
 
             // In case image is only grayscale, we just add alpha channel
@@ -1414,34 +1426,36 @@ public class rTextures{
     // STBIR_DEFAULT_FILTER_UPSAMPLE    STBIR_FILTER_CATMULLROM
     // STBIR_DEFAULT_FILTER_DOWNSAMPLE  STBIR_FILTER_MITCHELL   (high-quality Catmull-Rom)
     public Image ImageResize(Image image, int newWidth, int newHeight) {
-        Image result = new Image(image.getData(), image.width, image.height, image.format, image.mipmaps);
+        Image result = new Image();
 
         // Security check to avoid program crash
-        if ((result.data == null) || (result.width == 0) || (result.height == 0)) {
-            return result;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
         }
 
-        boolean fastPath = (result.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE) && (result.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA)
-                && (result.format != RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8) && (result.format != RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        if ((image.format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE) ||
+                (image.format == RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) ||
+                (image.format == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8) ||
+                (image.format == RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)) {
 
-        int bytesPerPixel = GetPixelDataSize(1, 1, result.format);
-        ByteBuffer outputBuffer = MemoryUtil.memAlloc(newWidth * newHeight * bytesPerPixel);
-        if (fastPath) {
-            switch (result.getFormat()) {
+            int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
+            ByteBuffer outputBuffer = ByteBuffer.allocateDirect(newWidth * newHeight * bytesPerPixel);
+
+            switch (image.format) {
                 case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
-                    stbir_resize_uint8(result.data, result.width, result.height, 0, outputBuffer,
+                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 1);
                     break;
                 case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
-                    stbir_resize_uint8(result.data, result.width, result.height, 0, outputBuffer,
+                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 2);
                     break;
                 case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:
-                    stbir_resize_uint8(result.data, result.width, result.height, 0, outputBuffer,
+                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 3);
                     break;
                 case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
-                    stbir_resize_uint8(result.data, result.width, result.height, 0, outputBuffer,
+                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 4);
                     break;
                 default:
@@ -1451,15 +1465,15 @@ public class rTextures{
             result.setData(outputBuffer);
             result.width = newWidth;
             result.height = newHeight;
+            result.format = image.format;
         }
         else{
-            // Get data as Color pixels array to work with it
+            ByteBuffer outputBuffer = ByteBuffer.allocateDirect(newWidth * newHeight * 4);
 
-            // NOTE: Color data is casted to ( char *), there shouldn't been any problem...
-            stbir_resize_uint8(result.data, result.width, result.height, 0, outputBuffer,
+            stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
                                newWidth, newHeight, 0, 4);
 
-            rlPixelFormat format = result.format;
+            rlPixelFormat format = image.format;
 
             result.setData(outputBuffer);
             result.width = newWidth;
@@ -1590,7 +1604,7 @@ public class rTextures{
             return;
         }
 
-        int mipCount = 1;                   // Required mipmap levels count (including base level)
+        int mipCount = 1;                  // Required mipmap levels count (including base level)
         int mipWidth = image.width;        // Base image width
         int mipHeight = image.height;      // Base image height
         int mipSize = GetPixelDataSize(mipWidth, mipHeight, image.format);  // Image data size (in bytes)
@@ -1619,7 +1633,10 @@ public class rTextures{
         }
 
         if (image.mipmaps < mipCount) {
-            ByteBuffer temp = image.data;
+            ByteBuffer temp = ByteBuffer.allocateDirect(image.data.capacity() + mipSize);
+            for (int i = 0; i < image.data.capacity(); i++) {
+                temp.put(i, image.data.get(i));
+            }
 
             if (temp != null) {
                 image.data = temp;      // Assign new pointer (new size) to store mipmaps data
@@ -1640,7 +1657,7 @@ public class rTextures{
                 Tracelog.TRACELOG("IMAGE: Generating mipmap level: " + i + " (" + mipWidth + " x " + mipHeight + ")" +
                                   " - size: " + mipSize + " - offset: " + nextmip);
 
-                ImageResize(imCopy, mipWidth, mipHeight);  // Uses internally Mitchell cubic downscale filter
+                imCopy = ImageResize(imCopy, mipWidth, mipHeight);  // Uses internally Mitchell cubic downscale filter
 
                 nextmip = imCopy.data.capacity();
                 nextmip += mipSize;
@@ -1773,10 +1790,12 @@ public class rTextures{
     }
 
     // Flip image vertically
-    public void ImageFlipVertical(Image image) {
+    public Image ImageFlipVertical(Image image) {
+        Image result = new Image();
+
         // Security check to avoid program crash
         if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
-            return;
+            return image;
         }
 
         if (image.mipmaps > 1) {
@@ -1795,14 +1814,23 @@ public class rTextures{
                 offsetSize += image.width*bytesPerPixel;
             }
 
-            image.setData(flippedData);
+            result.setData(flippedData);
+            result.width = image.width;
+            result.height = image.height;
+            result.mipmaps = image.mipmaps;
+            result.format = image.format;
         }
+        return result;
     }
 
     // Flip image horizontally
-    public void ImageFlipHorizontal(Image image) {
+    public Image ImageFlipHorizontal(Image image) {
+        Image result = new Image();
+
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
 
         if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
@@ -1822,8 +1850,14 @@ public class rTextures{
                 }
             }
 
-            image.setData(flippedData);
+            result.setData(flippedData);
+            result.width = image.width;
+            result.height = image.height;
+            result.mipmaps = image.mipmaps;
+            result.format = image.format;
         }
+
+        return result;
     }
 
     // Rotate image clockwise 90deg
@@ -1889,9 +1923,13 @@ public class rTextures{
     }
 
     // Modify image color: tint
-    public void ImageColorTint(Image image, Color color) {
+    public Image ImageColorTint(Image image, Color color) {
+        Image result = new Image();
+
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
 
         Color[] pixels = Color.FromPixels(LoadImageColors(image));
 
@@ -1917,16 +1955,23 @@ public class rTextures{
 
         rlPixelFormat format = image.format;
 
-        image.setData(pixels);
-        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        result.setData(pixels);
+        result.width = image.width;
+        result.height = image.height;
+        result.mipmaps = image.mipmaps;
+        result.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-        ImageFormat(image, format);
+        return ImageFormat(result, format);
     }
 
     // Modify image color: invert
-    public void ImageColorInvert(Image image) {
+    public Image ImageColorInvert(Image image) {
+        Image result = new Image();
+
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
 
         Color[] pixels = Color.FromPixels(LoadImageColors(image));
 
@@ -1940,25 +1985,36 @@ public class rTextures{
 
         rlPixelFormat format = image.format;
 
-        image.setData(pixels);
-        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        result.setData(pixels);
+        result.width = image.width;
+        result.height = image.height;
+        result.mipmaps = image.mipmaps;
+        result.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-        ImageFormat(image, format);
+        return ImageFormat(result, format);
     }
 
     // Modify image color: grayscale
-    public void ImageColorGrayscale(Image image) {
-        ImageFormat(image, RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
+    public Image ImageColorGrayscale(Image image) {
+        return ImageFormat(image, RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
     }
 
     // Modify image color: contrast
     // NOTE: Contrast values between -100 and 100
-    public void ImageColorContrast(Image image, float contrast) {
-        // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+    public Image ImageColorContrast(Image image, float contrast) {
+        Image result = new Image();
 
-        if (contrast < -100) contrast = -100;
-        if (contrast > 100) contrast = 100;
+        // Security check to avoid program crash
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
+
+        if (contrast < -100) {
+            contrast = -100;
+        }
+        if (contrast > 100) {
+            contrast = 100;
+        }
 
         contrast = (100.0f + contrast) / 100.0f;
         contrast *= contrast;
@@ -1999,17 +2055,24 @@ public class rTextures{
 
         rlPixelFormat format = image.format;
 
-        image.setData(pixels);
-        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        result.setData(pixels);
+        result.width = image.width;
+        result.height = image.height;
+        result.mipmaps = image.mipmaps;
+        result.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-        ImageFormat(image, format);
+        return ImageFormat(result, format);
     }
 
     // Modify image color: brightness
     // NOTE: Brightness values between -255 and 255
-    public void ImageColorBrightness(Image image, int brightness) {
+    public Image ImageColorBrightness(Image image, int brightness) {
+        Image result = new Image();
+
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
 
         if (brightness < -255) brightness = -255;
         if (brightness > 255) brightness = 255;
@@ -2039,16 +2102,23 @@ public class rTextures{
 
         rlPixelFormat format = image.format;
 
-        image.setData(pixels);
-        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        result.setData(pixels);
+        result.width = image.width;
+        result.height = image.height;
+        result.mipmaps = image.mipmaps;
+        result.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-        ImageFormat(image, format);
+        return ImageFormat(result, format);
     }
 
     // Modify image color: replace color
-    public void ImageColorReplace(Image image, Color color, Color replace) {
+    public Image ImageColorReplace(Image image, Color color, Color replace) {
+        Image result = new Image();
+
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
 
         Color[] pixels = Color.FromPixels(LoadImageColors(image));
 
@@ -2068,10 +2138,13 @@ public class rTextures{
 
         rlPixelFormat format = image.format;
 
-        image.setData(pixels);
-        image.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        result.setData(pixels);
+        result.width = image.width;
+        result.height = image.height;
+        result.mipmaps = image.mipmaps;
+        result.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-        ImageFormat(image, format);
+        return ImageFormat(result, format);
     }
 
     // Load color data from image as a Color array (RGBA - 32bit)
@@ -2092,13 +2165,15 @@ public class rTextures{
                 TRACELOG(LOG_WARNING, "IMAGE: Pixel format converted from 32bit to 8bit per channel");
             }
 
-            for (int i = 0, k = 0; i < pixels.length; i+=4) {
-                switch (image.getFormat()) {
+            for (int i = 0, k = 0; i < image.width * image.height * 4; i+=4) {
+                switch (image.format) {
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE: {
-                        pixels[i] = image.data.get(i);
-                        pixels[i + 1] = image.data.get(i);
-                        pixels[i + 2] = image.data.get(i);
+                        pixels[i] = image.data.get(k);
+                        pixels[i + 1] = image.data.get(k);
+                        pixels[i + 2] = image.data.get(k);
                         pixels[i + 3] = (byte) 255;
+
+                        k++;
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA: {
@@ -2111,33 +2186,36 @@ public class rTextures{
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1: {
-                        short pixel = image.data.getShort(i);
+                        short pixel = image.data.getShort(k);
 
                         pixels[i] = (byte) (((pixel & 0b1111100000000000) >> 11) * (255 / 31));
                         pixels[i + 1] = (byte) (((pixel & 0b0000011111000000) >> 6) * (255 / 31));
                         pixels[i + 2] = (byte) (((pixel & 0b0000000000111110) >> 1) * (255 / 31));
                         pixels[i + 3] = (byte) ((pixel & 0b0000000000000001) * 255);
 
+                        k += 2;
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5: {
-                        short pixel = image.data.getShort(i);
+                        short pixel = image.data.getShort(k);
 
                         pixels[i] = (byte) (((pixel & 0b1111100000000000) >> 11) * (255 / 31));
                         pixels[i + 1] = (byte) (((pixel & 0b0000011111000000) >> 6) * (255 / 31));
                         pixels[i + 2] = (byte) (((pixel & 0b0000000000111110)) * (255 / 31));
                         pixels[i + 3] = (byte) 255;
 
+                        k += 2;
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4: {
-                        short pixel = image.data.getShort(i);
+                        short pixel = image.data.getShort(k);
 
                         pixels[i] = (byte) (((pixel & 0b1111100000000000) >> 12) * (255 / 15));
                         pixels[i + 1] = (byte) (((pixel & 0b0000011111000000) >> 8) * (255 / 15));
                         pixels[i + 2] = (byte) (((pixel & 0b0000000000111110) >> 4) * (255 / 15));
                         pixels[i + 3] = (byte) ((pixel & 0b0000000000000001) * (255/15));
 
+                        k += 2;
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: {
@@ -2164,24 +2242,25 @@ public class rTextures{
                         pixels[i + 2] = 0;
                         pixels[i + 3] = (byte) 255;
 
+                        k += 4;
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: {
                         pixels[i] = (byte) (image.data.getFloat(k) * 255.0f);
-                        pixels[i + 1] = (byte) (image.data.getFloat(k + 1) * 255.0f);
-                        pixels[i + 2] = (byte) (image.data.getFloat(k + 2) * 255.0f);
+                        pixels[i + 1] = (byte) (image.data.getFloat(k + 1 + Float.BYTES) * 255.0f);
+                        pixels[i + 2] = (byte) (image.data.getFloat(k + 2 + Float.BYTES) * 255.0f);
                         pixels[i + 3] = (byte) 255;
 
-                        k += 3;
+                        k += 3 * Float.BYTES;
                         break;
                     }
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: {
                         pixels[i] = (byte) (image.data.getFloat(k) * 255.0f);
-                        pixels[i + 1] = (byte) (image.data.getFloat(k + 1) * 255.0f);
-                        pixels[i + 2] = (byte) (image.data.getFloat(k + 2) * 255.0f);
-                        pixels[i + 3] = (byte) (image.data.getFloat(k + 3) * 255.0f);
+                        pixels[i + 1] = (byte) (image.data.getFloat(k + 1 + Float.BYTES) * 255.0f);
+                        pixels[i + 2] = (byte) (image.data.getFloat(k + 2 + Float.BYTES) * 255.0f);
+                        pixels[i + 3] = (byte) (image.data.getFloat(k + 3 + Float.BYTES) * 255.0f);
 
-                        k += 4;
+                        k += 4 * Float.BYTES;
                         break;
                     }
                     default:
@@ -2255,30 +2334,27 @@ public class rTextures{
     public Vector4[] LoadImageDataNormalized(Image image) {
         Vector4[] pixels = new Vector4[image.width * image.height];
 
-        for (int i = 0; i < pixels.length; i++) {
-            pixels[i] = new Vector4();
-        }
-
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
         }
         else{
             byte[] imgData = image.getData();
             for (int i = 0, k = 0; i < image.width * image.height; i++) {
-                switch (image.getFormat()) {
+                pixels[i] = new Vector4();
+                switch (image.format) {
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:{
-                        pixels[i].x = (imgData[i] / 255.0f);
-                        pixels[i].y = (imgData[i] / 255.0f);
-                        pixels[i].z = (imgData[i] / 255.0f);
+                        pixels[i].x = (Byte.toUnsignedInt(imgData[i]) / 255.0f);
+                        pixels[i].y = (Byte.toUnsignedInt(imgData[i]) / 255.0f);
+                        pixels[i].z = (Byte.toUnsignedInt(imgData[i]) / 255.0f);
                         pixels[i].w = (1.0f);
 
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:{
-                        pixels[i].x = (imgData[k] / 255.0f);
-                        pixels[i].y = (imgData[k] / 255.0f);
-                        pixels[i].z = (imgData[k] / 255.0f);
-                        pixels[i].w = (imgData[k + 1] / 255.0f);
+                        pixels[i].x = (Byte.toUnsignedInt(imgData[k]) / 255.0f);
+                        pixels[i].y = (Byte.toUnsignedInt(imgData[k]) / 255.0f);
+                        pixels[i].z = (Byte.toUnsignedInt(imgData[k]) / 255.0f);
+                        pixels[i].w = (Byte.toUnsignedInt(imgData[k + 1]) / 255.0f);
 
                         k += 2;
                     }
@@ -2314,18 +2390,18 @@ public class rTextures{
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:{
-                        pixels[i].x = (imgData[k] / 255.0f);
-                        pixels[i].y = (imgData[k + 1] / 255.0f);
-                        pixels[i].z = (imgData[k + 2] / 255.0f);
-                        pixels[i].w = (imgData[k + 3] / 255.0f);
+                        pixels[i].x = (Byte.toUnsignedInt(imgData[k]) / 255.0f);
+                        pixels[i].y = (Byte.toUnsignedInt(imgData[k + 1]) / 255.0f);
+                        pixels[i].z = (Byte.toUnsignedInt(imgData[k + 2]) / 255.0f);
+                        pixels[i].w = (Byte.toUnsignedInt(imgData[k + 3]) / 255.0f);
 
                         k += 4;
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:{
-                        pixels[i].x = (imgData[k] / 255.0f);
-                        pixels[i].y = (imgData[k + 1] / 255.0f);
-                        pixels[i].z = (imgData[k + 2] / 255.0f);
+                        pixels[i].x = (Byte.toUnsignedInt(imgData[k]) / 255.0f);
+                        pixels[i].y = (Byte.toUnsignedInt(imgData[k + 1]) / 255.0f);
+                        pixels[i].z = (Byte.toUnsignedInt(imgData[k + 2]) / 255.0f);
                         pixels[i].w = (1.0f);
 
                         k += 3;
@@ -2340,19 +2416,19 @@ public class rTextures{
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32:{
-                        pixels[i].x = (imgData[k]);
-                        pixels[i].y = (imgData[k + 1]);
-                        pixels[i].z = (imgData[k + 2]);
+                        pixels[i].x = (Byte.toUnsignedInt(imgData[k]));
+                        pixels[i].y = (Byte.toUnsignedInt(imgData[k + 1]));
+                        pixels[i].z = (Byte.toUnsignedInt(imgData[k + 2]));
                         pixels[i].w = (1.0f);
 
                         k += 3;
                     }
                     break;
                     case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:{
-                        pixels[i].x = (imgData[i]);
-                        pixels[i].y = (imgData[k + 1]);
-                        pixels[i].z = (imgData[k + 2]);
-                        pixels[i].w = (imgData[k + 3]);
+                        pixels[i].x = (Byte.toUnsignedInt(imgData[i]));
+                        pixels[i].y = (Byte.toUnsignedInt(imgData[k + 1]));
+                        pixels[i].z = (Byte.toUnsignedInt(imgData[k + 2]));
+                        pixels[i].w = (Byte.toUnsignedInt(imgData[k + 3]));
 
                         k += 4;
                     }
@@ -2977,30 +3053,29 @@ public class rTextures{
     // Load cubemap from image, multiple image cubemap layouts supported
     public TextureCubemap LoadTextureCubemap(Image image, int layoutType) {
         TextureCubemap cubemap = new TextureCubemap();
-        if (layoutType == CUBEMAP_AUTO_DETECT)      // Try to automatically guess layout type
-        {
+        if (layoutType == CUBEMAP_AUTO_DETECT.GetValue()) {      // Try to automatically guess layout type
             // Check image width/height to determine the type of cubemap provided
             if (image.width > image.height) {
                 if ((image.width / 6) == image.height) {
-                    layoutType = CUBEMAP_LINE_HORIZONTAL;
+                    layoutType = CUBEMAP_LINE_HORIZONTAL.GetValue();
                     cubemap.width = image.width / 6;
                 }
                 else if ((image.width / 4) == (image.height / 3)) {
-                    layoutType = CUBEMAP_CROSS_FOUR_BY_THREE;
+                    layoutType = CUBEMAP_CROSS_FOUR_BY_THREE.GetValue();
                     cubemap.width = image.width / 4;
                 }
                 else if (image.width >= (int) ((float) image.height * 1.85f)) {
-                    layoutType = CUBEMAP_PANORAMA;
+                    layoutType = CUBEMAP_PANORAMA.GetValue();
                     cubemap.width = image.width / 4;
                 }
             }
             else if (image.height > image.width) {
                 if ((image.height / 6) == image.width) {
-                    layoutType = CUBEMAP_LINE_VERTICAL;
+                    layoutType = CUBEMAP_LINE_VERTICAL.GetValue();
                     cubemap.width = image.height / 6;
                 }
                 else if ((image.width / 3) == (image.height / 4)) {
-                    layoutType = CUBEMAP_CROSS_THREE_BY_FOUR;
+                    layoutType = CUBEMAP_CROSS_THREE_BY_FOUR.GetValue();
                     cubemap.width = image.width / 3;
                 }
             }
@@ -3008,26 +3083,26 @@ public class rTextures{
             cubemap.height = cubemap.width;
         }
 
-        if (layoutType != CUBEMAP_AUTO_DETECT) {
+        if (layoutType != CUBEMAP_AUTO_DETECT.GetValue()) {
             int size = cubemap.width;
 
             Image faces = new Image();                // Vertical column image
             Rectangle[] faceRecs = new Rectangle[6];      // Face source rectangles
             for (int i = 0; i < 6; i++) faceRecs[i] = new Rectangle(0, 0, (float) size, (float) size);
 
-            if (layoutType == CUBEMAP_LINE_VERTICAL) {
+            if (layoutType == CUBEMAP_LINE_VERTICAL.GetValue()) {
                 faces = image;
                 for (int i = 0; i < 6; i++) faceRecs[i].y = (float) size * i;
             }
-            else if (layoutType == CUBEMAP_PANORAMA) {
+            else if (layoutType == CUBEMAP_PANORAMA.GetValue()) {
                 // TODO: Convert panorama image to square faces...
                 // Ref: https://github.com/denivip/panorama/blob/master/panorama.cpp
             }
             else{
-                if (layoutType == CUBEMAP_LINE_HORIZONTAL) {
+                if (layoutType == CUBEMAP_LINE_HORIZONTAL.GetValue()) {
                     for (int i = 0; i < 6; i++) faceRecs[i].x = (float) size * i;
                 }
-                else if (layoutType == CUBEMAP_CROSS_THREE_BY_FOUR) {
+                else if (layoutType == CUBEMAP_CROSS_THREE_BY_FOUR.GetValue()) {
                     faceRecs[0].x = (float) size;
                     faceRecs[0].y = (float) size;
                     faceRecs[1].x = (float) size;
@@ -3041,7 +3116,7 @@ public class rTextures{
                     faceRecs[5].x = (float) size * 2;
                     faceRecs[5].y = (float) size;
                 }
-                else if (layoutType == CubemapLayoutType.CUBEMAP_CROSS_FOUR_BY_THREE) {
+                else if (layoutType == CubemapLayoutType.CUBEMAP_CROSS_FOUR_BY_THREE.GetValue()) {
                     faceRecs[0].x = (float) size * 2;
                     faceRecs[0].y = (float) size;
                     faceRecs[1].x = 0;
@@ -3368,7 +3443,9 @@ public class rTextures{
                 flipX = true;
                 source.width *= -1;
             }
-            if (source.height < 0) source.y -= source.height;
+            if (source.height < 0) {
+                source.y -= source.height;
+            }
 
             Vector2 topLeft = new Vector2();
             Vector2 topRight = new Vector2();
@@ -3384,7 +3461,7 @@ public class rTextures{
                 bottomLeft = new Vector2(x, y + dest.height);
                 bottomRight = new Vector2(x + dest.width, y + dest.height);
             }
-            else{
+            else {
                 float sinRotation = (float) Math.sin(rotation * DEG2RAD);
                 float cosRotation = (float) Math.cos(rotation * DEG2RAD);
                 float x = dest.x;

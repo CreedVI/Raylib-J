@@ -2387,9 +2387,9 @@ public class RLGL{
 
     // Get OpenGL internal formats and data type from raylib rlPixelFormat
     private void rlGetGlTextureFormats(@UnknownNullability rlPixelFormat format){
-        glInternalFormat = 0;
-        glFormat = 0;
-        glType = 0;
+        glInternalFormat = -1;
+        glFormat = -1;
+        glType = -1;
 
         switch (format){
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:

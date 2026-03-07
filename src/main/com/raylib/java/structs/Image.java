@@ -76,12 +76,13 @@ public class Image{
         this.data.put(dataB);
         this.data.flip();
     }
+
     public void setData(byte[] data){
         if (this.data != null) {
             this.data.clear();
         }
         this.data = ByteBuffer.allocateDirect(data.length);
-        this.data.put(data.clone());
+        this.data.put(data);
         this.data.flip();
     }
 
