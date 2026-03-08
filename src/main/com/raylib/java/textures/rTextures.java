@@ -129,7 +129,7 @@ public class rTextures{
     //  - Number of frames is returned through 'frames' parameter
     //  - All frames are returned in RGBA format
     //  - Frames delay data is discarded
-    public Image LoadImageAnim(String fileName, int frames) {
+    public Image LoadImageAnim(String fileName) {
         Image image = new Image();
         int framesCount = 1;
 
@@ -137,10 +137,7 @@ public class rTextures{
             if (context.core.IsFileExtension(fileName, ".gif")) {
                 byte[] fileData = null;
                 try{
-                    BufferedImage tmpImg = ImageIO.read(new File(fileName));
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    ImageIO.write(tmpImg, context.core.GetFileExtension(fileName).substring(1), os);
-                    fileData = os.toByteArray();
+                    fileData = context.files.LoadFileData(fileName);
                 } catch (IOException exception) {
                     exception.printStackTrace();
                 }
@@ -150,7 +147,7 @@ public class rTextures{
                         IntBuffer widthBuffer = stack.mallocInt(1);
                         IntBuffer heightBuffer = stack.mallocInt(1);
                         IntBuffer compBuffer = stack.mallocInt(1);
-                        PointerBuffer delaysBuffer = null;
+                        PointerBuffer delaysBuffer = stack.callocPointer(1);
 
                         IntBuffer framesBuffer = stack.mallocInt(1);
                         framesBuffer.put(framesCount).flip();
@@ -181,9 +178,6 @@ public class rTextures{
         else{
             image = LoadImage(fileName);
         }
-
-        // TODO: Support APNG animated images?
-        frames = framesCount;
 
         return image;
     }
@@ -777,29 +771,45 @@ public class rTextures{
 
     // Crop an image to area defined by a rectangle
     // NOTE: Security checks are performed in case rectangle goes out of bounds
-    public void ImageCrop(Image image, Rectangle crop) {
+    public Image ImageCrop(Image image, Rectangle crop) {
+        Image result = new Image();
+
         // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
 
         // Security checks to validate crop rectangle
         if (crop.x < 0) {
             crop.width += crop.x;
             crop.x = 0;
         }
+
         if (crop.y < 0) {
             crop.height += crop.y;
             crop.y = 0;
         }
-        if ((crop.x + crop.width) > image.width) crop.width = image.width - crop.x;
-        if ((crop.y + crop.height) > image.height) crop.height = image.height - crop.y;
-        if ((crop.x > image.width) || (crop.y > image.height)) {
-            TRACELOG(LOG_WARNING, "IMAGE: Failed to crop, rectangle out of bounds");
-            return;
+
+        if ((crop.x + crop.width) > image.width) {
+            crop.width = image.width - crop.x;
         }
 
-        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if ((crop.y + crop.height) > image.height) {
+            crop.height = image.height - crop.y;
+        }
+
+        if ((crop.x > image.width) || (crop.y > image.height)) {
+            TRACELOG(LOG_WARNING, "IMAGE: Failed to crop, rectangle out of bounds");
+            return image;
+        }
+
+        if (image.mipmaps > 1) {
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        }
+
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            return image;
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -816,10 +826,14 @@ public class rTextures{
                 }
             }
 
-            image.setData(croppedData);
-            image.width = (int) crop.width;
-            image.height = (int) crop.height;
+            result.setData(croppedData);
+            result.width = image.width;
+            result.height = image.height;
+            result.mipmaps = image.mipmaps;
+            result.format = image.format;
         }
+
+        return result;
     }
 
     // Convert image data to desired format
@@ -1832,7 +1846,10 @@ public class rTextures{
             return image;
         }
 
-        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        if (image.mipmaps > 1) {
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        }
+        
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
@@ -1844,9 +1861,8 @@ public class rTextures{
             for (int y = 0; y < image.height; y++) {
                 for (int x = 0; x < image.width; x++) {
                     //copy data pixel by pixel
-                    for (int i = 0; i < bytesPerPixel; i++) {
-                        flippedData[(y * image.width + x) * bytesPerPixel + i] = imgData[(y * image.width + (image.width - 1 - x)) * bytesPerPixel + i];
-                    }
+                    if (bytesPerPixel >= 0)
+                        System.arraycopy(imgData, (y * image.width + (image.width - 1 - x)) * bytesPerPixel, flippedData, (y * image.width + x) * bytesPerPixel, bytesPerPixel);
                 }
             }
 
@@ -1861,13 +1877,21 @@ public class rTextures{
     }
 
     // Rotate image clockwise 90deg
-    public void ImageRotateCW(Image image) {
-        // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+    public Image ImageRotateCW(Image image) {
+        Image result = new Image();
 
-        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        // Security check to avoid program crash
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
+
+        if (image.mipmaps > 1) {
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        }
+
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            return image;
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -1883,22 +1907,32 @@ public class rTextures{
                 }
             }
 
-            image.setData(rotatedData);
-            int width = image.width;
-
-            image.width = image.height;
-            image.height = width;
+            result.setData(rotatedData);
+            result.height = image.width;
+            result.width = image.height;
+            result.mipmaps = image.mipmaps;
+            result.format = image.format;
         }
+
+        return result;
     }
 
     // Rotate image counter-clockwise 90deg
-    public void ImageRotateCCW(Image image) {
-        // Security check to avoid program crash
-        if ((image.data == null) || (image.width == 0) || (image.height == 0)) return;
+    public Image ImageRotateCCW(Image image) {
+        Image result = new Image();
 
-        if (image.mipmaps > 1) TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        // Security check to avoid program crash
+        if ((image.data == null) || (image.width == 0) || (image.height == 0)) {
+            return image;
+        }
+
+        if (image.mipmaps > 1) {
+            TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
+        }
+
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
+            return image;
         }
         else{
             int bytesPerPixel = GetPixelDataSize(1, 1, image.format);
@@ -1914,12 +1948,14 @@ public class rTextures{
                 }
             }
 
-            image.setData(rotatedData);
-            int width = image.width;
-
-            image.width = image.height;
-            image.height = width;
+            result.setData(rotatedData);
+            result.height = image.width;
+            result.width = image.height;
+            result.mipmaps = image.mipmaps;
+            result.format = image.format;
         }
+
+        return result;
     }
 
     // Modify image color: tint
@@ -2844,10 +2880,9 @@ public class rTextures{
         return result;
     }
 
-    //This function uses pointers.
     // Draw an image (source) within an image (destination)
     // NOTE: Color tint is applied to source image
-    private Image ImageDraw(Image dst, Image src, Rectangle srcRec, Rectangle dstRec, Color tint) {
+    public Image ImageDraw(Image dst, Image src, Rectangle srcRec, Rectangle dstRec, Color tint) {
         Image result = new Image(dst.getData(), dst.width, dst.height, dst.format, dst.mipmaps);
 
         // Security check to avoid program crash

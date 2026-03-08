@@ -33,46 +33,39 @@ version = '0.5.5'
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
-    implementation fileTree(dir: 'native', include: '*.jar')
-    implementation 'fr.delthas:javamp3:1.0.1'
-    implementation 'io.github.creedvi:M3D-J:0.1.0a'
-    implementation 'org.jetbrains:annotations:24.1.0'
+    implementation fileTree(dir: "native", include: "*.jar")
+    implementation("fr.delthas:javamp3:1.0.1")
+    implementation("io.github.creedvi:M3D-J:0.1.0a")
+    implementation("org.jetbrains:annotations:24.1.0")
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
-    implementation "org.lwjgl:lwjgl"
-    implementation "org.lwjgl:lwjgl-assimp"
-    implementation "org.lwjgl:lwjgl-glfw"
-    implementation "org.lwjgl:lwjgl-openal"
-    implementation "org.lwjgl:lwjgl-opengl"
-    implementation "org.lwjgl:lwjgl-opengles"
-    implementation "org.lwjgl:lwjgl-par"
-    implementation "org.lwjgl:lwjgl-stb"
+    implementation("org.lwjgl:lwjgl")
+    implementation("org.lwjgl:lwjgl-assimp")
+    implementation("org.lwjgl:lwjgl-glfw")
+    implementation("org.lwjgl:lwjgl-openal")
+    implementation("org.lwjgl:lwjgl-opengl")
+    implementation("org.lwjgl:lwjgl-opengles")
+    implementation("org.lwjgl:lwjgl-par")
+    implementation("org.lwjgl:lwjgl-stb")
 
-    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-opengles::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-par::$lwjglNatives"
-    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
-}
+    runtimeOnly("org.lwjgl:lwjgl::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-assimp::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-glfw::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-openal::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-opengl::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-opengles::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-par::$lwjglNatives")
+    runtimeOnly("org.lwjgl:lwjgl-stb::$lwjglNatives")
 
-task copyDependencies(type: Copy) {
-    from configurations.runtimeClasspath
-    into "libs/dependencies"
+    testImplementation("io.github.creedvi:Raygui-J:0.1.0")
 }
 
 jar {
-    manifest {
-        attributes(
-                'Main-Class': 'com.raylib.Main'
-        )
-    }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
@@ -87,7 +80,7 @@ sourceSets {
     }
     test {
         java.srcDir('src/tests')
-        resources.srcDir('src/test/resources')
+        resources.srcDir('src/tests/resources')
     }
 }
 
