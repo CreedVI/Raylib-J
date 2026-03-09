@@ -58,7 +58,7 @@ public class TexturesPoly{
 
         rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - textured polygon");
 
-        Texture2D texture = rlj.textures.LoadTexture("resources/cat.png");
+        Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/textures/cat.png");
 
         float ang = 0;
 

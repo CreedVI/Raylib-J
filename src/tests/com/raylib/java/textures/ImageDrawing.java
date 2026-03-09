@@ -49,8 +49,8 @@ public class ImageDrawing{
 
         rlj.textures.UnloadImage(cat);       // Unload image from RAM
 
-        // Load custom font for frawing on image
-        Font font = rlj.text.LoadFont("resources/custom_jupiter_crash.png");
+        // Load custom font for drawing on image
+        Font font = rlj.text.LoadFont("src/tests/resources/textures/custom_jupiter_crash.png");
 
         // Draw over image using custom font
         parrots = rlj.textures.ImageDrawTextEx(parrots, font, "PARROTS & CAT", new Vector2(300, 230 ), (float)font.baseSize, -2, WHITE);

@@ -62,7 +62,7 @@ dependencies {
     runtimeOnly("org.lwjgl:lwjgl-par::$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-stb::$lwjglNatives")
 
-    testImplementation("io.github.creedvi:Raygui-J:0.1.0")
+    // testImplementation("io.github.creedvi:Raygui-J:0.1.0")
 }
 
 jar {

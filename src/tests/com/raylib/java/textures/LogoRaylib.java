@@ -47,8 +47,7 @@ public class LogoRaylib{
 
             rlj.core.ClearBackground(Color.RAYWHITE);
 
-            rlj.textures.DrawTexture(texture, screenWidth/2 - texture.width/2, screenHeight/2 - texture.height/2,
-                    Color.WHITE);
+            rlj.textures.DrawTexture(texture, screenWidth/2 - texture.width/2, screenHeight/2 - texture.height/2, Color.WHITE);
 
             rlj.text.DrawText("this IS a texture!", 360, 370, 10, Color.GRAY);
 

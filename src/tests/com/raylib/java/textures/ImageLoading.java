@@ -33,7 +33,7 @@ public class ImageLoading{
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 
-        Image image = rlj.textures.LoadImage("resources/raylib-j_logo.png"); // Loaded in CPU memory (RAM)
+        Image image = rlj.textures.LoadImage("src/tests/resources/textures/raylib-j_logo.png"); // Loaded in CPU memory (RAM)
         Texture2D texture = rlj.textures.LoadTextureFromImage(image); // Image converted to texture, GPU memory (VRAM)
 
         rlj.textures.UnloadImage(image);   // Once image has been converted to texture and uploaded to VRAM, it can be

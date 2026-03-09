@@ -827,8 +827,8 @@ public class rTextures{
             }
 
             result.setData(croppedData);
-            result.width = image.width;
-            result.height = image.height;
+            result.width = (int) crop.width;
+            result.height = (int) crop.height;
             result.mipmaps = image.mipmaps;
             result.format = image.format;
         }
@@ -1849,7 +1849,7 @@ public class rTextures{
         if (image.mipmaps > 1) {
             TRACELOG(LOG_WARNING, "Image manipulation only applied to base mipmap level");
         }
-        
+
         if (image.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image manipulation not supported for compressed formats");
         }
@@ -2883,7 +2883,7 @@ public class rTextures{
     // Draw an image (source) within an image (destination)
     // NOTE: Color tint is applied to source image
     public Image ImageDraw(Image dst, Image src, Rectangle srcRec, Rectangle dstRec, Color tint) {
-        Image result = new Image(dst.getData(), dst.width, dst.height, dst.format, dst.mipmaps);
+        Image result = new Image();
 
         // Security check to avoid program crash
         if ((dst.data == null) || (dst.width == 0) || (dst.height == 0) || (src.data == null) || (src.width == 0) || (src.height == 0)) {
@@ -2893,8 +2893,10 @@ public class rTextures{
         if (dst.mipmaps > 1) {
             TRACELOG(LOG_WARNING, "Image drawing only applied to base mipmap level");
         }
+
         if (dst.format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
             TRACELOG(LOG_WARNING, "Image drawing not supported for compressed formats");
+            return dst;
         }
         else {
             Image srcMod = src;       // Source copy (in case it was required)
@@ -2982,11 +2984,11 @@ public class rTextures{
             int strideSrc = GetPixelDataSize(srcPtr.width, 1, srcPtr.format);
             int bytesPerPixelSrc = strideSrc/(srcPtr.width);
 
-            int srcIndexBase = ((int)srcRec.y * srcPtr.width + (int)srcRec.x) * bytesPerPixelSrc;
-            int dstIndexBase = ((int)dstRec.y * dst.width + (int)dstRec.x) * bytesPerPixelDst;
+            int srcIndexBase = (int) ((srcRec.y * srcPtr.width + srcRec.x) * bytesPerPixelSrc);
+            int dstIndexBase = (int) ((dstRec.y * dst.width + dstRec.x) * bytesPerPixelDst);
 
             byte[] dstData = dst.getData();
-            byte[] srcData = src.getData();
+            byte[] srcData = srcPtr.getData();
 
             for (int y = 0; y < srcRec.height; y++) {
 
@@ -3010,6 +3012,7 @@ public class rTextures{
                         // Fast path: Avoid blend if source has no alpha to blend
                         if (blendRequired) {
                             blend = ColorAlphaBlend(colDst, colSrc, tint);
+                            System.out.print(blend.toString() + ", ");
                         }
                         else {
                             blend = colSrc;
@@ -3021,6 +3024,7 @@ public class rTextures{
                         dstIndex += bytesPerPixelDst;
                         srcIndex += bytesPerPixelSrc;
                     }
+                    System.out.println();
                 }
 
                 srcIndexBase += strideSrc;
@@ -3028,6 +3032,10 @@ public class rTextures{
             }
 
             result.setData(dstData);
+            result.width = dst.width;
+            result.height = dst.height;
+            result.mipmaps = dst.mipmaps;
+            result.format = dst.format;
 
             if (useSrcMod) {
                 UnloadImage(srcMod);     // Unload source modified image
@@ -3052,7 +3060,7 @@ public class rTextures{
         Rectangle srcRec = new Rectangle(0.0f, 0.0f, (float) imText.width, (float) imText.height);
         Rectangle dstRec = new Rectangle(position.x, position.y, (float) imText.width, (float) imText.height);
 
-        return ImageDraw(image, imText, srcRec, dstRec, Color.WHITE);
+        return ImageDraw(image, imText, srcRec, dstRec, new Color(255, 255, 255, 255));
     }
 
     public Texture2D LoadTexture(String fileName) {
@@ -3964,7 +3972,7 @@ public class rTextures{
 
     // Returns src alpha-blended into dst color with tint
     public Color ColorAlphaBlend(Color dst, Color src, Color tint) {
-        Color out = Color.WHITE;
+        Color out = new Color(255, 255, 255, 255);
 
         // Apply color tint to source color
         src.r = ((src.r * (tint.r + 1)) >> 8);
@@ -4093,9 +4101,10 @@ public class rTextures{
 
     //Set pixel color formatted into destination pointer
     private byte[] SetPixelColor(Color color, rlPixelFormat format) {
-        byte[] result = new byte[4];
+        byte[] result = null;
         switch (format) {
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:{
+                result = new byte[1];
                 // NOTE: Calculate grayscale equivalent color
                 Vector3 coln = new Vector3((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f);
@@ -4106,6 +4115,8 @@ public class rTextures{
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:{
+                result = new byte[2];
+
                 // NOTE: Calculate grayscale equivalent color
                 Vector3 coln = new Vector3((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f);
@@ -4117,6 +4128,8 @@ public class rTextures{
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5:{
+                result = new byte[1];
+
                 // NOTE: Calculate R5G6B5 equivalent color
                 Vector3 coln = new Vector3((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f);
@@ -4130,6 +4143,8 @@ public class rTextures{
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:{
+                result = new byte[1];
+
                 // NOTE: Calculate R5G5B5A1 equivalent color
                 Vector4 coln = new Vector4((float) color.r / 255.0f, (float) color.g / 255.0f,
                                            (float) color.b / 255.0f, (float) color.a / 255.0f);
@@ -4145,6 +4160,8 @@ public class rTextures{
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:{
+                result = new byte[1];
+
                 // NOTE: Calculate R5G5B5A1 equivalent color
                 Vector4 coln = new Vector4((float) color.r / 255.0f, (float) color.g / 255.0f, (float) color.b / 255.0f,
                                            (float) color.a / 255.0f);
@@ -4159,18 +4176,20 @@ public class rTextures{
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:{
+                result = new byte[3];
+
                 result[0] = (byte) color.r;
                 result[1] = (byte) color.g;
                 result[2] = (byte) color.b;
-
             }
             break;
             case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:{
+                result = new byte[4];
+
                 result[0] = (byte) color.r;
                 result[1] = (byte) color.g;
                 result[2] = (byte) color.b;
                 result[3] = (byte) color.a;
-
             }
             break;
             default:

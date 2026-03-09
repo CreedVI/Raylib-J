@@ -673,14 +673,19 @@ public class rText{
                             if (type == FONT_BITMAP) {
                                 // Aliased bitmap (black & white) font generation, avoiding anti-aliasing
                                 // NOTE: For optimum results, bitmap font should be generated at base pixel size
+                                byte[] charData = chars[i].image.getData();
+                                byte[] bitmapData = new byte[charData.length];
+
                                 for (int p = 0; p < chwidth * chheight; p++) {
-                                    if (chars[i].image.getData()[p] < FONT_BITMAP_ALPHA_THRESHOLD) {
-                                        chars[i].image.getData()[p] = 0;
+                                    if (charData[p] < FONT_BITMAP_ALPHA_THRESHOLD) {
+                                        bitmapData[p] = 0;
                                     }
                                     else{
-                                        chars[i].image.getData()[p] = (byte) 255;
+                                        bitmapData[p] = (byte) 255;
                                     }
                                 }
+
+                                chars[i].image.setData(bitmapData);
                             }
 
                             /* Get bounding box for character (may be offset to account for chars that dip above or below the

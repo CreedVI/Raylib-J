@@ -21,8 +21,6 @@ public class ImageText{
      *
      ********************************************************************************************/
 
-    //TODO.txt: Custom Font loading
-
     public static void main(String[] args){
         // Initialization
         //--------------------------------------------------------------------------------------
@@ -31,14 +29,13 @@ public class ImageText{
 
         Raylib rlj  = new Raylib(screenWidth, screenHeight, "raylib-j [texture] example - image text drawing");
 
-        Image parrots = rlj.textures.LoadImage("resources/parrots.png"); // Load image in CPU memory (RAM)
+        Image parrots = rlj.textures.LoadImage("src/tests/resources/textures/parrots.png"); // Load image in CPU memory (RAM)
 
         // TTF Font loading with custom generation parameters
-        Font font = rlj.text.LoadFontEx("resources/KAISG.ttf", 64, null, 0);
+        Font font = rlj.text.LoadFontEx("src/tests/resources/textures/KAISG.ttf", 64, null, 0);
 
         // Draw over image using custom font
-        rlj.textures.ImageDrawTextEx(parrots, font, "[Parrots font drawing]", new Vector2(20.0f, 20.0f),
-                                     (float)font.baseSize, 0.0f, Color.RED);
+        rlj.textures.ImageDrawTextEx(parrots, font, "[Parrots font drawing]", new Vector2(20.0f, 20.0f), (float)font.baseSize, 0.0f, Color.RED);
 
         // Image converted to texture, uploaded to GPU memory (VRAM)
         Texture2D texture = rlj.textures.LoadTextureFromImage(parrots);
