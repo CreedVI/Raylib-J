@@ -130,6 +130,7 @@ public class Bunnymark{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texBunny);    // Unload bunny texture
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 }

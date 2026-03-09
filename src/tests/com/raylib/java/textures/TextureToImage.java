@@ -72,6 +72,7 @@ public class TextureToImage{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texture);       // Texture unloading
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 }

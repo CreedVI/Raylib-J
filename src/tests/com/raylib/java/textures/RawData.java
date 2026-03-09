@@ -33,7 +33,7 @@ public class RawData{
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 
         // Load RAW image data (512x512, 32bit RGBA, no file header)
-        Image fudesumiRaw = rlj.textures.LoadImageRaw("resources/fudesumi.raw", 384, 512,
+        Image fudesumiRaw = rlj.textures.LoadImageRaw("src/tests/resources/textures/fudesumi.raw", 384, 512,
                                                       RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 0);
         Texture2D fudesumi = rlj.textures.LoadTextureFromImage(fudesumiRaw);  // Upload CPU (RAM) image to GPU (VRAM)
         rlj.textures.UnloadImage(fudesumiRaw);                                // Unload CPU (RAM) image data
@@ -45,11 +45,9 @@ public class RawData{
         // Dynamic memory allocation to store pixels data (Color type)
         Color[] pixels = new Color[width*height];
 
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                if (((x/32 + y/32))%2 == 0){
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (((x/32 + y/32))%2 == 0) {
                     pixels[y*width + x] = Color.ORANGE;
                 }
                 else {
@@ -97,6 +95,7 @@ public class RawData{
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(fudesumi);    // Texture unloading
         rlj.textures.UnloadTexture(checked);     // Texture unloading
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
 
     }

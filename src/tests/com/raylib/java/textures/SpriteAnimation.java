@@ -1,19 +1,22 @@
 package com.raylib.java.textures;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.core.input.Keyboard;
 import com.raylib.java.structs.Color;
 import com.raylib.java.structs.Rectangle;
 import com.raylib.java.structs.Texture2D;
 import com.raylib.java.structs.Vector2;
 
-public class TextureRectangle{
+import static com.raylib.java.core.input.Keyboard.KEY_LEFT;
+import static com.raylib.java.core.input.Keyboard.KEY_RIGHT;
+import static com.raylib.java.structs.Color.*;
+
+public class SpriteAnimation {
 
     /*******************************************************************************************
      *
-     *   raylib-j [textures] example - Texture loading and drawing a part defined by a rectangle
+     *   raylib-j [textures] example - Sprite Animation
      *
-     *   This example has been created using raylib-j (Version 0.4)
+     *   This example has been created using raylib-j (Version 0.5.5)
      *   Ported by CreedVI
      *   https://github.com/creedvi/raylib-j
      *
@@ -23,21 +26,18 @@ public class TextureRectangle{
      *
      ********************************************************************************************/
 
+    private static final int MAX_FRAME_SPEED = 15;
+    private static final int MIN_FRAME_SPEED = 1;
 
-    final static int MAX_FRAME_SPEED = 15;
-    final static int MIN_FRAME_SPEED = 1;
+    public static void main(String[] args) {
 
-    public static void main(String[] args){
-
-        // Initialization
-        //--------------------------------------------------------------------------------------
-        int screenWidth = 800;
-        int screenHeight = 450;
-
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [texture] example - texture rectangle");
+        final int SCREEN_WIDTH = 800;
+        final int SCREEN_HEIGHT = 450;
+        Raylib rlj = new Raylib();
+        rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raylib-J [core] example -- basic window");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-        Texture2D scarfy = rlj.textures.LoadTexture("resources/scarfy.png");        // Texture loading
+        Texture2D scarfy = rlj.textures.LoadTexture("src/tests/resources/textures/scarfy.png");        // Texture loading
 
         Vector2 position = new Vector2(350.0f, 280.0f);
         Rectangle frameRec = new Rectangle(0.0f, 0.0f, (float)scarfy.width/6, (float)scarfy.height);
@@ -67,12 +67,9 @@ public class TextureRectangle{
                 frameRec.x = (float)currentFrame*(float)scarfy.width/6;
             }
 
-            if (rlj.core.IsKeyPressed(Keyboard.KEY_RIGHT)) {
-                framesSpeed++;
-            }
-            else if (rlj.core.IsKeyPressed(Keyboard.KEY_LEFT)) {
-                framesSpeed--;
-            }
+            // Control frames speed
+            if (rlj.core.IsKeyPressed(KEY_RIGHT)) framesSpeed++;
+            else if (rlj.core.IsKeyPressed(KEY_LEFT)) framesSpeed--;
 
             if (framesSpeed > MAX_FRAME_SPEED) {
                 framesSpeed = MAX_FRAME_SPEED;
@@ -86,28 +83,26 @@ public class TextureRectangle{
             //----------------------------------------------------------------------------------
             rlj.core.BeginDrawing();
 
-            rlj.core.ClearBackground(Color.RAYWHITE);
+            rlj.core.ClearBackground(RAYWHITE);
 
-            rlj.textures.DrawTexture(scarfy, 15, 40, Color.WHITE);
-            rlj.shapes.DrawRectangleLines(15, 40, scarfy.width, scarfy.height, Color.LIME);
-            rlj.shapes.DrawRectangleLines(15 + (int)frameRec.x, 40 + (int)frameRec.y, (int)frameRec.width,
-                    (int)frameRec.height, Color.RED);
+            rlj.textures.DrawTexture(scarfy, 15, 40, WHITE);
+            rlj.shapes.DrawRectangleLines(15, 40, scarfy.width, scarfy.height, LIME);
+            rlj.shapes.DrawRectangleLines(15 + (int)frameRec.x, 40 + (int)frameRec.y, (int)frameRec.width, (int)frameRec.height, RED);
 
-            rlj.text.DrawText("FRAME SPEED: ", 165, 210, 10, Color.DARKGRAY);
-            rlj.text.DrawText(framesSpeed + " FPS", 575, 210, 10, Color.DARKGRAY);
-            rlj.text.DrawText("PRESS RIGHT/LEFT KEYS to CHANGE SPEED!", 290, 240, 10, Color.DARKGRAY);
+            rlj.text.DrawText("FRAME SPEED: ", 165, 210, 10, DARKGRAY);
+            rlj.text.DrawText(rlj.text.TextFormat("%02d FPS", framesSpeed), 575, 210, 10, DARKGRAY);
+            rlj.text.DrawText("PRESS RIGHT/LEFT KEYS to CHANGE SPEED!", 290, 240, 10, DARKGRAY);
 
             for (int i = 0; i < MAX_FRAME_SPEED; i++) {
                 if (i < framesSpeed) {
-                    rlj.shapes.DrawRectangle(250 + 21*i, 205, 20, 20, Color.RED);
+                    rlj.shapes.DrawRectangle(250 + 21*i, 205, 20, 20, RED);
                 }
-                rlj.shapes.DrawRectangleLines(250 + 21*i, 205, 20, 20, Color.MAROON);
+                rlj.shapes.DrawRectangleLines(250 + 21*i, 205, 20, 20, MAROON);
             }
 
-            rlj.textures.DrawTextureRec(scarfy, frameRec, position, Color.WHITE);  // Draw part of the texture
+            rlj.textures.DrawTextureRec(scarfy, frameRec, position, WHITE);  // Draw part of the texture
 
-            rlj.text.DrawText("(c) Scarfy sprite by Eiden Marsal", screenWidth - 200, screenHeight - 20, 10,
-                    Color.GRAY);
+            rlj.text.DrawText("(c) Scarfy sprite by Eiden Marsal", SCREEN_WIDTH - 200, SCREEN_HEIGHT - 20, 10, GRAY);
 
             rlj.core.EndDrawing();
             //----------------------------------------------------------------------------------
@@ -116,8 +111,9 @@ public class TextureRectangle{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(scarfy);       // Texture unloading
-        rlj.core.CloseWindow();
-        //--------------------------------------------------------------------------------------
 
+        rlj.core.CloseWindow();                // Close window and OpenGL context
+        //--------------------------------------------------------------------------------------
     }
+
 }

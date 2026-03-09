@@ -31,7 +31,7 @@ public class NPatchDrawing{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - N-patch drawing");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-        Texture2D nPatchTexture = rlj.textures.LoadTexture("resources/ninepatch_button.png");
+        Texture2D nPatchTexture = rlj.textures.LoadTexture("src/tests/resources/textures/ninepatch_button.png");
 
         Vector2 mousePosition = new Vector2();
         Vector2 origin = new Vector2();
@@ -111,6 +111,7 @@ public class NPatchDrawing{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(nPatchTexture);       // Texture unloading
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

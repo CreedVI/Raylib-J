@@ -97,6 +97,7 @@ public class TexturesPoly{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texture); // Unload texture
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
 
     }

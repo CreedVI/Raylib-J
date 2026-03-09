@@ -94,6 +94,7 @@ public class BackgroundScrolling{
         rlj.textures.UnloadTexture(background);  // Unload background texture
         rlj.textures.UnloadTexture(midground);   // Unload midground texture
         rlj.textures.UnloadTexture(foreground);  // Unload foreground texture
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 }

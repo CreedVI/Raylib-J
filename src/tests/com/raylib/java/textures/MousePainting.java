@@ -234,6 +234,7 @@ public class MousePainting{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadRenderTexture(target);    // Unload render texture
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

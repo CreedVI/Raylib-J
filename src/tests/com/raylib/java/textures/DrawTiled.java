@@ -187,6 +187,7 @@ public class DrawTiled{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texPattern);        // Unload texture
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
 
     }

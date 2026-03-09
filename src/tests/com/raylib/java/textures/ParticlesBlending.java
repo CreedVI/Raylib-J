@@ -64,7 +64,7 @@ public class ParticlesBlending{
 
         float gravity = 3.0f;
 
-        Texture2D smoke = rlj.textures.LoadTexture("resources/spark_flame.png");
+        Texture2D smoke = rlj.textures.LoadTexture("src/tests/resources/textures/spark_flame.png");
 
         RLGL.rlBlendMode blending = RL_BLEND_ALPHA;
 
@@ -155,6 +155,7 @@ public class ParticlesBlending{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(smoke);
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
 
     }

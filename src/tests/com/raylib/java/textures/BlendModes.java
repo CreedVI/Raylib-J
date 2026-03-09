@@ -113,6 +113,7 @@ public class BlendModes{
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(fgTexture); // Unload foreground texture
         rlj.textures.UnloadTexture(bgTexture); // Unload background texture
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

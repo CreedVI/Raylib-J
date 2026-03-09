@@ -12,7 +12,7 @@ public class SrcRec_DestRec{
      *
      *   raylib-j [textures] example - Texture source and destination rectangles
      *
-     *   This example has been created using raylib-j (Version 0.4)
+     *   This example has been created using raylib-j (Version 0.5.5)
      *   Ported by CreedVI
      *   https://github.com/creedvi/raylib-j
      *
@@ -29,12 +29,11 @@ public class SrcRec_DestRec{
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] examples - texture source and destination " +
-                "rectangles");
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] examples - texture source and destination rectangles");
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 
-        Texture2D scarfy = rlj.textures.LoadTexture("resources/scarfy.png");        // Texture loading
+        Texture2D scarfy = rlj.textures.LoadTexture("src/tests/resources/textures/scarfy.png");        // Texture loading
 
         int frameWidth = scarfy.width/6;
         int frameHeight = scarfy.height;
@@ -87,6 +86,7 @@ public class SrcRec_DestRec{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(scarfy);        // Texture unloading
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

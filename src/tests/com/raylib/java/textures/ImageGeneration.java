@@ -110,7 +110,7 @@ public class ImageGeneration{
         for (int i = 0; i < NUM_TEXTURES; i++){
             rlj.textures.UnloadTexture(textures[i]);
         }
-
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

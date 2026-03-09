@@ -58,6 +58,7 @@ public class LogoRaylib{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texture);       // Texture unloading
+        rlj.core.CloseWindow();
 
     }
 

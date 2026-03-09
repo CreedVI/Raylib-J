@@ -64,8 +64,7 @@ public class ImageText{
 
             rlj.core.ClearBackground(Color.RAYWHITE);
 
-            if (!showFont)
-            {
+            if (!showFont) {
                 // Draw texture with text already drawn inside
                 rlj.textures.DrawTextureV(texture, position, Color.WHITE);
 
@@ -73,7 +72,7 @@ public class ImageText{
                 rlj.text.DrawTextEx(font, "[Parrots font drawing]", new Vector2(position.x + 20, position.y + 20 + 280),
                                     (float)font.baseSize, 0.0f, Color.WHITE);
             }
-            else{
+            else {
                 rlj.textures.DrawTexture(font.getTexture(), screenWidth/2 - font.getTexture().width/2, 50, Color.BLACK);
             }
 
@@ -86,8 +85,8 @@ public class ImageText{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texture);     // Texture unloading
-
         rlj.text.UnloadFont(font);           // Unload custom spritefont
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 
