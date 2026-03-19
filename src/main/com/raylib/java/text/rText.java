@@ -14,11 +14,11 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
 import static com.raylib.java.utils.Tracelog.TRACELOG;
@@ -344,18 +344,16 @@ public class rText{
         Font font;
 
         // Loading file to memory
-        int fileSize = 0;
         byte[] fileData = null;
         try{
             fileData = context.files.LoadFileData(fileName);
-            fileSize = fileData != null ? fileData.length : 0;
         } catch (IOException exception) {
             exception.printStackTrace();
         }
 
         if (fileData != null) {
             // Loading font from memory data
-            font = LoadFontFromMemory(context.core.GetFileExtension(fileName), fileData, fileSize, fontSize, fontChars, charsCount);
+            font = LoadFontFromMemory(context.core.GetFileExtension(fileName), fileData, fontSize, fontChars, charsCount);
         }
         else{
             font = GetFontDefault();
@@ -493,7 +491,7 @@ public class rText{
     }
 
     // Load font from memory buffer, fileType refers to extension: i.e. ".ttf"
-    public Font LoadFontFromMemory(String fileType, byte[] fileData, int dataSize, int fontSize, int[] fontChars, int charsCount) {
+    public Font LoadFontFromMemory(String fileType, byte[] fileData, int fontSize, int[] fontChars, int charsCount) {
         Font font = new Font();
 
         String fileExtLower = fileType.toLowerCase();
@@ -503,7 +501,7 @@ public class rText{
                 font.baseSize = fontSize;
                 font.glyphCount = (charsCount > 0) ? charsCount : 95;
                 font.glyphPadding = 0;
-                font.glyphs = LoadFontData(fileData, dataSize, font.baseSize, fontChars, font.glyphCount, FONT_DEFAULT);
+                font.glyphs = LoadFontData(fileData, font.baseSize, fontChars, font.glyphCount, FONT_DEFAULT);
 
                 if (font.glyphs != null) {
                     font.glyphPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
@@ -539,7 +537,7 @@ public class rText{
 
     // Load font data for further use
     // NOTE: Requires TTF font memory data and can generate SDF data
-    public GlyphInfo[] LoadFontData(byte[] fileData, int dataSize, int fontSize, int[] fontChars, int charsCount, int type) {
+    public GlyphInfo[] LoadFontData(byte[] fileData, int fontSize, int[] fontChars, int charsCount, int type) {
         // NOTE: Using some SDF generation default values,
         // trades off precision with ability to handle *smaller* sizes
         GlyphInfo[] chars = null;
@@ -596,7 +594,7 @@ public class rText{
                         }
 
                         // NOTE: Using simple packaging, one char after another
-                        for (int i = 0; i < charsCount; i++) {
+                        for (int i = 0; i < fontChars.length; i++) {
                             IntBuffer chw, chh; // Character width and height (on generation)
                             chw = stack.mallocInt(1);
                             chh = stack.mallocInt(1);
@@ -1111,10 +1109,10 @@ public class rText{
 
         float scaleFactor = fontSize / font.baseSize;     // Character quad scaling factor
 
-        for (int i = 0; i < length; ) {
+        for (int i = 0, j = 0; i < length; j++) {
             // Get next codepoint from byte string and glyph index in font
-            int codepoint = Character.codePointAt(text.toCharArray(), i);
-            int codepointByteCount = GetByteCountOfCodePoint(codepoint);
+            int codepoint = GetCodepointNext(text, j);
+            int codepointByteCount = GetCodePointByteCount(codepoint);
             int index = GetGlyphIndex(font, codepoint);
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -1243,7 +1241,7 @@ public class rText{
             return textSize;
         }
 
-        int size = TextLength(text);    // Get size in bytes of text
+        int size = text.length();       // Get size in bytes of text
         int tempByteCounter = 0;        // Used to count longer text line num chars
         int byteCounter = 0;
 
@@ -1260,9 +1258,9 @@ public class rText{
             byteCounter++;
 
             int next = 0;
-            letter = Character.codePointAt(text.toCharArray(), i);
+            letter = GetCodepointNext(text, i);
             index = GetGlyphIndex(font, letter);
-            next = GetByteCountOfCodePoint(letter);
+            next = GetCodePointByteCount(letter);
 
             // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all the bad bytes using the '?' symbol so to not skip any we set next = 1
@@ -1328,8 +1326,13 @@ public class rText{
         return font.recs[GetGlyphIndex(font, codepoint)];
     }
 
+    /**
+     * Get text length in bytes
+     * @param text text to be evaluated
+     * @return length of string in bytes
+     */
     public int TextLength(String text){
-        return text.length();
+        return text.codePointCount(0, text.length());
     }
 
     // Formatting of text with variables to 'embed'
@@ -1496,19 +1499,7 @@ public class rText{
 
     // Get all codepoints in a string, codepoints count returned by parameters
     public int[] LoadCodepoints(String text){
-        int[] codepoints = new int[MAX_TEXT_UNICODE_CHARS];
-        Arrays.fill(codepoints, 0);
-
-        int bytesProcessed = 0;
-        int textLength = TextLength(text);
-        int codepointsCount = 0;
-
-        for (int i = 0; i < textLength; codepointsCount++){
-            codepoints[codepointsCount] = GetCodepointNext(text.toCharArray());
-            i += bytesProcessed;
-        }
-
-        return codepoints;
+        return text.codePoints().toArray();
     }
 
     // Unload codepoints data from memory
@@ -1518,73 +1509,52 @@ public class rText{
 
     // Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found
     // NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
-    public int GetCodepointsCount(String text){
-        int len = 0;
-        int ptr = 0;
-
-        while (ptr < text.length() && text.charAt(ptr) != '\0'){
-            next = 0;
-            int letter = GetCodepointNext(text.toCharArray());
-
-            if (letter == 0x3f){
-                ptr += 1;
-            }
-            else{
-                ptr += next;
-            }
-
-            len++;
-        }
-
-        return len;
+    public int GetCodepointCount(String text){
+        return text.getBytes().length;
     }
 
     /**
      * Get next codepoint in a byte sequence and bytes processed
      * @param text Bytes of character
+     * @param ptr position of codepoint
      * @return UTF-8 codepoint
      */
-    public int GetCodepointNext(char[] text){
-        int codepoint = 0x3f;       // Codepoint (defaults to '?')
-
-        // Get current codepoint and bytes processed
-        if (0xf0 == (0xf8 & text[0])) {
-            // 4 byte UTF-8 codepoint
-            codepoint = ((0x07 & text[0]) << 18) | ((0x3f & text[1]) << 12) | ((0x3f & text[2]) << 6) | (0x3f & text[3]);
-        }
-        else if (0xe0 == (0xf0 & text[0])) {
-            // 3 byte UTF-8 codepoint
-            codepoint = ((0x0f & text[0]) << 12) | ((0x3f & text[1]) << 6) | (0x3f & text[2]);
-        }
-        else if (0xc0 == (0xe0 & text[0])) {
-            // 2 byte UTF-8 codepoint
-            codepoint = ((0x1f & text[0]) << 6) | (0x3f & text[1]);
-        }
-        else {
-            // 1 byte UTF-8 codepoint
-            codepoint = text[0];
-        }
-
-        return codepoint;
+    public int GetCodepointNext(String text, int ptr){
+        return text.codePointAt(ptr);
     }
 
-    public int GetByteCountOfCodePoint(int codepoint) {
-        if (0xf0 == (0xf8 & codepoint)) {
-            // 4 byte UTF-8 codepoint
-            return 4;
+    /**
+     * Get previous codepoint in a byte sequence and bytes processed
+     * @param text Bytes of character
+     * @param ptr position of codepoint
+     * @return UTF-8 codepoint
+     */
+    public int GetCodepointPrevious(String text, int ptr) {
+        return text.codePointBefore(ptr);
+    }
+
+    /**
+     *
+     * @param codepoint
+     * @return
+     */
+    public int GetCodePointByteCount(int codepoint) {
+        int size = 0;
+
+        if (codepoint <= 0x7f) {
+            size = 1;
         }
-        else if (0xe0 == (0xf0 & codepoint)) {
-            // 3 byte UTF-8 codepoint
-            return 3;
+        else if (codepoint <= 0x7ff) {
+            size = 2;
         }
-        else if (0xc0 == (0xe0 & codepoint)) {
-            // 2 byte UTF-8 codepoint
-            return 2;
+        else if (codepoint <= 0xffff) {
+            size = 3;
         }
         else {
-            // 1 byte UTF-8 codepoint
-            return 1;
+            size = 4;
         }
+
+        return size;
     }
 
     // Read a line from memory
@@ -1633,7 +1603,10 @@ public class rText{
         lineTracker++;
         TRACELOG("    > Texture filename: " + imFileName);
 
-        charsCount = Integer.parseInt(fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("count=") + 6));
+        String linesCount = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("=") + 1);
+        linesCount = linesCount.trim();
+
+        charsCount = Integer.parseInt(linesCount);
         lineTracker++;
         TRACELOG("    > Chars count: " + charsCount);
 
@@ -1641,13 +1614,13 @@ public class rText{
 
         Image imFont = context.textures.LoadImage(imPath);
 
-        if (imFont.format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
+        if (imFont.format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE) {
             // Convert image to GRAYSCALE + ALPHA, using the mask as the alpha channel
             Image imFontAlpha = new Image();
 
             byte[] ifaData = new byte[imFont.width * imFont.height * 2];
             byte[] imData = imFont.getData();
-            for (int p = 0, i = 0; p < (imFont.width * imFont.height * 2); p += 2, i++){
+            for (int p = 0, i = 0; p < (imFont.width * imFont.height * 2); p += 2, i++) {
                 ifaData[p] = (byte) 0xff;
                 ifaData[p + 1] = imData[i];
             }
@@ -1669,17 +1642,17 @@ public class rText{
         font.glyphCount = charsCount;
         font.glyphPadding = 0;
         font.glyphs = new GlyphInfo[charsCount];
-        for (int i = 0; i < font.glyphs.length; i++){
+        for (int i = 0; i < font.glyphs.length; i++) {
             font.glyphs[i] = new GlyphInfo();
         }
         font.recs = new Rectangle[charsCount];
-        for (int i = 0; i < font.recs.length; i++){
+        for (int i = 0; i < font.recs.length; i++) {
             font.recs[i] = new Rectangle();
         }
 
         int charId, charX, charY, charWidth, charHeight, charOffsetX, charOffsetY, charAdvanceX;
 
-        for (int i = 0; ; i++){
+        for (int i = 0; ; i++) {
             String tmp = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("id=") + 3,
                                                           fileLines[lineTracker].indexOf("x="));
             charId = Integer.parseInt(tmp.substring(0, tmp.indexOf(" ")));
@@ -1728,19 +1701,19 @@ public class rText{
 
             lineTracker++;
 
-            if (lineTracker == fileLines.length){
+            if (lineTracker == fileLines.length) {
                 break;
             }
         }
 
         context.textures.UnloadImage(imFont);
 
-        if (font.texture.getId() == 0){
+        if (font.texture.getId() == 0) {
             UnloadFont(font);
             font = GetFontDefault();
             TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load texture, reverted to default font");
         }
-        else{
+        else {
             TRACELOG(LOG_INFO, "FONT: [" + fileName + "] Font loaded successfully");
         }
 

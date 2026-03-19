@@ -6,7 +6,7 @@ import com.raylib.java.structs.Color;
 import static com.raylib.java.core.input.Keyboard.KEY_ENTER;
 import static com.raylib.java.core.input.Keyboard.KEY_SPACE;
 
-public class WritingAnimation{
+public class WritingAnimation {
 
     /*******************************************************************************************
      *
@@ -22,7 +22,7 @@ public class WritingAnimation{
      *
      ********************************************************************************************/
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         // Initialization
         //--------------------------------------------------------------------------------------
@@ -43,10 +43,16 @@ public class WritingAnimation{
         {
             // Update
             //----------------------------------------------------------------------------------
-            if (rlj.core.IsKeyDown(KEY_SPACE)) framesCounter += 8;
-            else framesCounter++;
+            if (rlj.core.IsKeyDown(KEY_SPACE)) {
+                framesCounter += 8;
+            }
+            else {
+                framesCounter++;
+            }
 
-            if (rlj.core.IsKeyPressed(KEY_ENTER)) framesCounter = 0;
+            if (rlj.core.IsKeyPressed(KEY_ENTER)) {
+                framesCounter = 0;
+            }
             //----------------------------------------------------------------------------------
 
             // Draw
@@ -64,5 +70,7 @@ public class WritingAnimation{
             rlj.core.EndDrawing();
             //----------------------------------------------------------------------------------
         }
+
+        rlj.core.CloseWindow();
     }
 }

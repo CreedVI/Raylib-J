@@ -6,6 +6,8 @@ import com.raylib.java.structs.Font;
 import com.raylib.java.structs.Rectangle;
 import com.raylib.java.structs.Vector2;
 
+import java.nio.charset.StandardCharsets;
+
 import static com.raylib.java.Config.ConfigFlag.FLAG_MSAA_4X_HINT;
 import static com.raylib.java.Config.ConfigFlag.FLAG_VSYNC_HINT;
 import static com.raylib.java.core.input.Keyboard.KEY_SPACE;
@@ -60,107 +62,248 @@ public class Unicode{
 
     // String containing 180 emoji codepoints separated by a '\0' char
     static String[] emojiCodepoints = {
-            "\u00F0\u009F\u008C\u0080", "\u00F0\u009F\u0098\u0080", "\u00F0\u009F\u0098\u0082", "\u00F0\u009F\u00A4\u00A3",
-            "\u00F0\u009F\u0098\u0083", "\u00F0\u009F\u0098\u0086", "\u00F0\u009F\u0098\u0089", "\u00F0\u009F\u0098\u008B",
-            "\u00F0\u009F\u0098\u008E", "\u00F0\u009F\u0098\u008D", "\u00F0\u009F\u0098\u0098", "\u00F0\u009F\u0098\u0097",
-            "\u00F0\u009F\u0098\u0099", "\u00F0\u009F\u0098\u009A", "\u00F0\u009F\u0099\u0082", "\u00F0\u009F\u00A4\u0097",
-            "\u00F0\u009F\u00A4\u00A9", "\u00F0\u009F\u00A4\u0094", "\u00F0\u009F\u00A4\u00A8", "\u00F0\u009F\u0098\u0090",
-            "\u00F0\u009F\u0098\u0091", "\u00F0\u009F\u0098\u00B6", "\u00F0\u009F\u0099\u0084", "\u00F0\u009F\u0098\u008F",
-            "\u00F0\u009F\u0098\u00A3", "\u00F0\u009F\u0098\u00A5", "\u00F0\u009F\u0098\u00AE", "\u00F0\u009F\u00A4\u0090",
-            "\u00F0\u009F\u0098\u00AF", "\u00F0\u009F\u0098\u00AA", "\u00F0\u009F\u0098\u00AB", "\u00F0\u009F\u0098\u00B4",
-            "\u00F0\u009F\u0098\u008C", "\u00F0\u009F\u0098\u009B", "\u00F0\u009F\u0098\u009D", "\u00F0\u009F\u00A4\u00A4",
-            "\u00F0\u009F\u0098\u0092", "\u00F0\u009F\u0098\u0095", "\u00F0\u009F\u0099\u0083", "\u00F0\u009F\u00A4\u0091",
-            "\u00F0\u009F\u0098\u00B2", "\u00F0\u009F\u0099\u0081", "\u00F0\u009F\u0098\u0096", "\u00F0\u009F\u0098\u009E",
-            "\u00F0\u009F\u0098\u009F", "\u00F0\u009F\u0098\u00A4", "\u00F0\u009F\u0098\u00A2", "\u00F0\u009F\u0098\u00AD",
-            "\u00F0\u009F\u0098\u00A6", "\u00F0\u009F\u0098\u00A9", "\u00F0\u009F\u00A4\u00AF", "\u00F0\u009F\u0098\u00AC",
-            "\u00F0\u009F\u0098\u00B0", "\u00F0\u009F\u0098\u00B1", "\u00F0\u009F\u0098\u00B3", "\u00F0\u009F\u00A4\u00AA",
-            "\u00F0\u009F\u0098\u00B5", "\u00F0\u009F\u0098\u00A1", "\u00F0\u009F\u0098\u00A0", "\u00F0\u009F\u00A4\u00AC",
-            "\u00F0\u009F\u0098\u00B7", "\u00F0\u009F\u00A4\u0092", "\u00F0\u009F\u00A4\u0095", "\u00F0\u009F\u00A4\u00A2",
-            "\u00F0\u009F\u00A4\u00AE", "\u00F0\u009F\u00A4\u00A7", "\u00F0\u009F\u0098\u0087", "\u00F0\u009F\u00A4\u00A0",
-            "\u00F0\u009F\u00A4\u00AB", "\u00F0\u009F\u00A4\u00AD", "\u00F0\u009F\u00A7\u0090", "\u00F0\u009F\u00A4\u0093",
-            "\u00F0\u009F\u0098\u0088", "\u00F0\u009F\u0091\u00BF", "\u00F0\u009F\u0091\u00B9", "\u00F0\u009F\u0091\u00BA",
-            "\u00F0\u009F\u0092\u0080", "\u00F0\u009F\u0091\u00BB", "\u00F0\u009F\u0091\u00BD", "\u00F0\u009F\u0091\u00BE",
-            "\u00F0\u009F\u00A4\u0096", "\u00F0\u009F\u0092\u00A9", "\u00F0\u009F\u0098\u00BA", "\u00F0\u009F\u0098\u00B8",
-            "\u00F0\u009F\u0098\u00B9", "\u00F0\u009F\u0098\u00BB", "\u00F0\u009F\u0098\u00BD", "\u00F0\u009F\u0099\u0080",
-            "\u00F0\u009F\u0098\u00BF", "\u00F0\u009F\u008C\u00BE", "\u00F0\u009F\u008C\u00BF", "\u00F0\u009F\u008D\u0080",
-            "\u00F0\u009F\u008D\u0083", "\u00F0\u009F\u008D\u0087", "\u00F0\u009F\u008D\u0093", "\u00F0\u009F\u00A5\u009D",
-            "\u00F0\u009F\u008D\u0085", "\u00F0\u009F\u00A5\u00A5", "\u00F0\u009F\u00A5\u0091", "\u00F0\u009F\u008D\u0086",
-            "\u00F0\u009F\u00A5\u0094", "\u00F0\u009F\u00A5\u0095", "\u00F0\u009F\u008C\u00BD", "\u00F0\u009F\u008C\u00B6",
-            "\u00F0\u009F\u00A5\u0092", "\u00F0\u009F\u00A5\u00A6", "\u00F0\u009F\u008D\u0084", "\u00F0\u009F\u00A5\u009C",
-            "\u00F0\u009F\u008C\u00B0", "\u00F0\u009F\u008D\u009E", "\u00F0\u009F\u00A5\u0090", "\u00F0\u009F\u00A5\u0096",
-            "\u00F0\u009F\u00A5\u00A8", "\u00F0\u009F\u00A5\u009E", "\u00F0\u009F\u00A7\u0080", "\u00F0\u009F\u008D\u0096",
-            "\u00F0\u009F\u008D\u0097", "\u00F0\u009F\u00A5\u00A9", "\u00F0\u009F\u00A5\u0093", "\u00F0\u009F\u008D\u0094",
-            "\u00F0\u009F\u008D\u009F", "\u00F0\u009F\u008D\u0095", "\u00F0\u009F\u008C\u00AD", "\u00F0\u009F\u00A5\u00AA",
-            "\u00F0\u009F\u008C\u00AE", "\u00F0\u009F\u008C\u00AF", "\u00F0\u009F\u00A5\u0099", "\u00F0\u009F\u00A5\u009A",
-            "\u00F0\u009F\u008D\u00B3", "\u00F0\u009F\u00A5\u0098", "\u00F0\u009F\u008D\u00B2", "\u00F0\u009F\u00A5\u00A3",
-            "\u00F0\u009F\u00A5\u0097", "\u00F0\u009F\u008D\u00BF", "\u00F0\u009F\u00A5\u00AB", "\u00F0\u009F\u008D\u00B1",
-            "\u00F0\u009F\u008D\u0098", "\u00F0\u009F\u008D\u009D", "\u00F0\u009F\u008D\u00A0", "\u00F0\u009F\u008D\u00A2",
-            "\u00F0\u009F\u008D\u00A5", "\u00F0\u009F\u008D\u00A1", "\u00F0\u009F\u00A5\u009F", "\u00F0\u009F\u00A5\u00A1",
-            "\u00F0\u009F\u008D\u00A6", "\u00F0\u009F\u008D\u00AA", "\u00F0\u009F\u008E\u0082", "\u00F0\u009F\u008D\u00B0",
-            "\u00F0\u009F\u00A5\u00A7", "\u00F0\u009F\u008D\u00AB", "\u00F0\u009F\u008D\u00AF", "\u00F0\u009F\u008D\u00BC",
-            "\u00F0\u009F\u00A5\u009B", "\u00F0\u009F\u008D\u00B5", "\u00F0\u009F\u008D\u00B6", "\u00F0\u009F\u008D\u00BE",
-            "\u00F0\u009F\u008D\u00B7", "\u00F0\u009F\u008D\u00BB", "\u00F0\u009F\u00A5\u0082", "\u00F0\u009F\u00A5\u0083",
-            "\u00F0\u009F\u00A5\u00A4", "\u00F0\u009F\u00A5\u00A2", "\u00F0\u009F\u0091\u0081", "\u00F0\u009F\u0091\u0085",
-            "\u00F0\u009F\u0091\u0084", "\u00F0\u009F\u0092\u008B", "\u00F0\u009F\u0092\u0098", "\u00F0\u009F\u0092\u0093",
-            "\u00F0\u009F\u0092\u0097", "\u00F0\u009F\u0092\u0099", "\u00F0\u009F\u0092\u009B", "\u00F0\u009F\u00A7\u00A1",
-            "\u00F0\u009F\u0092\u009C", "\u00F0\u009F\u0096\u00A4", "\u00F0\u009F\u0092\u009D", "\u00F0\u009F\u0092\u009F",
-            "\u00F0\u009F\u0092\u008C", "\u00F0\u009F\u0092\u00A4", "\u00F0\u009F\u0092\u00A2", "\u00F0\u009F\u0092\u00A3"
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0x80}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x80}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x82}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA3}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x83}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x86}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x89}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x8B}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x8E}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x8D}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x98}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x97}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x99}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x9A}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x99,(byte) 0x82}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x97}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA9}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x94}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA8}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x90}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x91}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB6}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x99,(byte) 0x84}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x8F}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA3}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA5}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xAE}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x90}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xAF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xAA}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xAB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB4}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x8C}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x9B}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x9D}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA4}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x92}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x95}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x99,(byte) 0x83}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x91}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x99,(byte) 0x81}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x96}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x9E}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x9F}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA4}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xAD}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA6}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA9}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xAF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xAC}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB0}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB1}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB3}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xAA}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB5}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA1}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xA0}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xAC}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB7}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x92}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x95}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xAE}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA7}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x87}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xA0}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xAB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0xAD}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA7,(byte) 0x90}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x93}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0x88}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0xBF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0xB9}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0xBA}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x80}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0xBB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0xBD}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0xBE}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA4,(byte) 0x96}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0xA9}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xBA}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB8}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xB9}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xBB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xBD}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x99,(byte) 0x80}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x98,(byte) 0xBF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xBE}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xBF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x80}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x83}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x87}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x93}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x9D}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x85}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA5}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x91}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x86}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x94}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x95}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xBD}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xB6}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x92}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA6}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x84}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x9C}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xB0}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x9E}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x90}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x96}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA8}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x9E}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA7,(byte) 0x80}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x96}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x97}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA9}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x93}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x94}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x9F}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x95}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xAD}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xAA}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xAE}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8C,(byte) 0xAF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x99}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x9A}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB3}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x98}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA3}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x97}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xBF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xAB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB1}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x98}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0x9D}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xA0}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xA2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xA5}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xA1}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x9F}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA1}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xA6}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xAA}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8E,(byte) 0x82}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB0}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA7}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xAB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xAF}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xBC}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x9B}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB5}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB6}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xBE}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xB7}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x8D,(byte) 0xBB}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x82}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0x83}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA4}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA5,(byte) 0xA2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0x81}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0x85}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x91,(byte) 0x84}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x8B}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x98}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x93}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x97}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x99}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x9B}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0xA7,(byte) 0xA1}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x9C}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x96,(byte) 0xA4}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x9D}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x9F}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0x8C}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0xA4}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0xA2}, StandardCharsets.UTF_8),
+            new String(new byte[] {(byte) 0xF0,(byte) 0x9F,(byte) 0x92,(byte) 0xA3}, StandardCharsets.UTF_8),
     };
-    static Message[] messages = { // Array containing all of the emojis messages
-            new Message("\u0046\u0061\u006C\u0073\u0063\u0068\u0065\u0073\u0020\u00C3\u009C\u0062\u0065\u006E\u0020\u0076\u006F\u006E\u0020\u0058\u0079\u006C\u006F\u0070\u0068\u006F\u006E\u006D\u0075\u0073\u0069\u006B\u0020\u0071\u0075\u00C3\u00A4\u006C\u0074\u0020\u006A\u0065\u0064\u0065\u006E\u0020\u0067\u0072\u00C3\u00B6\u00C3\u009F\u0065\u0072\u0065\u006E\u0020\u005A\u0077\u0065\u0072\u0067", "German"),
-            new Message("\u0042\u0065\u0069\u00C3\u009F\u0020\u006E\u0069\u0063\u0068\u0074\u0020\u0069\u006E\u0020\u0064\u0069\u0065\u0020\u0048\u0061\u006E\u0064\u002C\u0020\u0064\u0069\u0065\u0020\u0064\u0069\u0063\u0068\u0020\u0066\u00C3\u00BC\u0074\u0074\u0065\u0072\u0074\u002E", "German"),
-            new Message("\u0041\u0075\u00C3\u009F\u0065\u0072\u006F\u0072\u0064\u0065\u006E\u0074\u006C\u0069\u0063\u0068\u0065\u0020\u00C3\u009C\u0062\u0065\u006C\u0020\u0065\u0072\u0066\u006F\u0072\u0064\u0065\u0072\u006E\u0020\u0061\u0075\u00C3\u009F\u0065\u0072\u006F\u0072\u0064\u0065\u006E\u0074\u006C\u0069\u0063\u0068\u0065\u0020\u004D\u0069\u0074\u0074\u0065\u006C\u002E", "German"),
-            new Message("\u00D4\u00BF\u00D6\u0080\u00D5\u00B6\u00D5\u00A1\u00D5\u00B4\u0020\u00D5\u00A1\u00D5\u00BA\u00D5\u00A1\u00D5\u00AF\u00D5\u00AB\u0020\u00D5\u00B8\u00D6\u0082\u00D5\u00BF\u00D5\u00A5\u00D5\u00AC\u0020\u00D6\u0087\u0020\u00D5\u00AB\u00D5\u00B6\u00D5\u00AE\u00D5\u00AB\u0020\u00D5\u00A1\u00D5\u00B6\u00D5\u00B0\u00D5\u00A1\u00D5\u00B6\u00D5\u00A3\u00D5\u00AB\u00D5\u00BD\u00D5\u00BF\u0020\u00D5\u00B9\u00D5\u00A8\u00D5\u00B6\u00D5\u00A5\u00D6\u0080", "Armenian"),
-            new Message("\u00D4\u00B5\u00D6\u0080\u00D5\u00A2\u0020\u00D5\u00B8\u00D6\u0080\u0020\u00D5\u00AF\u00D5\u00A1\u00D6\u0081\u00D5\u00AB\u00D5\u00B6\u00D5\u00A8\u0020\u00D5\u00A5\u00D5\u00AF\u00D5\u00A1\u00D6\u0082\u0020\u00D5\u00A1\u00D5\u00B6\u00D5\u00BF\u00D5\u00A1\u00D5\u00BC\u002C\u0020\u00D5\u00AE\u00D5\u00A1\u00D5\u00BC\u00D5\u00A5\u00D6\u0080\u00D5\u00A8\u0020\u00D5\u00A1\u00D5\u00BD\u00D5\u00A1\u00D6\u0081\u00D5\u00AB\u00D5\u00B6\u002E\u002E\u002E\u0020\u00C2\u00AB\u00D4\u00BF\u00D5\u00B8\u00D5\u00BF\u00D5\u00A8\u0020\u00D5\u00B4\u00D5\u00A5\u00D6\u0080\u00D5\u00B8\u00D5\u00B6\u00D6\u0081\u00D5\u00AB\u00D6\u0081\u0020\u00D5\u00A7\u003A\u00C2\u00BB", "Armenian"),
-            new Message("\u00D4\u00B3\u00D5\u00A1\u00D5\u00BC\u00D5\u00A8\u00D5\u009D\u0020\u00D5\u00A3\u00D5\u00A1\u00D6\u0080\u00D5\u00B6\u00D5\u00A1\u00D5\u00B6\u002C\u0020\u00D5\u00B1\u00D5\u00AB\u00D6\u0082\u00D5\u00B6\u00D5\u00A8\u00D5\u009D\u0020\u00D5\u00B1\u00D5\u00B4\u00D5\u00BC\u00D5\u00A1\u00D5\u00B6", "Armenian"),
-            new Message("\u004A\u0065\u00C5\u00BC\u0075\u0020\u006B\u006C\u00C4\u0085\u0074\u0077\u002C\u0020\u0073\u0070\u00C5\u0082\u00C3\u00B3\u0064\u00C5\u00BA\u0020\u0046\u0069\u006E\u006F\u006D\u0020\u0063\u007A\u00C4\u0099\u00C5\u009B\u00C4\u0087\u0020\u0067\u0072\u0079\u0020\u0068\u0061\u00C5\u0084\u0062\u0021", "Polish"),
-            new Message("\u0044\u006F\u0062\u0072\u0079\u006D\u0069\u0020\u0063\u0068\u00C4\u0099\u0063\u0069\u0061\u006D\u0069\u0020\u006A\u0065\u0073\u0074\u0020\u0070\u0069\u0065\u006B\u00C5\u0082\u006F\u0020\u0077\u0079\u0062\u0072\u0075\u006B\u006F\u0077\u0061\u006E\u0065\u002E", "Polish"),
-            new Message("\u00C3\u008E\u00C8\u009B\u0069\u0020\u006D\u0075\u006C\u00C8\u009B\u0075\u006D\u0065\u0073\u0063\u0020\u0063\u00C4\u0083\u0020\u0061\u0069\u0020\u0061\u006C\u0065\u0073\u0020\u0072\u0061\u0079\u006C\u0069\u0062\u002E\u00A0\u00C8\u0098\u0069\u0020\u0073\u0070\u0065\u0072\u0020\u0073\u00C4\u0083\u0020\u0061\u0069\u0020\u006F\u0020\u007A\u0069\u0020\u0062\u0075\u006E\u00C4\u0083\u0021", "Romanian"),
-            new Message("\u00D0\u00AD\u00D1\u0085\u002C\u0020\u00D1\u0087\u00D1\u0083\u00D0\u00B6\u00D0\u00B0\u00D0\u00BA\u002C\u0020\u00D0\u00BE\u00D0\u00B1\u00D1\u0089\u00D0\u00B8\u00D0\u00B9\u0020\u00D1\u0081\u00D1\u008A\u00D1\u0091\u00D0\u00BC\u0020\u00D1\u0086\u00D0\u00B5\u00D0\u00BD\u0020\u00D1\u0088\u00D0\u00BB\u00D1\u008F\u00D0\u00BF\u0020\u0028\u00D1\u008E\u00D1\u0084\u00D1\u0082\u00D1\u008C\u0029\u0020\u00D0\u00B2\u00D0\u00B4\u00D1\u0080\u00D1\u008B\u00D0\u00B7\u00D0\u00B3\u0021", "Russian"),
-            new Message("\u00D0\u00AF\u0020\u00D0\u00BB\u00D1\u008E\u00D0\u00B1\u00D0\u00BB\u00D1\u008E\u0020\u0072\u0061\u0079\u006C\u0069\u0062\u0021", "Russian"),
-            new Message("\u00D0\u009C\u00D0\u00BE\u00D0\u00BB\u00D1\u0087\u00D0\u00B8\u002C\u0020\u00D1\u0081\u00D0\u00BA\u00D1\u0080\u00D1\u008B\u00D0\u00B2\u00D0\u00B0\u00D0\u00B9\u00D1\u0081\u00D1\u008F\u0020\u00D0\u00B8\u0020\u00D1\u0082\u00D0\u00B0\u00D0\u00B8\u00A0\u00D0\u0098\u0020\u00D1\u0087\u00D1\u0083\u00D0\u00B2\u00D1\u0081\u00D1\u0082\u00D0\u00B2\u00D0\u00B0\u0020\u00D0\u00B8\u0020\u00D0\u00BC\u00D0\u00B5\u00D1\u0087\u00D1\u0082\u00D1\u008B\u0020\u00D1\u0081\u00D0\u00B2\u00D0\u00BE\u00D0\u00B8\u0020\u00E2\u0080\u0093\u00A0\u00D0\u009F\u00D1\u0083\u00D1\u0081\u00D0\u00BA\u00D0\u00B0\u00D0\u00B9\u0020\u00D0\u00B2\u0020\u00D0\u00B4\u00D1\u0083\u00D1\u0088\u00D0\u00B5\u00D0\u00B2\u00D0\u00BD\u00D0\u00BE\u00D0\u00B9\u0020\u00D0\u00B3\u00D0\u00BB\u00D1\u0083\u00D0\u00B1\u00D0\u00B8\u00D0\u00BD\u00D0\u00B5\u00A0\u00D0\u0098\u0020\u00D0\u00B2\u00D1\u0081\u00D1\u0085\u00D0\u00BE\u00D0\u00B4\u00D1\u008F\u00D1\u0082\u0020\u00D0\u00B8\u0020\u00D0\u00B7\u00D0\u00B0\u00D0\u00B9\u00D0\u00B4\u00D1\u0083\u00D1\u0082\u0020\u00D0\u00BE\u00D0\u00BD\u00D0\u00B5\u00A0\u00D0\u009A\u00D0\u00B0\u00D0\u00BA\u0020\u00D0\u00B7\u00D0\u00B2\u00D0\u00B5\u00D0\u00B7\u00D0\u00B4\u00D1\u008B\u0020\u00D1\u008F\u00D1\u0081\u00D0\u00BD\u00D1\u008B\u00D0\u00B5\u0020\u00D0\u00B2\u0020\u00D0\u00BD\u00D0\u00BE\u00D1\u0087\u00D0\u00B8\u002D\u00A0\u00D0\u009B\u00D1\u008E\u00D0\u00B1\u00D1\u0083\u00D0\u00B9\u00D1\u0081\u00D1\u008F\u0020\u00D0\u00B8\u00D0\u00BC\u00D0\u00B8\u0020\u00E2\u0080\u0093\u0020\u00D0\u00B8\u0020\u00D0\u00BC\u00D0\u00BE\u00D0\u00BB\u00D1\u0087\u00D0\u00B8\u002E", "Russian"),
-            new Message("\u0056\u006F\u0069\u0078\u0020\u0061\u006D\u0062\u0069\u0067\u0075\u00C3\u00AB\u0020\u0064\u00E2\u0080\u0099\u0075\u006E\u0020\u0063\u00C5\u0093\u0075\u0072\u0020\u0071\u0075\u0069\u0020\u0061\u0075\u0020\u007A\u00C3\u00A9\u0070\u0068\u0079\u0072\u0020\u0070\u0072\u00C3\u00A9\u0066\u00C3\u00A8\u0072\u0065\u0020\u006C\u0065\u0073\u0020\u006A\u0061\u0074\u0074\u0065\u0073\u0020\u0064\u0065\u0020\u006B\u0069\u0077\u0069", "French"),
-            new Message("\u0042\u0065\u006E\u006A\u0061\u006D\u00C3\u00AD\u006E\u0020\u0070\u0069\u0064\u0069\u00C3\u00B3\u0020\u0075\u006E\u0061\u0020\u0062\u0065\u0062\u0069\u0064\u0061\u0020\u0064\u0065\u0020\u006B\u0069\u0077\u0069\u0020\u0079\u0020\u0066\u0072\u0065\u0073\u0061\u003B\u0020\u004E\u006F\u00C3\u00A9\u002C\u0020\u0073\u0069\u006E\u0020\u0076\u0065\u0072\u0067\u00C3\u00BC\u0065\u006E\u007A\u0061\u002C\u0020\u006C\u0061\u0020\u006D\u00C3\u00A1\u0073\u0020\u0065\u0078\u0071\u0075\u0069\u0073\u0069\u0074\u0061\u0020\u0063\u0068\u0061\u006D\u0070\u0061\u00C3\u00B1\u0061\u0020\u0064\u0065\u006C\u0020\u006D\u0065\u006E\u00C3\u00BA\u002E", "Spanish"),
-            new Message("\u00CE\u00A4\u00CE\u00B1\u00CF\u0087\u00CE\u00AF\u00CF\u0083\u00CF\u0084\u00CE\u00B7\u0020\u00CE\u00B1\u00CE\u00BB\u00CF\u008E\u00CF\u0080\u00CE\u00B7\u00CE\u00BE\u0020\u00CE\u00B2\u00CE\u00B1\u00CF\u0086\u00CE\u00AE\u00CF\u0082\u0020\u00CF\u0088\u00CE\u00B7\u00CE\u00BC\u00CE\u00AD\u00CE\u00BD\u00CE\u00B7\u0020\u00CE\u00B3\u00CE\u00B7\u002C\u0020\u00CE\u00B4\u00CF\u0081\u00CE\u00B1\u00CF\u0083\u00CE\u00BA\u00CE\u00B5\u00CE\u00BB\u00CE\u00AF\u00CE\u00B6\u00CE\u00B5\u00CE\u00B9\u0020\u00CF\u0085\u00CF\u0080\u00CE\u00AD\u00CF\u0081\u0020\u00CE\u00BD\u00CF\u0089\u00CE\u00B8\u00CF\u0081\u00CE\u00BF\u00CF\u008D\u0020\u00CE\u00BA\u00CF\u0085\u00CE\u00BD\u00CF\u008C\u00CF\u0082", "Greek"),
-            new Message("\u00CE\u0097\u0020\u00CE\u00BA\u00CE\u00B1\u00CE\u00BB\u00CF\u008D\u00CF\u0084\u00CE\u00B5\u00CF\u0081\u00CE\u00B7\u0020\u00CE\u00AC\u00CE\u00BC\u00CF\u0085\u00CE\u00BD\u00CE\u00B1\u0020\u00CE\u00B5\u00CE\u00AF\u00CE\u00BD\u00CE\u00B1\u00CE\u00B9\u0020\u00CE\u00B7\u0020\u00CE\u00B5\u00CF\u0080\u00CE\u00AF\u00CE\u00B8\u00CE\u00B5\u00CF\u0083\u00CE\u00B7\u002E", "Greek"),
-            new Message("\u00CE\u00A7\u00CF\u0081\u00CF\u008C\u00CE\u00BD\u00CE\u00B9\u00CE\u00B1\u0020\u00CE\u00BA\u00CE\u00B1\u00CE\u00B9\u0020\u00CE\u00B6\u00CE\u00B1\u00CE\u00BC\u00CE\u00AC\u00CE\u00BD\u00CE\u00B9\u00CE\u00B1\u0021", "Greek"),
-            new Message("\u00CE\u00A0\u00CF\u008E\u00CF\u0082\u0020\u00CF\u0084\u00CE\u00B1\u0020\u00CF\u0080\u00CE\u00B1\u00CF\u0082\u0020\u00CF\u0083\u00CE\u00AE\u00CE\u00BC\u00CE\u00B5\u00CF\u0081\u00CE\u00B1\u003B", "Greek"),
+    
+    static Message[] messages = { 
+            // Array containing all of the emojis messages
+            new Message(new String(new byte[] {(byte) 0x46, (byte) 0x61, (byte) 0x6C, (byte) 0x73, (byte) 0x63, (byte) 0x68, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0xC3, (byte) 0x9C, (byte) 0x62, (byte) 0x65, (byte) 0x6E, (byte) 0x20, (byte) 0x76, (byte) 0x6F, (byte) 0x6E, (byte) 0x20, (byte) 0x58, (byte) 0x79, (byte) 0x6C, (byte) 0x6F, (byte) 0x70, (byte) 0x68, (byte) 0x6F, (byte) 0x6E, (byte) 0x6D, (byte) 0x75, (byte) 0x73, (byte) 0x69, (byte) 0x6B, (byte) 0x20, (byte) 0x71, (byte) 0x75, (byte) 0xC3, (byte) 0xA4, (byte) 0x6C, (byte) 0x74, (byte) 0x20, (byte) 0x6A, (byte) 0x65, (byte) 0x64, (byte) 0x65, (byte) 0x6E, (byte) 0x20, (byte) 0x67, (byte) 0x72, (byte) 0xC3, (byte) 0xB6, (byte) 0xC3, (byte) 0x9F, (byte) 0x65, (byte) 0x72, (byte) 0x65, (byte) 0x6E, (byte) 0x20, (byte) 0x5A, (byte) 0x77, (byte) 0x65, (byte) 0x72, (byte) 0x67}, StandardCharsets.UTF_8), "German"),
+            new Message(new String(new byte[] {(byte) 0x42, (byte) 0x65, (byte) 0x69, (byte) 0xC3, (byte) 0x9F, (byte) 0x20, (byte) 0x6E, (byte) 0x69, (byte) 0x63, (byte) 0x68, (byte) 0x74, (byte) 0x20, (byte) 0x69, (byte) 0x6E, (byte) 0x20, (byte) 0x64, (byte) 0x69, (byte) 0x65, (byte) 0x20, (byte) 0x48, (byte) 0x61, (byte) 0x6E, (byte) 0x64, (byte) 0x2C, (byte) 0x20, (byte) 0x64, (byte) 0x69, (byte) 0x65, (byte) 0x20, (byte) 0x64, (byte) 0x69, (byte) 0x63, (byte) 0x68, (byte) 0x20, (byte) 0x66, (byte) 0xC3, (byte) 0xBC, (byte) 0x74, (byte) 0x74, (byte) 0x65, (byte) 0x72, (byte) 0x74, (byte) 0x2E}, StandardCharsets.UTF_8), "German"),
+            new Message(new String(new byte[] {(byte) 0x41, (byte) 0x75, (byte) 0xC3, (byte) 0x9F, (byte) 0x65, (byte) 0x72, (byte) 0x6F, (byte) 0x72, (byte) 0x64, (byte) 0x65, (byte) 0x6E, (byte) 0x74, (byte) 0x6C, (byte) 0x69, (byte) 0x63, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0xC3, (byte) 0x9C, (byte) 0x62, (byte) 0x65, (byte) 0x6C, (byte) 0x20, (byte) 0x65, (byte) 0x72, (byte) 0x66, (byte) 0x6F, (byte) 0x72, (byte) 0x64, (byte) 0x65, (byte) 0x72, (byte) 0x6E, (byte) 0x20, (byte) 0x61, (byte) 0x75, (byte) 0xC3, (byte) 0x9F, (byte) 0x65, (byte) 0x72, (byte) 0x6F, (byte) 0x72, (byte) 0x64, (byte) 0x65, (byte) 0x6E, (byte) 0x74, (byte) 0x6C, (byte) 0x69, (byte) 0x63, (byte) 0x68, (byte) 0x65, (byte) 0x20, (byte) 0x4D, (byte) 0x69, (byte) 0x74, (byte) 0x74, (byte) 0x65, (byte) 0x6C, (byte) 0x2E}, StandardCharsets.UTF_8), "German"),
+            new Message(new String(new byte[] {(byte) 0xD4, (byte) 0xBF, (byte) 0xD6, (byte) 0x80, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xB4, (byte) 0x20, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xBA, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xAF, (byte) 0xD5, (byte) 0xAB, (byte) 0x20, (byte) 0xD5, (byte) 0xB8, (byte) 0xD6, (byte) 0x82, (byte) 0xD5, (byte) 0xBF, (byte) 0xD5, (byte) 0xA5, (byte) 0xD5, (byte) 0xAC, (byte) 0x20, (byte) 0xD6, (byte) 0x87, (byte) 0x20, (byte) 0xD5, (byte) 0xAB, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xAE, (byte) 0xD5, (byte) 0xAB, (byte) 0x20, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xB0, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xA3, (byte) 0xD5, (byte) 0xAB, (byte) 0xD5, (byte) 0xBD, (byte) 0xD5, (byte) 0xBF, (byte) 0x20, (byte) 0xD5, (byte) 0xB9, (byte) 0xD5, (byte) 0xA8, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xA5, (byte) 0xD6, (byte) 0x80}, StandardCharsets.UTF_8), "Armenian"),
+            new Message(new String(new byte[] {(byte) 0xD4, (byte) 0xB5, (byte) 0xD6, (byte) 0x80, (byte) 0xD5, (byte) 0xA2, (byte) 0x20, (byte) 0xD5, (byte) 0xB8, (byte) 0xD6, (byte) 0x80, (byte) 0x20, (byte) 0xD5, (byte) 0xAF, (byte) 0xD5, (byte) 0xA1, (byte) 0xD6, (byte) 0x81, (byte) 0xD5, (byte) 0xAB, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xA8, (byte) 0x20, (byte) 0xD5, (byte) 0xA5, (byte) 0xD5, (byte) 0xAF, (byte) 0xD5, (byte) 0xA1, (byte) 0xD6, (byte) 0x82, (byte) 0x20, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xBF, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xBC, (byte) 0x2C, (byte) 0x20, (byte) 0xD5, (byte) 0xAE, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xBC, (byte) 0xD5, (byte) 0xA5, (byte) 0xD6, (byte) 0x80, (byte) 0xD5, (byte) 0xA8, (byte) 0x20, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xBD, (byte) 0xD5, (byte) 0xA1, (byte) 0xD6, (byte) 0x81, (byte) 0xD5, (byte) 0xAB, (byte) 0xD5, (byte) 0xB6, (byte) 0x2E, (byte) 0x2E, (byte) 0x2E, (byte) 0x20, (byte) 0xC2, (byte) 0xAB, (byte) 0xD4, (byte) 0xBF, (byte) 0xD5, (byte) 0xB8, (byte) 0xD5, (byte) 0xBF, (byte) 0xD5, (byte) 0xA8, (byte) 0x20, (byte) 0xD5, (byte) 0xB4, (byte) 0xD5, (byte) 0xA5, (byte) 0xD6, (byte) 0x80, (byte) 0xD5, (byte) 0xB8, (byte) 0xD5, (byte) 0xB6, (byte) 0xD6, (byte) 0x81, (byte) 0xD5, (byte) 0xAB, (byte) 0xD6, (byte) 0x81, (byte) 0x20, (byte) 0xD5, (byte) 0xA7, (byte) 0x3A, (byte) 0xC2, (byte) 0xBB}, StandardCharsets.UTF_8), "Armenian"),
+            new Message(new String(new byte[] {(byte) 0xD4, (byte) 0xB3, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xBC, (byte) 0xD5, (byte) 0xA8, (byte) 0xD5, (byte) 0x9D, (byte) 0x20, (byte) 0xD5, (byte) 0xA3, (byte) 0xD5, (byte) 0xA1, (byte) 0xD6, (byte) 0x80, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xB6, (byte) 0x2C, (byte) 0x20, (byte) 0xD5, (byte) 0xB1, (byte) 0xD5, (byte) 0xAB, (byte) 0xD6, (byte) 0x82, (byte) 0xD5, (byte) 0xB6, (byte) 0xD5, (byte) 0xA8, (byte) 0xD5, (byte) 0x9D, (byte) 0x20, (byte) 0xD5, (byte) 0xB1, (byte) 0xD5, (byte) 0xB4, (byte) 0xD5, (byte) 0xBC, (byte) 0xD5, (byte) 0xA1, (byte) 0xD5, (byte) 0xB6}, StandardCharsets.UTF_8), "Armenian"),
+            new Message(new String(new byte[] {(byte) 0x4A, (byte) 0x65, (byte) 0xC5, (byte) 0xBC, (byte) 0x75, (byte) 0x20, (byte) 0x6B, (byte) 0x6C, (byte) 0xC4, (byte) 0x85, (byte) 0x74, (byte) 0x77, (byte) 0x2C, (byte) 0x20, (byte) 0x73, (byte) 0x70, (byte) 0xC5, (byte) 0x82, (byte) 0xC3, (byte) 0xB3, (byte) 0x64, (byte) 0xC5, (byte) 0xBA, (byte) 0x20, (byte) 0x46, (byte) 0x69, (byte) 0x6E, (byte) 0x6F, (byte) 0x6D, (byte) 0x20, (byte) 0x63, (byte) 0x7A, (byte) 0xC4, (byte) 0x99, (byte) 0xC5, (byte) 0x9B, (byte) 0xC4, (byte) 0x87, (byte) 0x20, (byte) 0x67, (byte) 0x72, (byte) 0x79, (byte) 0x20, (byte) 0x68, (byte) 0x61, (byte) 0xC5, (byte) 0x84, (byte) 0x62, (byte) 0x21}, StandardCharsets.UTF_8), "Polish"),
+            new Message(new String(new byte[] {(byte) 0x44, (byte) 0x6F, (byte) 0x62, (byte) 0x72, (byte) 0x79, (byte) 0x6D, (byte) 0x69, (byte) 0x20, (byte) 0x63, (byte) 0x68, (byte) 0xC4, (byte) 0x99, (byte) 0x63, (byte) 0x69, (byte) 0x61, (byte) 0x6D, (byte) 0x69, (byte) 0x20, (byte) 0x6A, (byte) 0x65, (byte) 0x73, (byte) 0x74, (byte) 0x20, (byte) 0x70, (byte) 0x69, (byte) 0x65, (byte) 0x6B, (byte) 0xC5, (byte) 0x82, (byte) 0x6F, (byte) 0x20, (byte) 0x77, (byte) 0x79, (byte) 0x62, (byte) 0x72, (byte) 0x75, (byte) 0x6B, (byte) 0x6F, (byte) 0x77, (byte) 0x61, (byte) 0x6E, (byte) 0x65, (byte) 0x2E}, StandardCharsets.UTF_8), "Polish"),
+            new Message(new String(new byte[] {(byte) 0xC3, (byte) 0x8E, (byte) 0xC8, (byte) 0x9B, (byte) 0x69, (byte) 0x20, (byte) 0x6D, (byte) 0x75, (byte) 0x6C, (byte) 0xC8, (byte) 0x9B, (byte) 0x75, (byte) 0x6D, (byte) 0x65, (byte) 0x73, (byte) 0x63, (byte) 0x20, (byte) 0x63, (byte) 0xC4, (byte) 0x83, (byte) 0x20, (byte) 0x61, (byte) 0x69, (byte) 0x20, (byte) 0x61, (byte) 0x6C, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0x72, (byte) 0x61, (byte) 0x79, (byte) 0x6C, (byte) 0x69, (byte) 0x62, (byte) 0x2E, (byte) 0xA0, (byte) 0xC8, (byte) 0x98, (byte) 0x69, (byte) 0x20, (byte) 0x73, (byte) 0x70, (byte) 0x65, (byte) 0x72, (byte) 0x20, (byte) 0x73, (byte) 0xC4, (byte) 0x83, (byte) 0x20, (byte) 0x61, (byte) 0x69, (byte) 0x20, (byte) 0x6F, (byte) 0x20, (byte) 0x7A, (byte) 0x69, (byte) 0x20, (byte) 0x62, (byte) 0x75, (byte) 0x6E, (byte) 0xC4, (byte) 0x83, (byte) 0x21}, StandardCharsets.UTF_8), "Romanian"),
+            new Message(new String(new byte[] {(byte) 0xD0, (byte) 0xAD, (byte) 0xD1, (byte) 0x85, (byte) 0x2C, (byte) 0x20, (byte) 0xD1, (byte) 0x87, (byte) 0xD1, (byte) 0x83, (byte) 0xD0, (byte) 0xB6, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xBA, (byte) 0x2C, (byte) 0x20, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xB1, (byte) 0xD1, (byte) 0x89, (byte) 0xD0, (byte) 0xB8, (byte) 0xD0, (byte) 0xB9, (byte) 0x20, (byte) 0xD1, (byte) 0x81, (byte) 0xD1, (byte) 0x8A, (byte) 0xD1, (byte) 0x91, (byte) 0xD0, (byte) 0xBC, (byte) 0x20, (byte) 0xD1, (byte) 0x86, (byte) 0xD0, (byte) 0xB5, (byte) 0xD0, (byte) 0xBD, (byte) 0x20, (byte) 0xD1, (byte) 0x88, (byte) 0xD0, (byte) 0xBB, (byte) 0xD1, (byte) 0x8F, (byte) 0xD0, (byte) 0xBF, (byte) 0x20, (byte) 0x28, (byte) 0xD1, (byte) 0x8E, (byte) 0xD1, (byte) 0x84, (byte) 0xD1, (byte) 0x82, (byte) 0xD1, (byte) 0x8C, (byte) 0x29, (byte) 0x20, (byte) 0xD0, (byte) 0xB2, (byte) 0xD0, (byte) 0xB4, (byte) 0xD1, (byte) 0x80, (byte) 0xD1, (byte) 0x8B, (byte) 0xD0, (byte) 0xB7, (byte) 0xD0, (byte) 0xB3, (byte) 0x21}, StandardCharsets.UTF_8), "Russian"),
+            new Message(new String(new byte[] {(byte) 0xD0, (byte) 0xAF, (byte) 0x20, (byte) 0xD0, (byte) 0xBB, (byte) 0xD1, (byte) 0x8E, (byte) 0xD0, (byte) 0xB1, (byte) 0xD0, (byte) 0xBB, (byte) 0xD1, (byte) 0x8E, (byte) 0x20, (byte) 0x72, (byte) 0x61, (byte) 0x79, (byte) 0x6C, (byte) 0x69, (byte) 0x62, (byte) 0x21}, StandardCharsets.UTF_8), "Russian"),
+            new Message(new String(new byte[] {(byte) 0xD0, (byte) 0x9C, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xBB, (byte) 0xD1, (byte) 0x87, (byte) 0xD0, (byte) 0xB8, (byte) 0x2C, (byte) 0x20, (byte) 0xD1, (byte) 0x81, (byte) 0xD0, (byte) 0xBA, (byte) 0xD1, (byte) 0x80, (byte) 0xD1, (byte) 0x8B, (byte) 0xD0, (byte) 0xB2, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xB9, (byte) 0xD1, (byte) 0x81, (byte) 0xD1, (byte) 0x8F, (byte) 0x20, (byte) 0xD0, (byte) 0xB8, (byte) 0x20, (byte) 0xD1, (byte) 0x82, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xB8, (byte) 0xA0, (byte) 0xD0, (byte) 0x98, (byte) 0x20, (byte) 0xD1, (byte) 0x87, (byte) 0xD1, (byte) 0x83, (byte) 0xD0, (byte) 0xB2, (byte) 0xD1, (byte) 0x81, (byte) 0xD1, (byte) 0x82, (byte) 0xD0, (byte) 0xB2, (byte) 0xD0, (byte) 0xB0, (byte) 0x20, (byte) 0xD0, (byte) 0xB8, (byte) 0x20, (byte) 0xD0, (byte) 0xBC, (byte) 0xD0, (byte) 0xB5, (byte) 0xD1, (byte) 0x87, (byte) 0xD1, (byte) 0x82, (byte) 0xD1, (byte) 0x8B, (byte) 0x20, (byte) 0xD1, (byte) 0x81, (byte) 0xD0, (byte) 0xB2, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xB8, (byte) 0x20, (byte) 0xE2, (byte) 0x80, (byte) 0x93, (byte) 0xA0, (byte) 0xD0, (byte) 0x9F, (byte) 0xD1, (byte) 0x83, (byte) 0xD1, (byte) 0x81, (byte) 0xD0, (byte) 0xBA, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xB9, (byte) 0x20, (byte) 0xD0, (byte) 0xB2, (byte) 0x20, (byte) 0xD0, (byte) 0xB4, (byte) 0xD1, (byte) 0x83, (byte) 0xD1, (byte) 0x88, (byte) 0xD0, (byte) 0xB5, (byte) 0xD0, (byte) 0xB2, (byte) 0xD0, (byte) 0xBD, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xB9, (byte) 0x20, (byte) 0xD0, (byte) 0xB3, (byte) 0xD0, (byte) 0xBB, (byte) 0xD1, (byte) 0x83, (byte) 0xD0, (byte) 0xB1, (byte) 0xD0, (byte) 0xB8, (byte) 0xD0, (byte) 0xBD, (byte) 0xD0, (byte) 0xB5, (byte) 0xA0, (byte) 0xD0, (byte) 0x98, (byte) 0x20, (byte) 0xD0, (byte) 0xB2, (byte) 0xD1, (byte) 0x81, (byte) 0xD1, (byte) 0x85, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xB4, (byte) 0xD1, (byte) 0x8F, (byte) 0xD1, (byte) 0x82, (byte) 0x20, (byte) 0xD0, (byte) 0xB8, (byte) 0x20, (byte) 0xD0, (byte) 0xB7, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xB9, (byte) 0xD0, (byte) 0xB4, (byte) 0xD1, (byte) 0x83, (byte) 0xD1, (byte) 0x82, (byte) 0x20, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xBD, (byte) 0xD0, (byte) 0xB5, (byte) 0xA0, (byte) 0xD0, (byte) 0x9A, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xBA, (byte) 0x20, (byte) 0xD0, (byte) 0xB7, (byte) 0xD0, (byte) 0xB2, (byte) 0xD0, (byte) 0xB5, (byte) 0xD0, (byte) 0xB7, (byte) 0xD0, (byte) 0xB4, (byte) 0xD1, (byte) 0x8B, (byte) 0x20, (byte) 0xD1, (byte) 0x8F, (byte) 0xD1, (byte) 0x81, (byte) 0xD0, (byte) 0xBD, (byte) 0xD1, (byte) 0x8B, (byte) 0xD0, (byte) 0xB5, (byte) 0x20, (byte) 0xD0, (byte) 0xB2, (byte) 0x20, (byte) 0xD0, (byte) 0xBD, (byte) 0xD0, (byte) 0xBE, (byte) 0xD1, (byte) 0x87, (byte) 0xD0, (byte) 0xB8, (byte) 0x2D, (byte) 0xA0, (byte) 0xD0, (byte) 0x9B, (byte) 0xD1, (byte) 0x8E, (byte) 0xD0, (byte) 0xB1, (byte) 0xD1, (byte) 0x83, (byte) 0xD0, (byte) 0xB9, (byte) 0xD1, (byte) 0x81, (byte) 0xD1, (byte) 0x8F, (byte) 0x20, (byte) 0xD0, (byte) 0xB8, (byte) 0xD0, (byte) 0xBC, (byte) 0xD0, (byte) 0xB8, (byte) 0x20, (byte) 0xE2, (byte) 0x80, (byte) 0x93, (byte) 0x20, (byte) 0xD0, (byte) 0xB8, (byte) 0x20, (byte) 0xD0, (byte) 0xBC, (byte) 0xD0, (byte) 0xBE, (byte) 0xD0, (byte) 0xBB, (byte) 0xD1, (byte) 0x87, (byte) 0xD0, (byte) 0xB8, (byte) 0x2E}, StandardCharsets.UTF_8), "Russian"),
+            new Message(new String(new byte[] {(byte) 0x56, (byte) 0x6F, (byte) 0x69, (byte) 0x78, (byte) 0x20, (byte) 0x61, (byte) 0x6D, (byte) 0x62, (byte) 0x69, (byte) 0x67, (byte) 0x75, (byte) 0xC3, (byte) 0xAB, (byte) 0x20, (byte) 0x64, (byte) 0xE2, (byte) 0x80, (byte) 0x99, (byte) 0x75, (byte) 0x6E, (byte) 0x20, (byte) 0x63, (byte) 0xC5, (byte) 0x93, (byte) 0x75, (byte) 0x72, (byte) 0x20, (byte) 0x71, (byte) 0x75, (byte) 0x69, (byte) 0x20, (byte) 0x61, (byte) 0x75, (byte) 0x20, (byte) 0x7A, (byte) 0xC3, (byte) 0xA9, (byte) 0x70, (byte) 0x68, (byte) 0x79, (byte) 0x72, (byte) 0x20, (byte) 0x70, (byte) 0x72, (byte) 0xC3, (byte) 0xA9, (byte) 0x66, (byte) 0xC3, (byte) 0xA8, (byte) 0x72, (byte) 0x65, (byte) 0x20, (byte) 0x6C, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0x6A, (byte) 0x61, (byte) 0x74, (byte) 0x74, (byte) 0x65, (byte) 0x73, (byte) 0x20, (byte) 0x64, (byte) 0x65, (byte) 0x20, (byte) 0x6B, (byte) 0x69, (byte) 0x77, (byte) 0x69}, StandardCharsets.UTF_8), "French"),
+            new Message(new String(new byte[] {(byte) 0x42, (byte) 0x65, (byte) 0x6E, (byte) 0x6A, (byte) 0x61, (byte) 0x6D, (byte) 0xC3, (byte) 0xAD, (byte) 0x6E, (byte) 0x20, (byte) 0x70, (byte) 0x69, (byte) 0x64, (byte) 0x69, (byte) 0xC3, (byte) 0xB3, (byte) 0x20, (byte) 0x75, (byte) 0x6E, (byte) 0x61, (byte) 0x20, (byte) 0x62, (byte) 0x65, (byte) 0x62, (byte) 0x69, (byte) 0x64, (byte) 0x61, (byte) 0x20, (byte) 0x64, (byte) 0x65, (byte) 0x20, (byte) 0x6B, (byte) 0x69, (byte) 0x77, (byte) 0x69, (byte) 0x20, (byte) 0x79, (byte) 0x20, (byte) 0x66, (byte) 0x72, (byte) 0x65, (byte) 0x73, (byte) 0x61, (byte) 0x3B, (byte) 0x20, (byte) 0x4E, (byte) 0x6F, (byte) 0xC3, (byte) 0xA9, (byte) 0x2C, (byte) 0x20, (byte) 0x73, (byte) 0x69, (byte) 0x6E, (byte) 0x20, (byte) 0x76, (byte) 0x65, (byte) 0x72, (byte) 0x67, (byte) 0xC3, (byte) 0xBC, (byte) 0x65, (byte) 0x6E, (byte) 0x7A, (byte) 0x61, (byte) 0x2C, (byte) 0x20, (byte) 0x6C, (byte) 0x61, (byte) 0x20, (byte) 0x6D, (byte) 0xC3, (byte) 0xA1, (byte) 0x73, (byte) 0x20, (byte) 0x65, (byte) 0x78, (byte) 0x71, (byte) 0x75, (byte) 0x69, (byte) 0x73, (byte) 0x69, (byte) 0x74, (byte) 0x61, (byte) 0x20, (byte) 0x63, (byte) 0x68, (byte) 0x61, (byte) 0x6D, (byte) 0x70, (byte) 0x61, (byte) 0xC3, (byte) 0xB1, (byte) 0x61, (byte) 0x20, (byte) 0x64, (byte) 0x65, (byte) 0x6C, (byte) 0x20, (byte) 0x6D, (byte) 0x65, (byte) 0x6E, (byte) 0xC3, (byte) 0xBA, (byte) 0x2E}, StandardCharsets.UTF_8), "Spanish"),
+            new Message(new String(new byte[] {(byte) 0xCE, (byte) 0xA4, (byte) 0xCE, (byte) 0xB1, (byte) 0xCF, (byte) 0x87, (byte) 0xCE, (byte) 0xAF, (byte) 0xCF, (byte) 0x83, (byte) 0xCF, (byte) 0x84, (byte) 0xCE, (byte) 0xB7, (byte) 0x20, (byte) 0xCE, (byte) 0xB1, (byte) 0xCE, (byte) 0xBB, (byte) 0xCF, (byte) 0x8E, (byte) 0xCF, (byte) 0x80, (byte) 0xCE, (byte) 0xB7, (byte) 0xCE, (byte) 0xBE, (byte) 0x20, (byte) 0xCE, (byte) 0xB2, (byte) 0xCE, (byte) 0xB1, (byte) 0xCF, (byte) 0x86, (byte) 0xCE, (byte) 0xAE, (byte) 0xCF, (byte) 0x82, (byte) 0x20, (byte) 0xCF, (byte) 0x88, (byte) 0xCE, (byte) 0xB7, (byte) 0xCE, (byte) 0xBC, (byte) 0xCE, (byte) 0xAD, (byte) 0xCE, (byte) 0xBD, (byte) 0xCE, (byte) 0xB7, (byte) 0x20, (byte) 0xCE, (byte) 0xB3, (byte) 0xCE, (byte) 0xB7, (byte) 0x2C, (byte) 0x20, (byte) 0xCE, (byte) 0xB4, (byte) 0xCF, (byte) 0x81, (byte) 0xCE, (byte) 0xB1, (byte) 0xCF, (byte) 0x83, (byte) 0xCE, (byte) 0xBA, (byte) 0xCE, (byte) 0xB5, (byte) 0xCE, (byte) 0xBB, (byte) 0xCE, (byte) 0xAF, (byte) 0xCE, (byte) 0xB6, (byte) 0xCE, (byte) 0xB5, (byte) 0xCE, (byte) 0xB9, (byte) 0x20, (byte) 0xCF, (byte) 0x85, (byte) 0xCF, (byte) 0x80, (byte) 0xCE, (byte) 0xAD, (byte) 0xCF, (byte) 0x81, (byte) 0x20, (byte) 0xCE, (byte) 0xBD, (byte) 0xCF, (byte) 0x89, (byte) 0xCE, (byte) 0xB8, (byte) 0xCF, (byte) 0x81, (byte) 0xCE, (byte) 0xBF, (byte) 0xCF, (byte) 0x8D, (byte) 0x20, (byte) 0xCE, (byte) 0xBA, (byte) 0xCF, (byte) 0x85, (byte) 0xCE, (byte) 0xBD, (byte) 0xCF, (byte) 0x8C, (byte) 0xCF, (byte) 0x82}, StandardCharsets.UTF_8), "Greek"),
+            new Message(new String(new byte[] {(byte) 0xCE, (byte) 0x97, (byte) 0x20, (byte) 0xCE, (byte) 0xBA, (byte) 0xCE, (byte) 0xB1, (byte) 0xCE, (byte) 0xBB, (byte) 0xCF, (byte) 0x8D, (byte) 0xCF, (byte) 0x84, (byte) 0xCE, (byte) 0xB5, (byte) 0xCF, (byte) 0x81, (byte) 0xCE, (byte) 0xB7, (byte) 0x20, (byte) 0xCE, (byte) 0xAC, (byte) 0xCE, (byte) 0xBC, (byte) 0xCF, (byte) 0x85, (byte) 0xCE, (byte) 0xBD, (byte) 0xCE, (byte) 0xB1, (byte) 0x20, (byte) 0xCE, (byte) 0xB5, (byte) 0xCE, (byte) 0xAF, (byte) 0xCE, (byte) 0xBD, (byte) 0xCE, (byte) 0xB1, (byte) 0xCE, (byte) 0xB9, (byte) 0x20, (byte) 0xCE, (byte) 0xB7, (byte) 0x20, (byte) 0xCE, (byte) 0xB5, (byte) 0xCF, (byte) 0x80, (byte) 0xCE, (byte) 0xAF, (byte) 0xCE, (byte) 0xB8, (byte) 0xCE, (byte) 0xB5, (byte) 0xCF, (byte) 0x83, (byte) 0xCE, (byte) 0xB7, (byte) 0x2E}, StandardCharsets.UTF_8), "Greek"),
+            new Message(new String(new byte[] {(byte) 0xCE, (byte) 0xA7, (byte) 0xCF, (byte) 0x81, (byte) 0xCF, (byte) 0x8C, (byte) 0xCE, (byte) 0xBD, (byte) 0xCE, (byte) 0xB9, (byte) 0xCE, (byte) 0xB1, (byte) 0x20, (byte) 0xCE, (byte) 0xBA, (byte) 0xCE, (byte) 0xB1, (byte) 0xCE, (byte) 0xB9, (byte) 0x20, (byte) 0xCE, (byte) 0xB6, (byte) 0xCE, (byte) 0xB1, (byte) 0xCE, (byte) 0xBC, (byte) 0xCE, (byte) 0xAC, (byte) 0xCE, (byte) 0xBD, (byte) 0xCE, (byte) 0xB9, (byte) 0xCE, (byte) 0xB1, (byte) 0x21}, StandardCharsets.UTF_8), "Greek"),
+            new Message(new String(new byte[] {(byte) 0xCE, (byte) 0xA0, (byte) 0xCF, (byte) 0x8E, (byte) 0xCF, (byte) 0x82, (byte) 0x20, (byte) 0xCF, (byte) 0x84, (byte) 0xCE, (byte) 0xB1, (byte) 0x20, (byte) 0xCF, (byte) 0x80, (byte) 0xCE, (byte) 0xB1, (byte) 0xCF, (byte) 0x82, (byte) 0x20, (byte) 0xCF, (byte) 0x83, (byte) 0xCE, (byte) 0xAE, (byte) 0xCE, (byte) 0xBC, (byte) 0xCE, (byte) 0xB5, (byte) 0xCF, (byte) 0x81, (byte) 0xCE, (byte) 0xB1, (byte) 0x3B}, StandardCharsets.UTF_8), "Greek"),
 
-            new Message("\u00E6\u0088\u0091\u00E8\u0083\u00BD\u00E5\u0090\u009E\u00E4\u00B8\u008B\u00E7\u008E\u00BB\u00E7\u0092\u0083\u00E8\u0080\u008C\u00E4\u00B8\u008D\u00E4\u00BC\u00A4\u00E8\u00BA\u00AB\u00E4\u00BD\u0093\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E4\u00BD\u00A0\u00E5\u0090\u0083\u00E4\u00BA\u0086\u00E5\u0090\u0097\u00EF\u00BC\u009F", "Chinese"),
-            new Message("\u00E4\u00B8\u008D\u00E4\u00BD\u009C\u00E4\u00B8\u008D\u00E6\u00AD\u00BB\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E6\u009C\u0080\u00E8\u00BF\u0091\u00E5\u00A5\u00BD\u00E5\u0090\u0097\u00EF\u00BC\u009F", "Chinese"),
-            new Message("\u00E5\u00A1\u009E\u00E7\u00BF\u0081\u00E5\u00A4\u00B1\u00E9\u00A9\u00AC\u00EF\u00BC\u008C\u00E7\u0084\u0089\u00E7\u009F\u00A5\u00E9\u009D\u009E\u00E7\u00A6\u008F\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E5\u008D\u0083\u00E5\u0086\u009B\u00E6\u0098\u0093\u00E5\u00BE\u0097\u002C\u0020\u00E4\u00B8\u0080\u00E5\u00B0\u0086\u00E9\u009A\u00BE\u00E6\u00B1\u0082", "Chinese"),
-            new Message("\u00E4\u00B8\u0087\u00E4\u00BA\u008B\u00E5\u00BC\u0080\u00E5\u00A4\u00B4\u00E9\u009A\u00BE\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E9\u00A3\u008E\u00E6\u0097\u00A0\u00E5\u00B8\u00B8\u00E9\u00A1\u00BA\u00EF\u00BC\u008C\u00E5\u0085\u00B5\u00E6\u0097\u00A0\u00E5\u00B8\u00B8\u00E8\u0083\u009C\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E6\u00B4\u00BB\u00E5\u0088\u00B0\u00E8\u0080\u0081\u00EF\u00BC\u008C\u00E5\u00AD\u00A6\u00E5\u0088\u00B0\u00E8\u0080\u0081\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E4\u00B8\u0080\u00E8\u00A8\u0080\u00E6\u0097\u00A2\u00E5\u0087\u00BA\u00EF\u00BC\u008C\u00E9\u00A9\u00B7\u00E9\u00A9\u00AC\u00E9\u009A\u00BE\u00E8\u00BF\u00BD\u00E3\u0080\u0082", "Chinese"),
-            new Message("\u00E8\u00B7\u00AF\u00E9\u0081\u00A5\u00E7\u009F\u00A5\u00E9\u00A9\u00AC\u00E5\u008A\u009B\u00EF\u00BC\u008C\u00E6\u0097\u00A5\u00E4\u00B9\u0085\u00E8\u00A7\u0081\u00E4\u00BA\u00BA\u00E5\u00BF\u0083", "Chinese"),
-            new Message("\u00E6\u009C\u0089\u00E7\u0090\u0086\u00E8\u00B5\u00B0\u00E9\u0081\u008D\u00E5\u00A4\u00A9\u00E4\u00B8\u008B\u00EF\u00BC\u008C\u00E6\u0097\u00A0\u00E7\u0090\u0086\u00E5\u00AF\u00B8\u00E6\u00AD\u00A5\u00E9\u009A\u00BE\u00E8\u00A1\u008C\u00E3\u0080\u0082", "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE6, (byte) 0x88, (byte) 0x91, (byte) 0xE8, (byte) 0x83, (byte) 0xBD, (byte) 0xE5, (byte) 0x90, (byte) 0x9E, (byte) 0xE4, (byte) 0xB8, (byte) 0x8B, (byte) 0xE7, (byte) 0x8E, (byte) 0xBB, (byte) 0xE7, (byte) 0x92, (byte) 0x83, (byte) 0xE8, (byte) 0x80, (byte) 0x8C, (byte) 0xE4, (byte) 0xB8, (byte) 0x8D, (byte) 0xE4, (byte) 0xBC, (byte) 0xA4, (byte) 0xE8, (byte) 0xBA, (byte) 0xAB, (byte) 0xE4, (byte) 0xBD, (byte) 0x93, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE4, (byte) 0xBD, (byte) 0xA0, (byte) 0xE5, (byte) 0x90, (byte) 0x83, (byte) 0xE4, (byte) 0xBA, (byte) 0x86, (byte) 0xE5, (byte) 0x90, (byte) 0x97, (byte) 0xEF, (byte) 0xBC, (byte) 0x9F}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE4, (byte) 0xB8, (byte) 0x8D, (byte) 0xE4, (byte) 0xBD, (byte) 0x9C, (byte) 0xE4, (byte) 0xB8, (byte) 0x8D, (byte) 0xE6, (byte) 0xAD, (byte) 0xBB, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE6, (byte) 0x9C, (byte) 0x80, (byte) 0xE8, (byte) 0xBF, (byte) 0x91, (byte) 0xE5, (byte) 0xA5, (byte) 0xBD, (byte) 0xE5, (byte) 0x90, (byte) 0x97, (byte) 0xEF, (byte) 0xBC, (byte) 0x9F}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE5, (byte) 0xA1, (byte) 0x9E, (byte) 0xE7, (byte) 0xBF, (byte) 0x81, (byte) 0xE5, (byte) 0xA4, (byte) 0xB1, (byte) 0xE9, (byte) 0xA9, (byte) 0xAC, (byte) 0xEF, (byte) 0xBC, (byte) 0x8C, (byte) 0xE7, (byte) 0x84, (byte) 0x89, (byte) 0xE7, (byte) 0x9F, (byte) 0xA5, (byte) 0xE9, (byte) 0x9D, (byte) 0x9E, (byte) 0xE7, (byte) 0xA6, (byte) 0x8F, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE5, (byte) 0x8D, (byte) 0x83, (byte) 0xE5, (byte) 0x86, (byte) 0x9B, (byte) 0xE6, (byte) 0x98, (byte) 0x93, (byte) 0xE5, (byte) 0xBE, (byte) 0x97, (byte) 0x2C, (byte) 0x20, (byte) 0xE4, (byte) 0xB8, (byte) 0x80, (byte) 0xE5, (byte) 0xB0, (byte) 0x86, (byte) 0xE9, (byte) 0x9A, (byte) 0xBE, (byte) 0xE6, (byte) 0xB1, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE4, (byte) 0xB8, (byte) 0x87, (byte) 0xE4, (byte) 0xBA, (byte) 0x8B, (byte) 0xE5, (byte) 0xBC, (byte) 0x80, (byte) 0xE5, (byte) 0xA4, (byte) 0xB4, (byte) 0xE9, (byte) 0x9A, (byte) 0xBE, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE9, (byte) 0xA3, (byte) 0x8E, (byte) 0xE6, (byte) 0x97, (byte) 0xA0, (byte) 0xE5, (byte) 0xB8, (byte) 0xB8, (byte) 0xE9, (byte) 0xA1, (byte) 0xBA, (byte) 0xEF, (byte) 0xBC, (byte) 0x8C, (byte) 0xE5, (byte) 0x85, (byte) 0xB5, (byte) 0xE6, (byte) 0x97, (byte) 0xA0, (byte) 0xE5, (byte) 0xB8, (byte) 0xB8, (byte) 0xE8, (byte) 0x83, (byte) 0x9C, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE6, (byte) 0xB4, (byte) 0xBB, (byte) 0xE5, (byte) 0x88, (byte) 0xB0, (byte) 0xE8, (byte) 0x80, (byte) 0x81, (byte) 0xEF, (byte) 0xBC, (byte) 0x8C, (byte) 0xE5, (byte) 0xAD, (byte) 0xA6, (byte) 0xE5, (byte) 0x88, (byte) 0xB0, (byte) 0xE8, (byte) 0x80, (byte) 0x81, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE4, (byte) 0xB8, (byte) 0x80, (byte) 0xE8, (byte) 0xA8, (byte) 0x80, (byte) 0xE6, (byte) 0x97, (byte) 0xA2, (byte) 0xE5, (byte) 0x87, (byte) 0xBA, (byte) 0xEF, (byte) 0xBC, (byte) 0x8C, (byte) 0xE9, (byte) 0xA9, (byte) 0xB7, (byte) 0xE9, (byte) 0xA9, (byte) 0xAC, (byte) 0xE9, (byte) 0x9A, (byte) 0xBE, (byte) 0xE8, (byte) 0xBF, (byte) 0xBD, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE8, (byte) 0xB7, (byte) 0xAF, (byte) 0xE9, (byte) 0x81, (byte) 0xA5, (byte) 0xE7, (byte) 0x9F, (byte) 0xA5, (byte) 0xE9, (byte) 0xA9, (byte) 0xAC, (byte) 0xE5, (byte) 0x8A, (byte) 0x9B, (byte) 0xEF, (byte) 0xBC, (byte) 0x8C, (byte) 0xE6, (byte) 0x97, (byte) 0xA5, (byte) 0xE4, (byte) 0xB9, (byte) 0x85, (byte) 0xE8, (byte) 0xA7, (byte) 0x81, (byte) 0xE4, (byte) 0xBA, (byte) 0xBA, (byte) 0xE5, (byte) 0xBF, (byte) 0x83}, StandardCharsets.UTF_8), "Chinese"),
+            new Message(new String(new byte[] {(byte) 0xE6, (byte) 0x9C, (byte) 0x89, (byte) 0xE7, (byte) 0x90, (byte) 0x86, (byte) 0xE8, (byte) 0xB5, (byte) 0xB0, (byte) 0xE9, (byte) 0x81, (byte) 0x8D, (byte) 0xE5, (byte) 0xA4, (byte) 0xA9, (byte) 0xE4, (byte) 0xB8, (byte) 0x8B, (byte) 0xEF, (byte) 0xBC, (byte) 0x8C, (byte) 0xE6, (byte) 0x97, (byte) 0xA0, (byte) 0xE7, (byte) 0x90, (byte) 0x86, (byte) 0xE5, (byte) 0xAF, (byte) 0xB8, (byte) 0xE6, (byte) 0xAD, (byte) 0xA5, (byte) 0xE9, (byte) 0x9A, (byte) 0xBE, (byte) 0xE8, (byte) 0xA1, (byte) 0x8C, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Chinese"),
 
-            new Message("\u00E7\u008C\u00BF\u00E3\u0082\u0082\u00E6\u009C\u00A8\u00E3\u0081\u008B\u00E3\u0082\u0089\u00E8\u0090\u00BD\u00E3\u0081\u00A1\u00E3\u0082\u008B", "Japanese"),
-            new Message("\u00E4\u00BA\u0080\u00E3\u0081\u00AE\u00E7\u0094\u00B2\u00E3\u0082\u0088\u00E3\u0082\u008A\u00E5\u00B9\u00B4\u00E3\u0081\u00AE\u00E5\u008A\u009F", "Japanese"),
-            new Message("\u00E3\u0081\u0086\u00E3\u0082\u0089\u00E3\u0082\u0084\u00E3\u0081\u00BE\u00E3\u0081\u0097\u0020\u0020\u00E6\u0080\u009D\u00E3\u0081\u00B2\u00E5\u0088\u0087\u00E3\u0082\u008B\u00E6\u0099\u0082\u0020\u0020\u00E7\u008C\u00AB\u00E3\u0081\u00AE\u00E6\u0081\u008B", "Japanese"),
-            new Message("\u00E8\u0099\u008E\u00E7\u00A9\u00B4\u00E3\u0081\u00AB\u00E5\u0085\u00A5\u00E3\u0082\u0089\u00E3\u0081\u009A\u00E3\u0082\u0093\u00E3\u0081\u00B0\u00E8\u0099\u008E\u00E5\u00AD\u0090\u00E3\u0082\u0092\u00E5\u00BE\u0097\u00E3\u0081\u009A\u00E3\u0080\u0082", "Japanese"),
-            new Message("\u00E4\u00BA\u008C\u00E5\u0085\u008E\u00E3\u0082\u0092\u00E8\u00BF\u00BD\u00E3\u0081\u0086\u00E8\u0080\u0085\u00E3\u0081\u00AF\u00E4\u00B8\u0080\u00E5\u0085\u008E\u00E3\u0082\u0092\u00E3\u0082\u0082\u00E5\u00BE\u0097\u00E3\u0081\u009A\u00E3\u0080\u0082", "Japanese"),
-            new Message("\u00E9\u00A6\u00AC\u00E9\u00B9\u00BF\u00E3\u0081\u00AF\u00E6\u00AD\u00BB\u00E3\u0081\u00AA\u00E3\u0081\u00AA\u00E3\u0081\u008D\u00E3\u0082\u0083\u00E6\u00B2\u00BB\u00E3\u0082\u0089\u00E3\u0081\u00AA\u00E3\u0081\u0084\u00E3\u0080\u0082", "Japanese"),
-            new Message("\u00E6\u009E\u00AF\u00E9\u0087\u008E\u00E8\u00B7\u00AF\u00E3\u0081\u00AB\u00E3\u0080\u0080\u00E5\u00BD\u00B1\u00E3\u0081\u008B\u00E3\u0081\u0095\u00E3\u0081\u00AA\u00E3\u0082\u008A\u00E3\u0081\u00A6\u00E3\u0080\u0080\u00E3\u0082\u008F\u00E3\u0081\u008B\u00E3\u0082\u008C\u00E3\u0081\u0091\u00E3\u0082\u008A", "Japanese"),
-            new Message("\u00E7\u00B9\u00B0\u00E3\u0082\u008A\u00E8\u00BF\u0094\u00E3\u0081\u0097\u00E9\u00BA\u00A6\u00E3\u0081\u00AE\u00E7\u0095\u009D\u00E7\u00B8\u00AB\u00E3\u0081\u00B5\u00E8\u0083\u00A1\u00E8\u009D\u00B6\u00E5\u0093\u0089", "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE7, (byte) 0x8C, (byte) 0xBF, (byte) 0xE3, (byte) 0x82, (byte) 0x82, (byte) 0xE6, (byte) 0x9C, (byte) 0xA8, (byte) 0xE3, (byte) 0x81, (byte) 0x8B, (byte) 0xE3, (byte) 0x82, (byte) 0x89, (byte) 0xE8, (byte) 0x90, (byte) 0xBD, (byte) 0xE3, (byte) 0x81, (byte) 0xA1, (byte) 0xE3, (byte) 0x82, (byte) 0x8B}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE4, (byte) 0xBA, (byte) 0x80, (byte) 0xE3, (byte) 0x81, (byte) 0xAE, (byte) 0xE7, (byte) 0x94, (byte) 0xB2, (byte) 0xE3, (byte) 0x82, (byte) 0x88, (byte) 0xE3, (byte) 0x82, (byte) 0x8A, (byte) 0xE5, (byte) 0xB9, (byte) 0xB4, (byte) 0xE3, (byte) 0x81, (byte) 0xAE, (byte) 0xE5, (byte) 0x8A, (byte) 0x9F}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE3, (byte) 0x81, (byte) 0x86, (byte) 0xE3, (byte) 0x82, (byte) 0x89, (byte) 0xE3, (byte) 0x82, (byte) 0x84, (byte) 0xE3, (byte) 0x81, (byte) 0xBE, (byte) 0xE3, (byte) 0x81, (byte) 0x97, (byte) 0x20, (byte) 0x20, (byte) 0xE6, (byte) 0x80, (byte) 0x9D, (byte) 0xE3, (byte) 0x81, (byte) 0xB2, (byte) 0xE5, (byte) 0x88, (byte) 0x87, (byte) 0xE3, (byte) 0x82, (byte) 0x8B, (byte) 0xE6, (byte) 0x99, (byte) 0x82, (byte) 0x20, (byte) 0x20, (byte) 0xE7, (byte) 0x8C, (byte) 0xAB, (byte) 0xE3, (byte) 0x81, (byte) 0xAE, (byte) 0xE6, (byte) 0x81, (byte) 0x8B}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE8, (byte) 0x99, (byte) 0x8E, (byte) 0xE7, (byte) 0xA9, (byte) 0xB4, (byte) 0xE3, (byte) 0x81, (byte) 0xAB, (byte) 0xE5, (byte) 0x85, (byte) 0xA5, (byte) 0xE3, (byte) 0x82, (byte) 0x89, (byte) 0xE3, (byte) 0x81, (byte) 0x9A, (byte) 0xE3, (byte) 0x82, (byte) 0x93, (byte) 0xE3, (byte) 0x81, (byte) 0xB0, (byte) 0xE8, (byte) 0x99, (byte) 0x8E, (byte) 0xE5, (byte) 0xAD, (byte) 0x90, (byte) 0xE3, (byte) 0x82, (byte) 0x92, (byte) 0xE5, (byte) 0xBE, (byte) 0x97, (byte) 0xE3, (byte) 0x81, (byte) 0x9A, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE4, (byte) 0xBA, (byte) 0x8C, (byte) 0xE5, (byte) 0x85, (byte) 0x8E, (byte) 0xE3, (byte) 0x82, (byte) 0x92, (byte) 0xE8, (byte) 0xBF, (byte) 0xBD, (byte) 0xE3, (byte) 0x81, (byte) 0x86, (byte) 0xE8, (byte) 0x80, (byte) 0x85, (byte) 0xE3, (byte) 0x81, (byte) 0xAF, (byte) 0xE4, (byte) 0xB8, (byte) 0x80, (byte) 0xE5, (byte) 0x85, (byte) 0x8E, (byte) 0xE3, (byte) 0x82, (byte) 0x92, (byte) 0xE3, (byte) 0x82, (byte) 0x82, (byte) 0xE5, (byte) 0xBE, (byte) 0x97, (byte) 0xE3, (byte) 0x81, (byte) 0x9A, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE9, (byte) 0xA6, (byte) 0xAC, (byte) 0xE9, (byte) 0xB9, (byte) 0xBF, (byte) 0xE3, (byte) 0x81, (byte) 0xAF, (byte) 0xE6, (byte) 0xAD, (byte) 0xBB, (byte) 0xE3, (byte) 0x81, (byte) 0xAA, (byte) 0xE3, (byte) 0x81, (byte) 0xAA, (byte) 0xE3, (byte) 0x81, (byte) 0x8D, (byte) 0xE3, (byte) 0x82, (byte) 0x83, (byte) 0xE6, (byte) 0xB2, (byte) 0xBB, (byte) 0xE3, (byte) 0x82, (byte) 0x89, (byte) 0xE3, (byte) 0x81, (byte) 0xAA, (byte) 0xE3, (byte) 0x81, (byte) 0x84, (byte) 0xE3, (byte) 0x80, (byte) 0x82}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE6, (byte) 0x9E, (byte) 0xAF, (byte) 0xE9, (byte) 0x87, (byte) 0x8E, (byte) 0xE8, (byte) 0xB7, (byte) 0xAF, (byte) 0xE3, (byte) 0x81, (byte) 0xAB, (byte) 0xE3, (byte) 0x80, (byte) 0x80, (byte) 0xE5, (byte) 0xBD, (byte) 0xB1, (byte) 0xE3, (byte) 0x81, (byte) 0x8B, (byte) 0xE3, (byte) 0x81, (byte) 0x95, (byte) 0xE3, (byte) 0x81, (byte) 0xAA, (byte) 0xE3, (byte) 0x82, (byte) 0x8A, (byte) 0xE3, (byte) 0x81, (byte) 0xA6, (byte) 0xE3, (byte) 0x80, (byte) 0x80, (byte) 0xE3, (byte) 0x82, (byte) 0x8F, (byte) 0xE3, (byte) 0x81, (byte) 0x8B, (byte) 0xE3, (byte) 0x82, (byte) 0x8C, (byte) 0xE3, (byte) 0x81, (byte) 0x91, (byte) 0xE3, (byte) 0x82, (byte) 0x8A}, StandardCharsets.UTF_8), "Japanese"),
+            new Message(new String(new byte[] {(byte) 0xE7, (byte) 0xB9, (byte) 0xB0, (byte) 0xE3, (byte) 0x82, (byte) 0x8A, (byte) 0xE8, (byte) 0xBF, (byte) 0x94, (byte) 0xE3, (byte) 0x81, (byte) 0x97, (byte) 0xE9, (byte) 0xBA, (byte) 0xA6, (byte) 0xE3, (byte) 0x81, (byte) 0xAE, (byte) 0xE7, (byte) 0x95, (byte) 0x9D, (byte) 0xE7, (byte) 0xB8, (byte) 0xAB, (byte) 0xE3, (byte) 0x81, (byte) 0xB5, (byte) 0xE8, (byte) 0x83, (byte) 0xA1, (byte) 0xE8, (byte) 0x9D, (byte) 0xB6, (byte) 0xE5, (byte) 0x93, (byte) 0x89}, StandardCharsets.UTF_8), "Japanese"),
 
-            new Message("\u00EC\u0095\u0084\u00EB\u0093\u009D\u00ED\u0095\u009C\u0020\u00EB\u00B0\u0094\u00EB\u008B\u00A4\u0020\u00EC\u009C\u0084\u00EC\u0097\u0090\u0020\u00EA\u00B0\u0088\u00EB\u00A7\u00A4\u00EA\u00B8\u00B0\u0020\u00EB\u0091\u0090\u00EC\u0097\u0087\u0020\u00EB\u0082\u00A0\u00EC\u0095\u0084\u0020\u00EB\u008F\u0088\u00EB\u008B\u00A4\u002E\u00A0\u00EB\u0084\u0088\u00ED\u009B\u008C\u00EB\u0084\u0088\u00ED\u009B\u008C\u0020\u00EC\u008B\u009C\u00EB\u00A5\u00BC\u0020\u00EC\u0093\u00B4\u00EB\u008B\u00A4\u002E\u0020\u00EB\u00AA\u00A8\u00EB\u00A5\u00B4\u00EB\u008A\u0094\u0020\u00EB\u0082\u0098\u00EB\u009D\u00BC\u0020\u00EA\u00B8\u0080\u00EC\u009E\u0090\u00EB\u008B\u00A4\u002E\u00A0\u00EB\u0084\u0090\u00EB\u0094\u00B0\u00EB\u009E\u0080\u0020\u00ED\u0095\u0098\u00EB\u008A\u0098\u0020\u00EB\u00B3\u00B5\u00ED\u008C\u0090\u00EC\u0097\u0090\u0020\u00EB\u0082\u0098\u00EB\u008F\u0084\u0020\u00EA\u00B0\u0099\u00EC\u009D\u00B4\u0020\u00EC\u008B\u009C\u00EB\u00A5\u00BC\u0020\u00EC\u0093\u00B4\u00EB\u008B\u00A4\u002E", "Korean"),
-            new Message("\u00EC\u00A0\u009C\u0020\u00EB\u0088\u0088\u00EC\u0097\u0090\u0020\u00EC\u0095\u0088\u00EA\u00B2\u00BD\u00EC\u009D\u00B4\u00EB\u008B\u00A4", "Korean"),
-            new Message("\u00EA\u00BF\u00A9\u0020\u00EB\u00A8\u00B9\u00EA\u00B3\u00A0\u0020\u00EC\u0095\u008C\u0020\u00EB\u00A8\u00B9\u00EB\u008A\u0094\u00EB\u008B\u00A4", "Korean"),
-            new Message("\u00EB\u00A1\u009C\u00EB\u00A7\u0088\u00EB\u008A\u0094\u0020\u00ED\u0095\u0098\u00EB\u00A3\u00A8\u00EC\u0095\u0084\u00EC\u00B9\u00A8\u00EC\u0097\u0090\u0020\u00EC\u009D\u00B4\u00EB\u00A3\u00A8\u00EC\u0096\u00B4\u00EC\u00A7\u0084\u0020\u00EA\u00B2\u0083\u00EC\u009D\u00B4\u0020\u00EC\u0095\u0084\u00EB\u008B\u0088\u00EB\u008B\u00A4", "Korean"),
-            new Message("\u00EA\u00B3\u00A0\u00EC\u0083\u009D\u0020\u00EB\u0081\u009D\u00EC\u0097\u0090\u0020\u00EB\u0082\u0099\u00EC\u009D\u00B4\u0020\u00EC\u0098\u00A8\u00EB\u008B\u00A4", "Korean"),
-            new Message("\u00EA\u00B0\u009C\u00EC\u00B2\u009C\u00EC\u0097\u0090\u00EC\u0084\u009C\u0020\u00EC\u009A\u00A9\u0020\u00EB\u0082\u009C\u00EB\u008B\u00A4", "Korean"),
-            new Message("\u00EC\u0095\u0088\u00EB\u0085\u0095\u00ED\u0095\u0098\u00EC\u0084\u00B8\u00EC\u009A\u0094\u003F", "Korean"),
-            new Message("\u00EB\u00A7\u008C\u00EB\u0082\u0098\u00EC\u0084\u009C\u0020\u00EB\u00B0\u0098\u00EA\u00B0\u0091\u00EC\u008A\u00B5\u00EB\u008B\u0088\u00EB\u008B\u00A4", "Korean"),
-            new Message("\u00ED\u0095\u009C\u00EA\u00B5\u00AD\u00EB\u00A7\u0090\u0020\u00ED\u0095\u0098\u00EC\u008B\u00A4\u0020\u00EC\u00A4\u0084\u0020\u00EC\u0095\u0084\u00EC\u0084\u00B8\u00EC\u009A\u0094\u003F", "Korean")
+            new Message(new String(new byte[] {(byte) 0xEC, (byte) 0x95, (byte) 0x84, (byte) 0xEB, (byte) 0x93, (byte) 0x9D, (byte) 0xED, (byte) 0x95, (byte) 0x9C, (byte) 0x20, (byte) 0xEB, (byte) 0xB0, (byte) 0x94, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4, (byte) 0x20, (byte) 0xEC, (byte) 0x9C, (byte) 0x84, (byte) 0xEC, (byte) 0x97, (byte) 0x90, (byte) 0x20, (byte) 0xEA, (byte) 0xB0, (byte) 0x88, (byte) 0xEB, (byte) 0xA7, (byte) 0xA4, (byte) 0xEA, (byte) 0xB8, (byte) 0xB0, (byte) 0x20, (byte) 0xEB, (byte) 0x91, (byte) 0x90, (byte) 0xEC, (byte) 0x97, (byte) 0x87, (byte) 0x20, (byte) 0xEB, (byte) 0x82, (byte) 0xA0, (byte) 0xEC, (byte) 0x95, (byte) 0x84, (byte) 0x20, (byte) 0xEB, (byte) 0x8F, (byte) 0x88, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4, (byte) 0x2E, (byte) 0xA0, (byte) 0xEB, (byte) 0x84, (byte) 0x88, (byte) 0xED, (byte) 0x9B, (byte) 0x8C, (byte) 0xEB, (byte) 0x84, (byte) 0x88, (byte) 0xED, (byte) 0x9B, (byte) 0x8C, (byte) 0x20, (byte) 0xEC, (byte) 0x8B, (byte) 0x9C, (byte) 0xEB, (byte) 0xA5, (byte) 0xBC, (byte) 0x20, (byte) 0xEC, (byte) 0x93, (byte) 0xB4, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4, (byte) 0x2E, (byte) 0x20, (byte) 0xEB, (byte) 0xAA, (byte) 0xA8, (byte) 0xEB, (byte) 0xA5, (byte) 0xB4, (byte) 0xEB, (byte) 0x8A, (byte) 0x94, (byte) 0x20, (byte) 0xEB, (byte) 0x82, (byte) 0x98, (byte) 0xEB, (byte) 0x9D, (byte) 0xBC, (byte) 0x20, (byte) 0xEA, (byte) 0xB8, (byte) 0x80, (byte) 0xEC, (byte) 0x9E, (byte) 0x90, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4, (byte) 0x2E, (byte) 0xA0, (byte) 0xEB, (byte) 0x84, (byte) 0x90, (byte) 0xEB, (byte) 0x94, (byte) 0xB0, (byte) 0xEB, (byte) 0x9E, (byte) 0x80, (byte) 0x20, (byte) 0xED, (byte) 0x95, (byte) 0x98, (byte) 0xEB, (byte) 0x8A, (byte) 0x98, (byte) 0x20, (byte) 0xEB, (byte) 0xB3, (byte) 0xB5, (byte) 0xED, (byte) 0x8C, (byte) 0x90, (byte) 0xEC, (byte) 0x97, (byte) 0x90, (byte) 0x20, (byte) 0xEB, (byte) 0x82, (byte) 0x98, (byte) 0xEB, (byte) 0x8F, (byte) 0x84, (byte) 0x20, (byte) 0xEA, (byte) 0xB0, (byte) 0x99, (byte) 0xEC, (byte) 0x9D, (byte) 0xB4, (byte) 0x20, (byte) 0xEC, (byte) 0x8B, (byte) 0x9C, (byte) 0xEB, (byte) 0xA5, (byte) 0xBC, (byte) 0x20, (byte) 0xEC, (byte) 0x93, (byte) 0xB4, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4, (byte) 0x2E}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEC, (byte) 0xA0, (byte) 0x9C, (byte) 0x20, (byte) 0xEB, (byte) 0x88, (byte) 0x88, (byte) 0xEC, (byte) 0x97, (byte) 0x90, (byte) 0x20, (byte) 0xEC, (byte) 0x95, (byte) 0x88, (byte) 0xEA, (byte) 0xB2, (byte) 0xBD, (byte) 0xEC, (byte) 0x9D, (byte) 0xB4, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEA, (byte) 0xBF, (byte) 0xA9, (byte) 0x20, (byte) 0xEB, (byte) 0xA8, (byte) 0xB9, (byte) 0xEA, (byte) 0xB3, (byte) 0xA0, (byte) 0x20, (byte) 0xEC, (byte) 0x95, (byte) 0x8C, (byte) 0x20, (byte) 0xEB, (byte) 0xA8, (byte) 0xB9, (byte) 0xEB, (byte) 0x8A, (byte) 0x94, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEB, (byte) 0xA1, (byte) 0x9C, (byte) 0xEB, (byte) 0xA7, (byte) 0x88, (byte) 0xEB, (byte) 0x8A, (byte) 0x94, (byte) 0x20, (byte) 0xED, (byte) 0x95, (byte) 0x98, (byte) 0xEB, (byte) 0xA3, (byte) 0xA8, (byte) 0xEC, (byte) 0x95, (byte) 0x84, (byte) 0xEC, (byte) 0xB9, (byte) 0xA8, (byte) 0xEC, (byte) 0x97, (byte) 0x90, (byte) 0x20, (byte) 0xEC, (byte) 0x9D, (byte) 0xB4, (byte) 0xEB, (byte) 0xA3, (byte) 0xA8, (byte) 0xEC, (byte) 0x96, (byte) 0xB4, (byte) 0xEC, (byte) 0xA7, (byte) 0x84, (byte) 0x20, (byte) 0xEA, (byte) 0xB2, (byte) 0x83, (byte) 0xEC, (byte) 0x9D, (byte) 0xB4, (byte) 0x20, (byte) 0xEC, (byte) 0x95, (byte) 0x84, (byte) 0xEB, (byte) 0x8B, (byte) 0x88, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEA, (byte) 0xB3, (byte) 0xA0, (byte) 0xEC, (byte) 0x83, (byte) 0x9D, (byte) 0x20, (byte) 0xEB, (byte) 0x81, (byte) 0x9D, (byte) 0xEC, (byte) 0x97, (byte) 0x90, (byte) 0x20, (byte) 0xEB, (byte) 0x82, (byte) 0x99, (byte) 0xEC, (byte) 0x9D, (byte) 0xB4, (byte) 0x20, (byte) 0xEC, (byte) 0x98, (byte) 0xA8, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEA, (byte) 0xB0, (byte) 0x9C, (byte) 0xEC, (byte) 0xB2, (byte) 0x9C, (byte) 0xEC, (byte) 0x97, (byte) 0x90, (byte) 0xEC, (byte) 0x84, (byte) 0x9C, (byte) 0x20, (byte) 0xEC, (byte) 0x9A, (byte) 0xA9, (byte) 0x20, (byte) 0xEB, (byte) 0x82, (byte) 0x9C, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEC, (byte) 0x95, (byte) 0x88, (byte) 0xEB, (byte) 0x85, (byte) 0x95, (byte) 0xED, (byte) 0x95, (byte) 0x98, (byte) 0xEC, (byte) 0x84, (byte) 0xB8, (byte) 0xEC, (byte) 0x9A, (byte) 0x94, (byte) 0x3F}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xEB, (byte) 0xA7, (byte) 0x8C, (byte) 0xEB, (byte) 0x82, (byte) 0x98, (byte) 0xEC, (byte) 0x84, (byte) 0x9C, (byte) 0x20, (byte) 0xEB, (byte) 0xB0, (byte) 0x98, (byte) 0xEA, (byte) 0xB0, (byte) 0x91, (byte) 0xEC, (byte) 0x8A, (byte) 0xB5, (byte) 0xEB, (byte) 0x8B, (byte) 0x88, (byte) 0xEB, (byte) 0x8B, (byte) 0xA4}, StandardCharsets.UTF_8), "Korean"),
+            new Message(new String(new byte[] {(byte) 0xED, (byte) 0x95, (byte) 0x9C, (byte) 0xEA, (byte) 0xB5, (byte) 0xAD, (byte) 0xEB, (byte) 0xA7, (byte) 0x90, (byte) 0x20, (byte) 0xED, (byte) 0x95, (byte) 0x98, (byte) 0xEC, (byte) 0x8B, (byte) 0xA4, (byte) 0x20, (byte) 0xEC, (byte) 0xA4, (byte) 0x84, (byte) 0x20, (byte) 0xEC, (byte) 0x95, (byte) 0x84, (byte) 0xEC, (byte) 0x84, (byte) 0xB8, (byte) 0xEC, (byte) 0x9A, (byte) 0x94, (byte) 0x3F}, StandardCharsets.UTF_8), "Korean")
+
     };
+
     static Emoji[] emoji = new Emoji[EMOJI_PER_WIDTH * EMOJI_PER_HEIGHT];
     static int hovered = -1, selected = -1;
     static Raylib rlj;
+
+    // TODO: Fix
 
     public static void main(String[] args){
 
@@ -177,9 +320,9 @@ public class Unicode{
         // Load the font resources
         // NOTE: fontAsian is for asian languages,
         // fontEmoji is the emojis and fontDefault is used for everything else
-        Font fontDefault = rlj.text.LoadFont("resources/dejavu.fnt");
-        Font fontAsian = rlj.text.LoadFont("resources/noto_cjk.fnt");
-        Font fontEmoji = rlj.text.LoadFont("resources/symbola.fnt");
+        Font fontDefault = rlj.text.LoadFont("src/tests/resources/text/dejavu.fnt");
+        Font fontAsian = rlj.text.LoadFont("src/tests/resources/text/noto_cjk.fnt");
+        Font fontEmoji = rlj.text.LoadFont("src/tests/resources/text/symbola.fnt");
 
         Vector2 hoveredPos = new Vector2();
         Vector2 selectedPos = new Vector2();
@@ -196,10 +339,12 @@ public class Unicode{
             // Update
             //----------------------------------------------------------------------------------
             // Add a new set of emojis when SPACE is pressed
-            if (rlj.core.IsKeyPressed(KEY_SPACE)) RandomizeEmoji();
+            if (rlj.core.IsKeyPressed(KEY_SPACE)) {
+                RandomizeEmoji();
+            }
 
             // Set the selected emoji and copy its text to clipboard
-            if (rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && (hovered != -1) && (hovered != selected)){
+            if (rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && (hovered != -1) && (hovered != selected)) {
                 selected = hovered;
                 selectedPos = hoveredPos;
                 rlj.core.SetClipboardText(messages[emoji[selected].message].text);
@@ -218,32 +363,32 @@ public class Unicode{
 
             // Draw random emojis in the background
             //------------------------------------------------------------------------------
-            for (int i = 0; i < emoji.length; ++i){
+            for (int i = 0; i < emoji.length; ++i) {
                 String txt = emojiCodepoints[emoji[i].index];
                 Rectangle emojiRect = new Rectangle(pos.x, pos.y, (float) fontEmoji.baseSize, (float) fontEmoji.baseSize);
 
-                if (!rlj.shapes.CheckCollisionPointRec(mouse, emojiRect)){
+                if (!rlj.shapes.CheckCollisionPointRec(mouse, emojiRect)) {
                     rlj.text.DrawTextEx(fontEmoji, txt, pos, (float) fontEmoji.baseSize, 1.0f, selected == i ? emoji[i].color :
                             rlj.textures.Fade(Color.LIGHTGRAY, 0.4f));
                 }
-                else{
+                else {
                     rlj.text.DrawTextEx(fontEmoji, txt, pos, (float) fontEmoji.baseSize, 1.0f, emoji[i].color);
                     hovered = i;
                     hoveredPos = pos;
                 }
 
-                if ((i != 0) && (i % EMOJI_PER_WIDTH == 0)){
+                if ((i != 0) && (i % EMOJI_PER_WIDTH == 0)) {
                     pos.y += fontEmoji.baseSize + 24.25f;
                     pos.x = 28.8f;
                 }
-                else{
+                else {
                     pos.x += fontEmoji.baseSize + 28.8f;
                 }
             }
             //------------------------------------------------------------------------------
             // Draw the message when an emoji is selected
             //------------------------------------------------------------------------------
-            if (selected != -1){
+            if (selected != -1) {
                 int message = emoji[selected].message;
                 int horizontalPadding = 20, verticalPadding = 30;
                 Font font = fontDefault;
@@ -251,17 +396,17 @@ public class Unicode{
                 // Set correct font for asian languages
                 if (rlj.text.TextIsEqual(messages[message].language, "Chinese") ||
                         rlj.text.TextIsEqual(messages[message].language, "Korean") ||
-                        rlj.text.TextIsEqual(messages[message].language, "Japanese")){
+                        rlj.text.TextIsEqual(messages[message].language, "Japanese")) {
                     font = fontAsian;
                 }
 
                 // Calculate size for the message box (approximate the height and width)
                 Vector2 sz = rlj.text.MeasureTextEx(font, messages[message].text, (float) font.baseSize, 1.0f);
-                if (sz.x > 300){
+                if (sz.x > 300) {
                     sz.y *= sz.x / 300;
                     sz.x = 300;
                 }
-                else if (sz.x < 160){
+                else if (sz.x < 160) {
                     sz.x = 160;
                 }
 
@@ -274,10 +419,11 @@ public class Unicode{
                         c = new Vector2(a.x + 10, a.y);
 
                 // Don't go outside the screen
-                if (msgRect.x < 10){
+                if (msgRect.x < 10) {
                     msgRect.x += 28;
                 }
-                if (msgRect.y < 10){
+
+                if (msgRect.y < 10) {
                     msgRect.y = selectedPos.y + 84;
                     a.y = msgRect.y;
                     c.y = a.y;
@@ -288,7 +434,8 @@ public class Unicode{
                     a = b;
                     b = tmp;
                 }
-                if(msgRect.x + msgRect.width > screenWidth){
+
+                if(msgRect.x + msgRect.width > screenWidth) {
                     msgRect.x -= (msgRect.x + msgRect.width) - screenWidth + 10;
                 }
 
@@ -301,8 +448,8 @@ public class Unicode{
                 DrawTextBoxed(font, messages[message].text, textRect, (float) font.baseSize, 1.0f, true, Color.WHITE);
 
                 // Draw the info text below the main message
-                int size = messages[message].text.length();
-                int len = rlj.text.GetCodepointsCount(messages[message].text);
+                int size = rlj.text.GetCodepointCount(messages[message].text);
+                int len = messages[message].text.length();
                 String info = messages[message].language + " " + len + " characters " + size + " bytes";
                 sz = rlj.text.MeasureTextEx(rlj.text.GetFontDefault(), info, 10, 1.0f);
                 pos = new Vector2(textRect.x + textRect.width - sz.x, msgRect.y + msgRect.height - sz.y - 2);
@@ -323,6 +470,8 @@ public class Unicode{
         rlj.text.UnloadFont(fontDefault);    // Unload font resource
         rlj.text.UnloadFont(fontAsian);      // Unload font resource
         rlj.text.UnloadFont(fontEmoji);      // Unload font resource
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 
@@ -375,21 +524,22 @@ public class Unicode{
 
         for(int i = 0, k = 0; i < length; i++, k++) {
             // Get next codepoint from byte string and glyph index in font
-            int codepointByteCount = 0;
-            int codepoint = rlj.text.GetCodepointNext(new char[ text.charAt(i) ]);
+            int codepoint = rlj.text.GetCodepointNext(text, i);
+            int codepointByteCount = rlj.text.GetCodePointByteCount(codepoint);
             int index = rlj.text.GetGlyphIndex(font, codepoint);
 
-            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
+            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return (byte) 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-            if (codepoint == 0x3f) codepointByteCount = 1;
-            i += (codepointByteCount - 1);
-
+            if (codepoint == (byte) 0x3f) {
+                codepointByteCount = 1;
+            }
             float glyphWidth = 0;
-            if (codepoint != '\n')
-            {
+            if (codepoint != '\n') {
                 glyphWidth = (font.glyphs[index].advanceX == 0) ? font.recs[index].width*scaleFactor : font.glyphs[index].advanceX*scaleFactor;
 
-                if (i + 1 < length) glyphWidth = glyphWidth + spacing;
+                if (i + 1 < length) {
+                    glyphWidth = glyphWidth + spacing;
+                }
             }
 
             // NOTE: When wordWrap is ON we first measure how much of the text we can draw before going outside of the rec container
@@ -425,20 +575,24 @@ public class Unicode{
                     lastk = k - 1;
                     k = tmp;
                 }
-            }else {
+            }
+            else {
                 if (codepoint == '\n') {
                     if (!wordWrap) {
                         textOffsetY += (font.baseSize + font.baseSize/2.0f)*scaleFactor;
                         textOffsetX = 0;
                     }
-                }else {
+                }
+                else {
                     if (!wordWrap && ((textOffsetX + glyphWidth) > rec.width)) {
                         textOffsetY += (font.baseSize + font.baseSize/2.0f)*scaleFactor;
                         textOffsetX = 0;
                     }
 
                     // When text overflows rectangle height limit, just stop drawing
-                    if ((textOffsetY + font.baseSize*scaleFactor) > rec.height) break;
+                    if ((textOffsetY + font.baseSize*scaleFactor) > rec.height) {
+                        break;
+                    }
 
                     // Draw selection background
                     boolean isGlyphSelected = false;
@@ -453,8 +607,7 @@ public class Unicode{
                     }
                 }
 
-                if (wordWrap && (i == endLine))
-                {
+                if (wordWrap && (i == endLine)) {
                     textOffsetY += (font.baseSize + font.baseSize/2.0f)*scaleFactor;
                     textOffsetX = 0;
                     startLine = endLine;
@@ -468,9 +621,7 @@ public class Unicode{
             }
 
             textOffsetX += glyphWidth;
-
         }
-
     }
 
 }

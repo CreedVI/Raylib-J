@@ -43,7 +43,7 @@ public class FontSDF{
         int fileSize = 0;
         byte[] fileData = null;
         try{
-            fileData = rlj.files.LoadFileData("resources/anonymous_pro_bold.ttf");
+            fileData = rlj.files.LoadFileData("src/tests/resources/text/anonymous_pro_bold.ttf");
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -55,7 +55,7 @@ public class FontSDF{
 
         // Loading font data from memory data
         // Parameters > font size: 16, no chars array provided (0), chars count: 95 (autogenerate chars array)
-        fontDefault.glyphs = rlj.text.LoadFontData(fileData, fileSize, 16, null, 95, rText.FontType.FONT_DEFAULT);
+        fontDefault.glyphs = rlj.text.LoadFontData(fileData, 16, null, 95, rText.FontType.FONT_DEFAULT);
         // Parameters > chars count: 95, font size: 16, chars padding in image: 4 px, pack method: 0 (default)
         Image atlas = rlj.text.GenImageFontAtlas(fontDefault, 0);
         fontDefault.texture = rlj.textures.LoadTextureFromImage(atlas);
@@ -66,14 +66,14 @@ public class FontSDF{
         fontSDF.baseSize = 16;
         fontSDF.glyphCount = 95;
         // Parameters > font size: 16, no chars array provided (0), chars count: 0 (defaults to 95)
-        fontSDF.glyphs = rlj.text.LoadFontData(fileData, fileSize, 16, null, 0, rText.FontType.FONT_SDF);
+        fontSDF.glyphs = rlj.text.LoadFontData(fileData, 16, null, 0, rText.FontType.FONT_SDF);
         // Parameters > chars count: 95, font size: 16, chars padding in image: 0 px, pack method: 1 (Skyline algorythm)
         atlas = rlj.text.GenImageFontAtlas(fontSDF, 1);
         fontSDF.texture = rlj.textures.LoadTextureFromImage(atlas);
         rlj.textures.UnloadImage(atlas);
 
         // Load SDF required shader (we use default vertex shader)
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/glsl330/sdf.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/text/shaders/glsl330/sdf.fs");
         rlj.textures.SetTextureFilter(fontSDF.texture, RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR);    // Required for SDF font
 
         Vector2 fontPosition = new Vector2(40, screenHeight / 2.0f - 50);
@@ -153,6 +153,7 @@ public class FontSDF{
         rlj.text.UnloadFont(fontSDF);        // SDF font unloading
 
         rlj.core.UnloadShader(shader);       // Unload SDF shader
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

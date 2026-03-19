@@ -41,9 +41,9 @@ public class FontSpritefont{
         String msg3 = "...and a THIRD one! GREAT! :D";
 
         // NOTE: Textures/Fonts MUST be loaded after Window initialization (OpenGL context is required)
-        Font font1 = rlj.text.LoadFont("resources/custom_mecha.png");          // Font loading
-        Font font2 = rlj.text.LoadFont("resources/custom_alagard.png");        // Font loading
-        Font font3 = rlj.text.LoadFont("resources/custom_jupiter_crash.png");  // Font loading
+        Font font1 = rlj.text.LoadFont("src/tests/resources/text/custom_mecha.png");          // Font loading
+        Font font2 = rlj.text.LoadFont("src/tests/resources/text/custom_alagard.png");        // Font loading
+        Font font3 = rlj.text.LoadFont("src/tests/resources/text/custom_jupiter_crash.png");  // Font loading
 
         Vector2 fontPosition1 =
                 new Vector2(screenWidth/2.0f - rlj.text.MeasureTextEx(font1, msg1, (float)font1.baseSize, -3).x/2,
@@ -85,6 +85,8 @@ public class FontSpritefont{
         rlj.text.UnloadFont(font1);      // Font unloading
         rlj.text.UnloadFont(font2);      // Font unloading
         rlj.text.UnloadFont(font3);      // Font unloading
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

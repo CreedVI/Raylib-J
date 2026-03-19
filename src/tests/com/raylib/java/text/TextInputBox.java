@@ -53,7 +53,7 @@ public class TextInputBox{
             //----------------------------------------------------------------------------------
             mouseOnText = rlj.shapes.CheckCollisionPointRec(rlj.core.GetMousePosition(), textBox);
 
-            if (mouseOnText){
+            if (mouseOnText) {
                 // Set the window's cursor to the I-Beam
                 rlj.core.SetMouseCursor(MOUSE_CURSOR_IBEAM);
 
@@ -61,9 +61,9 @@ public class TextInputBox{
                 int key = rlj.core.GetCharPressed();
 
                 // Check if more characters have been pressed on the same frame
-                while (key > 0){
+                while (key > 0) {
                     // NOTE: Only allow keys in range [32..125]
-                    if ((key >= 32) && (key <= 125) && (letterCount < MAX_INPUT_CHARS)){
+                    if ((key >= 32) && (key <= 125) && (letterCount < MAX_INPUT_CHARS)) {
                         name.append((char) key);
                         letterCount++;
                     }
@@ -71,24 +71,24 @@ public class TextInputBox{
                     key = rlj.core.GetCharPressed();  // Check next character in the queue
                 }
 
-                if (rlj.core.IsKeyPressed(KEY_BACKSPACE)){
+                if (rlj.core.IsKeyPressed(KEY_BACKSPACE)) {
                     letterCount--;
-                    if (letterCount < 0){
+                    if (letterCount < 0) {
                         letterCount = 0;
                     }
-                    if (!name.toString().equals("")){
+                    if (!name.toString().equals("")) {
                         name.deleteCharAt(letterCount);
                     }
                 }
             }
-            else{
+            else {
                 rlj.core.SetMouseCursor(MOUSE_CURSOR_DEFAULT);
             }
 
-            if (mouseOnText){
+            if (mouseOnText) {
                 framesCounter++;
             }
-            else{
+            else {
                 framesCounter = 0;
             }
             //----------------------------------------------------------------------------------
@@ -104,10 +104,10 @@ public class TextInputBox{
             rlj.text.DrawText("PLACE MOUSE OVER INPUT BOX!", 240, 140, 20, Color.GRAY);
 
             rlj.shapes.DrawRectangleRec(textBox, Color.LIGHTGRAY);
-            if (mouseOnText){
+            if (mouseOnText) {
                 rlj.shapes.DrawRectangleLines((int) textBox.x, (int) textBox.y, (int) textBox.width, (int) textBox.height, Color.RED);
             }
-            else{
+            else {
                 rlj.shapes.DrawRectangleLines((int) textBox.x, (int) textBox.y, (int) textBox.width, (int) textBox.height, Color.DARKGRAY);
             }
 
@@ -116,16 +116,16 @@ public class TextInputBox{
             rlj.text.DrawText("INPUT CHARS: " + letterCount + "/" + MAX_INPUT_CHARS, 315, 250, 20,
                     Color.DARKGRAY);
 
-            if (mouseOnText){
-                if (letterCount < MAX_INPUT_CHARS){
+            if (mouseOnText) {
+                if (letterCount < MAX_INPUT_CHARS) {
                     // Draw blinking underscore char
-                    if (((framesCounter / 20) % 2) == 0){
+                    if (((framesCounter / 20) % 2) == 0) {
                         rlj.text.DrawText("_",
                                 (int) textBox.x + 8 + rlj.text.MeasureText(name.toString(), 40),
                                 (int) textBox.y + 12, 40, Color.MAROON);
                     }
                 }
-                else{
+                else {
                     rlj.text.DrawText("Press BACKSPACE to delete chars...", 230, 300, 20, Color.GRAY);
                 }
             }
@@ -133,6 +133,8 @@ public class TextInputBox{
             rlj.core.EndDrawing();
             //----------------------------------------------------------------------------------
         }
+
+        rlj.core.CloseWindow();
     }
 
 }

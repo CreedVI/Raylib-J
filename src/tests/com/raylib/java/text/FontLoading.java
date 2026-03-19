@@ -53,11 +53,11 @@ public class FontLoading{
         // NOTE: Textures/Fonts MUST be loaded after Window initialization (OpenGL context is required)
 
         // BMFont (AngelCode) : Font data and image atlas have been generated using external program
-        Font fontBm = rlj.text.LoadFont("resources/pixantiqua.fnt");
+        Font fontBm = rlj.text.LoadFont("src/tests/resources/text/pixantiqua.fnt");
 
         // TTF font : Font data and atlas are generated directly from TTF
         // NOTE: We define a font base size of 32 pixels tall and up-to 250 characters
-        Font fontTtf = rlj.text.LoadFontEx("resources/pixantiqua.ttf", 32, null, 250);
+        Font fontTtf = rlj.text.LoadFontEx("src/tests/resources/text/pixantiqua.ttf", 32, null, 250);
 
         boolean useTtf;
 
@@ -79,13 +79,11 @@ public class FontLoading{
 
             rlj.text.DrawText("Hold SPACE to use TTF generated font", 20, 20, 20, Color.LIGHTGRAY);
 
-            if (!useTtf)
-            {
+            if (!useTtf) {
                 rlj.text.DrawTextEx(fontBm, msg, new Vector2(20.0f, 100.0f), (float)fontBm.baseSize, 2, Color.MAROON);
                 rlj.text.DrawText("Using BMFont (Angelcode) imported", 20, rlj.core.GetScreenHeight() - 30, 20, Color.GRAY);
             }
-            else
-            {
+            else {
                 rlj.text.DrawTextEx(fontTtf, msg, new Vector2(20.0f, 100.0f), (float)fontTtf.baseSize, 2, Color.LIME);
                 rlj.text.DrawText("Using TTF font generated", 20, rlj.core.GetScreenHeight() - 30, 20, Color.GRAY);
             }
@@ -98,6 +96,7 @@ public class FontLoading{
         //--------------------------------------------------------------------------------------
         rlj.text.UnloadFont(fontBm);     // AngelCode Font unloading
         rlj.text.UnloadFont(fontTtf);    // TTF Font unloading
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
 
     }

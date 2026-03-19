@@ -38,14 +38,14 @@ public class RaylibFonts{
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Font[] fonts = new Font[MAX_FONTS];
 
-        fonts[0] = rlj.text.LoadFont("resources/fonts/alagard.png");
-        fonts[1] = rlj.text.LoadFont("resources/fonts/pixelplay.png");
-        fonts[2] = rlj.text.LoadFont("resources/fonts/mecha.png");
-        fonts[3] = rlj.text.LoadFont("resources/fonts/setback.png");
-        fonts[4] = rlj.text.LoadFont("resources/fonts/romulus.png");
-        fonts[5] = rlj.text.LoadFont("resources/fonts/pixantiqua.png");
-        fonts[6] = rlj.text.LoadFont("resources/fonts/alpha_beta.png");
-        fonts[7] = rlj.text.LoadFont("resources/fonts/jupiter_crash.png");
+        fonts[0] = rlj.text.LoadFont("src/tests/resources/text/fonts/alagard.png");
+        fonts[1] = rlj.text.LoadFont("src/tests/resources/text/fonts/pixelplay.png");
+        fonts[2] = rlj.text.LoadFont("src/tests/resources/text/fonts/mecha.png");
+        fonts[3] = rlj.text.LoadFont("src/tests/resources/text/fonts/setback.png");
+        fonts[4] = rlj.text.LoadFont("src/tests/resources/text/fonts/romulus.png");
+        fonts[5] = rlj.text.LoadFont("src/tests/resources/text/fonts/pixantiqua.png");
+        fonts[6] = rlj.text.LoadFont("src/tests/resources/text/fonts/alpha_beta.png");
+        fonts[7] = rlj.text.LoadFont("src/tests/resources/text/fonts/jupiter_crash.png");
 
         String[] messages = {
             "ALAGARD FONT designed by Hewett Tsoi",
@@ -62,8 +62,7 @@ public class RaylibFonts{
 
         Vector2[] positions = new Vector2[MAX_FONTS];
 
-        for (int i = 0; i < MAX_FONTS; i++)
-        {
+        for (int i = 0; i < MAX_FONTS; i++) {
             positions[i] = new Vector2();
             positions[i].x = screenWidth/2.0f - rlj.text.MeasureTextEx(fonts[i], messages[i], fonts[i].baseSize*2.0f, (float)spacings[i]).x/2.0f;
             positions[i].y = 60.0f + fonts[i].baseSize + 45.0f*i;
@@ -96,8 +95,7 @@ public class RaylibFonts{
             rlj.text.DrawText("free fonts included with raylib", 250, 20, 20, Color.DARKGRAY);
             rlj.shapes.DrawLine(220, 50, 590, 50, Color.DARKGRAY);
 
-            for (int i = 0; i < MAX_FONTS; i++)
-            {
+            for (int i = 0; i < MAX_FONTS; i++) {
                 rlj.text.DrawTextEx(fonts[i], messages[i], positions[i], fonts[i].baseSize*2.0f, (float)spacings[i], colors[i]);
             }
 
@@ -112,6 +110,8 @@ public class RaylibFonts{
         for (int i = 0; i < MAX_FONTS; i++){
             rlj.text.UnloadFont(fonts[i]);
         }
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

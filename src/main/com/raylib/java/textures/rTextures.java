@@ -7,12 +7,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -1046,7 +1041,7 @@ public class rTextures{
             for (int i = 0; i < size; i++) {
                 // Get next codepoint from byte string and glyph index in font
                 int codepoint = Character.codePointAt(text.toCharArray(), i);
-                int codepointByteCount = context.text.GetByteCountOfCodePoint(codepoint);
+                int codepointByteCount = context.text.GetCodePointByteCount(codepoint);
                 int index = context.text.GetGlyphIndex(font, codepoint);
 
                 // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)

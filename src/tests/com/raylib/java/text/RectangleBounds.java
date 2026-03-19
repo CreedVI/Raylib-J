@@ -30,6 +30,8 @@ public class RectangleBounds {
 
     public static Raylib rlj;
 
+    //TODO: Fix
+
     public static void main(String[] args) {
 
         // Initialization
@@ -42,7 +44,8 @@ public class RectangleBounds {
         String text = """
                 Text cannot escape\tthis container\t...word wrap also works when active so here's a long text for testing.
 
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nec ullamcorper sit amet risus nullam eget felis eget.""";
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nec ullamcorper sit amet risus nullam eget felis eget.
+            """;
 
         boolean resizing = false;
         boolean wordWrap = true;
@@ -68,27 +71,37 @@ public class RectangleBounds {
 
             // Update
             //----------------------------------------------------------------------------------
-            if (rlj.core.IsKeyPressed(KEY_SPACE)) wordWrap = !wordWrap;
+            if (rlj.core.IsKeyPressed(KEY_SPACE)) {
+                wordWrap = !wordWrap;
+            }
 
             Vector2 mouse = rlj.core.GetMousePosition();
 
             // Check if the mouse is inside the container and toggle border color
-            if (rlj.shapes.CheckCollisionPointRec(mouse, container)) borderColor = rlj.textures.Fade(MAROON, 0.4f);
-            else if (!resizing) borderColor = MAROON;
+            if (rlj.shapes.CheckCollisionPointRec(mouse, container)) {
+                borderColor = rlj.textures.Fade(MAROON, 0.4f);
+            }
+            else if (!resizing) {
+                borderColor = MAROON;
+            }
 
             // Container resizing logic
             if (resizing) {
-                if (rlj.core.IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) resizing = false;
+                if (rlj.core.IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                    resizing = false;
+                }
 
                 float width = container.width + (mouse.x - lastMouse.x);
                 container.width = (width > minWidth) ? Math.min(width, maxWidth) : minWidth;
 
                 float height = container.height + (mouse.y - lastMouse.y);
                 container.height = (height > minHeight) ? Math.min(height, maxHeight) : minHeight;
-            } else {
+            }
+            else {
                 // Check if we're resizing
-                if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_LEFT) && rlj.shapes.CheckCollisionPointRec(mouse, resizer))
+                if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_LEFT) && rlj.shapes.CheckCollisionPointRec(mouse, resizer)) {
                     resizing = true;
+                }
             }
 
             // Move resizer rectangle properly
@@ -129,6 +142,7 @@ public class RectangleBounds {
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 
@@ -162,21 +176,24 @@ public class RectangleBounds {
 
         for(int i = 0, k = 0; i < length; i++, k++) {
             // Get next codepoint from byte string and glyph index in font
-            int codepointByteCount = 0;
-            int codepoint = rlj.text.GetCodepointNext(new char[ text.charAt(i) ]);
+            int codepoint = rlj.text.GetCodepointNext(text, i);
+            int codepointByteCount = rlj.text.GetCodePointByteCount(codepoint);
             int index = rlj.text.GetGlyphIndex(font, codepoint);
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-            if (codepoint == 0x3f) codepointByteCount = 1;
+            if (codepoint == 0x3f) {
+                codepointByteCount = 1;
+            }
             i += (codepointByteCount - 1);
 
             float glyphWidth = 0;
-            if (codepoint != '\n')
-            {
+            if (codepoint != '\n') {
                 glyphWidth = (font.glyphs[index].advanceX == 0) ? font.recs[index].width*scaleFactor : font.glyphs[index].advanceX*scaleFactor;
 
-                if (i + 1 < length) glyphWidth = glyphWidth + spacing;
+                if (i + 1 < length) {
+                    glyphWidth = glyphWidth + spacing;
+                }
             }
 
             // NOTE: When wordWrap is ON we first measure how much of the text we can draw before going outside of the rec container
@@ -212,20 +229,24 @@ public class RectangleBounds {
                     lastk = k - 1;
                     k = tmp;
                 }
-            }else {
+            }
+            else {
                 if (codepoint == '\n') {
                     if (!wordWrap) {
                         textOffsetY += (font.baseSize + font.baseSize/2.0f)*scaleFactor;
                         textOffsetX = 0;
                     }
-                }else {
+                }
+                else {
                     if (!wordWrap && ((textOffsetX + glyphWidth) > rec.width)) {
                         textOffsetY += (font.baseSize + font.baseSize/2.0f)*scaleFactor;
                         textOffsetX = 0;
                     }
 
                     // When text overflows rectangle height limit, just stop drawing
-                    if ((textOffsetY + font.baseSize*scaleFactor) > rec.height) break;
+                    if ((textOffsetY + font.baseSize*scaleFactor) > rec.height) {
+                        break;
+                    }
 
                     // Draw selection background
                     boolean isGlyphSelected = false;
@@ -240,8 +261,7 @@ public class RectangleBounds {
                     }
                 }
 
-                if (wordWrap && (i == endLine))
-                {
+                if (wordWrap && (i == endLine)) {
                     textOffsetY += (font.baseSize + font.baseSize/2.0f)*scaleFactor;
                     textOffsetX = 0;
                     startLine = endLine;
@@ -255,9 +275,7 @@ public class RectangleBounds {
             }
 
             textOffsetX += glyphWidth;
-
         }
-
     }
 
 }
