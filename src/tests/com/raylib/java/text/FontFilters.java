@@ -1,6 +1,7 @@
 package com.raylib.java.text;
 
 import com.raylib.java.Raylib;
+import com.raylib.java.structs.FilePathList;
 import com.raylib.java.structs.Font;
 import com.raylib.java.structs.Vector2;
 
@@ -92,13 +93,13 @@ public class FontFilters{
 
             // Load a dropped TTF file dynamically (at current fontSize)
             if (rlj.core.IsFileDropped()) {
-                String[] droppedFiles = rlj.core.LoadDroppedFiles();
+                FilePathList droppedFiles = rlj.core.LoadDroppedFiles();
 
                 // NOTE: We only support first ttf file dropped
-                if (rlj.core.IsFileExtension(droppedFiles[0], ".ttf")) {
+                if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".ttf")) {
                     rlj.text.UnloadFont(font);
-                    font = rlj.text.LoadFontEx(droppedFiles[0], (int)fontSize, null, 0);
-                    rlj.core.ClearDroppedFiles();
+                    font = rlj.text.LoadFontEx(droppedFiles.paths[0], (int)fontSize, null, 0);
+                    rlj.core.UnloadDroppedFiles(droppedFiles);
                 }
             }
             //----------------------------------------------------------------------------------
@@ -139,7 +140,7 @@ public class FontFilters{
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
-        rlj.core.ClearDroppedFiles();        // Clear internal buffers
+        rlj.core.UnloadDroppedFiles();        // Clear internal buffers
         rlj.text.UnloadFont(font);           // Font unloading
         rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------

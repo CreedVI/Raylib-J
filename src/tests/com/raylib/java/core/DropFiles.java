@@ -2,6 +2,7 @@ package com.raylib.java.core;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.Color;
+import com.raylib.java.structs.FilePathList;
 
 public class DropFiles{
 
@@ -33,7 +34,7 @@ public class DropFiles{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [core] example - drop files");
 
         int count = 0;
-        String[] droppedFiles = new String[8];
+        FilePathList droppedFiles = new FilePathList();
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------
@@ -68,7 +69,7 @@ public class DropFiles{
                         rlj.shapes.DrawRectangle(0, 85 + 40 * i, screenWidth, 40, rlj.textures.Fade(Color.LIGHTGRAY, 0.3f));
                     }
 
-                    rlj.text.DrawText(droppedFiles[i], 120, 100 + 40 * i, 10, Color.GRAY);
+                    rlj.text.DrawText(droppedFiles.paths[i], 120, 100 + 40 * i, 10, Color.GRAY);
                 }
 
                 rlj.text.DrawText("Drop new files...", 100, 110 + 40 * count, 20, Color.DARKGRAY);
@@ -80,9 +81,8 @@ public class DropFiles{
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
-        rlj.core.ClearDroppedFiles();    // Clear internal buffers
+        rlj.core.UnloadDroppedFiles(droppedFiles);    // Clear internal buffers
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
-
     }
-
 }

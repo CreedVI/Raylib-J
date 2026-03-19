@@ -17,7 +17,7 @@ public class WindowDropCallback extends GLFWDropCallback {
     @Override
     public void invoke(long window, int count, long names){
         TRACELOG(LOG_DEBUG, "Drop Callback Triggered");
-        context.ClearDroppedFiles();
+        context.UnloadDroppedFiles();
         String[] paths = new String[(int) count];
 
         for (int j = 0; j < count; j++){

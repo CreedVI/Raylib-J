@@ -1485,6 +1485,117 @@ public class rText{
         return String.valueOf(utf8);
     }
 
+    // Get next codepoint in a UTF-8 encoded text, scanning until '\0' is found
+    // When an invalid UTF-8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
+    // Total number of bytes processed are returned as a parameter
+    // NOTE: The standard says U+FFFD should be returned in case of errors
+    // but that character is not supported by the default font in raylib
+    public int GetCodepoint(String text, int ptr) {
+        /*
+            UTF-8 specs from https://www.ietf.org/rfc/rfc3629.txt
+
+            Char. number range  |        UTF-8 octet sequence
+              (hexadecimal)    |              (binary)
+            --------------------+---------------------------------------------
+            0000 0000-0000 007F | 0xxxxxxx
+            0000 0080-0000 07FF | 110xxxxx 10xxxxxx
+            0000 0800-0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx
+            0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+        */
+        // NOTE: on decode errors we return as soon as possible
+
+        // Security check
+        if (ptr >= text.getBytes().length) {
+            return 0;
+        }
+
+        int codepoint = 0x3f;   // Codepoint (defaults to '?')
+        byte octet = text.getBytes()[0 + ptr]; // The first UTF8 octet
+
+        if (octet <= 0x7f) {
+            // Only one octet (ASCII range x00-7F)
+            codepoint = text.getBytes()[0 + ptr];
+        }
+        else if ((octet & 0xe0) == 0xc0) {
+            // Two octets
+
+            // [0]xC2-DF    [1]UTF8-tail(x80-BF)
+            byte octet1 = text.getBytes()[1 + ptr];
+
+            if ((octet1 == '\0') || ((octet1 >> 6) != 2)) {
+                // Unexpected sequence
+                return codepoint;
+            }
+
+            if ((octet >= 0xc2) && (octet <= 0xdf)) {
+                codepoint = ((octet & 0x1f) << 6) | (octet1 & 0x3f);
+            }
+        }
+        else if ((octet & 0xf0) == 0xe0) {
+            // Three octets
+            byte octet1 = text.getBytes()[1 + ptr];
+            byte octet2 = '\0';
+
+            if ((octet1 == '\0') || ((octet1 >> 6) != 2)) {
+                return codepoint;
+            } // Unexpected sequence
+
+            octet2 = text.getBytes()[2 + ptr];
+
+            if ((octet2 == '\0') || ((octet2 >> 6) != 2)) { return codepoint; } // Unexpected sequence
+
+            // [0]xE0    [1]xA0-BF       [2]UTF8-tail(x80-BF)
+            // [0]xE1-EC [1]UTF8-tail    [2]UTF8-tail(x80-BF)
+            // [0]xED    [1]x80-9F       [2]UTF8-tail(x80-BF)
+            // [0]xEE-EF [1]UTF8-tail    [2]UTF8-tail(x80-BF)
+
+            if (((octet == 0xe0) && !((octet1 >= 0xa0) && (octet1 <= 0xbf))) ||
+                    ((octet == 0xed) && !((octet1 >= 0x80) && (octet1 <= 0x9f)))) {
+                return codepoint;
+            }
+
+            if ((octet >= 0xe0) && (octet <= 0xef)) {
+                codepoint = ((octet & 0xf) << 12) | ((octet1 & 0x3f) << 6) | (octet2 & 0x3f);
+            }
+        }
+        else if ((octet & 0xf8) == 0xf0) {
+            // Four octets
+            if (octet > 0xf4) return codepoint;
+
+            byte octet1 = text.getBytes()[1 + ptr];
+            byte octet2 = '\0';
+            byte octet3 = '\0';
+
+            if ((octet1 == '\0') || ((octet1 >> 6) != 2)) { return codepoint; }  // Unexpected sequence
+
+            octet2 = text.getBytes()[2 + ptr];
+
+            if ((octet2 == '\0') || ((octet2 >> 6) != 2)) { return codepoint; }  // Unexpected sequence
+
+            octet3 = text.getBytes()[3 + ptr];
+
+            if ((octet3 == '\0') || ((octet3 >> 6) != 2)) { return codepoint; }  // Unexpected sequence
+
+            // [0]xF0       [1]x90-BF       [2]UTF8-tail  [3]UTF8-tail
+            // [0]xF1-F3    [1]UTF8-tail    [2]UTF8-tail  [3]UTF8-tail
+            // [0]xF4       [1]x80-8F       [2]UTF8-tail  [3]UTF8-tail
+
+            if (((octet == 0xf0) && !((octet1 >= 0x90) && (octet1 <= 0xbf))) ||
+                    ((octet == 0xf4) && !((octet1 >= 0x80) && (octet1 <= 0x8f)))) { return codepoint; } // Unexpected sequence
+
+            if (octet >= 0xf0) {
+                codepoint = ((octet & 0x7) << 18) | ((octet1 & 0x3f) << 12) | ((octet2 & 0x3f) << 6) | (octet3 & 0x3f);
+            }
+        }
+
+        if (codepoint > 0x10ffff) {
+            codepoint = 0x3f;     // Codepoints after U+10ffff are invalid
+        }
+
+        return codepoint;
+    }
+
+
     // Get all codepoints in a string, codepoints count returned by parameters
     public int[] LoadCodepoints(String text){
         return text.codePoints().toArray();

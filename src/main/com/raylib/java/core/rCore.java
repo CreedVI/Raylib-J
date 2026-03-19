@@ -2522,8 +2522,13 @@ public class rCore {
      * Get dropped files names
      * @return
      */
-    public String[] LoadDroppedFiles(){
-        return window.dropFilePaths;
+    public FilePathList LoadDroppedFiles(){
+        FilePathList files = new FilePathList();
+
+        files.count = window.dropFilesCount;
+        files.paths = window.dropFilePaths;
+
+        return files;
     }
 
     /**
@@ -2537,14 +2542,29 @@ public class rCore {
     /**
      *
      */
-    public void ClearDroppedFiles(){
+    public void UnloadDroppedFiles(FilePathList files){
         if (window.getDropFilesCount() > 0){
             for (int i = 0; i < window.getDropFilesCount(); i++){
                 window.dropFilePaths[i] = null;
             }
-
             window.setDropFilePaths(null);
+            window.setDropFilesCount(0);
 
+            if (files != null) {
+                files = null;
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    public void UnloadDroppedFiles(){
+        if (window.getDropFilesCount() > 0){
+            for (int i = 0; i < window.getDropFilesCount(); i++){
+                window.dropFilePaths[i] = null;
+            }
+            window.setDropFilePaths(null);
             window.setDropFilesCount(0);
         }
     }
