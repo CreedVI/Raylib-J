@@ -1102,24 +1102,15 @@ public class rText{
             font = GetFontDefault();  // Security check in case of not valid font
         }
 
-        int length = TextLength(text);      // Total length in bytes of the text, scanned by codepoints in loop
-
         int textOffsetY = 0;            // Offset between lines (on line break '\n')
         float textOffsetX = 0.0f;       // Offset X to next character to draw
 
         float scaleFactor = fontSize / font.baseSize;     // Character quad scaling factor
 
-        for (int i = 0, j = 0; i < length; j++) {
+        for (int i = 0; i < text.length(); i++) {
             // Get next codepoint from byte string and glyph index in font
-            int codepoint = GetCodepointNext(text, j);
-            int codepointByteCount = GetCodePointByteCount(codepoint);
+            int codepoint = GetCodepointNext(text, i);
             int index = GetGlyphIndex(font, codepoint);
-
-            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-            // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-            if (codepoint == 0x3f) {
-                codepointByteCount = 1;
-            }
 
             if (codepoint == '\n') {
                 // NOTE: Fixed line spacing of 1.5 line-height
@@ -1140,8 +1131,6 @@ public class rText{
                     textOffsetX += ((float) font.glyphs[index].advanceX * scaleFactor + spacing);
                 }
             }
-
-            i += codepointByteCount;   // Move text bytes counter to next codepoint
         }
     }
 
@@ -1509,7 +1498,7 @@ public class rText{
 
     // Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found
     // NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
-    public int GetCodepointCount(String text){
+    public int GetCodepointCount(String text) {
         return text.getBytes().length;
     }
 
@@ -1519,8 +1508,8 @@ public class rText{
      * @param ptr position of codepoint
      * @return UTF-8 codepoint
      */
-    public int GetCodepointNext(String text, int ptr){
-        return text.codePointAt(ptr);
+    public int GetCodepointNext(String text, int ptr) {
+        return text.codePointAt(text.offsetByCodePoints(0, ptr));
     }
 
     /**

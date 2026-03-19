@@ -346,8 +346,8 @@ public class Unicode{
             // Set the selected emoji and copy its text to clipboard
             if (rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && (hovered != -1) && (hovered != selected)) {
                 selected = hovered;
-                selectedPos = hoveredPos;
-                rlj.core.SetClipboardText(messages[emoji[selected].message].text);
+                selectedPos.x = hoveredPos.x;
+                selectedPos.y = hoveredPos.y;
             }
 
             Vector2 mouse = rlj.core.GetMousePosition();
@@ -374,7 +374,8 @@ public class Unicode{
                 else {
                     rlj.text.DrawTextEx(fontEmoji, txt, pos, (float) fontEmoji.baseSize, 1.0f, emoji[i].color);
                     hovered = i;
-                    hoveredPos = pos;
+                    hoveredPos.x = pos.x;
+                    hoveredPos.y = pos.y;
                 }
 
                 if ((i != 0) && (i % EMOJI_PER_WIDTH == 0)) {
@@ -390,7 +391,8 @@ public class Unicode{
             //------------------------------------------------------------------------------
             if (selected != -1) {
                 int message = emoji[selected].message;
-                int horizontalPadding = 20, verticalPadding = 30;
+                int horizontalPadding = 20;
+                int verticalPadding = 30;
                 Font font = fontDefault;
 
                 // Set correct font for asian languages
@@ -414,9 +416,9 @@ public class Unicode{
                 msgRect.y -= msgRect.height;
 
                 // Coordinates for the chat bubble triangle
-                Vector2 a = new Vector2(selectedPos.x, msgRect.y + msgRect.height),
-                        b = new Vector2(a.x + 8, a.y + 10),
-                        c = new Vector2(a.x + 10, a.y);
+                Vector2 a = new Vector2(selectedPos.x, msgRect.y + msgRect.height);
+                Vector2 b = new Vector2(a.x + 8, a.y + 10);
+                Vector2 c = new Vector2(a.x + 10, a.y);
 
                 // Don't go outside the screen
                 if (msgRect.x < 10) {
