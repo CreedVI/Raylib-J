@@ -3007,7 +3007,6 @@ public class rTextures{
                         // Fast path: Avoid blend if source has no alpha to blend
                         if (blendRequired) {
                             blend = ColorAlphaBlend(colDst, colSrc, tint);
-                            System.out.print(blend.toString() + ", ");
                         }
                         else {
                             blend = colSrc;
@@ -3019,7 +3018,6 @@ public class rTextures{
                         dstIndex += bytesPerPixelDst;
                         srcIndex += bytesPerPixelSrc;
                     }
-                    System.out.println();
                 }
 
                 srcIndexBase += strideSrc;
