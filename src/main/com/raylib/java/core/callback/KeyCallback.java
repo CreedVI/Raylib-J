@@ -1,7 +1,6 @@
 package com.raylib.java.core.callback;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.core.tracelog.TraceLog;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
 import static com.raylib.java.Config.*;
@@ -63,7 +62,7 @@ public class KeyCallback extends GLFWKeyCallback {
                 context.core.LoadAutomationEvents("eventsrec.rep");
                 context.core.eventsPlaying = true;
 
-                context.logger.TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
+                context.traceLog.TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
             }
 
         }

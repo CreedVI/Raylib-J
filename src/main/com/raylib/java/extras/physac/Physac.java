@@ -188,10 +188,10 @@ public class Physac{
             bodies[physicsBodiesCount] = body;
             physicsBodiesCount++;
 
-            context.logger.TRACELOG(null, "[PHYSAC] Physic body created successfully (id: " + body.id + ")");
+            context.traceLog.TRACELOG(null, "[PHYSAC] Physic body created successfully (id: " + body.id + ")");
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] Physic body could not be created, PHYSAC_MAX_BODIES reached");
+            context.traceLog.TRACELOG(null, "[PHYSAC] Physic body could not be created, PHYSAC_MAX_BODIES reached");
         }
 
         return body;
@@ -267,10 +267,10 @@ public class Physac{
             bodies[physicsBodiesCount] = body;
             physicsBodiesCount++;
 
-            context.logger.TRACELOG(null, "[PHYSAC] Physic body created successfully (id: " + body.id + ")");
+            context.traceLog.TRACELOG(null, "[PHYSAC] Physic body created successfully (id: " + body.id + ")");
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] Physics body could not be created, PHYSAC_MAX_BODIES reached");
+            context.traceLog.TRACELOG(null, "[PHYSAC] Physics body could not be created, PHYSAC_MAX_BODIES reached");
         }
 
         return body;
@@ -419,7 +419,7 @@ public class Physac{
             }
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: PhysicsShatter: null physic body");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: PhysicsShatter: null physic body");
         }
     }
 
@@ -436,11 +436,11 @@ public class Physac{
             body = bodies[index];
 
             if (body == null){
-                context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsBody: null physic body");
+                context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsBody: null physic body");
             }
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return body;
@@ -457,11 +457,11 @@ public class Physac{
                 result = body.shape.type;
             }
             else {
-                context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeType: null physic body");
+                context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeType: null physic body");
             }
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return result;
@@ -487,11 +487,11 @@ public class Physac{
                 }
             }
             else {
-                context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeVerticesCount: null physic body");
+                context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeVerticesCount: null physic body");
             }
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return result;
@@ -519,7 +519,7 @@ public class Physac{
             }
         }
         else{
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeVertex: null physic body");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeVertex: null physic body");
         }
 
         return position;
@@ -550,7 +550,7 @@ public class Physac{
             }
 
             if (index == -1) {
-                context.logger.TRACELOG(null, "[PHYSAC] WARNING: Requested body (id: " + id + ") can not be found");
+                context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: Requested body (id: " + id + ") can not be found");
                 return;     // Prevent access to index -1
             }
 
@@ -565,10 +565,10 @@ public class Physac{
             // Update physics bodies count
             physicsBodiesCount--;
 
-            context.logger.TRACELOG(null, "[PHYSAC] Physic body destroyed successfully (id: " + id + ")");
+            context.traceLog.TRACELOG(null, "[PHYSAC] Physic body destroyed successfully (id: " + id + ")");
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: DestroyPhysicsBody: null physic body");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: DestroyPhysicsBody: null physic body");
         }
     }
 
@@ -600,7 +600,7 @@ public class Physac{
             physicsManifoldsCount = 0;
         }
 
-        context.logger.TRACELOG(null, "[PHYSAC] Physics module reset successfully");
+        context.traceLog.TRACELOG(null, "[PHYSAC] Physics module reset successfully");
     }
 
     // Unitializes physics and exits physics loop
@@ -913,7 +913,7 @@ public class Physac{
             physicsManifoldsCount++;
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] Physic manifold could not be created, PHYSAC_MAX_MANIFOLDS reached");
+            context.traceLog.TRACELOG(null, "[PHYSAC] Physic manifold could not be created, PHYSAC_MAX_MANIFOLDS reached");
         }
 
         return manifold;
@@ -949,7 +949,7 @@ public class Physac{
             physicsManifoldsCount--;
         }
         else {
-            context.logger.TRACELOG(null, "[PHYSAC] WARNING: DestroyPhysicsManifold: null physic manifold");
+            context.traceLog.TRACELOG(null, "[PHYSAC] WARNING: DestroyPhysicsManifold: null physic manifold");
         }
     }
 

@@ -89,7 +89,7 @@ public class GL_33 {
     // Push the current matrix into RLGL.getRlgl().getState().stack
     static void rlPushMatrix(){
         if (rlglData.getState().getStackCounter() >= MAX_MATRIX_STACK_SIZE){
-            context.logger.TRACELOG(LOG_ERROR, "RLGL: Matrix stack overflow (MAX_MATRIX_STACK_SIZE)");
+            context.traceLog.TRACELOG(LOG_ERROR, "RLGL: Matrix stack overflow (MAX_MATRIX_STACK_SIZE)");
         }
 
         if (rlglData.getState().getCurrentMatrixMode() == RL_MODELVIEW){
@@ -265,7 +265,7 @@ public class GL_33 {
             rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount++;
         }
         else{
-            context.logger.TRACELOG(LOG_ERROR, "RLGL: Batch elements overflow");
+            context.traceLog.TRACELOG(LOG_ERROR, "RLGL: Batch elements overflow");
         }
     }
 
