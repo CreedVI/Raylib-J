@@ -21,12 +21,12 @@ public class DrawText3D {
      *   raylib [text] example - Draw 3d
      *
      *   NOTE: Draw a 2D text in 3D space, each letter is drawn in a quad (or 2 quads if backface is set)
-     *   where the texture coodinates of each quad map to the texture coordinates of the glyphs
+     *   where the texture coordinates of each quad map to the texture coordinates of the glyphs
      *   inside the font texture.
      *
      *   A more efficient approach, i believe, would be to render the text in a render texture and
      *   map that texture to a plane and render that, or maybe a shader but my method allows more
-     *   flexibility...for example to change position of each letter individually to make somethink
+     *   flexibility...for example to change position of each letter individually to make something
      *   like a wavy text effect.
      *
      *   Special thanks to:
@@ -44,12 +44,12 @@ public class DrawText3D {
      *
      ********************************************************************************************/
 
-    final static float LETTER_BOUNDRY_SIZE = 0.25f;
+    final static float LETTER_BOUNDARY_SIZE = 0.25f;
     final static int TEXT_MAX_LAYERS = 32;
     final static Color LETTER_BOUNDRY_COLOR = Color.VIOLET;
 
-    static boolean SHOW_LETTER_BOUNDRY = false;
-    static boolean SHOW_TEXT_BOUNDRY = false;
+    static boolean SHOW_LETTER_BOUNDARY = false;
+    static boolean SHOW_TEXT_BOUNDARY = false;
 
     static Raylib rlj;
     
@@ -152,10 +152,10 @@ public class DrawText3D {
 
             // Handle Events
             if (rlj.core.IsKeyPressed(KEY_F1)) {
-                SHOW_LETTER_BOUNDRY = !SHOW_LETTER_BOUNDRY;
+                SHOW_LETTER_BOUNDARY = !SHOW_LETTER_BOUNDARY;
             }
             if (rlj.core.IsKeyPressed(KEY_F2)) {
-                SHOW_TEXT_BOUNDRY = !SHOW_TEXT_BOUNDRY;
+                SHOW_TEXT_BOUNDARY = !SHOW_TEXT_BOUNDARY;
             }
             if (rlj.core.IsKeyPressed(KEY_F3)) {
                 // Handle camera change
@@ -302,14 +302,14 @@ public class DrawText3D {
             }
 
             // Draw the text boundry if set
-            if (SHOW_TEXT_BOUNDRY) {
+            if (SHOW_TEXT_BOUNDARY) {
                 rlj.models.DrawCubeWiresV(new Vector3(0.0f, 0.0f, -4.5f + tbox.z/2), tbox, dark);
             }
             rlj.rlgl.rlPopMatrix();
 
             // Don't draw the letter boundries for the 3D text below
-            boolean slb = SHOW_LETTER_BOUNDRY;
-            SHOW_LETTER_BOUNDRY = false;
+            boolean slb = SHOW_LETTER_BOUNDARY;
+            SHOW_LETTER_BOUNDARY = false;
 
             // Draw 3D options (use default font)
             //-------------------------------------------------------------------------
@@ -343,7 +343,7 @@ public class DrawText3D {
             DrawText3D(rlj.text.GetFontDefault(), opt, pos, 8.0f, 1.0f, 0.0f, false, RED);
             pos.z += 0.5f + m.z;
 
-            opt = rlj.text.TextFormat("< TBOX: %3s >", SHOW_TEXT_BOUNDRY? "ON" : "OFF");
+            opt = rlj.text.TextFormat("< TBOX: %3s >", SHOW_TEXT_BOUNDARY ? "ON" : "OFF");
             quads += rlj.text.TextLength(opt);
             m = MeasureText3D(rlj.text.GetFontDefault(), opt, 8.0f, 1.0f, 0.0f);
             pos.x = -m.x/2.0f;
@@ -402,7 +402,7 @@ public class DrawText3D {
             DrawText3D(rlj.text.GetFontDefault(), opt, pos, 6.0f, 0.5f, 0.0f, false, DARKBLUE);
             //-------------------------------------------------------------------------
 
-            SHOW_LETTER_BOUNDRY = slb;
+            SHOW_LETTER_BOUNDARY = slb;
             rlj.core.EndShaderMode();
 
             rlj.core.EndMode3D();
@@ -480,8 +480,8 @@ public class DrawText3D {
         float tw = (srcRec.x+srcRec.width)/font.texture.width;
         float th = (srcRec.y+srcRec.height)/font.texture.height;
 
-        if (SHOW_LETTER_BOUNDRY) {
-            rlj.models.DrawCubeWiresV(new Vector3(position.x + width/2, position.y, position.z + height/2), new Vector3(width, LETTER_BOUNDRY_SIZE, height), LETTER_BOUNDRY_COLOR);
+        if (SHOW_LETTER_BOUNDARY) {
+            rlj.models.DrawCubeWiresV(new Vector3(position.x + width/2, position.y, position.z + height/2), new Vector3(width, LETTER_BOUNDARY_SIZE, height), LETTER_BOUNDRY_COLOR);
         }
 
             rlj.rlgl.rlCheckRenderBatchLimit(4 + (backface ? 1 : 0));

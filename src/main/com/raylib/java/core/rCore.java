@@ -5,6 +5,7 @@ import com.raylib.java.core.callback.Callbacks;
 import com.raylib.java.core.input.Gamepad;
 import com.raylib.java.core.input.Input;
 import com.raylib.java.core.input.Mouse;
+import com.raylib.java.core.tracelog.TraceLog;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
 import com.raylib.java.core.rcamera.Camera3D;
@@ -28,6 +29,8 @@ import java.util.stream.IntStream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
+import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
+import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlBlendMode.RL_BLEND_ALPHA;
 import static com.raylib.java.structs.AutomationEvent.AutomationEventType.*;
@@ -42,9 +45,6 @@ import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERS
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow;
@@ -85,7 +85,8 @@ public class rCore {
     public rCore(Raylib context){
         this.context = context;
 
-        callbacks = new Callbacks(this);
+        callbacks = new Callbacks(context);
+        SetTraceLogCallback(callbacks.traceLogCallback);
         window = new Window();
         input = new Input();
         time = new Time();
@@ -115,44 +116,44 @@ public class rCore {
      * @param title  Window title - passing null will use a default title
      */
     public void InitWindow(int width, int height, String title){
-        TRACELOG(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
-        TRACELOG(LOG_INFO, "Supported raylib modules: ");
-        TRACELOG(LOG_INFO, "    > rcore:..... loaded (mandatory)");
-        TRACELOG(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
+        context.logger.TRACELOG(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
+        context.logger.TRACELOG(LOG_INFO, "Supported raylib modules: ");
+        context.logger.TRACELOG(LOG_INFO, "    > rcore:..... loaded (mandatory)");
+        context.logger.TRACELOG(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
 
         if(SUPPORT_MODULE_RSHAPES) {
-            TRACELOG(LOG_INFO, "    > rshapes:... loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rshapes:... loaded (optional)");
         }
         else {
-            TRACELOG(LOG_INFO, "    > rshapes:... not loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rshapes:... not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RTEXTURES) {
-            TRACELOG(LOG_INFO, "    > rtextures:. loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rtextures:. loaded (optional)");
         }
         else {
-            TRACELOG(LOG_INFO, "    > rtextures:. not loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rtextures:. not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RTEXT) {
-            TRACELOG(LOG_INFO, "    > rtext:..... loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rtext:..... loaded (optional)");
         }
         else {
-            TRACELOG(LOG_INFO, "    > rtext:..... not loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rtext:..... not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RMODELS) {
-            TRACELOG(LOG_INFO, "    > rmodels:... loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rmodels:... loaded (optional)");
         }
         else {
-            TRACELOG(LOG_INFO, "    > rmodels:... not loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > rmodels:... not loaded (optional)");
         }
 
         if(SUPPORT_MODULE_RAUDIO) {
-            TRACELOG(LOG_INFO, "    > raudio:.... loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > raudio:.... loaded (optional)");
         }
         else {
-            TRACELOG(LOG_INFO, "    > raudio:.... not loaded (optional)");
+            context.logger.TRACELOG(LOG_INFO, "    > raudio:.... not loaded (optional)");
         }
 
 
@@ -225,7 +226,7 @@ public class rCore {
         glfwDestroyWindow(window.handle);
         glfwTerminate();
 
-        TRACELOG(LOG_INFO, "Window closed successfully");
+        context.logger.TRACELOG(LOG_INFO, "Window closed successfully");
     }
 
     /**
@@ -339,7 +340,7 @@ public class rCore {
             long monitor = (monitorIndex < monitorCount) ? monitors.get(monitorIndex) : -1;
 
             if (monitor < 0){
-                TRACELOG(LOG_WARNING, "GLFW: Failed to get monitor");
+                context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to get monitor");
                 window.setFullscreen(false);
                 window.flags &= ~FLAG_FULLSCREEN_MODE;
 
@@ -443,10 +444,10 @@ public class rCore {
                     window.flags &= ~FLAG_BORDERLESS_WINDOWED_MODE;
                 }
             } else {
-                TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+                context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
             }
         } else {
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
     }
 
@@ -550,13 +551,13 @@ public class rCore {
 
         // State change: FLAG_WINDOW_TRANSPARENT
         if (((window.flags & FLAG_WINDOW_TRANSPARENT) != (flags & FLAG_WINDOW_TRANSPARENT)) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
-            TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window " +
+            context.logger.TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window " +
                     "initialization");
         }
 
         // State change: FLAG_WINDOW_HIGHDPI
         if (((window.flags & FLAG_WINDOW_HIGHDPI) != (flags & FLAG_WINDOW_HIGHDPI)) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
-            TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
@@ -569,12 +570,12 @@ public class rCore {
 
         // State change: FLAG_MSAA_4X_HINT
         if (((window.flags & FLAG_MSAA_4X_HINT) != (flags & FLAG_MSAA_4X_HINT)) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
-            TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
         }
 
         // State change: FLAG_INTERLACED_HINT
         if (((window.flags & FLAG_INTERLACED_HINT) != (flags & FLAG_INTERLACED_HINT)) && ((flags & FLAG_INTERLACED_HINT) > 0)){
-            TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
         }
     }
 
@@ -646,12 +647,12 @@ public class rCore {
 
         // State change: FLAG_WINDOW_TRANSPARENT
         if (((window.flags & FLAG_WINDOW_TRANSPARENT) > 0) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
-            TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_HIGHDPI
         if (((window.flags & FLAG_WINDOW_HIGHDPI) > 0) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
-            TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
         }
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
@@ -662,12 +663,12 @@ public class rCore {
 
         // State change: FLAG_MSAA_4X_HINT
         if (((window.flags & FLAG_MSAA_4X_HINT) > 0) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
-            TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
         }
 
         // State change: FLAG_INTERLACED_HINT
         if (((window.flags & FLAG_INTERLACED_HINT) > 0) && ((flags & FLAG_INTERLACED_HINT) > 0)){
-            TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
+            context.logger.TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
         }
     }
 
@@ -694,7 +695,7 @@ public class rCore {
             iconBuffer.free();
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: window icon image must be in R8G8B8A8 pixel format");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: window icon image must be in R8G8B8A8 pixel format");
         }
     }
 
@@ -724,7 +725,7 @@ public class rCore {
                     );
                 }
                 else{
-                    TRACELOG(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
+                    context.logger.TRACELOG(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
                 }
             }
             // NOTE: Images data is copied internally before this function returns
@@ -770,13 +771,13 @@ public class rCore {
         PointerBuffer monitors = glfwGetMonitors();
 
         if ((monitor >= 0) && (monitor < monitorCount)){
-            TRACELOG(LOG_INFO, "GLFW: Selected fullscreen monitor: [" + monitor + "] " + glfwGetMonitorName(monitor));
+            context.logger.TRACELOG(LOG_INFO, "GLFW: Selected fullscreen monitor: [" + monitor + "] " + glfwGetMonitorName(monitor));
 
             GLFWVidMode mode = glfwGetVideoMode(monitor);
             glfwSetWindowMonitor(window.handle, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
     }
 
@@ -984,7 +985,7 @@ public class rCore {
             return new Vector2(x.get(0), y.get(0));
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return null;
     }
@@ -1007,11 +1008,11 @@ public class rCore {
                 return modes.width();
             }
             else{
-                TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+                context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
             }
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
     }
@@ -1034,11 +1035,11 @@ public class rCore {
                 return modes.height();
             }
             else{
-                TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
+                context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
             }
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
             return 0;
         }
         return 0;
@@ -1060,7 +1061,7 @@ public class rCore {
             return physicalWidth;
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
     }
@@ -1081,7 +1082,7 @@ public class rCore {
             return physicalHeight;
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return 0;
     }
@@ -1101,7 +1102,7 @@ public class rCore {
                 return vidMode != null ? vidMode.refreshRate() : 0;
             }
             else {
-                TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+                context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
             }
         }
         /*
@@ -1188,7 +1189,7 @@ public class rCore {
             return glfwGetMonitorName(monitor);
         }
         else{
-            TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
         return "";
     }
@@ -1691,7 +1692,7 @@ public class rCore {
             */
         }
         else{
-            TRACELOG(LOG_WARNING, "RLGL: VR Simulator not supported on OpenGL 1.1");
+            context.logger.TRACELOG(LOG_WARNING, "RLGL: VR Simulator not supported on OpenGL 1.1");
         }
 
         return config;
@@ -2162,7 +2163,7 @@ public class rCore {
             time.setTarget(1.0 / (double) fps);
         }
 
-        TRACELOG(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000.0f + " milliseconds");
+        context.logger.TRACELOG(LOG_INFO, "TIMER: Target time per frame: " + time.getTarget() * 1000.0f + " milliseconds");
     }
 
     /**
@@ -2210,50 +2211,6 @@ public class rCore {
      */
     public double GetTime(){
         return glfwGetTime();
-    }
-
-    /**
-     * Setup window configuration flags (view FLAGS)<br/>
-     * NOTE: This function is expected to be called before window creation, because it sets up some flags for the window creation process.<br/>
-     * To configure window states after creation, just use SetWindowState()
-     * @param flags
-     */
-    public void SetConfigFlags(int flags){
-        // Selected flags are set but not evaluated at this point,
-        // flag evaluation happens at InitWindow() or SetWindowState()
-        window.flags |= flags;
-    }
-
-    /**
-     * Takes a screenshot of current screen (saved a .png)<br/>
-     * NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB have their own internal file-systems,
-     * to download image to user file-system some additional mechanism is required
-     * @param fileName
-     */
-    public void TakeScreenshot(String fileName){
-        if (SUPPORT_MODULE_RTEXTURES) {
-            if (fileName.contains("\\")) {
-                TRACELOG(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\\'] character");
-                return;
-            }
-
-            Vector2 scale = GetWindowScaleDPI();
-
-            short[] imgData = context.rlgl.rlReadScreenPixels((int)((float)window.render.width*scale.x), (int)((float)window.render.height*scale.y));
-            byte[] dataB = new byte[imgData.length];
-            IntStream.range(0, dataB.length).forEach(i -> dataB[i] = (byte) imgData[i]);
-            Image image = new Image(dataB, window.render.width, window.render.height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-
-            String path = GetWorkingDirectory() + fileName;
-
-            context.textures.ExportImage(image, path); // WARNING: Module required: rtextures
-
-            // TODO: Verification required for log
-            TRACELOG(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
-        }
-        else {
-            TRACELOG(LOG_WARNING,"IMAGE: ExportImage() requires module: rtextures");
-        }
     }
 
     /**
@@ -2325,6 +2282,54 @@ public class rCore {
     public void UnloadRandomSequence(@SuppressWarnings({"ReassignedVariable", "ParameterCanBeLocal"}) int[] sequence){
         // noinspection UnusedAssignment
         sequence = null;
+    }
+
+    /**
+     * Takes a screenshot of current screen (saved a .png)<br/>
+     * NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB have their own internal file-systems,
+     * to download image to user file-system some additional mechanism is required
+     * @param fileName
+     */
+    public void TakeScreenshot(String fileName){
+        if (SUPPORT_MODULE_RTEXTURES) {
+            if (fileName.contains("\\")) {
+                context.logger.TRACELOG(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\\'] character");
+                return;
+            }
+
+            Vector2 scale = GetWindowScaleDPI();
+
+            short[] imgData = context.rlgl.rlReadScreenPixels((int)((float)window.render.width*scale.x), (int)((float)window.render.height*scale.y));
+            byte[] dataB = new byte[imgData.length];
+            IntStream.range(0, dataB.length).forEach(i -> dataB[i] = (byte) imgData[i]);
+            Image image = new Image(dataB, window.render.width, window.render.height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+
+            String path = GetWorkingDirectory() + fileName;
+
+            context.textures.ExportImage(image, path); // WARNING: Module required: rtextures
+
+            // TODO: Verification required for log
+            context.logger.TRACELOG(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
+        }
+        else {
+            context.logger.TRACELOG(LOG_WARNING,"IMAGE: ExportImage() requires module: rtextures");
+        }
+    }
+
+    /**
+     * Setup window configuration flags (view FLAGS)<br/>
+     * NOTE: This function is expected to be called before window creation, because it sets up some flags for the window creation process.<br/>
+     * To configure window states after creation, just use SetWindowState()
+     * @param flags
+     */
+    public void SetConfigFlags(int flags){
+        // Selected flags are set but not evaluated at this point,
+        // flag evaluation happens at InitWindow() or SetWindowState()
+        window.flags |= flags;
+    }
+
+    public void SetTraceLogCallback(TraceLog callback) {
+        context.logger = callback;
     }
 
     /**
@@ -2533,14 +2538,15 @@ public class rCore {
 
     /**
      * Get number of dropped files
-     * @return
+     * @return number of registered dropped files
      */
     public int GetDroppedFilesCount(){
         return window.dropFilesCount;
     }
 
     /**
-     *
+     * Clear dropped file information from the system
+     * @param files
      */
     public void UnloadDroppedFiles(FilePathList files){
         if (window.getDropFilesCount() > 0){
@@ -2549,15 +2555,12 @@ public class rCore {
             }
             window.setDropFilePaths(null);
             window.setDropFilesCount(0);
-
-            if (files != null) {
-                files = null;
-            }
+            files = null;
         }
     }
 
     /**
-     *
+     * Clear dropped file information from the system
      */
     public void UnloadDroppedFiles(){
         if (window.getDropFilesCount() > 0){
@@ -2701,7 +2704,7 @@ public class rCore {
      */
     public void OpenURL(String url) {
         if (url.contains("'")) {
-            TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid ['] character");
+            context.logger.TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid ['] character");
         }
         else {
             if (PLATFORM_DESKTOP) {
@@ -3120,7 +3123,7 @@ public class rCore {
         #endif
         #if defined(PLATFORM_ANDROID)
             if (index < MAX_TOUCH_POINTS) position = input.Touch.position[index];
-            else TRACELOG(LOG_WARNING, "INPUT: Required touch point out of range (Max touch points: %i)", MAX_TOUCH_POINTS);
+            else context.logger.logger(LOG_WARNING, "INPUT: Required touch point out of range (Max touch points: %i)", MAX_TOUCH_POINTS);
 
             if ((CORE.Window.screen.width > CORE.Window.display.width) || (CORE.Window.screen.height > CORE.Window.display.height))
             {
@@ -3135,7 +3138,7 @@ public class rCore {
         #endif
         #if defined(PLATFORM_WEB) || defined(PLATFORM_RPI) || defined(PLATFORM_DRM) || defined(PLATFORM_UWP)
             if (index < MAX_TOUCH_POINTS) position = input.Touch.position[index];
-            else TRACELOG(LOG_WARNING, "INPUT: Required touch point out of range (Max touch points: %i)", MAX_TOUCH_POINTS);
+            else context.logger.logger(LOG_WARNING, "INPUT: Required touch point out of range (Max touch points: %i)", MAX_TOUCH_POINTS);
 
             // TODO: Touch position scaling required?
         #endif
@@ -3169,14 +3172,14 @@ public class rCore {
         glfwSetErrorCallback(callbacks.errorCallback);
 
         if (!glfwInit()){
-            TRACELOG(LOG_WARNING, "GLFW: Failed to initialize GLFW");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to initialize GLFW");
             return false;
         }
 
         // Find monitor resolution
         long monitor = glfwGetPrimaryMonitor();
         if (monitor < 0){
-            TRACELOG(LOG_WARNING, "GLFW: Failed to get primary monitor");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to get primary monitor");
             return false;
         }
         GLFWVidMode mode = glfwGetVideoMode(monitor);
@@ -3284,7 +3287,7 @@ public class rCore {
         }
 
         if ((window.getFlags() & FLAG_MSAA_4X_HINT) > 0){
-            TRACELOG(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
+            context.logger.TRACELOG(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
             glfwWindowHint(GLFW_SAMPLES, 4);   // Tries to enable multisampling x4 (MSAA), default is 0
         }
 
@@ -3365,7 +3368,7 @@ public class rCore {
                 }
             }
 
-            TRACELOG(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.width + "x" + window.display.height);
+            context.logger.TRACELOG(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.width + "x" + window.display.height);
 
             // NOTE: ISSUE: Closest video mode could not match monitor aspect-ratio, for example,
             // for a desired screen size of 800x450 (16:9), the closest supported video mode is 800x600 (4:3),
@@ -3405,18 +3408,18 @@ public class rCore {
 
         if (window.handle <= 0){
             glfwTerminate();
-            TRACELOG(LOG_WARNING, "GLFW: Failed to initialize Window");
+            context.logger.TRACELOG(LOG_WARNING, "GLFW: Failed to initialize Window");
             return false;
         }
         else{
-            TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
-            TRACELOG(LOG_INFO,
+            context.logger.TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
+            context.logger.TRACELOG(LOG_INFO,
                      "    > Display size: " + window.display.width + " x " + window.display.height);
-            TRACELOG(LOG_INFO,
+            context.logger.TRACELOG(LOG_INFO,
                      "    > Render size:  " + window.render.width + " x " + window.render.height);
-            TRACELOG(LOG_INFO,
+            context.logger.TRACELOG(LOG_INFO,
                      "    > Screen size:  " + window.screen.width + " x " + window.screen.height);
-            TRACELOG(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
+            context.logger.TRACELOG(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
         }
 
         // Set window callback events
@@ -3513,7 +3516,7 @@ public class rCore {
     public void SetupFramebuffer(int width, int height){
         // Calculate window.render.width and window.render.height, we have the display size (input params) and the desired screen size (global var)
         if ((window.screen.width > window.display.width) || (window.screen.height > window.display.height)){
-            TRACELOG(LOG_WARNING, "DISPLAY: Downscaling required: Screen size (" + window.screen.width + "x" +
+            context.logger.TRACELOG(LOG_WARNING, "DISPLAY: Downscaling required: Screen size (" + window.screen.width + "x" +
                     window.screen.height + ") is bigger than display size " + "(" + window.display.width + "x" +
                     window.display.height + ")");
 
@@ -3543,12 +3546,12 @@ public class rCore {
             window.render.setWidth(window.display.width);
             window.render.setHeight(window.display.height);
 
-            TRACELOG(LOG_WARNING, "DISPLAY: Downscale matrix generated, content will be rendered at (" +
+            context.logger.TRACELOG(LOG_WARNING, "DISPLAY: Downscale matrix generated, content will be rendered at (" +
                     window.render.width + "x" + window.render.height + ")");
         }
         else if ((window.screen.width < window.display.width) || (window.screen.height < window.display.height)){
             // Required screen size is smaller than display size
-            TRACELOG(LOG_INFO, "DISPLAY: Upscaling required: Screen size (" + window.screen.width + "x" +
+            context.logger.TRACELOG(LOG_INFO, "DISPLAY: Upscaling required: Screen size (" + window.screen.width + "x" +
                     window.screen.height + ") smaller than display size (" + window.display.width + "x" +
                     window.display.height + ")");
 
@@ -3864,12 +3867,12 @@ public class rCore {
             }
 
             if (count != eventCount) {
-                TRACELOG(LOG_WARNING, "Events count provided is different than count");
+                context.logger.TRACELOG(LOG_WARNING, "Events count provided is different than count");
             }
 
         }
 
-        TRACELOG(LOG_WARNING, "Events loaded: " + eventCount);
+        context.logger.TRACELOG(LOG_WARNING, "Events loaded: " + eventCount);
     }
 
     /**
@@ -3925,7 +3928,7 @@ public class rCore {
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -3937,7 +3940,7 @@ public class rCore {
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
         }
@@ -3951,7 +3954,7 @@ public class rCore {
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -3963,7 +3966,7 @@ public class rCore {
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
         }
@@ -3976,7 +3979,7 @@ public class rCore {
             events.get(eventCount).params[1] = (int)input.mouse.currentPosition.y;
             events.get(eventCount).params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
             eventCount++;
         }
 
@@ -3988,7 +3991,7 @@ public class rCore {
             events.get(eventCount).params[1] = (int) input.mouse.currentWheelMove.y;
             events.get(eventCount).params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
             eventCount++;
         }
 
@@ -4001,7 +4004,7 @@ public class rCore {
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -4013,7 +4016,7 @@ public class rCore {
                 events.get(eventCount).params[1] = 0;
                 events.get(eventCount).params[2] = 0;
 
-                TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -4027,7 +4030,7 @@ public class rCore {
                 events.get(eventCount).params[1] = (int)input.touch.currentPosition[id].x;
                 events.get(eventCount).params[2] = (int)input.touch.currentPosition[id].y;
 
-                TRACELOG(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events.get(eventCount).frame, events.get(eventCount).params[0], events.get(eventCount).params[1], events.get(eventCount).params[2]);
+                context.logger.logger(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events.get(eventCount).frame, events.get(eventCount).params[0], events.get(eventCount).params[1], events.get(eventCount).params[2]);
                 eventCount++;
             }
             */
@@ -4059,7 +4062,7 @@ public class rCore {
                     events.get(eventCount).params[1] = button;
                     events.get(eventCount).params[2] = 0;
 
-                    TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                     eventCount++;
                 }
 
@@ -4071,7 +4074,7 @@ public class rCore {
                     events.get(eventCount).params[1] = button;
                     events.get(eventCount).params[2] = 0;
 
-                    TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                     eventCount++;
                 }
             }
@@ -4085,7 +4088,7 @@ public class rCore {
                     events.get(eventCount).params[1] = axis;
                     events.get(eventCount).params[2] = (int)(input.gamepad.axisState[gamepad][axis]*32768.0f);
 
-                    TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    context.logger.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
                     eventCount++;
                 }
             }
@@ -4100,7 +4103,7 @@ public class rCore {
             events.get(eventCount).params[1] = 0;
             events.get(eventCount).params[2] = 0;
 
-            TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GESTURE: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            context.logger.logger(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GESTURE: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
             eventCount++;
         }
         */

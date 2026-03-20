@@ -1,21 +1,20 @@
 package com.raylib.java.core.callback;
 
-import com.raylib.java.core.rCore;
+import com.raylib.java.Raylib;
 import org.lwjgl.glfw.GLFWCursorEnterCallback;
 
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_DEBUG;
+import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_DEBUG;
 
 public class CursorEnterCallback extends GLFWCursorEnterCallback {
 
-    private final rCore context;
-    public CursorEnterCallback(rCore context) {
+    private final Raylib context;
+    public CursorEnterCallback(Raylib context) {
         this.context = context;
     }
 
     @Override
     public void invoke(long window, boolean entered){
-        TRACELOG(LOG_DEBUG, "Cursor Enter Callback Triggered");
-        context.input.mouse.setCursorOnScreen(entered);
+        context.logger.TRACELOG(LOG_DEBUG, "Cursor Enter Callback Triggered");
+        context.core.input.mouse.setCursorOnScreen(entered);
     }
 }

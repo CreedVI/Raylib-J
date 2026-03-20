@@ -1,10 +1,10 @@
 package com.raylib.java.extras.physac;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.structs.Vector2;
 
 import static com.raylib.java.extras.physac.Physac.PhysicsShapeType.PHYSICS_CIRCLE;
 import static com.raylib.java.extras.physac.Physac.PhysicsShapeType.PHYSICS_POLYGON;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
 
 public class Physac{
 
@@ -91,13 +91,15 @@ public class Physac{
     PhysicsManifoldData PhysicsManifold;
     static boolean PHYSAC_STANDALONE = false;
     static boolean PHYSAC_DEBUG = false;
+    private Raylib context;
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition
     //----------------------------------------------------------------------------------
 
     // Initializes physics values, pointers and creates physics loop thread
-    public void InitPhysics() {
+    public void InitPhysics(Raylib context) {
+        this.context = context;
         PhysicsManifold = new PhysicsManifoldData();
         bodies = new PhysicsBody[PHYSAC_MAX_BODIES];
         contacts = new PhysicsManifoldData[PHYSAC_MAX_MANIFOLDS];
@@ -186,10 +188,10 @@ public class Physac{
             bodies[physicsBodiesCount] = body;
             physicsBodiesCount++;
 
-            TRACELOG("[PHYSAC] Physic body created successfully (id: " + body.id + ")");
+            context.logger.TRACELOG(null, "[PHYSAC] Physic body created successfully (id: " + body.id + ")");
         }
-        else{
-            TRACELOG("[PHYSAC] Physic body could not be created, PHYSAC_MAX_BODIES reached");
+        else {
+            context.logger.TRACELOG(null, "[PHYSAC] Physic body could not be created, PHYSAC_MAX_BODIES reached");
         }
 
         return body;
@@ -265,10 +267,10 @@ public class Physac{
             bodies[physicsBodiesCount] = body;
             physicsBodiesCount++;
 
-            TRACELOG("[PHYSAC] Physic body created successfully (id: " + body.id + ")");
+            context.logger.TRACELOG(null, "[PHYSAC] Physic body created successfully (id: " + body.id + ")");
         }
         else {
-            TRACELOG("[PHYSAC] Physics body could not be created, PHYSAC_MAX_BODIES reached");
+            context.logger.TRACELOG(null, "[PHYSAC] Physics body could not be created, PHYSAC_MAX_BODIES reached");
         }
 
         return body;
@@ -417,7 +419,7 @@ public class Physac{
             }
         }
         else {
-            TRACELOG("[PHYSAC] WARNING: PhysicsShatter: null physic body");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: PhysicsShatter: null physic body");
         }
     }
 
@@ -434,11 +436,11 @@ public class Physac{
             body = bodies[index];
 
             if (body == null){
-                TRACELOG("[PHYSAC] WARNING: GetPhysicsBody: null physic body");
+                context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsBody: null physic body");
             }
         }
         else {
-            TRACELOG("[PHYSAC] WARNING: Physic body index is out of bounds");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return body;
@@ -455,11 +457,11 @@ public class Physac{
                 result = body.shape.type;
             }
             else {
-                TRACELOG("[PHYSAC] WARNING: GetPhysicsShapeType: null physic body");
+                context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeType: null physic body");
             }
         }
         else {
-            TRACELOG("[PHYSAC] WARNING: Physic body index is out of bounds");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return result;
@@ -485,11 +487,11 @@ public class Physac{
                 }
             }
             else {
-                TRACELOG("[PHYSAC] WARNING: GetPhysicsShapeVerticesCount: null physic body");
+                context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeVerticesCount: null physic body");
             }
         }
         else {
-            TRACELOG("[PHYSAC] WARNING: Physic body index is out of bounds");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: Physic body index is out of bounds");
         }
 
         return result;
@@ -517,7 +519,7 @@ public class Physac{
             }
         }
         else{
-            TRACELOG("[PHYSAC] WARNING: GetPhysicsShapeVertex: null physic body");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: GetPhysicsShapeVertex: null physic body");
         }
 
         return position;
@@ -548,7 +550,7 @@ public class Physac{
             }
 
             if (index == -1) {
-                TRACELOG("[PHYSAC] WARNING: Requested body (id: " + id + ") can not be found");
+                context.logger.TRACELOG(null, "[PHYSAC] WARNING: Requested body (id: " + id + ") can not be found");
                 return;     // Prevent access to index -1
             }
 
@@ -563,10 +565,10 @@ public class Physac{
             // Update physics bodies count
             physicsBodiesCount--;
 
-            TRACELOG("[PHYSAC] Physic body destroyed successfully (id: " + id + ")");
+            context.logger.TRACELOG(null, "[PHYSAC] Physic body destroyed successfully (id: " + id + ")");
         }
         else {
-            TRACELOG("[PHYSAC] WARNING: DestroyPhysicsBody: null physic body");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: DestroyPhysicsBody: null physic body");
         }
     }
 
@@ -598,7 +600,7 @@ public class Physac{
             physicsManifoldsCount = 0;
         }
 
-        TRACELOG("[PHYSAC] Physics module reset successfully");
+        context.logger.TRACELOG(null, "[PHYSAC] Physics module reset successfully");
     }
 
     // Unitializes physics and exits physics loop
@@ -911,7 +913,7 @@ public class Physac{
             physicsManifoldsCount++;
         }
         else {
-            TRACELOG("[PHYSAC] Physic manifold could not be created, PHYSAC_MAX_MANIFOLDS reached");
+            context.logger.TRACELOG(null, "[PHYSAC] Physic manifold could not be created, PHYSAC_MAX_MANIFOLDS reached");
         }
 
         return manifold;
@@ -947,7 +949,7 @@ public class Physac{
             physicsManifoldsCount--;
         }
         else {
-            TRACELOG("[PHYSAC] WARNING: DestroyPhysicsManifold: null physic manifold");
+            context.logger.TRACELOG(null, "[PHYSAC] WARNING: DestroyPhysicsManifold: null physic manifold");
         }
     }
 

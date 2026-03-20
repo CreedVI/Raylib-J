@@ -315,7 +315,7 @@ public class Config{
     // Module: utils - Configuration Flags
     //------------------------------------------------------------------------------------
     /**
-     * Show TRACELOG() output messages
+     * Show logger() output messages
      */
     public static boolean SUPPORT_TRACELOG = true;
 

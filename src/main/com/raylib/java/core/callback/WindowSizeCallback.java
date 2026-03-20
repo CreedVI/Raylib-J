@@ -1,33 +1,30 @@
 package com.raylib.java.core.callback;
 
-import com.raylib.java.core.rCore;
+import com.raylib.java.Raylib;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
-
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_DEBUG;
 
 public class WindowSizeCallback extends GLFWWindowSizeCallback {
 
-    private final rCore context;
-    public WindowSizeCallback(rCore context) {
+    private final Raylib context;
+    public WindowSizeCallback(Raylib context) {
         this.context = context;
     }
 
     @Override
     public void invoke(long window, int width, int height){
-        TRACELOG(LOG_DEBUG, "Window Size Callback Triggered");
-        context.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
-        context.window.getCurrentFbo().setWidth(width);
-        context.window.getCurrentFbo().setHeight(height);
-        context.window.setResizedLastFrame(true);
+        // System.out.println("Window Size Callback Triggered");
+        context.core.SetupViewport(width, height);    // Reset viewport and projection matrix for new size
+        context.core.window.getCurrentFbo().setWidth(width);
+        context.core.window.getCurrentFbo().setHeight(height);
+        context.core.window.setResizedLastFrame(true);
 
-        if(context.IsWindowFullscreen()){
+        if(context.core.IsWindowFullscreen()){
             return;
         }
 
         // Set current screen size
-        context.window.getScreen().setWidth(width);
-        context.window.getScreen().setHeight(height);
+        context.core.window.getScreen().setWidth(width);
+        context.core.window.getScreen().setHeight(height);
         // NOTE: Postprocessing texture is not scaled to new size
     }
 }

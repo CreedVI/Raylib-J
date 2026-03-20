@@ -1,18 +1,18 @@
 package com.raylib.java.core.callback;
 
-import com.raylib.java.core.rCore;
+import com.raylib.java.Raylib;
+import com.raylib.java.core.tracelog.TraceLog;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.Config.SUPPORT_EVENTS_AUTOMATION;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
+import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class KeyCallback extends GLFWKeyCallback {
 
-    private final rCore context;
-    public KeyCallback(rCore context) {
+    private final Raylib context;
+    public KeyCallback(Raylib context) {
         this.context = context;
     }
 
@@ -20,22 +20,22 @@ public class KeyCallback extends GLFWKeyCallback {
     public void invoke(long window, int key, int scancode, int action, int mods){
         // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
         // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
-        context.input.keyboard.currentKeyState[key] = action != GLFW_RELEASE;
+        context.core.input.keyboard.currentKeyState[key] = action != GLFW_RELEASE;
 
         // Check if there is space available in the key queue
-        if ((context.input.keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)){
+        if ((context.core.input.keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS)){
             // Add character to the queue
-            context.input.keyboard.keyPressedQueue[context.input.keyboard.keyPressedQueueCount] = key;
-            context.input.keyboard.keyPressedQueueCount++;
+            context.core.input.keyboard.keyPressedQueue[context.core.input.keyboard.keyPressedQueueCount] = key;
+            context.core.input.keyboard.keyPressedQueueCount++;
         }
 
-        if ((context.input.keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_REPEAT)){
-            context.input.keyboard.keyRepeatInFrame[key] = true;
+        if ((context.core.input.keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_REPEAT)){
+            context.core.input.keyboard.keyRepeatInFrame[key] = true;
         }
 
         // Check the exit key to set close window
-        if ((key == context.input.keyboard.exitKey) && (action == GLFW_PRESS)){
-            glfwSetWindowShouldClose(context.window.handle, true);
+        if ((key == context.core.input.keyboard.exitKey) && (action == GLFW_PRESS)){
+            glfwSetWindowShouldClose(context.core.window.handle, true);
         }
 
         if(SUPPORT_SCREEN_CAPTURE){
@@ -44,26 +44,26 @@ public class KeyCallback extends GLFWKeyCallback {
                     //TODO: GIF RECORDING
                 }
                 else {
-                    context.TakeScreenshot("screenshot" + context.screenshotCounter + ".png");
-                    context.screenshotCounter++;
+                    context.core.TakeScreenshot("screenshot" + context.core.screenshotCounter + ".png");
+                    context.core.screenshotCounter++;
                 }
             }
         }
 
         if(SUPPORT_EVENTS_AUTOMATION){
             if ((key == GLFW_KEY_F11) && (action == GLFW_PRESS)){
-                context.eventsRecording = !context.eventsRecording;
+                context.core.eventsRecording = !context.core.eventsRecording;
 
                 // On finish recording, we export events into a file
-                if (!context.eventsRecording){
-                    context.ExportAutomationEvents("eventsrec.rep");
+                if (!context.core.eventsRecording){
+                    context.core.ExportAutomationEvents("eventsrec.rep");
                 }
             }
             else if ((key == GLFW_KEY_F9) && (action == GLFW_PRESS)){
-                context.LoadAutomationEvents("eventsrec.rep");
-                context.eventsPlaying = true;
+                context.core.LoadAutomationEvents("eventsrec.rep");
+                context.core.eventsPlaying = true;
 
-                TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
+                context.logger.TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
             }
 
         }

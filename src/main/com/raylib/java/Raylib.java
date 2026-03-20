@@ -1,6 +1,7 @@
 package com.raylib.java;
 
 import com.raylib.java.core.rCore;
+import com.raylib.java.core.tracelog.TraceLog;
 import com.raylib.java.io.FileIO;
 import com.raylib.java.models.rModels;
 import com.raylib.java.extras.physac.Physac;
@@ -22,13 +23,14 @@ public class Raylib{
     public rTextures textures;
     public rModels models;
     public Physac physac;
+    public TraceLog logger;
 
     /**
      * Creates new Raylib instance.
      */
     public Raylib(){
         config = new Config();
-        rlgl = new RLGL();
+        rlgl = new RLGL(this);
         core = new rCore(this);
         files = new FileIO(this);
         textures = new rTextures(this);
@@ -47,7 +49,7 @@ public class Raylib{
      */
     public Raylib(int ScreenWidth, int ScreenHeight, String title){
         config = new Config();
-        rlgl = new RLGL();
+        rlgl = new RLGL(this);
         core = new rCore(this);
         files = new FileIO(this);
         textures = new rTextures(this);

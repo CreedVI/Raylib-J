@@ -1,15 +1,21 @@
 package com.raylib.java.rlgl;
 
+import com.raylib.java.Raylib;
 import com.raylib.java.structs.Matrix;
 import com.raylib.java.structs.Vector3;
 
 import static com.raylib.java.Config.RL_DEFAULT_BATCH_DRAWCALLS;
+import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_ERROR;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_ERROR;
 
-public class GL_33{
+public class GL_33 {
+
+    private static Raylib context;
+
+    public GL_33(Raylib context) {
+        this.context = context;
+    }
 
     static void rlBegin(RLGL rlgl, int mode){
         // Draw mode can be RL_LINES, RL_TRIANGLES and RL_QUADS
@@ -83,7 +89,7 @@ public class GL_33{
     // Push the current matrix into RLGL.getRlgl().getState().stack
     static void rlPushMatrix(){
         if (rlglData.getState().getStackCounter() >= MAX_MATRIX_STACK_SIZE){
-            TRACELOG(LOG_ERROR, "RLGL: Matrix stack overflow (MAX_MATRIX_STACK_SIZE)");
+            context.logger.TRACELOG(LOG_ERROR, "RLGL: Matrix stack overflow (MAX_MATRIX_STACK_SIZE)");
         }
 
         if (rlglData.getState().getCurrentMatrixMode() == RL_MODELVIEW){
@@ -259,7 +265,7 @@ public class GL_33{
             rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount++;
         }
         else{
-            TRACELOG(LOG_ERROR, "RLGL: Batch elements overflow");
+            context.logger.TRACELOG(LOG_ERROR, "RLGL: Batch elements overflow");
         }
     }
 

@@ -1,9 +1,18 @@
 package com.raylib.java.rlgl;
 
+import com.raylib.java.Raylib;
+import com.raylib.java.structs.Ray;
+
 import static com.raylib.java.rlgl.RLGL.*;
 import static org.lwjgl.opengl.GL11.*;
 
 public class GL_11{
+
+    final private Raylib context;
+
+    public GL_11(Raylib context) {
+        this.context = context;
+    }
 
     static void rlMatrixMode(int mode) {
         switch (mode) {

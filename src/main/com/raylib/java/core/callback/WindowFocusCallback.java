@@ -1,27 +1,26 @@
 package com.raylib.java.core.callback;
 
-import com.raylib.java.core.rCore;
+
+import com.raylib.java.Raylib;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
 
 import static com.raylib.java.Config.ConfigFlag.FLAG_WINDOW_UNFOCUSED;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_DEBUG;
 
 public class WindowFocusCallback extends GLFWWindowFocusCallback {
 
-    private final rCore context;
-    public WindowFocusCallback(rCore context) {
+    private final Raylib context;
+    public WindowFocusCallback(Raylib context) {
         this.context = context;
     }
 
     @Override
     public void invoke(long window, boolean focused){
-        TRACELOG(LOG_DEBUG, "Focus Callback Triggered");
+        // System.out.println("Focus Callback Triggered");
         if (focused){
-            context.window.flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
+            context.core.window.flags &= ~FLAG_WINDOW_UNFOCUSED;   // The window was focused
         }
         else{
-            context.window.flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
+            context.core.window.flags |= FLAG_WINDOW_UNFOCUSED;            // The window lost focus
         }
     }
 }

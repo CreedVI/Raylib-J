@@ -1,10 +1,12 @@
 package com.raylib.java.core.callback;
 
-import com.raylib.java.core.rCore;
+import com.raylib.java.Raylib;
 
 public class Callbacks{
 
-    private final rCore context;
+    private final Raylib context;
+
+    public TraceLogCallback traceLogCallback;
 
     public final ErrorCallback errorCallback;
     public final WindowMaximizeCallback windowMaximizeCallback;
@@ -20,9 +22,9 @@ public class Callbacks{
     public final CursorEnterCallback cursorEnterCallback;
 
 
-    public Callbacks(rCore context) {
+    public Callbacks(Raylib context) {
         this.context = context;
-
+        traceLogCallback = new TraceLogCallback();
         errorCallback = new ErrorCallback();
         windowMaximizeCallback = new WindowMaximizeCallback(context);
         windowSizeCallback = new WindowSizeCallback(context);

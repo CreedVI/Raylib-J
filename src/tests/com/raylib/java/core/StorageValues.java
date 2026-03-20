@@ -13,7 +13,7 @@ import static com.raylib.java.structs.Color.*;
 import static com.raylib.java.core.input.Keyboard.KEY_ENTER;
 import static com.raylib.java.core.input.Keyboard.KEY_SPACE;
 import static com.raylib.java.utils.rlj.files.SaveFileData;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
+import static com.raylib.java.utils.Tracelog.logger;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_INFO;
 import static com.raylib.java.utils.Tracelog.TracelogType.LOG_WARNING;
 import static core.StorageValues.StorageData.STORAGE_POSITION_HISCORE;
@@ -117,7 +117,7 @@ public class StorageValues{
                 }
                 else {
                     // RL_REALLOC failed
-                    TRACELOG(LOG_WARNING, "FILEIO: [" + STORAGE_DATA_FILE + "] Failed to realloc data (" + dataSize + "), " +
+                    logger(LOG_WARNING, "FILEIO: [" + STORAGE_DATA_FILE + "] Failed to realloc data (" + dataSize + "), " +
                             "position in bytes (" + position + ") bigger than actual file size");
 
                     // We store the old size of the file
@@ -142,11 +142,11 @@ public class StorageValues{
                 throw new RuntimeException(e);
             }
 
-            TRACELOG(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] Saved storage value: " + value);
+            logger(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] Saved storage value: " + value);
         }
         else
         {
-            TRACELOG(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] File created successfully");
+            logger(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] File created successfully");
 
             dataSize = (position + 1)*sizeof(int);
             fileData = (char *)RL_MALLOC(dataSize);
@@ -160,7 +160,7 @@ public class StorageValues{
                 throw new RuntimeException(e);
             }
 
-            TRACELOG(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] Saved storage value: " + value);
+            logger(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] Saved storage value: " + value);
         }
 
         return success;
@@ -181,13 +181,13 @@ public class StorageValues{
 
         if (fileData != null) {
             if (dataSize < (position*4)) {
-                TRACELOG(LOG_WARNING, "FILEIO: [" + STORAGE_DATA_FILE + "] Failed to find storage position: " + position);
+                logger(LOG_WARNING, "FILEIO: [" + STORAGE_DATA_FILE + "] Failed to find storage position: " + position);
             }
             else {
                 value = fileData[position];
             }
 
-            TRACELOG(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] Loaded storage value: " + value);
+            logger(LOG_INFO, "FILEIO: [" + STORAGE_DATA_FILE + "] Loaded storage value: " + value);
         }
 
         return value;

@@ -1,22 +1,20 @@
 package com.raylib.java.core.callback;
 
-import com.raylib.java.core.rCore;
+import com.raylib.java.Raylib;
 import org.lwjgl.glfw.GLFWCharCallback;
 
 import static com.raylib.java.Config.MAX_CHAR_PRESSED_QUEUE;
-import static com.raylib.java.utils.Tracelog.TRACELOG;
-import static com.raylib.java.utils.Tracelog.TracelogType.LOG_DEBUG;
 
 public class CharCallback extends GLFWCharCallback {
 
-    private final rCore context;
-    public CharCallback(rCore context) {
+    private final Raylib context;
+    public CharCallback(Raylib context) {
         this.context = context;
     }
 
     @Override
     public void invoke(long window, int codepoint){
-        TRACELOG(LOG_DEBUG, "Char Callback: KEY:"+codepoint+"("+ Character.highSurrogate(codepoint) +")");
+        // System.out.println("Char Callback: KEY: " + codepoint + "(" + (char) (codepoint) +")");
 
         // NOTE: Registers any key down considering OS keyboard layout but
         // do not detects action events, those should be managed by user...
@@ -24,11 +22,11 @@ public class CharCallback extends GLFWCharCallback {
         // Ref: https://www.glfw.org/docs/latest/input_guide.html#input_char
 
         // Check if there is space available in the queue
-        if (context.input.keyboard.getCharPressedQueueCount() < MAX_CHAR_PRESSED_QUEUE){
+        if (context.core.input.keyboard.getCharPressedQueueCount() < MAX_CHAR_PRESSED_QUEUE){
             // Add character to the queue
-            context.input.keyboard.getCharPressedQueue()[context.input.keyboard.getCharPressedQueueCount()] =
+            context.core.input.keyboard.getCharPressedQueue()[context.core.input.keyboard.getCharPressedQueueCount()] =
                     codepoint;
-            context.input.keyboard.setCharPressedQueueCount(context.input.keyboard.getCharPressedQueueCount() + 1);
+            context.core.input.keyboard.setCharPressedQueueCount(context.core.input.keyboard.getCharPressedQueueCount() + 1);
         }
     }
 }

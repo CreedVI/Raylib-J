@@ -19,6 +19,8 @@ public class Keyboard{
     public int charPressedQueueCount;      // Input characters queue count
 
     public static int
+        KEY_NULL           = -1,
+
         // Alphanumeric keys
         KEY_APOSTROPHE     = 39,
         KEY_COMMA          = 44,
