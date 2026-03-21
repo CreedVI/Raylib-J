@@ -1,5 +1,6 @@
 package com.raylib.java.core.rcamera;
 
+import com.raylib.java.Config;
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.Matrix;
 import com.raylib.java.structs.Vector2;
@@ -15,18 +16,37 @@ import static com.raylib.java.raymath.Raymath.*;
 public class Camera3D {
 
     // rCamera projection modes
-    public static class CameraProjection{
-        public static int
-                CAMERA_PERSPECTIVE = 0,
-                CAMERA_ORTHOGRAPHIC = 1;
+    public enum CameraProjection {
+        CAMERA_PERSPECTIVE(0),
+        CAMERA_ORTHOGRAPHIC(1);
+
+        private final int value;
+
+        CameraProjection(int value) {
+            this.value = value;
+        }
+
+        public int GetValue() {
+            return value;
+        }
     }
 
-    public static class CameraMode{
-        public static final int CAMERA_CUSTOM = 0,
-        CAMERA_FREE = 1,
-        CAMERA_ORBITAL = 2,
-        CAMERA_FIRST_PERSON = 3,
-        CAMERA_THIRD_PERSON = 4;
+    public enum CameraMode {
+        CAMERA_CUSTOM(0),
+        CAMERA_FREE(1),
+        CAMERA_ORBITAL(2),
+        CAMERA_FIRST_PERSON(3),
+        CAMERA_THIRD_PERSON(4);
+
+        private final int value;
+
+        CameraMode(int value) {
+            this.value = value;
+        }
+
+        public int GetValue() {
+            return value;
+        }
     }
 
     private final float CAMERA_CULL_DISTANCE_NEAR;
@@ -34,11 +54,9 @@ public class Camera3D {
 
     private final float CAMERA_MOVE_SPEED = 0.09f;
     private final float CAMERA_ROTATION_SPEED = 0.03f;
-    private final float CAMERA_PAN_SPEED = 0.2f;
-
 
     // Camera mouse movement sensitivity
-    private final float CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003f;    // TODO: it should be independant of framerate
+    private final float CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003f;    // TODO: it should be independent of framerate
     private final float CAMERA_MOUSE_SCROLL_SENSITIVITY = 1.5f;
 
     private final float CAMERA_ORBITAL_SPEED = 0.5f;               // Radians per second
@@ -55,7 +73,7 @@ public class Camera3D {
     public Vector3 target;
     public Vector3 up;                      // rCamera up vector (rotation over its axis)
     public float fovy;                      // rCamera field-of-view apperture in Y (degrees) in perspective, used as near plane width in orthographic
-    public int projection;                  // rCamera projection, defines projection projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
+    public CameraProjection projection;                  // rCamera projection, defines projection projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
 
     private final Raylib context;
 
@@ -65,11 +83,11 @@ public class Camera3D {
         this.target = new Vector3();
         this.up = new Vector3();
 
-        CAMERA_CULL_DISTANCE_NEAR = context.config.RL_CULL_DISTANCE_NEAR;
-        CAMERA_CULL_DISTANCE_FAR = context.config.RL_CULL_DISTANCE_FAR;
+        CAMERA_CULL_DISTANCE_NEAR = Config.RL_CULL_DISTANCE_NEAR;
+        CAMERA_CULL_DISTANCE_FAR = Config.RL_CULL_DISTANCE_FAR;
     }
 
-    public Camera3D(Raylib context, Vector3 position, Vector3 target, Vector3 up, Float fovy, int projection){
+    public Camera3D(Raylib context, Vector3 position, Vector3 target, Vector3 up, Float fovy, CameraProjection projection){
         this.context = context;
         this.position = position;
         this.target = target;
@@ -77,8 +95,8 @@ public class Camera3D {
         this.fovy = fovy;
         this.projection = projection;
 
-        CAMERA_CULL_DISTANCE_NEAR = context.config.RL_CULL_DISTANCE_NEAR;
-        CAMERA_CULL_DISTANCE_FAR = context.config.RL_CULL_DISTANCE_FAR;
+        CAMERA_CULL_DISTANCE_NEAR = Config.RL_CULL_DISTANCE_NEAR;
+        CAMERA_CULL_DISTANCE_FAR = Config.RL_CULL_DISTANCE_FAR;
     }
 
     /**
@@ -103,8 +121,8 @@ public class Camera3D {
      * @return normalised right vector
      */
     public Vector3 GetCameraRight() {
-        Vector3 forward = this.GetCameraForward();
-        Vector3 up = this.GetCameraUp();
+        Vector3 forward = GetCameraForward();
+        Vector3 up = GetCameraUp();
 
         return Vector3CrossProduct(forward, up);
     }
@@ -251,7 +269,7 @@ public class Camera3D {
         }
 
         // Rotation axis
-        Vector3 right = this.GetCameraRight();
+        Vector3 right = GetCameraRight();
 
         // Rotate view vector around right axis
         targetPosition = Vector3RotateByAxisAngle(targetPosition, right, angle);
@@ -316,7 +334,7 @@ public class Camera3D {
      * Update camera position for selected mode
      * @param mode camera mode defined in `CameraMode` class: CAMERA_FREE, CAMERA_FIRST_PERSON, CAMERA_THIRD_PERSON, CAMERA_ORBITAL or CUSTOM
      */
-    public void Update(int mode) {
+    public void Update(CameraMode mode) {
         Vector2 mousePositionDelta = context.core.GetMouseDelta();
 
         boolean moveInWorldPlane = ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON));
@@ -324,79 +342,63 @@ public class Camera3D {
         boolean lockView = ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL));
         boolean rotateUp = (mode == CAMERA_FREE);
 
-
-        // Camera speeds based on frame time
-        float cameraMoveSpeed = CAMERA_MOVE_SPEED*context.core.GetFrameTime();
-        float cameraRotationSpeed = CAMERA_ROTATION_SPEED*context.core.GetFrameTime();
-        float cameraPanSpeed = CAMERA_PAN_SPEED*context.core.GetFrameTime();
-        float cameraOrbitalSpeed = CAMERA_ORBITAL_SPEED*context.core.GetFrameTime();
-
         if (mode == CAMERA_ORBITAL) {
             // Orbital can just orbit
-            Matrix rotation = MatrixRotate(GetCameraUp(), cameraOrbitalSpeed);
+            Matrix rotation = MatrixRotate(GetCameraUp(), CAMERA_ORBITAL_SPEED * context.core.GetFrameTime());
             Vector3 view = Vector3Subtract(position, target);
             view = Vector3Transform(view, rotation);
             position = Vector3Add(target, view);
         }
         else {
             // Camera rotation
-            if (context.core.IsKeyDown(KEY_DOWN)) Pitch(-cameraRotationSpeed, lockView, rotateAroundTarget, rotateUp);
-            if (context.core.IsKeyDown(KEY_UP)) Pitch(cameraRotationSpeed, lockView, rotateAroundTarget, rotateUp);
-            if (context.core.IsKeyDown(KEY_RIGHT)) Yaw(-cameraRotationSpeed, rotateAroundTarget);
-            if (context.core.IsKeyDown(KEY_LEFT)) Yaw(cameraRotationSpeed, rotateAroundTarget);
-            if (context.core.IsKeyDown(KEY_Q)) Roll(-cameraRotationSpeed);
-            if (context.core.IsKeyDown(KEY_E)) Roll(cameraRotationSpeed);
+            if (context.core.IsKeyDown(KEY_DOWN)) {
+                Pitch(-CAMERA_ROTATION_SPEED, lockView, rotateAroundTarget, rotateUp);
+            }
+            if (context.core.IsKeyDown(KEY_UP)) {
+                Pitch(CAMERA_ROTATION_SPEED, lockView, rotateAroundTarget, rotateUp);
+            }
+            if (context.core.IsKeyDown(KEY_RIGHT)) {
+                Yaw(-CAMERA_ROTATION_SPEED, rotateAroundTarget);
+            }
+            if (context.core.IsKeyDown(KEY_LEFT)) {
+                Yaw(CAMERA_ROTATION_SPEED, rotateAroundTarget);
+            }
+            if (context.core.IsKeyDown(KEY_Q)) {
+                Roll(-CAMERA_ROTATION_SPEED);
+            }
+            if (context.core.IsKeyDown(KEY_E)) {
+                Roll(CAMERA_ROTATION_SPEED);
+            }
+
+            Yaw(-mousePositionDelta.x*CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
+            Pitch(-mousePositionDelta.y*CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
 
             // Camera movement
-            // Camera pan (for CAMERA_FREE)
-            if ((mode == CAMERA_FREE) && (context.core.IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))) {
-                Vector2 mouseDelta = context.core.GetMouseDelta();
-                if (mouseDelta.x > 0.0f) MoveRight(cameraPanSpeed, moveInWorldPlane);
-                if (mouseDelta.x < 0.0f) MoveRight(cameraPanSpeed, moveInWorldPlane);
-                if (mouseDelta.y > 0.0f) MoveUp(-cameraPanSpeed);
-                if (mouseDelta.y < 0.0f) MoveUp(cameraPanSpeed);
+            if (context.core.IsKeyDown(KEY_W)) {
+                MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
             }
-            else {
-                // Mouse support
-                Yaw(-mousePositionDelta.x * CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
-                Pitch(-mousePositionDelta.y * CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
+            if (context.core.IsKeyDown(KEY_A)) {
+                MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
             }
-            // Camera movement
-            if (context.core.IsKeyDown(KEY_W)) MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
-            if (context.core.IsKeyDown(KEY_A)) MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
-            if (context.core.IsKeyDown(KEY_S)) MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
-            if (context.core.IsKeyDown(KEY_D)) MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
-            //if (context.core.IsKeyDown(KEY_SPACE)) CameraMoveUp(CAMERA_MOVE_SPEED);
-            //if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) CameraMoveUp(-CAMERA_MOVE_SPEED);
-
-            // Gamepad movement
-            if (context.core.IsGamepadAvailable(0)) {
-                // Gamepad controller support
-                Yaw(-(context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_X) * 2) * CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
-                Pitch(-(context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y) * 2) * CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
-
-                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) <= -0.25f)
-                    MoveForward(cameraMoveSpeed, moveInWorldPlane);
-                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) <= -0.25f)
-                    MoveRight(-cameraMoveSpeed, moveInWorldPlane);
-                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) >= 0.25f)
-                    MoveForward(-cameraMoveSpeed, moveInWorldPlane);
-                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) >= 0.25f)
-                    MoveRight(cameraMoveSpeed, moveInWorldPlane);
+            if (context.core.IsKeyDown(KEY_S)) {
+                MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
             }
-
-            if (mode == CameraMode.CAMERA_FREE) {
-                if (context.core.IsKeyDown(KEY_SPACE)) MoveUp(cameraMoveSpeed);
-                if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) MoveUp(-cameraMoveSpeed);
+            if (context.core.IsKeyDown(KEY_D)) {
+                MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
             }
+            // if (context.core.IsKeyDown(KEY_SPACE)) MoveUp(CAMERA_MOVE_SPEED);
+            // if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) MoveUp(-CAMERA_MOVE_SPEED);
         }
-
 
         if ((mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL)) {
             // Zoom target distance
             CameraMoveToTarget(-context.core.GetMouseWheelMove());
-            if (context.core.IsKeyPressed(KEY_KP_SUBTRACT)) CameraMoveToTarget(2.0f);
-            if (context.core.IsKeyPressed(KEY_KP_ADD)) CameraMoveToTarget(-2.0f);
+            if (context.core.IsKeyPressed(KEY_KP_SUBTRACT)) {
+                CameraMoveToTarget(2.0f);
+            }
+            if (context.core.IsKeyPressed(KEY_KP_ADD)) {
+                CameraMoveToTarget(-2.0f);
+            }
         }
     }
 

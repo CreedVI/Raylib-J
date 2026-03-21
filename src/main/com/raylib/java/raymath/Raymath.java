@@ -564,7 +564,9 @@ public class Raymath{
     public static Vector3 Vector3RotateByAxisAngle(Vector3 v, Vector3 axis, float angle) {
         // Using Euler-Rodrigues Formula
         // Ref.: https://en.wikipedia.org/w/index.php?title=Euler%E2%80%93Rodrigues_formula
+
         Vector3 result = new Vector3(v.x, v.y, v.z);
+
         // Vector3Normalize(axis);
         float length = (float) Math.sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
 
@@ -583,7 +585,6 @@ public class Raymath{
         float c = axis.y * a;
         float d = axis.z * a;
         a = (float) Math.cos(angle);
-
         Vector3 w = new Vector3(b, c, d);
 
         // Vector3CrossProduct(w, v)

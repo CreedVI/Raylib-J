@@ -85,7 +85,7 @@ public class DrawText3D {
         camera.fovy = 45.0f;                                    // Camera field-of-view Y
         camera.projection = CAMERA_PERSPECTIVE;                 // Camera projection type
 
-        int camera_mode = CAMERA_ORBITAL;
+        Camera3D.CameraMode camera_mode = CAMERA_ORBITAL;
 
         Vector3 cubePosition = new Vector3(0.0f, 1.0f, 0.0f);
         Vector3 cubeSize = new Vector3(2.0f, 2.0f, 2.0f);

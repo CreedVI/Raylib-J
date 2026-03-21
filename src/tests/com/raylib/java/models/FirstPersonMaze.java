@@ -5,6 +5,7 @@ import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.*;
 
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_FREE;
+import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
 
 public class FirstPersonMaze {
@@ -29,15 +30,15 @@ public class FirstPersonMaze {
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - first person maze");
 
         // Define the camera to look into our 3d world
-        Camera3D camera = new Camera3D(rlj, new Vector3(0.2f, 0.4f, 0.2f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f), 45.0f, 0);
+        Camera3D camera = new Camera3D(rlj, new Vector3(0.2f, 0.4f, 0.2f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f), 45.0f, CAMERA_PERSPECTIVE);
 
-        Image imMap = rlj.textures.LoadImage("resources/cubicmap.png");      // Load cubicmap image (RAM)
+        Image imMap = rlj.textures.LoadImage("src/tests/resources/models/cubicmap.png");      // Load cubicmap image (RAM)
         Texture2D cubicmap = rlj.textures.LoadTextureFromImage(imMap);       // Convert image to texture to display (VRAM)
         Mesh mesh = rlj.models.GenMeshCubicmap(imMap, new Vector3(1.0f, 1.0f, 1.0f));
         Model model = rlj.models.LoadModelFromMesh(mesh);
 
         // NOTE: By default each cube is mapped to one part of texture atlas
-        Texture2D texture = rlj.textures.LoadTexture("resources/cubicmap_atlas.png");    // Load map texture
+        Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/cubicmap_atlas.png");    // Load map texture
         model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;             // Set map diffuse texture
 
         // Get map image data to be used for collision detection

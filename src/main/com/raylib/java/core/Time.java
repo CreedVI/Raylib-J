@@ -41,15 +41,15 @@ public class Time{
 
     }
 
-    public  double getCurrent(){
+    public double getCurrent(){
         return current;
     }
 
-    public  void setCurrent(double current){
+    public void setCurrent(double current){
         this.current = current;
     }
 
-    public  double getPrevious(){
+    public double getPrevious(){
         return previous;
     }
 
@@ -57,35 +57,35 @@ public class Time{
         this.previous = previous;
     }
 
-    public  double getUpdate(){
+    public double getUpdate(){
         return update;
     }
 
-    public  void setUpdate(double update){
+    public void setUpdate(double update){
         this.update = update;
     }
 
-    public  double getDraw(){
+    public double getDraw(){
         return draw;
     }
 
-    public  void setDraw(double draw){
+    public void setDraw(double draw){
         this.draw = draw;
     }
 
-    public  double getFrame(){
+    public double getFrame(){
         return frame;
     }
 
-    public  void setFrame(double frame){
+    public void setFrame(double frame){
         this.frame = frame;
     }
 
-    public  double getTarget(){
+    public double getTarget(){
         return target;
     }
 
-    public  void setTarget(double target){
+    public void setTarget(double target){
         this.target = target;
     }
 

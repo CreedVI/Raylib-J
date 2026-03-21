@@ -33,7 +33,7 @@ public class Core3DCameraFirstPerson {
         camera.fovy = 60.0f;                                         // Camera field-of-view Y
         camera.projection = CAMERA_PERSPECTIVE;                      // Camera projection type
 
-        int cameraMode = CAMERA_FIRST_PERSON;
+        Camera3D.CameraMode cameraMode = CAMERA_FIRST_PERSON;
 
         // Generates some random columns
         float[] heights = new float[MAX_COLUMNS];

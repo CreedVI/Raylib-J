@@ -5,6 +5,7 @@ import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.*;
 
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_ORBITAL;
+import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
 
 public class Heightmap {
@@ -30,7 +31,7 @@ public class Heightmap {
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - heightmap loading and drawing");
 
         // Define our custom camera to look into our 3d world
-        Camera3D camera = new Camera3D(rlj, new Vector3(18.0f, 18.0f, 18.0f), new Vector3(0.0f, 0.0f, 0.0f ), new Vector3(0.0f, 1.0f, 0.0f), 45.0f, 0);
+        Camera3D camera = new Camera3D(rlj, new Vector3(18.0f, 18.0f, 18.0f), new Vector3(0.0f, 0.0f, 0.0f ), new Vector3(0.0f, 1.0f, 0.0f), 45.0f, CAMERA_PERSPECTIVE);
 
         Image image = rlj.textures.LoadImage("resources/heightmap.png");             // Load heightmap image (RAM)
         Texture2D texture = rlj.textures.LoadTextureFromImage(image);                // Convert image to texture (VRAM)
