@@ -30,8 +30,6 @@ public class RectangleBounds {
 
     public static Raylib rlj;
 
-    //TODO: Fix
-
     public static void main(String[] args) {
 
         // Initialization

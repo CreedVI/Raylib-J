@@ -13,7 +13,9 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
@@ -1096,19 +1098,29 @@ public class rText{
     // Draw text using Font
     // NOTE: chars spacing is NOT proportional to fontSize
     public void DrawTextEx(Font font, String text, Vector2 position, float fontSize, float spacing, Color tint) {
+
         if (font.texture.id == 0) {
             font = GetFontDefault();  // Security check in case of not valid font
         }
+
+        int length = TextLength(text);
 
         int textOffsetY = 0;            // Offset between lines (on line break '\n')
         float textOffsetX = 0.0f;       // Offset X to next character to draw
 
         float scaleFactor = fontSize / font.baseSize;     // Character quad scaling factor
 
-        for (int i = 0; i < text.length(); i++) {
+        for (int i = 0; i < length;) {
             // Get next codepoint from byte string and glyph index in font
             int codepoint = GetCodepointNext(text, i);
+            int codepointByteCount = GetCodePointByteCount(codepoint);
             int index = GetGlyphIndex(font, codepoint);
+
+            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
+            // but we need to draw all of the bad bytes using the '?' symbol moving one byte
+            if (codepoint == 0x3f) {
+                codepointByteCount = 1;
+            }
 
             if (codepoint == '\n') {
                 // NOTE: Fixed line spacing of 1.5 line-height
@@ -1129,6 +1141,8 @@ public class rText{
                     textOffsetX += ((float) font.glyphs[index].advanceX * scaleFactor + spacing);
                 }
             }
+
+            i += codepointByteCount;   // Move text bytes counter to next codepoint
         }
     }
 
@@ -1291,13 +1305,15 @@ public class rText{
     // Returns index position for a unicode character on spritefont
     public int GetGlyphIndex(Font font, int codepoint){
         // Support charsets with any characters order
-        int index = GLYPH_NOTFOUND_CHAR_FALLBACK;
+        int index = 0x3f;
+
         for (int i = 0; i < font.glyphCount; i++){
             if (font.glyphs[i].value == codepoint){
                 index = i;
                 break;
             }
         }
+
         return index;
     }
 
@@ -1319,7 +1335,7 @@ public class rText{
      * @return length of string in bytes
      */
     public int TextLength(String text){
-        return text.codePointCount(0, text.length());
+        return text.getBytes().length;
     }
 
     // Formatting of text with variables to 'embed'
@@ -1503,23 +1519,25 @@ public class rText{
         */
         // NOTE: on decode errors we return as soon as possible
 
+        byte[] textData = text.getBytes();
+
         // Security check
-        if (ptr >= text.getBytes().length) {
+        if (ptr >= textData.length) {
             return 0;
         }
 
         int codepoint = 0x3f;   // Codepoint (defaults to '?')
-        byte octet = text.getBytes()[0 + ptr]; // The first UTF8 octet
+        byte octet = textData[0 + ptr]; // The first UTF8 octet
 
         if (octet <= 0x7f) {
             // Only one octet (ASCII range x00-7F)
-            codepoint = text.getBytes()[0 + ptr];
+            codepoint = textData[0 + ptr];
         }
         else if ((octet & 0xe0) == 0xc0) {
             // Two octets
 
             // [0]xC2-DF    [1]UTF8-tail(x80-BF)
-            byte octet1 = text.getBytes()[1 + ptr];
+            byte octet1 = textData[1 + ptr];
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)) {
                 // Unexpected sequence
@@ -1532,14 +1550,14 @@ public class rText{
         }
         else if ((octet & 0xf0) == 0xe0) {
             // Three octets
-            byte octet1 = text.getBytes()[1 + ptr];
+            byte octet1 = textData[1 + ptr];
             byte octet2 = '\0';
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)) {
                 return codepoint;
             } // Unexpected sequence
 
-            octet2 = text.getBytes()[2 + ptr];
+            octet2 = textData[2 + ptr];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)) { return codepoint; } // Unexpected sequence
 
@@ -1561,17 +1579,17 @@ public class rText{
             // Four octets
             if (octet > 0xf4) return codepoint;
 
-            byte octet1 = text.getBytes()[1 + ptr];
+            byte octet1 = textData[1 + ptr];
             byte octet2 = '\0';
             byte octet3 = '\0';
 
             if ((octet1 == '\0') || ((octet1 >> 6) != 2)) { return codepoint; }  // Unexpected sequence
 
-            octet2 = text.getBytes()[2 + ptr];
+            octet2 = textData[2 + ptr];
 
             if ((octet2 == '\0') || ((octet2 >> 6) != 2)) { return codepoint; }  // Unexpected sequence
 
-            octet3 = text.getBytes()[3 + ptr];
+            octet3 = textData[3 + ptr];
 
             if ((octet3 == '\0') || ((octet3 >> 6) != 2)) { return codepoint; }  // Unexpected sequence
 
@@ -1608,17 +1626,38 @@ public class rText{
     // Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found
     // NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
     public int GetCodepointCount(String text) {
-        return text.getBytes().length;
+        return text.codePointCount(0, text.length() - 1);
     }
 
     /**
-     * Get next codepoint in a byte sequence and bytes processed
+     * Get next codepoint in a byte sequence
      * @param text Bytes of character
      * @param ptr position of codepoint
      * @return UTF-8 codepoint
      */
     public int GetCodepointNext(String text, int ptr) {
-        return text.codePointAt(text.offsetByCodePoints(0, ptr));
+        byte[] textData = text.getBytes();
+        int codepoint = 0x3f;
+
+        // Get current codepoint and bytes processed
+        if (0xf0 == (0xf8 & textData[ptr])) {
+            // 4 byte UTF-8 codepoint
+            codepoint = ((0x07 & textData[ptr]) << 18) | ((0x3f & textData[ptr + 1]) << 12) | ((0x3f & textData[ptr + 2]) << 6) | (0x3f & textData[ptr + 3]);
+        }
+        else if (0xe0 == (0xf0 & textData[ptr])) {
+            // 3 byte UTF-8 codepoint */
+            codepoint = ((0x0f & textData[ptr]) << 12) | ((0x3f & textData[ptr + 1]) << 6) | (0x3f & textData[ptr + 2]);
+        }
+        else if (0xc0 == (0xe0 & textData[ptr])) {
+            // 2 byte UTF-8 codepoint
+            codepoint = ((0x1f & textData[ptr]) << 6) | (0x3f & textData[ptr + 1]);
+        }
+        else {
+            // 1 byte UTF-8 codepoint
+            codepoint = textData[ptr];
+        }
+
+        return codepoint;
     }
 
     /**

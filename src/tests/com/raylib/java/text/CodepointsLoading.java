@@ -95,8 +95,8 @@ public class CodepointsLoading {
             rlj.core.ClearBackground(RAYWHITE);
 
             rlj.shapes.DrawRectangle(0, 0, rlj.core.GetScreenWidth(), 70, BLACK);
-            rlj.text.DrawText(rlj.text.TextFormat("Total codepoints contained in provided text: %d", codepointCount), 10, 10, 20, GREEN);
-            rlj.text.DrawText(rlj.text.TextFormat("Total codepoints required for font atlas (duplicates excluded): %d", codepointsNoDupsCount), 10, 40, 20, GREEN);
+            // rlj.text.DrawText(rlj.text.TextFormat("Total codepoints contained in provided text: %d", codepointCount), 10, 10, 20, GREEN);
+            // rlj.text.DrawText(rlj.text.TextFormat("Total codepoints required for font atlas (duplicates excluded): %d", codepointsNoDupsCount), 10, 40, 20, GREEN);
 
             if (showFontAtlas) {
                 // Draw generated font texture atlas containing provided codepoints

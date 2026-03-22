@@ -535,6 +535,8 @@ public class Unicode{
             if (codepoint == (byte) 0x3f) {
                 codepointByteCount = 1;
             }
+            i += codepointByteCount - 1;
+
             float glyphWidth = 0;
             if (codepoint != '\n') {
                 glyphWidth = (font.glyphs[index].advanceX == 0) ? font.recs[index].width*scaleFactor : font.glyphs[index].advanceX*scaleFactor;
