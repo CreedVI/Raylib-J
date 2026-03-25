@@ -82,6 +82,7 @@ public class Camera3D {
         this.position = new Vector3();
         this.target = new Vector3();
         this.up = new Vector3();
+        this.projection = CAMERA_PERSPECTIVE;
 
         CAMERA_CULL_DISTANCE_NEAR = Config.RL_CULL_DISTANCE_NEAR;
         CAMERA_CULL_DISTANCE_FAR = Config.RL_CULL_DISTANCE_FAR;

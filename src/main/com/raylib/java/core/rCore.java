@@ -858,7 +858,7 @@ public class rCore {
      * @return Width of current window
      */
     public int GetScreenWidth(){
-        return window.currentFbo.width;
+        return window.screen.width;
     }
 
     /**
@@ -867,7 +867,7 @@ public class rCore {
      * @return Height of current window
      */
     public int GetScreenHeight(){
-        return window.currentFbo.height;
+        return window.screen.height;
     }
 
     /**
@@ -878,7 +878,8 @@ public class rCore {
         if (__APPLE__){
             Vector2 scale = GetWindowScaleDPI();
             return (int) (window.render.width * scale.x);
-        } else{
+        }
+        else {
             return window.render.width;
         }
     }
@@ -891,7 +892,8 @@ public class rCore {
         if (__APPLE__){
             Vector2 scale = GetWindowScaleDPI();
             return (int) (window.render.height * scale.y);
-        } else{
+        }
+        else {
             return window.render.height;
         }
     }
@@ -901,13 +903,13 @@ public class rCore {
      * @return native (GLFW) window handle
      */
     public long GetWindowHandle(){
-        if (__WINDOWS__){
+        if (__WINDOWS__) {
             return glfwGetWin32Window(window.handle);
         }
         else if (__APPLE__) {
             return glfwGetCocoaWindow(window.handle);
         }
-        else{
+        else {
             return window.handle;
         }
     }
@@ -916,7 +918,7 @@ public class rCore {
      * Get number of monitors
      * @return number of monitors detected
      */
-    public int GetMonitorCount(){
+    public int GetMonitorCount() {
         int monitorCount = 0;
         PointerBuffer pb = glfwGetMonitors();
         monitorCount = pb.sizeof();
@@ -927,7 +929,7 @@ public class rCore {
      * Get monitor the window is presently on
      * @return monitor the window is rendered on
      */
-    public int GetCurrentMonitor(){
+    public int GetCurrentMonitor() {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
         monitorCount = monitors.sizeof();

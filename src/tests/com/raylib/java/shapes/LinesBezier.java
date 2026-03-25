@@ -7,9 +7,7 @@ import com.raylib.java.structs.Vector2;
 import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_LEFT;
 import static com.raylib.java.structs.Color.*;
 
-public class LinesBezier{
-
-    //TODO.txt:Something's fucky wucky
+public class LinesBezier {
 
     /*******************************************************************************************
      *
@@ -25,7 +23,7 @@ public class LinesBezier{
      *
      ********************************************************************************************/
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         // Initialization
         //--------------------------------------------------------------------------------------

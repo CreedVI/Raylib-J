@@ -29,9 +29,10 @@ public class CustomLogging {
         final int SCREEN_HEIGHT = 450;
 
         Raylib rlj = new Raylib();
-        rlj.core.SetTraceLogCallback(new CustomLoggerCallback());
-        rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raylib-J [core] example -- basic window");
+        rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raylib-J [core] example -- Custom Logging");
         rlj.core.SetTargetFPS(60);
+
+        rlj.core.SetTraceLogCallback(new CustomLoggerCallback());
 
         while(!rlj.core.WindowShouldClose()){
             rlj.core.BeginDrawing();

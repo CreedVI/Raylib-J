@@ -71,7 +71,7 @@ public class BasicLighting{
         modelB.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
         modelC.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
 
-        Shader shader = rlj.core.LoadShader("/src/tests/resources/shaders/shaders/glsl330/base_lighting.vs",
+        Shader shader = rlj.core.LoadShader("/src/tests/resources/shaders/shaders/glsl330/lighting.vs",
                                             "/src/tests/resources/shaders/shaders/glsl330/lighting.fs");
 
         // Get some shader loactions
