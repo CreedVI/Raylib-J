@@ -7,10 +7,7 @@ import com.raylib.java.structs.Texture2D;
 import org.jetbrains.annotations.UnknownNullability;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.*;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
@@ -3412,35 +3409,73 @@ public class RLGL{
 
     // Set shader value uniform
     public void rlSetUniform(int locIndex, float[] value, rlShaderUniformDataType uniformType) {
-        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+        ByteBuffer buffer;
 
+        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             switch (uniformType){
                 case RL_SHADER_UNIFORM_FLOAT:
-                    glUniform1f(locIndex, value[0]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putFloat(v);
+                    }
+                    buffer.flip();
+                    glUniform1fv(locIndex, buffer.asFloatBuffer());
                     break;
                 case RL_SHADER_UNIFORM_VEC2:
-                    glUniform2f(locIndex, value[0], value[1]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putFloat(v);
+                    }
+                    buffer.flip();
+                    glUniform2fv(locIndex, buffer.asFloatBuffer());
                     break;
                 case RL_SHADER_UNIFORM_VEC3:
-                    glUniform3f(locIndex, value[0], value[1], value[2]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putFloat(v);
+                    }
+                    buffer.flip();
+                    glUniform3fv(locIndex, buffer.asFloatBuffer());
                     break;
                 case RL_SHADER_UNIFORM_VEC4:
-                    glUniform4f(locIndex, value[0], value[1], value[2], value[3]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putFloat(v);
+                    }
+                    buffer.flip();
+                    glUniform4fv(locIndex, buffer.asFloatBuffer());
                     break;
-                case RL_SHADER_UNIFORM_INT:
-                    glUniform1i(locIndex, (int) value[0]);
+                case RL_SHADER_UNIFORM_INT, RL_SHADER_UNIFORM_SAMPLER2D:
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putInt((int) v);
+                    }
+                    buffer.flip();
+                    glUniform1iv(locIndex, buffer.asIntBuffer());
                     break;
                 case RL_SHADER_UNIFORM_IVEC2:
-                    glUniform2i(locIndex, (int) value[0], (int) value[1]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putInt((int) v);
+                    }
+                    buffer.flip();
+                    glUniform2iv(locIndex, buffer.asIntBuffer());
                     break;
                 case RL_SHADER_UNIFORM_IVEC3:
-                    glUniform3i(locIndex, (int) value[0], (int) value[1], (int) value[2]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putInt((int) v);
+                    }
+                    buffer.flip();
+                    glUniform3iv(locIndex, buffer.asIntBuffer());
                     break;
                 case RL_SHADER_UNIFORM_IVEC4:
-                    glUniform4i(locIndex, (int) value[0], (int) value[1], (int) value[2], (int) value[3]);
-                    break;
-                case RL_SHADER_UNIFORM_SAMPLER2D:
-                    glUniform1i(locIndex, (int) value[0]);
+                    buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+                    for (float v : value) {
+                        buffer.putInt((int) v);
+                    }
+                    buffer.flip();
+                    glUniform4iv(locIndex, buffer.asIntBuffer());
                     break;
                 default:
                     context.traceLog.TRACELOG(LOG_WARNING, "SHADER: Failed to set uniform value, data type not recognized");

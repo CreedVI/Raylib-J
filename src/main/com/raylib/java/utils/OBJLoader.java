@@ -158,6 +158,7 @@ public class OBJLoader {
         String fileText = context.files.LoadFileText(fileName);
 
         objInfo = new OBJInfo();
+        mtlInfo = new MTLInfo();
         cmds = parseLines(fileText, triangulate);
 
         int numV = 0, numVN = 0, numVT = 0, numF = 0, numFaces = 0;

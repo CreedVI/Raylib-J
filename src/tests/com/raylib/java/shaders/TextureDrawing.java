@@ -42,7 +42,7 @@ public class TextureDrawing{
         rlj.textures.UnloadImage(imBlank);
 
         // NOTE: Using GLSL 330 shader version, on OpenGL ES 2.0 use GLSL 100 shader version
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/glsl330/cubes_panning.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/cubes_panning.fs");
 
         float time = 0.0f;
         int timeLoc = rlj.core.GetShaderLocation(shader, "uTime");

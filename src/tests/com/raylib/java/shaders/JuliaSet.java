@@ -54,7 +54,7 @@ public class JuliaSet{
 
         // Load julia set shader
         // NOTE: Defining 0 (NULL) for vertex shader forces usage of internal default vertex shader
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/glsl330/julia_set.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/julia_set.fs");
 
         // Create a RenderTexture2D to be used for render to texture
         RenderTexture target = rlj.textures.LoadRenderTexture(rlj.core.GetScreenWidth(), rlj.core.GetScreenHeight());
@@ -139,7 +139,7 @@ public class JuliaSet{
                 }
                 else if (rlj.core.IsKeyPressed(KEY_LEFT)) incrementSpeed--;
 
-                // TODO.txt: The idea is to zoom and move around with mouse
+                // TODO: The idea is to zoom and move around with mouse
                 // Probably offset movement should be proportional to zoom level
                 if (rlj.core.IsMouseButtonDown(Mouse.MouseButton.MOUSE_BUTTON_LEFT) || rlj.core.IsMouseButtonDown(Mouse.MouseButton.MOUSE_BUTTON_RIGHT)){
                     if (rlj.core.IsMouseButtonDown(Mouse.MouseButton.MOUSE_BUTTON_LEFT)) zoom += zoom * 0.003f;

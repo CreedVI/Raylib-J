@@ -1381,10 +1381,12 @@ public class rModels{
             Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1)
+            }
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
+                }
 
             // Create instances buffer
             instanceTransforms = new float[instances*16];
@@ -1392,9 +1394,7 @@ public class rModels{
             // Fill buffer with instances transformations as float16 arrays
             for (int i = 0; i < instances; i++) {
                 Float16 tmp = MatrixToFloatV(transforms[i]);
-                for (int j = 0; j < tmp.v.length; j++) {
-                    instanceTransforms[i*16 + j] = tmp.v[j];
-                }
+                System.arraycopy(tmp.v, 0, instanceTransforms, i * 16, tmp.v.length);
             }
 
             // Enable mesh VAO to attach new buffer
@@ -1421,8 +1421,9 @@ public class rModels{
             matModelView = MatrixMultiply(context.rlgl.rlGetMatrixTransform(), matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1)
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
+            }
             //-----------------------------------------------------
 
             // Bind active texture maps (if available)
@@ -1513,7 +1514,9 @@ public class rModels{
             for (int eye = 0; eye < eyeCount; eye++) {
                 // Calculate model-view-projection matrix (MVP)
                 Matrix matModelViewProjection = MatrixIdentity();
-                if (eyeCount == 1) matModelViewProjection = MatrixMultiply(matModelView, matProjection);
+                if (eyeCount == 1) {
+                    matModelViewProjection = MatrixMultiply(matModelView, matProjection);
+                }
                 else {
                     // Setup current eye viewport (half screen width)
                     context.rlgl.rlViewport(eye * context.rlgl.rlGetFramebufferWidth() / 2, 0, context.rlgl.rlGetFramebufferWidth() / 2, context.rlgl.rlGetFramebufferHeight());
@@ -1560,7 +1563,6 @@ public class rModels{
 
             // Remove instance transforms buffer
             context.rlgl.rlUnloadVertexBuffer(instancesVboId);
-            instanceTransforms = null;
         }
     }
 

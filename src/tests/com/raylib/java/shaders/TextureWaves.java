@@ -41,10 +41,10 @@ public class TextureWaves{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shaders] example - texture waves");
 
         // Load texture texture to apply shaders
-        Texture2D texture = rlj.textures.LoadTexture("resources/space.png");
+        Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/shaders/space.png");
 
         // Load shader and setup location points and values
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/glsl330/wave.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/wave.fs");
 
         int secondsLoc = rlj.core.GetShaderLocation(shader, "secondes");
         int freqXLoc = rlj.core.GetShaderLocation(shader, "freqX");

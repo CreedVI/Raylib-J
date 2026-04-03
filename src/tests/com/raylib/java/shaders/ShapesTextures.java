@@ -38,12 +38,12 @@ public class ShapesTextures{
 
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shaders] example - shapes and texture shaders");
 
-        Texture2D fudesumi = rlj.textures.LoadTexture("resources/fudesumi.png");
+        Texture2D fudesumi = rlj.textures.LoadTexture("src/tests/resources/shaders/fudesumi.png");
 
         // Load shader to be used on some parts drawing
         // NOTE 1: Using GLSL 330 shader version, on OpenGL ES 2.0 use GLSL 100 shader version
         // NOTE 2: Defining 0 (NULL) for vertex shader forces usage of internal default vertex shader
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/glsl330/grayscale.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/grayscale.fs");
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------

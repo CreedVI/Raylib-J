@@ -50,7 +50,7 @@ public class MultiSample2D{
         Texture2D texBlue = rlj.textures.LoadTextureFromImage(imBlue);
         rlj.textures.UnloadImage(imBlue);
 
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/color_mix.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/color_mix.fs");
 
         // Get an additional sampler2D location to be enabled on drawing
         int texBlueLoc = rlj.core.GetShaderLocation(shader, "texture1");

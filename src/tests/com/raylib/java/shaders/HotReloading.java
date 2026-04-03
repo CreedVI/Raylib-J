@@ -36,7 +36,7 @@ public class HotReloading{
 
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shaders] example - hot reloading");
 
-        String fragShaderFileName = "resources/shaders/glsl330/reload.fs";
+        String fragShaderFileName = "src/tests/resources/shaders/shaders/glsl330/reload.fs";
         long fragShaderFileModTime = rlj.core.GetFileModTime(fragShaderFileName);
 
         // Load raymarching shader
@@ -124,6 +124,8 @@ public class HotReloading{
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.core.UnloadShader(shader);           // Unload shader
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

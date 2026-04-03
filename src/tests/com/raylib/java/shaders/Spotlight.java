@@ -56,7 +56,7 @@ public class Spotlight{
         rlj = new Raylib(screenWidth, screenHeight, "raylib - shader spotlight");
         rlj.core.HideCursor();
 
-        Texture2D texRay = rlj.textures.LoadTexture("resources/raysan.png");
+        Texture2D texRay = rlj.textures.LoadTexture("src/tests/resources/shaders/raysan.png");
 
         Star[] stars = new Star[MAX_STARS];
 
@@ -73,7 +73,7 @@ public class Spotlight{
         int frameCounter = 0;
 
         // Use default vert shader
-        Shader shdrSpot = rlj.core.LoadShader(null, "resources/shaders/glsl330/spotlight.fs");
+        Shader shdrSpot = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/spotlight.fs");
 
         // Get the locations of spots in the shader
         Spot[] spots = new Spot[MAX_SPOTS];

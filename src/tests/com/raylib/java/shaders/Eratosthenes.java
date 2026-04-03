@@ -46,7 +46,7 @@ public class Eratosthenes{
 
         // Load Eratosthenes shader
         // NOTE: Defining null for vertex shader forces usage of internal default vertex shader
-        Shader shader = rlj.core.LoadShader(null, "resources/shaders/glsl330/eratosthenes.fs");
+        Shader shader = rlj.core.LoadShader(null, "src/tests/resources/shaders/shaders/glsl330/eratosthenes.fs");
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------
