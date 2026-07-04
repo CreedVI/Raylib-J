@@ -33,7 +33,7 @@ public class Heightmap {
         // Define our custom camera to look into our 3d world
         Camera3D camera = new Camera3D(rlj, new Vector3(18.0f, 18.0f, 18.0f), new Vector3(0.0f, 0.0f, 0.0f ), new Vector3(0.0f, 1.0f, 0.0f), 45.0f, CAMERA_PERSPECTIVE);
 
-        Image image = rlj.textures.LoadImage("resources/heightmap.png");             // Load heightmap image (RAM)
+        Image image = rlj.textures.LoadImage("src/tests/resources/models/heightmap.png");             // Load heightmap image (RAM)
         Texture2D texture = rlj.textures.LoadTextureFromImage(image);                // Convert image to texture (VRAM)
 
         Mesh mesh = rlj.models.GenMeshHeightmap(image, new Vector3(16, 8, 16));    // Generate heightmap mesh (RAM and VRAM)
@@ -82,6 +82,8 @@ public class Heightmap {
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texture);     // Unload texture
         rlj.models.UnloadModel(model);         // Unload model
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

@@ -2349,12 +2349,20 @@ public class rCore {
      * Check file extension <br/>
      * NOTE: Extensions checking is not case-sensitive
      * @param fileName
-     * @param ext
-     * @return
+     * @param ext list of file extensions. Multiple extensions can be passed separated by a ";"
+     * @return true if passed file name has an extension that matches
      */
     public boolean IsFileExtension(String fileName, String ext){
         String fileExt = GetFileExtension(fileName);
-        return fileExt.equals(ext);
+        String[] extPattern = ext.split(";");
+        boolean result = false;
+        for (String s : extPattern) {
+            result = fileExt.equalsIgnoreCase(s);
+            if (result) {
+                break;
+            }
+        }
+        return result;
     }
 
     /**
@@ -2413,7 +2421,7 @@ public class rCore {
      * @param filePath
      * @return
      */
-    public static String GetFileNameWithoutExt(String filePath){
+    public String GetFileNameWithoutExt(String filePath){
 
         filePath = filePath.replace('\\', '/');
 
@@ -2425,7 +2433,7 @@ public class rCore {
      * @param filePath
      * @return
      */
-    public static String GetDirectoryPath(String filePath) {
+    public String GetDirectoryPath(String filePath) {
         String dirPath = "";
 
         if (filePath.contains("\\")) {

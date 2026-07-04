@@ -124,7 +124,7 @@ public class WriteDepth {
             context.rlgl.rlEnableFramebuffer(target.id);
 
             // Create color texture (default to RGBA)
-            target.texture.id = context.rlgl.rlLoadTexture(ByteBuffer.allocateDirect(width * height), width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+            target.texture.id = context.rlgl.rlLoadTexture(new byte[width * height], width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
             target.texture.width = width;
             target.texture.height = height;
             target.texture.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;

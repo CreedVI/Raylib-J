@@ -10,24 +10,24 @@ import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_LEFT;
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_FREE;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
+import static com.raylib.java.structs.Color.*;
 
 public class MeshGeneration {
 
-    static final int NUM_MODELS = 9;
-    static Raylib rlj;
+    private static final int NUM_MODELS = 9;
+    private static Raylib rlj;
 
     public static void main(String[] args) {
         rlj = new Raylib(800, 600, "mesh generation");
 
         Camera3D camera = new Camera3D(rlj);
-        camera.position = new Vector3(50.0f, 50.0f, 50.0f); // Camera position
-        camera.target = new Vector3(0.0f, 10.0f, 0.0f);     // Camera looking at point
+        camera.position = new Vector3(5.0f, 5.0f, 5.0f); // Camera position
+        camera.target = new Vector3(0.0f, 0.0f, 0.0f);     // Camera looking at point
         camera.up = new Vector3(0.0f, 1.0f, 0.0f);          // Camera up vector (rotation towards target)
         camera.fovy = 45.0f;                                         // Camera field-of-view Y
         camera.projection = CAMERA_PERSPECTIVE;                      // Camera mode type
 
-        Mesh gen = rlj.models.GenMeshSphere(2, 32, 32);
-        Image check = rlj.textures.GenImageChecked(2, 2, 1, 1, Color.RED, Color.GREEN);
+        Image check = rlj.textures.GenImageChecked(2, 2, 1, 1, RED, GREEN);
         Texture2D meshTexture = rlj.textures.LoadTextureFromImage(check);
 
         Model[] models = new Model[NUM_MODELS];
@@ -47,6 +47,7 @@ public class MeshGeneration {
         }
 
         int currentModel = 0;
+        Vector3 position = new Vector3();
 
         rlj.core.SetTargetFPS(60);
 
@@ -69,35 +70,59 @@ public class MeshGeneration {
                     currentModel = NUM_MODELS - 1;
                 }
             }
-
+            // Draw
+            //----------------------------------------------------------------------------------
             rlj.core.BeginDrawing();
-            rlj.core.ClearBackground(Color.RAYWHITE);
+
+            rlj.core.ClearBackground(RAYWHITE);
+
             rlj.core.BeginMode3D(camera);
 
-            rlj.models.DrawModel(models[currentModel], new Vector3(), 1.0f, Color.WHITE);
+            rlj.models.DrawModel(models[currentModel], position, 1.0f, WHITE);
+            rlj.models.DrawGrid(10, 1.0f);
 
             rlj.core.EndMode3D();
 
-            rlj.text.DrawText("Model: " + currentModel, 10, 10, 30, Color.BLACK);
+            rlj.shapes.DrawRectangle(30, 400, 310, 30, rlj.textures.Fade(SKYBLUE, 0.5f));
+            rlj.shapes.DrawRectangleLines(30, 400, 310, 30, rlj.textures.Fade(DARKBLUE, 0.5f));
+            rlj.text.DrawText("MOUSE LEFT BUTTON to CYCLE PROCEDURAL MODELS", 40, 410, 10, BLUE);
+
+            switch(currentModel) {
+                case 0: rlj.text.DrawText("PLANE", 680, 10, 20, DARKBLUE); break;
+                case 1: rlj.text.DrawText("CUBE", 680, 10, 20, DARKBLUE); break;
+                case 2: rlj.text.DrawText("SPHERE", 680, 10, 20, DARKBLUE); break;
+                case 3: rlj.text.DrawText("HEMISPHERE", 640, 10, 20, DARKBLUE); break;
+                case 4: rlj.text.DrawText("CYLINDER", 680, 10, 20, DARKBLUE); break;
+                case 5: rlj.text.DrawText("TORUS", 680, 10, 20, DARKBLUE); break;
+                case 6: rlj.text.DrawText("KNOT", 680, 10, 20, DARKBLUE); break;
+                case 7: rlj.text.DrawText("POLY", 680, 10, 20, DARKBLUE); break;
+                case 8: rlj.text.DrawText("Custom (triangle)", 580, 10, 20, DARKBLUE); break;
+                default: break;
+            }
 
             rlj.core.EndDrawing();
+            //----------------------------------------------------------------------------------
         }
+
+        rlj.textures.UnloadTexture(meshTexture);
+
+        for(Model model : models) {
+            rlj.models.UnloadModel(model);
+        }
+
+        rlj.core.CloseWindow();
 
     }
 
-    static void AllocateMeshData(Mesh mesh, int triangleCount) {
-        mesh.vertexCount = triangleCount * 3;
-        mesh.triangleCount = triangleCount;
+    // generate a simple triangle mesh from code
+    private static Mesh MakeMesh() {
+        Mesh mesh = new Mesh();
+        mesh.vertexCount = 3;
+        mesh.triangleCount = 1;
 
         mesh.vertices = new float[mesh.vertexCount * 3];
         mesh.texcoords = new float[mesh.vertexCount * 2];
         mesh.normals = new float[mesh.vertexCount * 3];
-    }
-
-    // generate a simple triangle mesh from code
-    static Mesh MakeMesh() {
-        Mesh mesh = new Mesh();
-        AllocateMeshData(mesh, 1);
 
         // vertex at the origin
         mesh.vertices[0] = 0;

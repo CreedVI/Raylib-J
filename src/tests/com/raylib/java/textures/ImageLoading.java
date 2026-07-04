@@ -44,7 +44,7 @@ public class ImageLoading{
         while (!rlj.core.WindowShouldClose()) {   // Detect window close button or ESC key
             // Update
             //----------------------------------------------------------------------------------
-            // TODO.txt: Update your variables here
+            // TODO: Update your variables here
             //----------------------------------------------------------------------------------
 
             // Draw

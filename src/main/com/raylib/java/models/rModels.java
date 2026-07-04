@@ -1,22 +1,18 @@
 package com.raylib.java.models;
 
-import com.creedvi.utils.gltfj.gltf.*;
-import com.creedvi.utils.gltfj.gltf.animation.gltfj_Animation;
-import com.creedvi.utils.gltfj.gltf.animation.gltfj_AnimationChannel;
-import com.creedvi.utils.gltfj.gltf.animation.gltfj_AnimationSampler;
-import com.creedvi.utils.gltfj.gltf.mesh.gltfj_Primitive;
-import com.creedvi.utils.gltfj.gltfj;
 import com.creedvi.utils.m3dj.M3DJ;
 import com.creedvi.utils.m3dj.model.M3DJ_Model;
 import com.creedvi.utils.m3dj.model.chunks.M3DJ_Bone;
 import com.creedvi.utils.m3dj.model.chunks.M3DJ_Property;
 import com.raylib.java.Raylib;
-import com.raylib.java.raymath.Raymath;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.iqm.*;
 import com.raylib.java.utils.OBJLoader;
 import com.raylib.java.utils.VoxLoader;
+import de.javagl.jgltf.model.*;
+import de.javagl.jgltf.model.io.GltfModelReader;
+import de.javagl.jgltf.model.v2.MaterialModelV2;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
 
@@ -26,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -849,7 +846,6 @@ public class rModels{
 
         Model model = new Model();
 
-
         if (SUPPORT_FILEFORMAT_OBJ && context.core.IsFileExtension(fileName, ".obj")) {
             model = LoadOBJ(fileName);
         }
@@ -1652,9 +1648,9 @@ public class rModels{
         return success;
     }
 
-    private Material[] ProcessMaterialsOBJ(OBJLoader loader) {
+    private Material[] ProcessMaterialsOBJ(OBJLoader loader, String path) {
         Material[] materials = new Material[loader.objInfo.totalMaterials];
-
+        context.traceLog.TRACELOG(LOG_INFO, path);
         // Init model materials
         for (int m = 0; m < loader.objInfo.totalMaterials; m++) {
             // Init material to default
@@ -1718,7 +1714,8 @@ public class rModels{
                     context.traceLog.TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
                 }
 
-                materials = ProcessMaterialsOBJ(loader);
+                String path = fileName.substring(fileName.lastIndexOf("/") + 1);
+                materials = ProcessMaterialsOBJ(loader, path);
             }
         }
         else {
@@ -1804,7 +1801,7 @@ public class rModels{
             }
         }
         if (SUPPORT_FILEFORMAT_M3D) {
-            if (context.core.IsFileExtension(fileName, ".gltf;.glb")) {
+            if (context.core.IsFileExtension(fileName, ".m3d")) {
                 animations = LoadModelAnimationsM3D(fileName);
             }
         }
@@ -1834,16 +1831,14 @@ public class rModels{
                 }
 
                 boolean updated = false; // set to true when anim vertex information is updated
-                Vector3 animVertex = new Vector3();
-                Vector3 animNormal = new Vector3();
-
-                Vector3 inTranslation = new Vector3();
-                Quaternion inRotation = new Quaternion();
-                // Vector3 inScale = new Vector3();
-
-                Vector3 outTranslation = new Vector3();
-                Quaternion outRotation = new Quaternion();
-                Vector3 outScale = new Vector3();
+                Vector3 animVertex;
+                Vector3 animNormal;
+                Vector3 inTranslation;
+                Quaternion inRotation;
+                // Vector3 inScale;
+                Vector3 outTranslation;
+                Quaternion outRotation;
+                Vector3 outScale;
 
                 int boneId = 0;
                 int boneCounter = 0;
@@ -1869,13 +1864,13 @@ public class rModels{
                             continue;
                         }
                         boneId = mesh.boneIds[boneCounter];
-                        //int boneIdParent = model.bones[boneId].parent;
-                        inTranslation = model.bindPose[boneId].translation;
-                        inRotation = model.bindPose[boneId].rotation;
+                        // int boneIdParent = model.bones[boneId].parent;
+                        inTranslation = new Vector3(model.bindPose[boneId].translation.x, model.bindPose[boneId].translation.y, model.bindPose[boneId].translation.z);
+                        inRotation = new Quaternion(model.bindPose[boneId].rotation.x, model.bindPose[boneId].rotation.y, model.bindPose[boneId].rotation.z, model.bindPose[boneId].rotation.w);
                         // inScale = model.bindPose[boneId].scale;
-                        outTranslation = anim.framePoses[frame][boneId].translation;
-                        outRotation = anim.framePoses[frame][boneId].rotation;
-                        outScale = anim.framePoses[frame][boneId].scale;
+                        outTranslation = new Vector3(anim.framePoses[frame][boneId].translation.x, anim.framePoses[frame][boneId].translation.y, anim.framePoses[frame][boneId].translation.z);
+                        outRotation = new Quaternion(anim.framePoses[frame][boneId].rotation.x, anim.framePoses[frame][boneId].rotation.y, anim.framePoses[frame][boneId].rotation.z, anim.framePoses[frame][boneId].rotation.w);
+                        outScale = new Vector3(anim.framePoses[frame][boneId].scale.x, anim.framePoses[frame][boneId].scale.y, anim.framePoses[frame][boneId].scale.z);
 
                         // Vertices processing
                         // NOTE: We use meshes.vertices (default vertex position) to calculate meshes.animVertices (animated vertex position)
@@ -3658,8 +3653,8 @@ public class rModels{
     // Module specific Functions Definition
     //----------------------------------------------------------------------------------
 
-    private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, int poseCount, Transform[] transforms) {
-        Transform[] result = new Transform[poseCount];
+    private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, int boneCount, Transform[] transforms) {
+        Transform[] result = new Transform[boneCount];
 
         for (int i = 0; i < bones.length; i++) {
             result[i] = new Transform();
@@ -3760,7 +3755,7 @@ public class rModels{
                 OBJLoader.OBJVertexIndex idx2 = loader.objInfo.faces[3*af + 2];
 
                 // Fill vertices buffer (float) using vertex index of the face
-                // TODO: 11/07/2022 Eventually I'd like to be able to remove the - 1 from the following bits, but it works well enough for now...  
+                // TODO: 11/07/2022 Eventually I'd like to be able to remove the - 1 from the following bits, but it works well enough for now...
                 for (int v = 0; v < 3; v++) { model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx0.vIndex - 1) * 3 + v]; } vCount[mm] +=3;
                 for (int v = 0; v < 3; v++) { model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx1.vIndex - 1) * 3 + v]; } vCount[mm] +=3;
                 for (int v = 0; v < 3; v++) { model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx2.vIndex - 1) * 3 + v]; } vCount[mm] +=3;
@@ -3791,7 +3786,8 @@ public class rModels{
                 }
             }
 
-            model.materials = ProcessMaterialsOBJ(loader);
+            String path = fileName.substring(fileName.lastIndexOf("/") + 1);
+            model.materials = ProcessMaterialsOBJ(loader, path);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -4028,7 +4024,7 @@ public class rModels{
                 fileData.read(intBuffer);
                 va[i].offset = IQM_toInt(intBuffer);
             }
-            
+
             for (int i = 0; i < header.num_vertexarrays; i++) {
                 switch (va[i].type) {
                     case IQM_POSITION: {
@@ -4215,7 +4211,7 @@ public class rModels{
             fileSize = fileData.available();
 
             IQMHeader iqmHeader = new IQMHeader();
-            
+
             byte[] intBuffer = new byte[Integer.BYTES];
             byte[] floatBuffer = new byte[Float.BYTES];
             byte[] shortbuffer = new byte[Short.BYTES];
@@ -4757,15 +4753,15 @@ public class rModels{
                 model.bindPose[i].rotation.w = (float) m3dj.vertices.get((int) m3dj.bones.get(i).orientation).w;
 
                 // TODO: If the orientation quaternion is not normalized, then that's encoding scaling
-                model.bindPose[i].rotation = Raymath.QuaternionNormalize(model.bindPose[i].rotation);
+                model.bindPose[i].rotation = QuaternionNormalize(model.bindPose[i].rotation);
                 model.bindPose[i].scale.x = model.bindPose[i].scale.y = model.bindPose[i].scale.z = 1.0f;
 
                 // Child bones are stored in parent bone relative space, convert that into model space
                 if (model.bones[i].parent >= 0) {
-                    model.bindPose[i].rotation = Raymath.QuaternionMultiply(model.bindPose[model.bones[i].parent].rotation, model.bindPose[i].rotation);
-                    model.bindPose[i].translation = Raymath.Vector3RotateByQuaternion(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].rotation);
-                    model.bindPose[i].translation = Raymath.Vector3Add(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation);
-                    model.bindPose[i].scale = Raymath.Vector3Multiply(model.bindPose[i].scale, model.bindPose[model.bones[i].parent].scale);
+                    model.bindPose[i].rotation = QuaternionMultiply(model.bindPose[model.bones[i].parent].rotation, model.bindPose[i].rotation);
+                    model.bindPose[i].translation = Vector3RotateByQuaternion(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].rotation);
+                    model.bindPose[i].translation = Vector3Add(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation);
+                    model.bindPose[i].scale = Vector3Multiply(model.bindPose[i].scale, model.bindPose[model.bones[i].parent].scale);
                 }
             }
 
@@ -4829,7 +4825,8 @@ public class rModels{
 
         try {
             m3dj = parser.LoadFile(filePath);
-        } catch(IOException e) {
+        }
+        catch(IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -4883,17 +4880,17 @@ public class rModels{
                         animations[a].framePoses[i][j].rotation.y = (float) m3dj.vertices.get(pose[j].orientation).y;
                         animations[a].framePoses[i][j].rotation.z = (float) m3dj.vertices.get(pose[j].orientation).z;
                         animations[a].framePoses[i][j].rotation.w = (float) m3dj.vertices.get(pose[j].orientation).w;
-                        animations[a].framePoses[i][j].rotation = Raymath.QuaternionNormalize(animations[a].framePoses[i][j].rotation);
+                        animations[a].framePoses[i][j].rotation = QuaternionNormalize(animations[a].framePoses[i][j].rotation);
                         animations[a].framePoses[i][j].scale.x = 1.0f;
                         animations[a].framePoses[i][j].scale.y = 1.0f;
                         animations[a].framePoses[i][j].scale.z = 1.0f;
 
                         // Child bones are stored in parent bone relative space, convert that into model space
                         if (animations[a].bones[j].parent >= 0) {
-                            animations[a].framePoses[i][j].rotation = Raymath.QuaternionMultiply(animations[a].framePoses[i][animations[a].bones[j].parent].rotation, animations[a].framePoses[i][j].rotation);
-                            animations[a].framePoses[i][j].translation = Raymath.Vector3RotateByQuaternion(animations[a].framePoses[i][j].translation, animations[a].framePoses[i][animations[a].bones[j].parent].rotation);
-                            animations[a].framePoses[i][j].translation = Raymath.Vector3Add(animations[a].framePoses[i][j].translation, animations[a].framePoses[i][animations[a].bones[j].parent].translation);
-                            animations[a].framePoses[i][j].scale = Raymath.Vector3Multiply(animations[a].framePoses[i][j].scale, animations[a].framePoses[i][animations[a].bones[j].parent].scale);
+                            animations[a].framePoses[i][j].rotation = QuaternionMultiply(animations[a].framePoses[i][animations[a].bones[j].parent].rotation, animations[a].framePoses[i][j].rotation);
+                            animations[a].framePoses[i][j].translation = Vector3RotateByQuaternion(animations[a].framePoses[i][j].translation, animations[a].framePoses[i][animations[a].bones[j].parent].rotation);
+                            animations[a].framePoses[i][j].translation = Vector3Add(animations[a].framePoses[i][j].translation, animations[a].framePoses[i][animations[a].bones[j].parent].translation);
+                            animations[a].framePoses[i][j].scale = Vector3Multiply(animations[a].framePoses[i][j].scale, animations[a].framePoses[i][animations[a].bones[j].parent].scale);
                         }
                     }
 
@@ -4916,26 +4913,21 @@ public class rModels{
         return animations;
     }
 
-    private Image LoadImageFromCgltfImage(gltfj_glTF gltf, int img, int bv, String texPath) {
+    private Image LoadImageFromCgltfImage(ImageModel img, BufferViewModel bufferView, String texPath) {
         Image image = new Image();
-        gltfj_Image gltfjImage = gltf.images.get(img);
-        gltfj_BufferView bufferView = gltf.bufferViews.get(bv);
-        gltfj_Buffer imgBuffer = gltf.buffers.get(bufferView.buffer);
 
-        if (gltfjImage.uri != null) {
-            if (gltfjImage.uri.length() > 5 && gltfjImage.uri.startsWith("data:")) {
+        if (img.getUri() != null) {
+            if (img.getUri().length() > 5 && img.getUri().startsWith("data:")) {
                 int i = 0;
-                while ((gltfjImage.uri.charAt(i) != ',') && (i != gltfjImage.uri.length())) {
+                while ((img.getUri().charAt(i) != ',') && (i != img.getUri().length())) {
                     i++;
                 }
 
-                if (i == gltfjImage.uri.length()) {
+                if (i == img.getUri().length()) {
                     context.traceLog.TRACELOG(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
                 }
                 else {
-                    int b64Size = gltfjImage.uri.length() + i + 1;
-
-                    String uri = gltfjImage.uri;
+                    String uri = img.getUri();
                     String encoded = uri.substring(uri.lastIndexOf(",") + 1);
                     byte[] data = Base64.getDecoder().decode(encoded);
 
@@ -4946,27 +4938,27 @@ public class rModels{
                 }
             }
             else {
-                image = context.textures.LoadImage(texPath + "/" + gltfjImage.uri);
+                image = context.textures.LoadImage(texPath + "/" + img.getUri());
             }
         }
-        else if (imgBuffer.data != null) {
-            byte[] data = new byte[bufferView.size];
-            int offset = bufferView.offset;
-            int stride = (bufferView.stride > 0) ? bufferView.stride : 1;
+        else if (bufferView.getBufferViewData() != null) {
+            byte[] data = new byte[bufferView.getByteLength()];
+            int offset = bufferView.getByteOffset();
+            int stride = (bufferView.getByteStride() > 0) ? bufferView.getByteStride() : 1;
 
-            for (int i = 0; i < bufferView.size; i++) {
-                data[i] = imgBuffer.data[offset];
+            for (int i = 0; i < data.length; i++) {
+                data[i] = bufferView.getBufferViewData().get(offset);
                 offset += stride;
             }
 
-            if (gltfjImage.mimeType.equals("image\\/png") || gltfjImage.mimeType.equals("image/png")) {
+            if (img.getMimeType().equals("image\\/png") || img.getMimeType().equals("image/png")) {
                 image = context.textures.LoadImageFromMemory(".png", data);
             }
-            else if (gltfjImage.mimeType.equals("image\\/jpeg") || gltfjImage.mimeType.equals("image/jpeg")) {
+            else if (img.getMimeType().equals("image\\/jpeg") || img.getMimeType().equals("image/jpeg")) {
                 image = context.textures.LoadImageFromMemory(".jpg", data);
             }
             else {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + gltfjImage.mimeType + ")");
+                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + img.getMimeType() + ")");
             }
         }
 
@@ -4974,26 +4966,27 @@ public class rModels{
     }
 
     // Load bone info from GLTF skin data
-    private BoneInfo[] LoadBoneInfoGLTF(gltfj_glTF gltf, gltfj_Skin skin) {
-        int boneCount = skin.jointsCount;
+    private BoneInfo[] LoadBoneInfoGLTF(SkinModel skin) {
+        int boneCount = skin.getJoints().size();
         BoneInfo[] bones = new BoneInfo[boneCount];
 
-        for (int i = 0; i < skin.jointsCount; i++) {
+        for (int i = 0; i < boneCount; i++) {
             bones[i] = new BoneInfo();
-            gltfj_Node node = gltf.nodes.get(skin.joints[i]);
-            bones[i].name = node.name;
+            bones[i].name = skin.getJoints().get(i).getName();
 
             // Find parent bone index
             int parentIndex = -1;
 
-            for (int j = 0; j < skin.jointsCount; j++) {
-                if (skin.joints[j] == node.parent) {
-                    parentIndex = j;
-                    break;
+            for (int j = 0; j < boneCount; j++) {
+                if (skin.getSkeleton() != null) {
+                    if (skin.getJoints().get(j) == skin.getSkeleton().getParent()) {
+                        parentIndex = j;
+                        break;
+                    }
                 }
             }
 
-            bones[i].parent = parentIndex;
+            bones[i].parent = i;
         }
 
         return bones;
@@ -5028,30 +5021,33 @@ public class rModels{
 
         Model model = new Model();
 
-        gltfj_glTF gltf = gltfj.Read(fileName);
+        GltfModel gltf;
 
-        if (gltf.result == gltfj_glTF.ResultType.SUCCESS) {
-            if (gltf.fileType == gltfj_glTF.FileType.GLB) {
+        try {
+            gltf = new GltfModelReader().read(Paths.get(fileName));
+        }
+        catch (IOException e) {
+            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
+            return model;
+        }
+
+            if (context.core.GetFileExtension(fileName).equalsIgnoreCase(".glb")) {
                 context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
             }
-            else if (gltf.fileType == gltfj_glTF.FileType.GLTF) {
+            else if (context.core.GetFileExtension(fileName).equalsIgnoreCase(".gltf")) {
                 context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
             }
-            else {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Model format not recognized");
-                return model;
-            }
 
-            context.traceLog.TRACELOG(LOG_INFO, "    > Meshes count: " + gltf.meshCount);
-            context.traceLog.TRACELOG(LOG_INFO, "    > Materials count: " + gltf.materialCount + " (+1 default)");
-            context.traceLog.TRACELOG(LOG_DEBUG, "    > Buffers count: " + gltf.bufferCount);
-            context.traceLog.TRACELOG(LOG_DEBUG, "    > Images count: " + gltf.imageCount);
-            context.traceLog.TRACELOG(LOG_DEBUG, "    > Textures count: " + gltf.textureCount);
+            context.traceLog.TRACELOG(LOG_INFO, "    > Meshes count: " + gltf.getMeshModels().size());
+            context.traceLog.TRACELOG(LOG_INFO, "    > Materials count: " + gltf.getMaterialModels().size() + " (+1 default)");
+            context.traceLog.TRACELOG(LOG_DEBUG, "    > Buffers count: " + gltf.getBufferModels().size());
+            context.traceLog.TRACELOG(LOG_DEBUG, "    > Images count: " + gltf.getImageModels().size());
+            context.traceLog.TRACELOG(LOG_DEBUG, "    > Textures count: " + gltf.getTextureModels().size());
 
             int primitivesCount = 0;
             // NOTE: We will load every primitive in the glTF as a separate raylib mesh
-            for (int i = 0; i < gltf.meshCount; i++) {
-                primitivesCount += gltf.meshes.get(i).primitivesCount;
+            for (int i = 0; i < gltf.getMeshModels().size(); i++) {
+                primitivesCount += gltf.getMeshModels().get(i).getMeshPrimitiveModels().size();
             }
 
             // Load our model data: meshes and materials
@@ -5062,7 +5058,7 @@ public class rModels{
             }
 
             // NOTE: We keep an extra slot for default material, in case some mesh requires it
-            model.materialCount = gltf.materialCount + 1;
+            model.materialCount = gltf.getMaterialModels().size() + 1;
             model.materials = new Material[model.materialCount];
             model.materials[0] = LoadMaterialDefault();
 
@@ -5071,123 +5067,111 @@ public class rModels{
 
             // Load materials data
             //----------------------------------------------------------------------------------------------------
-            for (int i = 0, j = 1; i < gltf.materialCount; i++, j++) {
+            for (int i = 0, j = 1; i < gltf.getMaterialModels().size(); i++, j++) {
                 model.materials[j] = LoadMaterialDefault();
                 String texPath = context.core.GetDirectoryPath(fileName);
+                MaterialModelV2 material = (MaterialModelV2) gltf.getMaterialModels().get(i);
 
                 // Check glTF material flow: PBR metallic/roughness flow
                 // NOTE: Alternatively, materials can follow PBR specular/glossiness flow
-                if (gltf.materials.get(i).hasMetallicRoughness) {
 
-                    // Load base color texture (albedo)
-                    if (gltf.materials.get(i).metallicRoughness.baseColorTexture.texture >= 0) {
-                        Image imAlbedo = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).metallicRoughness.baseColorTexture.texture).image,
-                                gltf.images.get(gltf.materials.get(i).metallicRoughness.baseColorTexture.texture).bufferView,  texPath);
-                        if (imAlbedo.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_ALBEDO].texture = context.textures.LoadTextureFromImage(imAlbedo);
-                        }
+                //Load base colour factor (tint)
+                Color c = new Color();
+                c.r = (int) (material.getBaseColorFactor()[0] * 255);
+                c.g = (int) (material.getBaseColorFactor()[1] * 255);
+                c.b = (int) (material.getBaseColorFactor()[2] * 255);
+                c.a = (int) (material.getBaseColorFactor()[3] * 255);
+                model.materials[j].maps[MATERIAL_MAP_ALBEDO].color = c;
 
-                        //Load base colour factor (tint)
-                        Color c = new Color();
-                        c.r = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[0]*255);
-                        c.g = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[1]*255);
-                        c.b = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[2]*255);
-                        c.a = (int) (gltf.materials.get(i).metallicRoughness.baseColorFactor[3]*255);
-                        model.materials[j].maps[MATERIAL_MAP_ALBEDO].color = c;
-                    }
-
-                    //Load metallic/roughness texture
-                    if (gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture > 0) {
-                        Image imMetallicRoughness = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture).image,
-                                gltf.images.get(gltf.materials.get(i).metallicRoughness.metallicRoughnessTexture.texture).bufferView,  texPath);
-                        if (imMetallicRoughness.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].texture = context.textures.LoadTextureFromImage(imMetallicRoughness);
-                        }
-
-                        // Load metallic/roughness material properties
-                        float roughness = (float) gltf.materials.get(i).metallicRoughness.roughnessFactor;
-                        model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].value = roughness;
-
-                        float metallic = (float) gltf.materials.get(i).metallicRoughness.metallicFactor;
-                        model.materials[j].maps[MATERIAL_MAP_METALNESS].value = metallic;
-                    }
-
-                    //Load normal texture
-                    if (gltf.materials.get(i).normalTexture.texture > 0) {
-                        Image imNormal = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).normalTexture.texture).image,
-                                gltf.images.get(gltf.materials.get(i).normalTexture.texture).bufferView,  texPath);
-                        if (imNormal.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTextureFromImage(imNormal);
-                        }
-                    }
-
-                    //Load ambient occlusion texture
-                    if (gltf.materials.get(i).occlusionTexture.texture > 0) {
-                        Image imOcclusion = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).occlusionTexture.texture).image,
-                                gltf.images.get(gltf.materials.get(i).occlusionTexture.texture).bufferView,  texPath);
-                        if (imOcclusion.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_OCCLUSION].texture = context.textures.LoadTextureFromImage(imOcclusion);
-                        }
-                    }
-
-                    if (gltf.materials.get(i).emissiveTexture.texture > 0) {
-                        Image imEmissive = LoadImageFromCgltfImage(gltf, gltf.textures.get(gltf.materials.get(i).emissiveTexture.texture).image,
-                                gltf.images.get(gltf.materials.get(i).emissiveTexture.texture).bufferView,  texPath);
-                        if (imEmissive.getData() != null) {
-                            model.materials[j].maps[MATERIAL_MAP_EMISSION].texture = context.textures.LoadTextureFromImage(imEmissive);
-                        }
-
-                        //Load base colour factor (tint)
-                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.r = (int) (gltf.materials.get(i).emissiveFactor[0]*255);
-                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.g = (int) (gltf.materials.get(i).emissiveFactor[1]*255);
-                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.b = (int) (gltf.materials.get(i).emissiveFactor[2]*255);
-                        model.materials[j].maps[MATERIAL_MAP_EMISSION].color.a = (int) (gltf.materials.get(i).emissiveFactor[3]*255);
+                // Load base color texture (albedo)
+                if (material.getBaseColorTexture() != null) {
+                    Image imAlbedo = LoadImageFromCgltfImage(material.getBaseColorTexture().getImageModel(), material.getBaseColorTexture().getImageModel().getBufferViewModel(),  texPath);
+                    if (imAlbedo.getData() != null) {
+                        model.materials[j].maps[MATERIAL_MAP_ALBEDO].texture = context.textures.LoadTextureFromImage(imAlbedo);
                     }
                 }
 
-                // Other possible materials not supported by raylib pipeline:
-                // has_clearcoat, has_transmission, has_volume, has_ior, has specular, has_sheen
+                //Load metallic/roughness texture
+                if (material.getMetallicRoughnessTexture() != null) {
+                    Image imMetallicRoughness = LoadImageFromCgltfImage(material.getMetallicRoughnessTexture().getImageModel(), material.getMetallicRoughnessTexture().getImageModel().getBufferViewModel(), texPath);
+                    if (imMetallicRoughness.getData() != null) {
+                        model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].texture = context.textures.LoadTextureFromImage(imMetallicRoughness);
+                    }
+
+                    // Load metallic/roughness material properties
+                    model.materials[j].maps[MATERIAL_MAP_ROUGHNESS].value = material.getRoughnessFactor();
+                    model.materials[j].maps[MATERIAL_MAP_METALNESS].value = material.getMetallicFactor();
+                }
+
+                //Load normal texture
+                if (material.getNormalTexture() != null) {
+                    Image imNormal = LoadImageFromCgltfImage(material.getNormalTexture().getImageModel(), material.getNormalTexture().getImageModel().getBufferViewModel(),  texPath);
+                    if (imNormal.getData() != null) {
+                        model.materials[j].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTextureFromImage(imNormal);
+                    }
+                }
+
+                //Load ambient occlusion texture
+                if (material.getOcclusionTexture() != null) {
+                    Image imOcclusion = LoadImageFromCgltfImage(material.getOcclusionTexture().getImageModel(), material.getOcclusionTexture().getImageModel().getBufferViewModel(),  texPath);
+                    if (imOcclusion.getData() != null) {
+                        model.materials[j].maps[MATERIAL_MAP_OCCLUSION].texture = context.textures.LoadTextureFromImage(imOcclusion);
+                    }
+                }
+
+                //Load emission texture
+                if (material.getEmissiveTexture() != null) {
+                    Image imEmissive = LoadImageFromCgltfImage(material.getEmissiveTexture().getImageModel(), material.getEmissiveTexture().getImageModel().getBufferViewModel(),  texPath);
+                    if (imEmissive.getData() != null) {
+                        model.materials[j].maps[MATERIAL_MAP_EMISSION].texture = context.textures.LoadTextureFromImage(imEmissive);
+                    }
+
+                    //Load base colour factor (tint)
+                    model.materials[j].maps[MATERIAL_MAP_EMISSION].color.r = (int) (material.getEmissiveFactor()[0] * 255);
+                    model.materials[j].maps[MATERIAL_MAP_EMISSION].color.g = (int) (material.getEmissiveFactor()[1] * 255);
+                    model.materials[j].maps[MATERIAL_MAP_EMISSION].color.b = (int) (material.getEmissiveFactor()[2] * 255);
+                    model.materials[j].maps[MATERIAL_MAP_EMISSION].color.a = (int) (material.getEmissiveFactor()[3] * 255);
+                }
             }
+
+            // Other possible materials not supported by raylib pipeline:
+            // has_clearcoat, has_transmission, has_volume, has_ior, has specular, has_sheen
 
             // Load meshes data
             //----------------------------------------------------------------------------------------------------
-            for (int i = 0, meshIndex = 0; i < gltf.meshCount; i++) {
+            for (int i = 0, meshIndex = 0; i < gltf.getMeshModels().size(); i++) {
                 // NOTE: meshIndex accumulates primitives
+                MeshModel mesh = gltf.getMeshModels().get(i);
 
-                for (int p = 0; p < gltf.meshes.get(i).primitivesCount; p++) {
+                for (int p = 0; p < mesh.getMeshPrimitiveModels().size(); p++) {
                     // NOTE: We only support primitives defined by triangles
                     // Other alternatives: points, lines, line_strip, triangle_strip
-                    if (gltf.meshes.get(i).primitives.get(p).type != gltfj_Primitive.PrimitiveType.TRIANGLES) {
+                    if (mesh.getMeshPrimitiveModels().get(p).getMode() != RL_TRIANGLES) {
                         continue;
                     }
 
                     // NOTE: Attributes data could be provided in several data formats (8, 8u, 16u, 32...),
                     // Only some formats for each attribute type are supported, read info at the top of this function!
 
-                    for (int j = 0; j < gltf.meshes.get(i).primitives.get(p).attributesCount; j++) {
+                    for (int j = 0; j < mesh.getMeshPrimitiveModels().get(p).getAttributes().size(); j++) {
                         // Check the different attributes for every primitive
-                        //int attribDataPtr = gltf.meshes.get(i).primitives.get(p).attributes.get(j).index;
+
                         // POSITION
-                        if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.POSITION) {
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("POSITION") != null) {
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("POSITION");
 
                             // WARNING: SPECS: POSITION accessor MUST have its min and max properties defined.
 
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC3)) {
+                            if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC3)) {
                                 // Init raylib mesh vertices to copy glTF attribute data
-                                model.meshes[meshIndex].vertexCount = attribute.count;
-                                model.meshes[meshIndex].vertices = new float[attribute.count*3];
+                                model.meshes[meshIndex].vertexCount = attribute.getCount();
+                                model.meshes[meshIndex].vertices = new float[attribute.getCount() * 3];
 
                                 // Load 3 components of float data type into mesh.vertices
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                                byte[] fBuffer = new byte[Float.BYTES];
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int v = 0, vo = 0; v < model.meshes[meshIndex].vertices.length; v++, vo+=Float.BYTES) {
-                                    for (int f = 0; f < fBuffer.length; f++) {
-                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + vo + f];
-                                    }
-                                    model.meshes[meshIndex].vertices[v] = glTF_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].vertices[v] = bufferView.getBufferViewData().getFloat();
                                 }
                             }
                             else {
@@ -5195,23 +5179,18 @@ public class rModels{
                             }
                         }
                         // NORMAL
-                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.NORMAL) {
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("NORMAL") != null ) {
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("NORMAL");
 
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC3)) {
+                            if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC3)) {
                                 // Init raylib mesh normals to copy glTF attribute data
-                                model.meshes[meshIndex].normals = new float[attribute.count*3];
+                                model.meshes[meshIndex].normals = new float[attribute.getCount() * 3];
 
                                 // Load 3 components of float data type into mesh.normals
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                                byte[] fBuffer = new byte[Float.BYTES];
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int n = 0, no = 0; n < model.meshes[meshIndex].normals.length; n++, no+=Float.BYTES) {
-                                    for (int f = 0; f < fBuffer.length; f++) {
-                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + no + f];
-                                    }
-                                    model.meshes[meshIndex].normals[n] = glTF_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].normals[n] = bufferView.getBufferViewData().getFloat();
                                 }
                             }
                             else {
@@ -5219,23 +5198,18 @@ public class rModels{
                             }
                         }
                         // TANGENT
-                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.TANGENT) {
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TANGENT") != null) {
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TANGENT");
 
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                            if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC4)) {
                                 // Init raylib mesh tangent to copy glTF attribute data
-                                model.meshes[meshIndex].tangents = new float[attribute.count*4];
+                                model.meshes[meshIndex].tangents = new float[attribute.getCount() * 4];
 
                                 // Load 4 components of float data type into mesh.tangents
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                                byte[] fBuffer = new byte[Float.BYTES];
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int t = 0, to = 0; t < model.meshes[meshIndex].tangents.length; t++, to += Float.BYTES) {
-                                    for (int f = 0; f < fBuffer.length; f++) {
-                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + to + f];
-                                    }
-                                    model.meshes[meshIndex].tangents[t] = glTF_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].tangents[t] = bufferView.getBufferViewData().getFloat();
                                 }
                             }
                             else {
@@ -5243,25 +5217,20 @@ public class rModels{
                             }
                         }
                         // TEXCOORD_0
-                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.TEXCOORD) {
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TEXCOORD_0") != null) {
                             // TODO: Support additional texture coordinates: TEXCOORD_1 -> mesh.texcoords2
 
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TEXCOORD_0");
 
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC2)) {
+                            if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC2)) {
                                 // Init raylib mesh texcoords to copy glTF attribute data
-                                model.meshes[meshIndex].texcoords = new float[attribute.count*2];
+                                model.meshes[meshIndex].texcoords = new float[attribute.getCount() * 2];
 
                                 // Load 2 components of float data type into mesh.texcoords
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                                byte[] fBuffer = new byte[Float.BYTES];
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int t = 0, to = 0; t < model.meshes[meshIndex].texcoords.length; t++, to += Float.BYTES) {
-                                    for (int f = 0; f < fBuffer.length; f++) {
-                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + to + f];
-                                    }
-                                    model.meshes[meshIndex].texcoords[t] = glTF_ByteArrayToFloat(fBuffer);
+                                    model.meshes[meshIndex].texcoords[t] = bufferView.getBufferViewData().getFloat();
                                 }
                             }
                             else {
@@ -5269,69 +5238,55 @@ public class rModels{
                             }
                         }
                         // COLOR_0
-                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.COLOR) {
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).index);
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("COLOR_0") != null) {
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("COLOR_0");
 
                             // WARNING: SPECS: All components of each COLOR_n accessor element MUST be clamped to [0.0, 1.0] range.
 
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_BYTE) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                            if ((attribute.getComponentDataType() == byte.class) && (attribute.getElementType() == ElementType.VEC4)) {
                                 // Init raylib mesh color to copy glTF attribute data
-                                model.meshes[meshIndex].colors = new byte[attribute.count*4];
+                                model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
                                 // Load 4 components of unsigned char data type into mesh.colors
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int c = 0; c < model.meshes[meshIndex].vertices.length; c++) {
-                                    model.meshes[meshIndex].colors[c] = buffer.data[bufferView.offset + attribute.byteOffset + c];
+                                    model.meshes[meshIndex].colors[c] = bufferView.getBufferViewData().get();
                                 }
 
                             }
-                            else if ((attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_SHORT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                            else if ((attribute.getComponentDataType() == short.class) && (attribute.getElementType() == ElementType.VEC4)) {
                                 // Init raylib mesh color to copy glTF attribute data
-                                model.meshes[meshIndex].colors = new byte[attribute.count*4];
+                                model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
+                                short[] temp = new short[attribute.getCount() * 4];
 
-                                // Load data into a temp buffer to be converted to raylib data type
-                                short[] temp = new short[attribute.count*4];
-
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                                byte[] sBuffer = new byte[Short.BYTES];
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int c = 0, co = 0; c < temp.length; c++, co += Short.BYTES) {
-                                    for (int f = 0; f < sBuffer.length; f++) {
-                                        sBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + co + f];
-                                    }
-                                    temp[c] = glTF_ByteArrayToShort(sBuffer);
+                                    temp[c] = bufferView.getBufferViewData().getShort();
                                 }
 
                                 // Convert data to raylib color data type (4 bytes)
-                                for (int c = 0; c < attribute.count * 4; c++) {
-                                    model.meshes[meshIndex].colors[c] = (byte)(temp[c]);
-
+                                for (int c = 0; c < attribute.getCount() * 4; c++) {
+                                    model.meshes[meshIndex].colors[c] = bufferView.getBufferViewData().get();
                                 }
 
                             }
-                            else if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                            else if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC4)) {
                                 // Init raylib mesh color to copy glTF attribute data
-                                model.meshes[meshIndex].colors = new byte[attribute.count * 4];
+                                model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
                                 // Load data into a temp buffer to be converted to raylib data type
-                                float[] temp = new float[attribute.count*4];
+                                float[] temp = new float[attribute.getCount() * 4];
 
-                                gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                                gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                                byte[] fBuffer = new byte[Float.BYTES];
+                                BufferViewModel bufferView= attribute.getBufferViewModel();
 
                                 for (int c = 0, co = 0; c < temp.length; c++, co+=Float.BYTES) {
-                                    for (int f = 0; f < fBuffer.length; f++) {
-                                        fBuffer[f] = buffer.data[bufferView.offset + attribute.byteOffset + co + f];
-                                    }
-                                    temp[c] = glTF_ByteArrayToFloat(fBuffer);
+                                    temp[c] = bufferView.getBufferViewData().getFloat();
                                 }
 
                                 // Convert data to raylib color data type (4 bytes), we expect the color data normalized
-                                for (int c = 0; c < attribute.count * 4; c++) {
+                                for (int c = 0; c < attribute.getCount() * 4; c++) {
                                     model.meshes[meshIndex].colors[c] = (byte)(temp[c] * 255.0f);
                                 }
 
@@ -5343,47 +5298,37 @@ public class rModels{
                     }
 
                     // Load primitive indices data (if provided)
-                    if (gltf.meshes.get(i).primitives.get(p).indices != -1) {
-                        gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).indices);
+                    if (mesh.getMeshPrimitiveModels().get(p).getIndices() != null) {
+                        AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getIndices();
 
-                        model.meshes[meshIndex].triangleCount = attribute.count/3;
+                        model.meshes[meshIndex].triangleCount = attribute.getCount() / 3;
 
-                        if (attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_SHORT) {
+                        if (attribute.getComponentDataType() == short.class) {
                             // Init raylib mesh indices to copy glTF attribute data
-                            model.meshes[meshIndex].indicesS = new short[attribute.count];
+                            model.meshes[meshIndex].indicesS = new short[attribute.getCount()];
 
                             // Load unsigned short data type into mesh.indices
-                            gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                            gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                            byte[] sBuffer = new byte[Short.BYTES];
+                            BufferViewModel bufferView= attribute.getBufferViewModel();
 
                             for (int is = 0, iso = 0; is < model.meshes[meshIndex].indicesS.length; is++, iso += Short.BYTES) {
-                                for (int s = 0; s < sBuffer.length; s++) {
-                                    sBuffer[s] = buffer.data[bufferView.offset + attribute.byteOffset + iso + s];
-                                }
-                                model.meshes[meshIndex].indicesS[is] = glTF_ByteArrayToShort(sBuffer);
+                                model.meshes[meshIndex].indicesS[is] = bufferView.getBufferViewData().getShort(attribute.getByteOffset() + iso);
                             }
 
                         }
-                        else if (attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_INT) {
+                        else if (attribute.getComponentDataType() == int.class) {
                             // Init raylib mesh indices to copy glTF attribute data
-                            model.meshes[meshIndex].indicesS = new short[attribute.count];
+                            model.meshes[meshIndex].indicesS = new short[attribute.getCount()];
 
                             // Load data into a temp buffer to be converted to raylib data type
-                            int[] temp = new int[attribute.count];
+                            int[] temp = new int[attribute.getCount()];
 
-                            gltfj_BufferView bufferView= gltf.bufferViews.get(attribute.bufferView);
-                            gltfj_Buffer buffer = gltf.buffers.get(bufferView.buffer);
-                            byte[] iBuffer = new byte[Integer.BYTES];
+                            BufferViewModel bufferView= attribute.getBufferViewModel();
 
                             for (int in = 0, ino = 0; in < temp.length; in++, ino += Integer.BYTES) {
-                                for (int ib = 0; ib < iBuffer.length; ib++) {
-                                    iBuffer[ib] = buffer.data[bufferView.offset + attribute.byteOffset + ino + ib];
-                                }
-                                temp[in] = glTF_ByteArrayToInt(iBuffer);
+                                temp[in] = bufferView.getBufferViewData().getInt(attribute.getByteOffset() + ino);
                             }
                             // Convert data to raylib indices data type (unsigned short)
-                            for (int d = 0; d < attribute.count; d++) {
+                            for (int d = 0; d < attribute.getCount(); d++) {
                                 model.meshes[meshIndex].indicesS[d] = (short)temp[d];
                             }
 
@@ -5400,12 +5345,12 @@ public class rModels{
 
                     // Assign to the primitive mesh the corresponding material index
                     // NOTE: If no material defined, mesh uses the already assigned default material (index: 0)
-                    for (int m = 0; m < gltf.materialCount; m++) {
+                    for (int m = 0; m < gltf.getMaterialModels().size(); m++) {
                         // The primitive actually keeps the pointer to the corresponding material,
                         // raylib instead assigns to the mesh the by its index, as loaded in model.materials array
                         // To get the index, we check if material pointers match and we assign the corresponding index,
                         // skipping index 0, the default material
-                        if (gltf.materials.get(m) == gltf.materials.get(gltf.meshes.get(i).primitives.get(p).material)){
+                        if (gltf.getMaterialModels().get(m) == gltf.getMeshModels().get(i).getMeshPrimitiveModels().get(p).getMaterialModel()){
                             model.meshMaterial[meshIndex] = m + 1;
                             break;
                         }
@@ -5424,57 +5369,59 @@ public class rModels{
             //  - Only supports linear interpolation (default method in Blender when checked "Always Sample Animations" when exporting a GLTF file)
             //  - Only supports translation/rotation/scale animation channel.path, weights not considered (i.e. morph targets)
             //----------------------------------------------------------------------------------------------------
-            if (gltf.skinCount == 1) {
-                gltfj_Skin skin = gltf.skins.get(0);
-                model.bones = LoadBoneInfoGLTF(gltf, skin);
+            if (gltf.getSkinModels().size() == 1) {
+                SkinModel skin = gltf.getSkinModels().get(0);
+                model.bones = LoadBoneInfoGLTF(skin);
                 model.boneCount = model.bones.length;
                 model.bindPose = new Transform[model.boneCount];
 
                 for (int i = 0; i < model.boneCount; i++) {
-                    gltfj_Node node = gltf.nodes.get(skin.joints[i]);
+                    NodeModel node = skin.getJoints().get(i);
                     model.bindPose[i] = new Transform();
 
-                    if (node.translation.length > 0) {
-                        model.bindPose[i].translation.x = (float) node.translation[0];
-                        model.bindPose[i].translation.y = (float) node.translation[1];
-                        model.bindPose[i].translation.z = (float) node.translation[2];
+                    if (node.getTranslation() != null) {
+                        model.bindPose[i].translation.x = node.getTranslation()[0];
+                        model.bindPose[i].translation.y = node.getTranslation()[1];
+                        model.bindPose[i].translation.z = node.getTranslation()[2];
                     }
 
-                    if (node.rotation.length > 0) {
-                        model.bindPose[i].rotation.x = (float) node.rotation[0];
-                        model.bindPose[i].rotation.y = (float) node.rotation[1];
-                        model.bindPose[i].rotation.z = (float) node.rotation[2];
-                        model.bindPose[i].rotation.w = (float) node.rotation[3];
+                    if (node.getRotation() != null) {
+                        model.bindPose[i].rotation.x = node.getRotation()[0];
+                        model.bindPose[i].rotation.y = node.getRotation()[1];
+                        model.bindPose[i].rotation.z = node.getRotation()[2];
+                        model.bindPose[i].rotation.w = node.getRotation()[3];
                     }
 
-                    if (node.scale.length > 0) {
-                        model.bindPose[i].scale.x = (float) node.scale[0];
-                        model.bindPose[i].scale.y = (float) node.scale[1];
-                        model.bindPose[i].scale.z = (float) node.scale[2];
+                    if (node.getScale() != null) {
+                        model.bindPose[i].scale.x = node.getScale()[0];
+                        model.bindPose[i].scale.y = node.getScale()[1];
+                        model.bindPose[i].scale.z = node.getScale()[2];
                     }
                 }
 
                 model.bindPose = BuildPoseFromParentJoints(model.bones, model.boneCount, model.bindPose);
             }
-            else if (gltf.skinCount > 1) {
-                context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.skinCount);
+            else if (gltf.getSkinModels().size() > 1) {
+                context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.getSkinModels().size());
             }
 
-            for (int i = 0, meshIndex = 0; i < gltf.meshCount; i++) {
-                for (int p = 0; p < gltf.meshes.get(i).primitivesCount; p++) {
+            for (int i = 0, meshIndex = 0; i < gltf.getMeshModels().size(); i++) {
+                for (int p = 0; p < gltf.getMeshModels().get(i).getMeshPrimitiveModels().size(); p++) {
+                    MeshModel mesh = gltf.getMeshModels().get(i);
+
                     // NOTE: We only support primitives defined by triangles
-                    if (gltf.meshes.get(i).primitives.get(p).type != gltfj_Primitive.PrimitiveType.TRIANGLES) {
+                    if (mesh.getMeshPrimitiveModels().get(p).getMode() != RL_TRIANGLES) {
                         continue;
                     }
 
-                    for (int j = 0; j < gltf.meshes.get(i).primitives.get(p).attributesCount; j++) {
+                    for (int j = 0; j < mesh.getMeshPrimitiveModels().get(p).getAttributes().size() ; j++) {
                         // NOTE: JOINTS_1 + WEIGHT_1 will be used for +4 joints influencing a vertex -> Not supported by raylib
 
-                        if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.JOINTS) {
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("JOINTS_0") != null) {
                             // JOINTS_n (vec4: 4 bones max per vertex / u8, u16)
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).data);
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("JOINTS_0");
 
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.UNSIGNED_BYTE) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                            if ((attribute.getComponentDataType() == byte.class) && (attribute.getElementType() == ElementType.VEC4)) {
                                 // Init raylib mesh bone ids to copy glTF attribute data
                                 model.meshes[meshIndex].boneIds = new byte[model.meshes[meshIndex].vertexCount*4];
 
@@ -5482,25 +5429,25 @@ public class rModels{
                                 // for cgltf_attribute_type_joints we have:
                                 //   - data.meshes[0] (256 vertices)
                                 //   - 256 values, provided as cgltf_type_vec4 of bytes (4 byte per joint, stride 4)
+
+                                BufferViewModel bufferView = attribute.getBufferViewModel();
                                 int n = 0;
-                                gltfj_Buffer buffer = gltf.buffers.get(attribute.bufferView);
-                                for (int k = 0; k < attribute.count; k++) {
-                                    for (int l = 0; l < 4; l++) {
-                                        model.meshes[meshIndex].boneIds[4 * k + l] = buffer.data[n + l];
+                                for (int k = 0; k < attribute.getCount(); k++) {
+                                    for (int l = 0; l < attribute.getElementSizeInBytes(); l++) {
+                                        model.meshes[meshIndex].boneIds[attribute.getElementSizeInBytes()*k + l] = bufferView.getBufferViewData().get(n + l);
                                     }
-                                    n += 4;
+                                    n += (attribute.getByteStride());
                                 }
                             }
                             else {
                                 context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported, use vec4 u8");
                             }
                         }
-                        else if (gltf.meshes.get(i).primitives.get(p).attributes.get(j).type == gltfj_Attribute.AttributeType.WEIGHTS) {
+                        if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("WEIGHTS_0") != null) {
                             // WEIGHTS_n (vec4 / u8, u16, f32)
+                            AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("WEIGHTS_0");
 
-                            gltfj_Accessor attribute = gltf.accessors.get(gltf.meshes.get(i).primitives.get(p).attributes.get(j).data);
-
-                            if ((attribute.componentType == gltfj_Accessor.AccessorDataType.FLOAT) && (attribute.type == gltfj_Accessor.AccessorType.VEC4)) {
+                            if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC4)) {
                                 // Init raylib mesh bone weight to copy glTF attribute data
                                 model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount*4];
 
@@ -5508,18 +5455,9 @@ public class rModels{
                                 // for cgltf_attribute_type_weights we have:
                                 //   - data.meshes[0] (256 vertices)
                                 //   - 256 values, provided as cgltf_type_vec4 of float (4 byte per joint, stride 16)
-                                int n = 0; 
-                                gltfj_Buffer buffer = gltf.buffers.get(attribute.bufferView);
-                                for (int k = 0; k < attribute.count; k++) {
-                                    for (int l = 0; l < 4; l++) {
-                                        byte[] floatBuffer = new byte[Float.BYTES];
-                                        for (int m = 0; m < Float.BYTES; m++) {
-                                            floatBuffer[m] = buffer.data[n + l];
-                                        }
-                                        float weight = glTF_ByteArrayToFloat(floatBuffer);
-                                        model.meshes[meshIndex].boneWeights[4 * k + l] = weight;
-                                    } 
-                                    n += 4;
+                                BufferViewModel bufferView = attribute.getBufferViewModel();
+                                for (int k = 0; k < model.meshes[meshIndex].boneWeights.length; k++) {
+                                    model.meshes[meshIndex].boneWeights[k] = bufferView.getBufferViewData().getFloat();
                                 }
                             }
                             else {
@@ -5536,64 +5474,66 @@ public class rModels{
                 }
 
             }
-        }
-        else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
-        }
 
         return model;
     }
 
     // Get interpolated pose for bone sampler at a specific time. Returns true on success
-    private float[] GetPoseAtTimeGLTF(gltfj_glTF gltf, gltfj_Accessor input, gltfj_Accessor output, float time) {
+    private float[] GetPoseAtTimeGLTF(AnimationModel animData, AccessorModel input, AccessorModel output, float time) {
         float[] pose = new float[0];
 
         // Input and output should have the same count
-        float[] tStart = new float[0];
-        float[] tEnd = new float[0];
+        float tStart = 0;
+        float tEnd = 0;
         int keyframe = 0;       // Defaults to first pose
 
-        for (int i = 0; i < input.count - 1; i++) {
-           tStart = gltf.AccessorReadFloat(input, i, 1);
-            if (tStart == null) {
+        for (int i = 0; i < input.getCount() - 1; i++) {
+            tStart = input.getBufferViewModel().getBufferViewData().getFloat();
+            if (tStart < 0) {
                 return null;
             }
 
-            tEnd = gltf.AccessorReadFloat(input, i + 1, 1);
-            if (tEnd == null) {
+            tEnd = input.getBufferViewModel().getBufferViewData().getFloat();
+            if (tEnd < 0) {
                 return null;
             }
 
-            if ((tStart[0] <= time) && (time < tEnd[0])) {
+            if ((tStart <= time) && (time < tEnd)) {
                 keyframe = i;
                 break;
             }
         }
 
-        float t = (time - tStart[0])/(tEnd[0] - tStart[0]);
-        t = (t < 0.0f)? 0.0f : t;
-        t = (t > 1.0f)? 1.0f : t;
+        float t = (time - tStart)/(tEnd - tStart);
+        t = Math.max(t, 0.0f);
+        t = Math.min(t, 1.0f);
 
-        if (output.componentType != gltfj_Accessor.AccessorDataType.FLOAT) {
+        if (output.getComponentDataType() != float.class) {
             return null;
         }
 
-        if (output.type == gltfj_Accessor.AccessorType.VEC3) {
-            float[] tmp = new float[3];
-            tmp = gltf.AccessorReadFloat(output, keyframe, 3);
-            Vector3 v1 = new Vector3(tmp[0], tmp[1], tmp[2]);
-            tmp = gltf.AccessorReadFloat(output, keyframe+1, 3);
-            Vector3 v2 = new Vector3(tmp[0], tmp[1], tmp[2]);
+        if (output.getElementType() == ElementType.VEC3) {
+            byte[] tmp = new byte[output.getElementSizeInBytes()];
+
+            output.getBufferViewModel().getBufferViewData().get(keyframe, tmp);
+            ByteBuffer buffer1 = ByteBuffer.wrap(tmp);
+            Vector3 v1 = new Vector3(buffer1.getFloat(), buffer1.getFloat(), buffer1.getFloat());
+            output.getBufferViewModel().getBufferViewData().get(keyframe + output.getByteStride(), tmp);
+            ByteBuffer buffer2 = ByteBuffer.wrap(tmp);
+            Vector3 v2 = new Vector3(buffer2.getFloat(), buffer2.getFloat(), buffer2.getFloat());
 
             Vector3 r = Vector3Lerp(v1, v2, t);
             pose = new float[]{r.x, r.y, r.z};
         }
-        else if (output.type == gltfj_Accessor.AccessorType.VEC4) {
-            float[] tmp = new float[4];
-            tmp = gltf.AccessorReadFloat(output, keyframe, 4);
-            Quaternion v1 = new Quaternion(tmp[0], tmp[1], tmp[2], tmp[3]);
-            tmp = gltf.AccessorReadFloat(output, keyframe+1, 4);
-            Quaternion v2 = new Quaternion(tmp[0], tmp[1], tmp[2], tmp[3]);
+        else if (output.getElementType() == ElementType.VEC4) {
+            byte[] tmp = new byte[output.getElementSizeInBytes()];
+
+            output.getBufferViewModel().getBufferViewData().get(keyframe, tmp);
+            ByteBuffer buffer1 = ByteBuffer.wrap(tmp);
+            Quaternion v1 = new Quaternion(buffer1.getFloat(), buffer1.getFloat(), buffer1.getFloat(), buffer1.getFloat());
+            output.getBufferViewModel().getBufferViewData().get(keyframe + output.getByteStride(), tmp);
+            ByteBuffer buffer2 = ByteBuffer.wrap(tmp);
+            Quaternion v2 = new Quaternion(buffer2.getFloat(), buffer2.getFloat(), buffer2.getFloat(), buffer2.getFloat());
 
             // Only v4 is for rotations, so we know it's a quat
             Quaternion r = QuaternionSlerp(v1, v2, t);
@@ -5604,9 +5544,9 @@ public class rModels{
     }
 
     private static class Channels {
-        gltfj_AnimationChannel translate;
-        gltfj_AnimationChannel rotate;
-        gltfj_AnimationChannel scale;
+        AnimationModel.Sampler translate;
+        AnimationModel.Sampler rotate;
+        AnimationModel.Sampler scale;
 
         Channels() {
         }
@@ -5616,24 +5556,28 @@ public class rModels{
         ModelAnimation[] animations = null;
 
         // glTF data loading
-        gltfj_glTF gltf = gltfj.Read(fileName);
+        GltfModel gltf;
 
-        if (gltf.result != gltfj_glTF.ResultType.SUCCESS) {
+        try {
+            gltf = new GltfModelReader().read(Paths.get(fileName));
+        }
+        catch (IOException e) {
             context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
             context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load animation buffers");
-            return null;
+
+            return animations;
         }
 
-        else {
-            if (gltf.skinCount == 1) {
-                gltfj_Skin skin = gltf.skins.get(0);
-                animations = new ModelAnimation[gltf.animationCount];
+            if (gltf.getSkinModels().size() == 1) {
+                SkinModel skin = gltf.getSkinModels().get(0);
+                animations = new ModelAnimation[gltf.getAnimationModels().size()];
 
-                for (int i = 0; i < gltf.animationCount; i++) {
+                for (int i = 0; i < gltf.getAnimationModels().size(); i++) {
                     animations[i] = new ModelAnimation();
-                    animations[i].bones = LoadBoneInfoGLTF(gltf, skin);
+                    animations[i].bones = LoadBoneInfoGLTF(skin);
+                    animations[i].boneCount = animations[i].bones.length;
 
-                    gltfj_Animation animData = gltf.animations.get(i);
+                    AnimationModel animData = gltf.getAnimationModels().get(i);
                     Channels[] boneChannels = new Channels[animations[i].boneCount];
                     for (int j = 0; j < boneChannels.length; j++) {
                         boneChannels[j] = new Channels();
@@ -5641,12 +5585,12 @@ public class rModels{
 
                     float animDuration = 0.0f;
 
-                    for (int j = 0; j < animData.channelCount; j++) {
-                        gltfj_AnimationChannel channel = animData.channels.get(j);
+                    for (int j = 0; j < animData.getChannels().size(); j++) {
+                        AnimationModel.Channel channel = animData.getChannels().get(j);
                         int boneIndex = -1;
 
-                        for (int k = 0; k < skin.jointsCount; k++) {
-                            if (animData.channels.get(j).targetNode == skin.joints[k]) {
+                        for (int k = 0; k < skin.getJoints().size(); k++) {
+                            if (channel.getNodeModel() == skin.getJoints().get(k)) {
                                 boneIndex = k;
                                 break;
                             }
@@ -5657,15 +5601,15 @@ public class rModels{
                             continue;
                         }
 
-                        if (animData.samplers.get(animData.channels.get(j).sampler).interpolation == gltfj_AnimationSampler.InterpolationType.LINEAR) {
-                            if (channel.targetPath == gltfj_AnimationChannel.AnimationPathType.TRANSLATION) {
-                                boneChannels[boneIndex].translate = animData.channels.get(j);
+                        if (channel.getSampler().getInterpolation() == AnimationModel.Interpolation.LINEAR) {
+                            if (channel.getPath().equalsIgnoreCase("TRANSLATION")) {
+                                boneChannels[boneIndex].translate = channel.getSampler();
                             }
-                            else if (channel.targetPath == gltfj_AnimationChannel.AnimationPathType.ROTATION) {
-                                boneChannels[boneIndex].rotate = animData.channels.get(j);
+                            else if (channel.getPath().equalsIgnoreCase("ROTATION")) {
+                                boneChannels[boneIndex].rotate = channel.getSampler();
                             }
-                            else if (channel.targetPath == gltfj_AnimationChannel.AnimationPathType.SCALE) {
-                                boneChannels[boneIndex].scale = animData.channels.get(j);
+                            else if (channel.getPath().equalsIgnoreCase("SCALE")) {
+                                boneChannels[boneIndex].scale = channel.getSampler();
                             }
                             else {
                                 context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Unsupported target_path on channel " + j + "'s sampler for animation " + i + ". Skipping.");
@@ -5675,14 +5619,15 @@ public class rModels{
                             context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Only linear interpolation curves are supported for GLTF animation.");
                         }
 
-                        float t = glTF_AccessorReadFloat(gltf, gltf.accessors.get(channel.sampler));
+                        AccessorModel inputAccessor = channel.getSampler().getInput();
+                        float t = inputAccessor.getBufferViewModel().getBufferViewData().getFloat(inputAccessor.getBufferViewModel().getByteLength() - 4);
 
-                        if (t == -1.0f) {
+                        if (t <= 0f) {
                             context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load input time");
                             continue;
                         }
 
-                        animDuration = (t > animDuration)? t : animDuration;
+                        animDuration = Math.max(t, animDuration);
                     }
 
                     animations[i].frameCount = (int)(animDuration*1000.0f/GLTF_ANIMDELAY);
@@ -5698,14 +5643,9 @@ public class rModels{
                             Vector3 scale = new Vector3(1, 1, 1);
 
                             if (boneChannels[k].translate != null) {
-                                float[] tTranslate = GetPoseAtTimeGLTF(
-                                        gltf,
-                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].translate.sampler).input),
-                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].translate.sampler).output),
-                                        time
-                                );
+                                float[] tTranslate = GetPoseAtTimeGLTF(animData, boneChannels[k].translate.getInput(), boneChannels[k].translate.getOutput(), time);
                                 if (tTranslate != null) {
-                                    scale = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
+                                    translation = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
                                 }
                                 else {
                                     context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load translate pose data for bone " + animations[i].bones[k].name);
@@ -5713,14 +5653,9 @@ public class rModels{
                             }
 
                             if (boneChannels[k].rotate != null) {
-                                float[] tRotate = GetPoseAtTimeGLTF(
-                                        gltf,
-                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].rotate.sampler).input),
-                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].rotate.sampler).output),
-                                        time
-                                );
+                                float[] tRotate = GetPoseAtTimeGLTF(animData, boneChannels[k].rotate.getInput(), boneChannels[k].rotate.getOutput(), time);
                                 if (tRotate != null) {
-                                    scale = new Vector3(tRotate[0], tRotate[1], tRotate[2]);
+                                    rotation = new Quaternion(tRotate[0], tRotate[1], tRotate[2], tRotate[3]);
                                 }
                                 else {
                                     context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load rotate pose data for bone " + animations[i].bones[k].name);
@@ -5728,12 +5663,7 @@ public class rModels{
                             }
 
                             if (boneChannels[k].scale != null) {
-                                float[] tScale = GetPoseAtTimeGLTF(
-                                        gltf,
-                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].scale.sampler).input),
-                                        gltf.accessors.get(animData.samplers.get(boneChannels[k].scale.sampler).output),
-                                        time
-                                );
+                                float[] tScale = GetPoseAtTimeGLTF(animData, boneChannels[k].scale.getInput(), boneChannels[k].scale.getOutput(), time);
                                 if (tScale != null) {
                                     scale = new Vector3(tScale[0], tScale[1], tScale[2]);
                                 }
@@ -5748,20 +5678,20 @@ public class rModels{
                             animations[i].framePoses[j][k].scale = scale;
                         }
 
-                        animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].frameCount, animations[i].framePoses[j]);
+                        animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].boneCount, animations[i].framePoses[j]);
                     }
 
-                    context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.name + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
+                    context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.getName() + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
                 }
             }
             else {
-                context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] expected exactly one skin to load animation data from, but found " + gltf.skinCount);
+                context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] expected exactly one skin to load animation data from, but found " + gltf.getSkinModels().size());
             }
-        }
+
 
         return animations;
     }
-    
+
     // Load VOX (MagicaVoxel) mesh data
     private Model LoadVOX(String fileName) {
         Model model = new Model();
@@ -5851,9 +5781,7 @@ public class rModels{
             // TODO: Compute globals indices array
             size = voxarray.indices.used;
             pmesh.indicesS = new short[size];
-            for (int j = 0; j < pmesh.indicesS.length; j++) {
-                pmesh.indicesS[j] = pindices[j];
-            }
+            System.arraycopy(pindices, 0, pmesh.indicesS, 0, pmesh.indicesS.length);
 
             pmesh.triangleCount = (pmesh.vertexCount/4)*2;
 
@@ -5881,27 +5809,5 @@ public class rModels{
         VoxLoader.Vox_FreeArrays(voxarray);
 
         return model;
-    }
-
-    private float glTF_ByteArrayToFloat(byte[] floatBuffer) { return ByteBuffer.wrap(floatBuffer).order(ByteOrder.LITTLE_ENDIAN).getFloat(); }
-
-    private short glTF_ByteArrayToShort(byte[] shortBuffer) { return ByteBuffer.wrap(shortBuffer).order(ByteOrder.LITTLE_ENDIAN).getShort(); }
-
-    private int glTF_ByteArrayToInt(byte[] intBuffer) { return ByteBuffer.wrap(intBuffer).order(ByteOrder.LITTLE_ENDIAN).getInt(); }
-
-    private float glTF_AccessorReadFloat(gltfj_glTF gltf, gltfj_Accessor accessor) {
-        float result = 0.0f;
-
-        if (accessor.sparse != null) {
-            // TODO: sparse access
-        }
-        else if (gltf.buffers.get(accessor.bufferView) == null) {
-            return -1.0f;
-        }
-        else {
-            result = glTF_ByteArrayToFloat(gltf.buffers.get(accessor.bufferView).data);
-        }
-
-        return result;
     }
 }

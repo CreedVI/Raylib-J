@@ -40,6 +40,7 @@ dependencies {
     implementation fileTree(dir: "native", include: "*.jar")
     implementation("fr.delthas:javamp3:1.0.1")
     implementation("io.github.creedvi:M3D-J:0.1.0a")
+    implementation("de.javagl:jgltf-model:2.0.4")
     implementation("org.jetbrains:annotations:24.1.0")
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
@@ -61,8 +62,6 @@ dependencies {
     runtimeOnly("org.lwjgl:lwjgl-opengles::$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-par::$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-stb::$lwjglNatives")
-
-    // testImplementation("io.github.creedvi:Raygui-J:0.1.0")
 }
 
 jar {

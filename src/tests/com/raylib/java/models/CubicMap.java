@@ -40,14 +40,14 @@ public class CubicMap {
         camera.fovy = 45.0f;
         camera.projection = Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 
-        Image image = rlj.textures.LoadImage("resources/cubicmap.png");      // Load cubicmap image (RAM)
+        Image image = rlj.textures.LoadImage("src/tests/resources/models/cubicmap.png");      // Load cubicmap image (RAM)
         Texture2D cubicmap = rlj.textures.LoadTextureFromImage(image);       // Convert image to texture to display (VRAM)
 
         Mesh mesh = rlj.models.GenMeshCubicmap(image, new Vector3(1.0f, 1.0f, 1.0f));
         Model model = rlj.models.LoadModelFromMesh(mesh);
 
         // NOTE: By default each cube is mapped to one part of texture atlas
-        Texture2D texture = rlj.textures.LoadTexture("resources/cubicmap_atlas.png");    // Load map texture
+        Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/cubicmap_atlas.png");    // Load map texture
         model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;             // Set map diffuse texture
 
         Vector3 mapPosition = new Vector3(-16.0f, 0.0f, -8.0f);          // Set model position
@@ -93,6 +93,8 @@ public class CubicMap {
         rlj.textures.UnloadTexture(cubicmap);    // Unload cubicmap texture
         rlj.textures.UnloadTexture(texture);     // Unload map texture
         rlj.models.UnloadModel(model);         // Unload map model
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

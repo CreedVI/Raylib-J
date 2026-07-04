@@ -1343,7 +1343,7 @@ public class Raymath{
     }
 
     public static Quaternion QuaternionInvert(Quaternion q){
-        Quaternion result = q;
+        Quaternion result = new Quaternion(q.x, q.y, q.z, q.w);
 
         float lengthSq = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
 

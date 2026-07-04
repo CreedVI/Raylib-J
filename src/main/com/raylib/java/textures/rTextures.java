@@ -234,7 +234,7 @@ public class rTextures{
                 }
             }
         }
-        else if(SUPPORT_FILEFORMAT_HDR) {
+        if(SUPPORT_FILEFORMAT_HDR) {
             if (fileType.equals(".hdr")) {
                 if (fileData != null) {
                     int comp = 0;
@@ -3070,7 +3070,7 @@ public class rTextures{
         Texture2D texture = new Texture2D();
 
         if ((image.data != null) && (image.width != 0) && (image.height != 0)) {
-            texture.id = context.rlgl.rlLoadTexture(image.data, image.width, image.height, image.format, image.mipmaps);
+            texture.id = context.rlgl.rlLoadTexture(image.getData(), image.width, image.height, image.format, image.mipmaps);
         }
         else{
             context.traceLog.TRACELOG(LOG_WARNING, "IMAGE: Data is not valid to load texture");
@@ -3085,31 +3085,31 @@ public class rTextures{
     }
 
     // Load cubemap from image, multiple image cubemap layouts supported
-    public TextureCubemap LoadTextureCubemap(Image image, int layoutType) {
-        TextureCubemap cubemap = new TextureCubemap();
-        if (layoutType == CUBEMAP_AUTO_DETECT.GetValue()) {      // Try to automatically guess layout type
+    public Texture2D LoadTextureCubemap(Image image, CubemapLayoutType layoutType) {
+        Texture2D cubemap = new Texture2D();
+        if (layoutType == CUBEMAP_AUTO_DETECT) {      // Try to automatically guess layout type
             // Check image width/height to determine the type of cubemap provided
             if (image.width > image.height) {
                 if ((image.width / 6) == image.height) {
-                    layoutType = CUBEMAP_LINE_HORIZONTAL.GetValue();
+                    layoutType = CUBEMAP_LINE_HORIZONTAL;
                     cubemap.width = image.width / 6;
                 }
                 else if ((image.width / 4) == (image.height / 3)) {
-                    layoutType = CUBEMAP_CROSS_FOUR_BY_THREE.GetValue();
+                    layoutType = CUBEMAP_CROSS_FOUR_BY_THREE;
                     cubemap.width = image.width / 4;
                 }
                 else if (image.width >= (int) ((float) image.height * 1.85f)) {
-                    layoutType = CUBEMAP_PANORAMA.GetValue();
+                    layoutType = CUBEMAP_PANORAMA;
                     cubemap.width = image.width / 4;
                 }
             }
             else if (image.height > image.width) {
                 if ((image.height / 6) == image.width) {
-                    layoutType = CUBEMAP_LINE_VERTICAL.GetValue();
+                    layoutType = CUBEMAP_LINE_VERTICAL;
                     cubemap.width = image.height / 6;
                 }
                 else if ((image.width / 3) == (image.height / 4)) {
-                    layoutType = CUBEMAP_CROSS_THREE_BY_FOUR.GetValue();
+                    layoutType = CUBEMAP_CROSS_THREE_BY_FOUR;
                     cubemap.width = image.width / 3;
                 }
             }
@@ -3117,66 +3117,83 @@ public class rTextures{
             cubemap.height = cubemap.width;
         }
 
-        if (layoutType != CUBEMAP_AUTO_DETECT.GetValue()) {
+        if (layoutType != CUBEMAP_AUTO_DETECT) {
             int size = cubemap.width;
 
             Image faces = new Image();                // Vertical column image
             Rectangle[] faceRecs = new Rectangle[6];      // Face source rectangles
-            for (int i = 0; i < 6; i++) faceRecs[i] = new Rectangle(0, 0, (float) size, (float) size);
-
-            if (layoutType == CUBEMAP_LINE_VERTICAL.GetValue()) {
-                faces = image;
-                for (int i = 0; i < 6; i++) faceRecs[i].y = (float) size * i;
+            for (int i = 0; i < 6; i++) {
+                faceRecs[i] = new Rectangle(0, 0, (float) size, (float) size);
             }
-            else if (layoutType == CUBEMAP_PANORAMA.GetValue()) {
+
+            if (layoutType == CUBEMAP_LINE_VERTICAL) {
+                faces = image;
+                for (int i = 0; i < 6; i++) {
+                    faceRecs[i].y = (float) size * i;
+                }
+            }
+            else if (layoutType == CUBEMAP_PANORAMA) {
                 // TODO: Convert panorama image to square faces...
                 // Ref: https://github.com/denivip/panorama/blob/master/panorama.cpp
             }
-            else{
-                if (layoutType == CUBEMAP_LINE_HORIZONTAL.GetValue()) {
-                    for (int i = 0; i < 6; i++) faceRecs[i].x = (float) size * i;
+            else {
+                if (layoutType == CUBEMAP_LINE_HORIZONTAL) {
+                    for (int i = 0; i < 6; i++) {
+                        faceRecs[i].x = (float) size * i;
+                    }
                 }
-                else if (layoutType == CUBEMAP_CROSS_THREE_BY_FOUR.GetValue()) {
+                else if (layoutType == CUBEMAP_CROSS_THREE_BY_FOUR) {
                     faceRecs[0].x = (float) size;
                     faceRecs[0].y = (float) size;
+
                     faceRecs[1].x = (float) size;
                     faceRecs[1].y = (float) size * 3;
+
                     faceRecs[2].x = (float) size;
                     faceRecs[2].y = 0;
+
                     faceRecs[3].x = (float) size;
                     faceRecs[3].y = (float) size * 2;
+
                     faceRecs[4].x = 0;
                     faceRecs[4].y = (float) size;
+
                     faceRecs[5].x = (float) size * 2;
                     faceRecs[5].y = (float) size;
                 }
-                else if (layoutType == CubemapLayoutType.CUBEMAP_CROSS_FOUR_BY_THREE.GetValue()) {
+                else if (layoutType == CubemapLayoutType.CUBEMAP_CROSS_FOUR_BY_THREE) {
                     faceRecs[0].x = (float) size * 2;
                     faceRecs[0].y = (float) size;
+
                     faceRecs[1].x = 0;
                     faceRecs[1].y = (float) size;
+
                     faceRecs[2].x = (float) size;
                     faceRecs[2].y = 0;
+
                     faceRecs[3].x = (float) size;
                     faceRecs[3].y = (float) size * 2;
+
                     faceRecs[4].x = (float) size;
                     faceRecs[4].y = (float) size;
+
                     faceRecs[5].x = (float) size * 3;
                     faceRecs[5].y = (float) size;
                 }
 
                 // Convert image data to 6 faces in a vertical column, that's the optimum layout for loading
                 faces = GenImageColor(size, size * 6, Color.MAGENTA);
-                ImageFormat(faces, image.format);
+                faces = ImageFormat(faces, image.format);
 
-                // TODO: Image formating does not work with compressed textures!
+                // NOTE: Image formating does not work with compressed textures!
             }
 
             for (int i = 0; i < 6; i++) {
-                // TODO
-                // faces = ImageDraw(image, faceRecs[i], new Rectangle(0, (float) size * i, (float) size, (float) size), Color.WHITE);
+                faces = ImageDraw(faces, image, faceRecs[i], new Rectangle(0, (float) size * i, (float) size, (float) size), Color.WHITE);
             }
 
+            // NOTE: Cubemap data is expected to be provided as 6 images in a single data array,
+            // one after the other (that's a vertical image), following convention: +X, -X, +Y, -Y, +Z, -Z
             cubemap.id = context.rlgl.rlLoadTextureCubemap(faces.getData(), size, faces.format);
             if (cubemap.id == 0) {
                 context.traceLog.TRACELOG(LOG_WARNING, "IMAGE: Failed to load cubemap image");

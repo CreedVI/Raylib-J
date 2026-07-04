@@ -62,7 +62,7 @@ public class BoxCollisions {
             //----------------------------------------------------------------------------------
 
             // Move player
-            if      (rlj.core.IsKeyDown(KEY_RIGHT)) {
+            if (rlj.core.IsKeyDown(KEY_RIGHT)) {
                 playerPosition.x += 0.2f;
             }
             else if (rlj.core.IsKeyDown(KEY_LEFT)) {
@@ -78,19 +78,26 @@ public class BoxCollisions {
             collision = false;
 
             // Check collisions player vs enemy-box
-            if (rlj.models.CheckCollisionBoxes(new BoundingBox(new Vector3(playerPosition.x - playerSize.x/2, playerPosition.y - playerSize.y/2, playerPosition.z - playerSize.z/2),
-                                                               new Vector3(playerPosition.x + playerSize.x/2, playerPosition.y + playerSize.y/2, playerPosition.z + playerSize.z/2)),
-                           new BoundingBox(new Vector3(enemyBoxPos.x - enemyBoxSize.x/2,enemyBoxPos.y - enemyBoxSize.y/2,enemyBoxPos.z - enemyBoxSize.z/2),
-                           new Vector3(enemyBoxPos.x + enemyBoxSize.x/2,enemyBoxPos.y + enemyBoxSize.y/2,enemyBoxPos.z + enemyBoxSize.z/2)))
-            ) {
+            if (rlj.models.CheckCollisionBoxes(
+                    new BoundingBox(
+                            new Vector3(playerPosition.x - playerSize.x/2, playerPosition.y - playerSize.y/2, playerPosition.z - playerSize.z/2),
+                            new Vector3(playerPosition.x + playerSize.x/2, playerPosition.y + playerSize.y/2, playerPosition.z + playerSize.z/2)),
+                    new BoundingBox(
+                            new Vector3(enemyBoxPos.x - enemyBoxSize.x/2,enemyBoxPos.y - enemyBoxSize.y/2,enemyBoxPos.z - enemyBoxSize.z/2),
+                            new Vector3(enemyBoxPos.x + enemyBoxSize.x/2,enemyBoxPos.y + enemyBoxSize.y/2,enemyBoxPos.z + enemyBoxSize.z/2))
+            )) {
                 collision = true;
             }
 
             // Check collisions player vs enemy-sphere
-            if (rlj.models.CheckCollisionBoxSphere(new BoundingBox(new Vector3(playerPosition.x - playerSize.x/2, playerPosition.y - playerSize.y/2, playerPosition.z - playerSize.z/2),
-                            new Vector3(playerPosition.x + playerSize.x/2, playerPosition.y + playerSize.y/2, playerPosition.z + playerSize.z/2)),
-                            enemySpherePos, enemySphereSize)
-            ) {
+            if (rlj.models.CheckCollisionBoxSphere(
+                    new BoundingBox(
+                            new Vector3(playerPosition.x - playerSize.x/2, playerPosition.y - playerSize.y/2, playerPosition.z - playerSize.z/2),
+                            new Vector3(playerPosition.x + playerSize.x/2, playerPosition.y + playerSize.y/2, playerPosition.z + playerSize.z/2)
+                    ),
+                    enemySpherePos,
+                    enemySphereSize
+            )) {
                 collision = true;
             }
 
@@ -135,7 +142,7 @@ public class BoxCollisions {
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
-        // Nothing to do here...
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }
 

@@ -45,8 +45,8 @@ public class MeshPicking {
 
         Ray ray = new Ray();        // Picking ray
 
-        Model tower = rlj.models.LoadModel("resources/models/obj/turret.obj");                 // Load OBJ model
-        Texture2D texture = rlj.textures.LoadTexture("resources/models/obj/turret_diffuse.png"); // Load model texture
+        Model tower = rlj.models.LoadModel("src/tests/resources/models/models/obj/turret.obj");                 // Load OBJ model
+        Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/models/obj/turret_diffuse.png"); // Load model texture
         tower.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;            // Set model diffuse texture
 
         Vector3 towerPos = new Vector3();                        // Set model position
@@ -248,6 +248,10 @@ public class MeshPicking {
             //----------------------------------------------------------------------------------
         }
 
+        rlj.models.UnloadModel(tower);
+        rlj.textures.UnloadTexture(texture);
+
+        rlj.core.CloseWindow();
     }
 
 }

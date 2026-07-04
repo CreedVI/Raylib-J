@@ -1,11 +1,13 @@
 package com.raylib.java.io;
 
 import com.raylib.java.Raylib;
+import org.lwjgl.opengl.WGLNVVertexArrayRange;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import static com.raylib.java.Config.SUPPORT_STANDARD_FILEIO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
@@ -14,11 +16,9 @@ import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
 public class FileIO {
 
     private final Raylib context;
-    private final String workingDirectory;
 
     public FileIO(Raylib context) {
         this.context = context;
-        workingDirectory = context.core.GetApplicationDirectory() + "/";
     }
 
     /**
@@ -34,16 +34,13 @@ public class FileIO {
 
         if (fileName != null) {
             if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Paths.get(workingDirectory + fileName);
-
+                Path filePath = Path.of(fileName);
                 try {
-                    fileData = Files.readAllBytes(path);
+                    fileData = Files.readAllBytes(filePath);
                 }
-                catch (IOException exception) {
-                    context.traceLog.TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + path);
-                    throw exception;
+                catch (IOException e) {
+                    context.traceLog.TRACELOG(LOG_WARNING, "FILE IO: Failed to load file: " + fileName);
                 }
-
             }
             else {
                 context.traceLog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
@@ -70,7 +67,7 @@ public class FileIO {
 
         if (fileName != null){
             if (SUPPORT_STANDARD_FILEIO){
-                Path path = Paths.get(workingDirectory + fileName);
+                Path path = Path.of(fileName);
 
                 if (!path.toFile().exists()){
                     try{
@@ -117,7 +114,7 @@ public class FileIO {
 
         if (fileName != null){
             if (SUPPORT_STANDARD_FILEIO){
-                Path path = Paths.get(workingDirectory + fileName);
+                Path path = Path.of(fileName);
 
                 try {
                     text = Files.readString(path);
@@ -151,7 +148,7 @@ public class FileIO {
 
         if (fileName != null){
             if (SUPPORT_STANDARD_FILEIO){
-                Path path = Paths.get(workingDirectory + fileName);
+                Path path = Path.of(fileName);
 
                 if (!path.toFile().exists()){
                     try{

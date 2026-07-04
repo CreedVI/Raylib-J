@@ -4,7 +4,6 @@ import com.raylib.java.Raylib;
 import com.raylib.java.structs.Matrix;
 import com.raylib.java.rlgl.data.rlglData;
 import com.raylib.java.structs.Texture2D;
-import org.jetbrains.annotations.UnknownNullability;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.*;
@@ -18,15 +17,11 @@ import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.*;
 import static com.raylib.java.rlgl.RLGL.rlGlVersion.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31.*;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.opengl.GL33.GL_TEXTURE_SWIZZLE_RGBA;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
-import static org.lwjgl.opengl.GL41.GL_RGB565;
 import static org.lwjgl.opengl.GL43.*;
 import static org.lwjgl.opengles.GLES20.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS;
 import static org.lwjgl.opengles.OESDepth24.GL_DEPTH_COMPONENT24_OES;
@@ -1157,12 +1152,9 @@ public class RLGL{
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // Init default white texture
-            ByteBuffer pixels = ByteBuffer.allocateDirect(4);
-            pixels.put((byte) 255);
-            pixels.put((byte) 255);
-            pixels.put((byte) 255);
-            pixels.put((byte) 255);
-            pixels.flip();
+            byte[] pixels = {
+                    (byte) 255, (byte) 255, (byte) 255, (byte) 255
+            };
             rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
 
             if(rlglData.getState().getDefaultTextureId() != 0) {
@@ -2064,7 +2056,7 @@ public class RLGL{
 
 
     // Convert image data to OpenGL texture (returns OpenGL valid Id)
-    public int rlLoadTexture(ByteBuffer data, int width, int height, rlPixelFormat format, int mipmapCount){
+    public int rlLoadTexture(byte[] data, int width, int height, rlPixelFormat format, int mipmapCount){
         glBindTexture(GL_TEXTURE_2D, 0);    // Free any old binding
 
         int id = 0;
@@ -2120,7 +2112,7 @@ public class RLGL{
         int mipOffset = 0;          // Mipmap data offset
 
         // Load the different mipmap levels
-        for (int i = 0; i < mipmapCount; i++){
+        for (int i = 0; i < mipmapCount; i++) {
             int mipSize = rlGetPixelDataSize(mipWidth, mipHeight, format);
 
             //using globals here to get around pointers
@@ -2129,13 +2121,18 @@ public class RLGL{
             context.traceLog.TRACELOG(null, "TEXTURE: Load mipmap level " + i + " (" + mipWidth + " x " + mipHeight + "), size: " +
                     mipSize + ", offset: " + mipOffset);
 
-            if (glInternalFormat != -1){
+            if (glInternalFormat != -1) {
+                ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
+                dataBuffer.put(data);
+                dataBuffer.flip();
+
                 if (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
-                        glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, data);
+                    // Todo: HDR breaks here
+                    glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, dataBuffer);
                 }
                 else{
                     if (!GRAPHICS_API_OPENGL_11){
-                        glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, data);
+                        glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, dataBuffer);
                     }
                 }
 
@@ -2149,7 +2146,7 @@ public class RLGL{
                         if (GRAPHICS_API_OPENGL_21){
                             swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ALPHA};
                         }
-                        else if (GRAPHICS_API_OPENGL_33){
+                        else {
                             swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_GREEN};
                         }
                         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
@@ -2235,7 +2232,7 @@ public class RLGL{
             // Possible formats: GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32 and GL_DEPTH_COMPONENT32F
             int glInternalFormat = GL_DEPTH_COMPONENT;
 
-            if (GRAPHICS_API_OPENGL_ES2){
+            if (GRAPHICS_API_OPENGL_ES2) {
                 if(!rlglData.getExtSupported().texDepthWebGL) {
                     if (rlglData.getExtSupported().getMaxDepthBits() == 32) {
                         glInternalFormat = GL_DEPTH_COMPONENT32_OES;
@@ -2293,16 +2290,16 @@ public class RLGL{
 
             rlGetGlTextureFormats(format);
 
-            if (glInternalFormat != -1){
+            if (glInternalFormat != -1) {
                 // Load cubemap faces
-                for (int i = 0; i < 6; i++){
+                for (int i = 0; i < 6; i++) {
                     if (data == null){
                         if (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
-                            if (format == RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32){
+                            if (format == RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32) {
                                 // Instead of using a sized internal texture format (GL_RGB16F, GL_RGB32F), we let the driver to choose the better format for us (GL_RGB)
                                 if (rlglData.getExtSupported().isTexFloat32()){
                                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, size, size,
-                                            0, GL_RGB, GL_FLOAT, (int[]) null);
+                                                 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
                                 }
                                 else{
                                     context.traceLog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
@@ -2313,7 +2310,7 @@ public class RLGL{
                             }
                             else{
                                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
-                                        glFormat, glType, (int[]) null);
+                                             glFormat, glType, (ByteBuffer) null);
                             }
                         }
                         else{
@@ -2322,13 +2319,16 @@ public class RLGL{
                         }
                     }
                     else{
+                        ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
+                        dataBuffer.put(data);
+
                         if (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
                             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
-                                         glFormat, glType, (long) data[i] * dataSize);
+                                         glFormat, glType, dataBuffer);
                         }
                         else{
                             glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size,
-                                    size, 0, dataSize, (long) data[i] * dataSize);
+                                                   size, 0, dataBuffer);
                         }
                     }
                     int[] swizzleMask = new int[16];
@@ -2390,7 +2390,7 @@ public class RLGL{
     }
 
     // Get OpenGL internal formats and data type from raylib rlPixelFormat
-    private void rlGetGlTextureFormats(@UnknownNullability rlPixelFormat format){
+    private void rlGetGlTextureFormats(rlPixelFormat format){
         glInternalFormat = -1;
         glFormat = -1;
         glType = -1;
@@ -3921,7 +3921,7 @@ public class RLGL{
     }
 
     // Get name string for pixel format
-    public String rlGetPixelFormatName(@UnknownNullability rlPixelFormat format){
+    public String rlGetPixelFormatName(rlPixelFormat format){
         switch (format) {
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE: return "GRAYSCALE";          // 8 bit per pixel (no alpha)
             case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA: return "GRAY_ALPHA";        // 8*2 bpp (2 channels)
@@ -4341,7 +4341,7 @@ public class RLGL{
         return mipmap;
     }
 
-    public int rlGetPixelDataSize(int width, int height, @UnknownNullability rlPixelFormat format){
+    public int rlGetPixelDataSize(int width, int height, rlPixelFormat format){
         int dataSize = 0;       // Size in bytes
         int bpp = 0;            // Bits per pixel
 

@@ -115,6 +115,8 @@ public class FirstPersonMaze {
         rlj.textures.UnloadTexture(cubicmap);        // Unload cubicmap texture
         rlj.textures.UnloadTexture(texture);         // Unload map texture
         rlj.models.UnloadModel(model);             // Unload map model
+
+        rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
 
     }
