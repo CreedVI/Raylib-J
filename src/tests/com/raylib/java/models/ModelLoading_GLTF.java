@@ -2,9 +2,8 @@ package com.raylib.java.models;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.core.rcamera.Camera3D;
-import com.raylib.java.structs.Model;
+import com.raylib.java.structs.*;
 import com.raylib.java.structs.ModelAnimation;
-import com.raylib.java.structs.Vector3;
 
 import static com.raylib.java.core.input.Keyboard.KEY_DOWN;
 import static com.raylib.java.core.input.Keyboard.KEY_UP;
@@ -44,7 +43,9 @@ public class ModelLoading_GLTF {
         int screenWidth = 800;
         int screenHeight = 450;
 
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - loading gltf");
+        String modelFile = "src/tests/resources/models/models/gltf/girl.glb";
+
+        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - loading glTF");
 
         // Define the camera to look into our 3d world
         Camera3D camera = new Camera3D(rlj);
@@ -54,15 +55,15 @@ public class ModelLoading_GLTF {
         camera.fovy = 45.0f;                                // Camera field-of-view Y
         camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
 
-        // Load gltf model
-        Model model = rlj.models.LoadModel("src/tests/resources/models/models/gltf/robot.glb");
+        // Load glTF model
+        Model model = rlj.models.LoadModel(modelFile);
 
-        // Load gltf model animations
-        int animsCount = 0;
+        BoundingBox box = rlj.models.GetModelBoundingBox(model);
+
+        // Load glTF model animations
         int animIndex = 0;
         int animCurrentFrame = 0;
-        ModelAnimation[] modelAnimations = rlj.models.LoadModelAnimations("src/tests/resources/models/models/gltf/robot.glb");
-        animsCount = modelAnimations.length;
+        ModelAnimation[] modelAnimations = rlj.models.LoadModelAnimations(modelFile);
 
         Vector3 position = new Vector3();    // Set model position
 
@@ -79,10 +80,10 @@ public class ModelLoading_GLTF {
             camera.Update(CAMERA_THIRD_PERSON);
             // Select current animation
             if (rlj.core.IsKeyPressed(KEY_UP)) {
-                animIndex = (animIndex + 1)%animsCount;
+                animIndex = (animIndex + 1) % modelAnimations.length;
             }
             else if (rlj.core.IsKeyPressed(KEY_DOWN)) {
-                animIndex = (animIndex + animsCount - 1)%animsCount;
+                animIndex = (animIndex + modelAnimations.length - 1) % modelAnimations.length;
             }
 
             // Update model animation
@@ -100,6 +101,7 @@ public class ModelLoading_GLTF {
             rlj.core.BeginMode3D(camera);
 
             rlj.models.DrawModel(model, position, 1.0f, WHITE);    // Draw animated model
+            rlj.models.DrawBoundingBox(box, DARKBLUE);
 
             rlj.models.DrawGrid(10, 1.0f);
 
