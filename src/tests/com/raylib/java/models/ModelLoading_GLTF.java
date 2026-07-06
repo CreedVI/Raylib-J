@@ -43,7 +43,7 @@ public class ModelLoading_GLTF {
         int screenWidth = 800;
         int screenHeight = 450;
 
-        String modelFile = "src/tests/resources/models/models/gltf/girl.glb";
+        String modelFile = "src/tests/resources/models/models/gltf/robot.glb";
 
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - loading glTF");
 

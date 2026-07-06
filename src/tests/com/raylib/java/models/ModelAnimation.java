@@ -82,7 +82,7 @@ public class ModelAnimation {
             camera.Update(CAMERA_FIRST_PERSON);
 
             // Play animation when spacebar is held down
-            if (rlj.core.IsKeyPressed(KEY_SPACE)) {
+            if (rlj.core.IsKeyDown(KEY_SPACE)) {
                 animFrameCounter++;
                 rlj.models.UpdateModelAnimation(model, anims[0], animFrameCounter);
                 if (animFrameCounter >= anims[0].frameCount) {
@@ -116,8 +116,6 @@ public class ModelAnimation {
             for (int i = 0; i < model.boneCount; i++) {
                 rlj.models.DrawCube(anims[0].framePoses[animFrameCounter][i].translation, 0.2f, 0.2f, 0.2f, RED);
             }
-            rlj.models.DrawCube(new Vector3(model.meshes[0].vertices[vertex], model.meshes[0].vertices[vertex + 1], model.meshes[0].vertices[vertex + 2]), 0.2f, 0.2f, 0.2f, BLUE);
-            rlj.models.DrawCube(new Vector3(model.meshes[0].animVertices[vertex], model.meshes[0].animVertices[vertex + 1], model.meshes[0].animVertices[vertex + 2]), 0.2f, 0.2f, 0.2f, GREEN);
 
             rlj.models.DrawGrid(10, 1.0f);         // Draw a grid 
 
@@ -125,9 +123,6 @@ public class ModelAnimation {
 
             rlj.text.DrawText("PRESS SPACE to PLAY MODEL ANIMATION", 10, 10, 20, MAROON);
             rlj.text.DrawText("(c) Guy IQM 3D model by @culacant", screenWidth - 200, screenHeight - 20, 10, GRAY);
-
-            rlj.text.DrawText(rlj.text.TextFormat("Pose: %f, %f, %f", model.meshes[0].vertices[vertex], model.meshes[0].vertices[vertex + 1], model.meshes[0].vertices[vertex + 2]), 20, 30, 20, BLUE);
-            rlj.text.DrawText(rlj.text.TextFormat("Anim: %f, %f, %f", model.meshes[0].animVertices[vertex], model.meshes[0].animVertices[vertex + 1], model.meshes[0].animVertices[vertex + 2]), 20, 50, 20, GREEN);
 
             rlj.core.EndDrawing();
             //----------------------------------------------------------------------------------

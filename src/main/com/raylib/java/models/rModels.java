@@ -3653,8 +3653,8 @@ public class rModels{
     // Module specific Functions Definition
     //----------------------------------------------------------------------------------
 
-    private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, int boneCount, Transform[] transforms) {
-        Transform[] result = new Transform[boneCount];
+    private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, Transform[] transforms) {
+        Transform[] result = new Transform[bones.length];
 
         for (int i = 0; i < bones.length; i++) {
             result[i] = new Transform();
@@ -3665,10 +3665,9 @@ public class rModels{
                     continue;
                 }
                 result[i].rotation = QuaternionMultiply(transforms[bones[i].parent].rotation, transforms[i].rotation);
-                result[i].scale = Vector3Multiply(transforms[i].scale, transforms[bones[i].parent].scale);
-                result[i].translation = Vector3Multiply(transforms[i].translation, transforms[bones[i].parent].scale);
                 result[i].translation = Vector3RotateByQuaternion(transforms[i].translation, transforms[bones[i].parent].rotation);
                 result[i].translation = Vector3Add(transforms[i].translation, transforms[bones[i].parent].translation);
+                result[i].scale = Vector3Multiply(transforms[i].scale, transforms[bones[i].parent].scale);
             }
         }
 
@@ -4188,7 +4187,7 @@ public class rModels{
                 model.bindPose[i].scale.z = joint[i].scale[2];
             }
 
-            model.bindPose = BuildPoseFromParentJoints(model.bones, header.num_joints, model.bindPose);
+            model.bindPose = BuildPoseFromParentJoints(model.bones, model.bindPose);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -5375,7 +5374,7 @@ public class rModels{
                     }
                 }
 
-                model.bindPose = BuildPoseFromParentJoints(model.bones, model.boneCount, model.bindPose);
+                model.bindPose = BuildPoseFromParentJoints(model.bones, model.bindPose);
             }
             else if (gltf.getSkinModels().size() > 1) {
                 context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.getSkinModels().size());
@@ -5441,8 +5440,8 @@ public class rModels{
                     }
 
                     // Animated vertex data
-                    model.meshes[meshIndex].animVertices = model.meshes[meshIndex].vertices;
-                    model.meshes[meshIndex].animNormals = model.meshes[meshIndex].normals;
+                    model.meshes[meshIndex].animVertices = (model.meshes[meshIndex].vertices != null) ? model.meshes[meshIndex].vertices.clone() : null;
+                    model.meshes[meshIndex].animNormals = (model.meshes[meshIndex].normals != null) ? model.meshes[meshIndex].normals.clone() : null;
 
                     meshIndex++;       // Move to next mesh
                 }
@@ -5490,14 +5489,14 @@ public class rModels{
         }
 
         if (output.getElementType() == ElementType.VEC3) {
-            Vector3 v1 = new Vector3(outputData.get(keyframe), outputData.get(keyframe + 2), outputData.get(keyframe + 2));
+            Vector3 v1 = new Vector3(outputData.get(keyframe), outputData.get(keyframe + 1), outputData.get(keyframe + 2));
             Vector3 v2 = new Vector3(outputData.get(keyframe + output.getElementSizeInBytes()), outputData.get(keyframe + output.getElementSizeInBytes() + 1), outputData.get(keyframe + output.getElementSizeInBytes() + 2));
 
             Vector3 r = Vector3Lerp(v1, v2, t);
             pose = new float[]{r.x, r.y, r.z};
         }
         else if (output.getElementType() == ElementType.VEC4) {
-            Quaternion v1 = new Quaternion(outputData.get(keyframe), outputData.get(keyframe + 2), outputData.get(keyframe + 2), outputData.get(keyframe + 3));
+            Quaternion v1 = new Quaternion(outputData.get(keyframe), outputData.get(keyframe + 1), outputData.get(keyframe + 2), outputData.get(keyframe + 3));
             Quaternion v2 = new Quaternion(outputData.get(keyframe + output.getElementSizeInBytes()), outputData.get(keyframe + output.getElementSizeInBytes() + 1), outputData.get(keyframe + output.getElementSizeInBytes() + 2), outputData.get(keyframe + output.getElementSizeInBytes() + 3));
 
             // Only v4 is for rotations, so we know it's a quat
@@ -5509,9 +5508,9 @@ public class rModels{
     }
 
     private static class Channels {
-        AnimationModel.Sampler translate;
-        AnimationModel.Sampler rotate;
-        AnimationModel.Sampler scale;
+         AnimationModel.Channel translate;
+         AnimationModel.Channel rotate;
+         AnimationModel.Channel scale;
 
         Channels() {
         }
@@ -5568,13 +5567,13 @@ public class rModels{
 
                     if (channel.getSampler().getInterpolation() == AnimationModel.Interpolation.LINEAR) {
                         if (channel.getPath().equalsIgnoreCase("TRANSLATION")) {
-                            boneChannels[boneIndex].translate = channel.getSampler();
+                            boneChannels[boneIndex].translate = channel;
                         }
                         else if (channel.getPath().equalsIgnoreCase("ROTATION")) {
-                            boneChannels[boneIndex].rotate = channel.getSampler();
+                            boneChannels[boneIndex].rotate = channel;
                         }
                         else if (channel.getPath().equalsIgnoreCase("SCALE")) {
-                            boneChannels[boneIndex].scale = channel.getSampler();
+                            boneChannels[boneIndex].scale = channel;
                         }
                         else {
                             context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Unsupported target_path on channel " + j + "'s sampler for animation " + i + ". Skipping.");
@@ -5608,7 +5607,7 @@ public class rModels{
                         Vector3 scale = new Vector3(1, 1, 1);
 
                         if (boneChannels[k].translate != null) {
-                            float[] tTranslate = GetPoseAtTimeGLTF(boneChannels[k].translate.getInput(), boneChannels[k].translate.getOutput(), time);
+                            float[] tTranslate = GetPoseAtTimeGLTF(boneChannels[k].translate.getSampler().getInput(), boneChannels[k].translate.getSampler().getOutput(), time);
                             if (tTranslate != null) {
                                 translation = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
                             }
@@ -5618,7 +5617,7 @@ public class rModels{
                         }
 
                         if (boneChannels[k].rotate != null) {
-                            float[] tRotate = GetPoseAtTimeGLTF(boneChannels[k].rotate.getInput(), boneChannels[k].rotate.getOutput(), time);
+                            float[] tRotate = GetPoseAtTimeGLTF(boneChannels[k].rotate.getSampler().getInput(), boneChannels[k].rotate.getSampler().getOutput(), time);
                             if (tRotate != null) {
                                 rotation = new Quaternion(tRotate[0], tRotate[1], tRotate[2], tRotate[3]);
                             }
@@ -5628,7 +5627,7 @@ public class rModels{
                         }
 
                         if (boneChannels[k].scale != null) {
-                            float[] tScale = GetPoseAtTimeGLTF(boneChannels[k].scale.getInput(), boneChannels[k].scale.getOutput(), time);
+                            float[] tScale = GetPoseAtTimeGLTF(boneChannels[k].scale.getSampler().getInput(), boneChannels[k].scale.getSampler().getOutput(), time);
                             if (tScale != null) {
                                 scale = new Vector3(tScale[0], tScale[1], tScale[2]);
                             }
@@ -5643,7 +5642,7 @@ public class rModels{
                         animations[i].framePoses[j][k].scale = scale;
                     }
 
-                    animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].boneCount, animations[i].framePoses[j]);
+                    animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].framePoses[j]);
                 }
 
                 context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.getName() + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
