@@ -277,9 +277,9 @@ public class Raymath{
         Vector2 result = new Vector2();
         float length = (float) Math.sqrt((v.x*v.x) + (v.y*v.y));
         if (length > 0) {
-            float ilength = 1.0f/length;
-            result.x = v.x*ilength;
-            result.y = v.y*ilength;
+            float iLength = 1.0f/length;
+            result.x = v.x*iLength;
+            result.y = v.y*iLength;
         }
         return result;
     }
@@ -519,14 +519,14 @@ public class Raymath{
         result.y= v.y;
         result.z = v.z;
 
-        float length, ilength;
+        float length, iLength;
         length = Vector3Length(result);
         if (length == 0.0f) length = 1.0f;
-        ilength = 1.0f / length;
+        iLength = 1.0f / length;
 
-        result.x *= ilength;
-        result.y *= ilength;
-        result.z *= ilength;
+        result.x *= iLength;
+        result.y *= iLength;
+        result.z *= iLength;
 
         return result;
     }
@@ -574,10 +574,10 @@ public class Raymath{
             length = 1.0f;
         }
 
-        float ilength = 1.0f / length;
-        axis.x *= ilength;
-        axis.y *= ilength;
-        axis.z *= ilength;
+        float iLength = 1.0f / length;
+        axis.x *= iLength;
+        axis.y *= iLength;
+        axis.z *= iLength;
 
         angle /= 2.0f;
         float a = (float) Math.sin(angle);
@@ -965,10 +965,10 @@ public class Raymath{
         float lengthSquared = x*x + y*y + z*z;
 
         if ((lengthSquared != 1.0f) && (lengthSquared != 0.0f)) {
-            float ilength = (float) (1.0f/Math.sqrt(lengthSquared));
-            x *= ilength;
-            y *= ilength;
-            z *= ilength;
+            float iLength = (float) (1.0f/Math.sqrt(lengthSquared));
+            x *= iLength;
+            y *= iLength;
+            z *= iLength;
         }
 
         float sinres = (float) Math.sin(angle);
@@ -1210,7 +1210,7 @@ public class Raymath{
         Matrix result = new Matrix();
 
         float length = 0.0f;
-        float ilength = 0.0f;
+        float iLength = 0.0f;
 
         // Vector3Subtract(eye, target)
         Vector3 vz = new Vector3(eye.x - target.x, eye.y - target.y, eye.z - target.z);
@@ -1219,10 +1219,10 @@ public class Raymath{
         Vector3 v = vz;
         length = (float) Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
         if (length == 0.0f) length = 1.0f;
-        ilength = 1.0f/length;
-        vz.x *= ilength;
-        vz.y *= ilength;
-        vz.z *= ilength;
+        iLength = 1.0f/length;
+        vz.x *= iLength;
+        vz.y *= iLength;
+        vz.z *= iLength;
 
         // Vector3CrossProduct(up, vz)
         Vector3 vx = new Vector3(up.y*vz.z - up.z*vz.y, up.z*vz.x - up.x*vz.z, up.x*vz.y - up.y*vz.x);
@@ -1231,10 +1231,10 @@ public class Raymath{
         v = vx;
         length = (float) Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
         if (length == 0.0f) length = 1.0f;
-        ilength = 1.0f/length;
-        vx.x *= ilength;
-        vx.y *= ilength;
-        vx.z *= ilength;
+        iLength = 1.0f/length;
+        vx.x *= iLength;
+        vx.y *= iLength;
+        vx.z *= iLength;
 
         // Vector3CrossProduct(vz, vx)
         Vector3 vy = new Vector3(vz.y*vx.z - vz.z*vx.y, vz.z*vx.x - vz.x*vx.z, vz.x*vx.y - vz.y*vx.x);
@@ -1329,15 +1329,15 @@ public class Raymath{
     public static Quaternion QuaternionNormalize(Quaternion q){
         Quaternion result = new Quaternion();
 
-        float length, ilength;
+        float length, iLength;
         length = QuaternionLength(q);
         if (length == 0.0f) length = 1.0f;
-        ilength = 1.0f/length;
+        iLength = 1.0f/length;
 
-        result.x = q.x*ilength;
-        result.y = q.y*ilength;
-        result.z = q.z*ilength;
-        result.w = q.w*ilength;
+        result.x = q.x*iLength;
+        result.y = q.y*iLength;
+        result.z = q.z*iLength;
+        result.w = q.w*iLength;
 
         return result;
     }
@@ -1347,7 +1347,7 @@ public class Raymath{
 
         float lengthSq = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
 
-        if (lengthSq != 0.0f){
+        if (lengthSq != 0.0f) {
             float invLength = 1.0f/lengthSq;
 
             result.x *= -invLength;
@@ -1400,8 +1400,24 @@ public class Raymath{
     }
 
     public static Quaternion QuaternionNlerp(Quaternion q1, Quaternion q2, float amount){
-        Quaternion result = QuaternionLerp(q1, q2, amount);
-        result = QuaternionNormalize(result);
+        Quaternion result = new Quaternion();
+        
+        // QuaternionLerp(q1, q2, amount)
+        result.x = q1.x + amount*(q2.x - q1.x);
+        result.y = q1.y + amount*(q2.y - q1.y);
+        result.z = q1.z + amount*(q2.z - q1.z);
+        result.w = q1.w + amount*(q2.w - q1.w);
+
+        // QuaternionNormalize(q);
+        Quaternion q = result;
+        float length = (float) Math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
+        if (length == 0.0f) length = 1.0f;
+        float iLength = 1.0f/length;
+
+        result.x = q.x*iLength;
+        result.y = q.y*iLength;
+        result.z = q.z*iLength;
+        result.w = q.w*iLength;
 
         return result;
     }
@@ -1410,6 +1426,15 @@ public class Raymath{
         Quaternion result = new Quaternion();
 
         float cosHalfTheta = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+
+        if (cosHalfTheta < 0)
+        {
+            q2.x = -q2.x;
+            q2.y = -q2.y;
+            q2.z = -q2.z;
+            q2.w = -q2.w;
+            cosHalfTheta = -cosHalfTheta;
+        }
 
         if (Math.abs(cosHalfTheta) >= 1.0f){
             result = q1;
@@ -1560,15 +1585,15 @@ public class Raymath{
             angle *= 0.5f;
 
             float length;
-            float ilength;
+            float iLength;
 
             // Vector3Normalize(axis)
             length = (float) Math.sqrt(axis.x* axis.x + axis.y* axis.y + axis.z* axis.z);
             if (length == 0.0f) length = 1.0f;
-            ilength = 1.0f/length;
-            axis.x *= ilength;
-            axis.y *= ilength;
-            axis.z *= ilength;
+            iLength = 1.0f/length;
+            axis.x *= iLength;
+            axis.y *= iLength;
+            axis.z *= iLength;
 
             float sinres = (float) Math.sin(angle);
             float cosres = (float) Math.cos(angle);
@@ -1581,11 +1606,11 @@ public class Raymath{
             // QuaternionNormalize(q);
             length = (float) Math.sqrt(result.x* result.x + result.y* result.y + result.z* result.z + result.w* result.w);
             if (length == 0.0f) length = 1.0f;
-            ilength = 1.0f/length;
-            result.x = result.x*ilength;
-            result.y = result.y*ilength;
-            result.z = result.z*ilength;
-            result.w = result.w*ilength;
+            iLength = 1.0f/length;
+            result.x = result.x*iLength;
+            result.y = result.y*iLength;
+            result.z = result.z*iLength;
+            result.w = result.w*iLength;
         }
 
         return result;

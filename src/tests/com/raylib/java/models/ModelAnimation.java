@@ -131,7 +131,7 @@ public class ModelAnimation {
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.textures.UnloadTexture(texture);                     // Unload texture
-        rlj.models.UnloadModelAnimations(anims, animsCount);   // Unload model animations data
+        rlj.models.UnloadModelAnimations(anims);   // Unload model animations data
         rlj.models.UnloadModel(model);                         // Unload model
 
         rlj.core.CloseWindow();                  // Close window and OpenGL context

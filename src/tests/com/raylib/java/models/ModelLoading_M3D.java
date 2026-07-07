@@ -176,7 +176,7 @@ public class ModelLoading_M3D {
         //--------------------------------------------------------------------------------------
 
         // Unload model animations data
-        rlj.models.UnloadModelAnimations(anims, animsCount);
+        rlj.models.UnloadModelAnimations(anims);
 
         rlj.models.UnloadModel(model);         // Unload model
 

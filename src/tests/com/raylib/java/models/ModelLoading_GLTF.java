@@ -115,6 +115,7 @@ public class ModelLoading_GLTF {
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
+        rlj.models.UnloadModelAnimations(modelAnimations);   // Unload model animations data
         rlj.models.UnloadModel(model);         // Unload model and meshes/material
 
         rlj.core.CloseWindow();              // Close window and OpenGL context

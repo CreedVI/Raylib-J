@@ -1908,8 +1908,8 @@ public class rModels{
     }
 
     // Unload animation array data
-    public void UnloadModelAnimations(ModelAnimation[] animations, int count) {
-        for (int i = 0; i < count; i++) {
+    public void UnloadModelAnimations(ModelAnimation[] animations) {
+        for (int i = 0; i < animations.length; i++) {
             UnloadModelAnimation(animations[i]);
         }
         animations = null;
@@ -3654,20 +3654,19 @@ public class rModels{
     //----------------------------------------------------------------------------------
 
     private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, Transform[] transforms) {
-        Transform[] result = new Transform[bones.length];
+        Transform[] result = transforms.clone();
 
         for (int i = 0; i < bones.length; i++) {
-            result[i] = new Transform();
 
             if (bones[i].parent >= 0) {
                 if (bones[i].parent > i) {
                     context.traceLog.TRACELOG(LOG_WARNING, "Assumes bones are topologically sorted, but bone " + i + " has parent " + bones[i].parent + ". Skipping.");
                     continue;
                 }
-                result[i].rotation = QuaternionMultiply(transforms[bones[i].parent].rotation, transforms[i].rotation);
-                result[i].translation = Vector3RotateByQuaternion(transforms[i].translation, transforms[bones[i].parent].rotation);
-                result[i].translation = Vector3Add(transforms[i].translation, transforms[bones[i].parent].translation);
-                result[i].scale = Vector3Multiply(transforms[i].scale, transforms[bones[i].parent].scale);
+                result[i].rotation = QuaternionMultiply(result[bones[i].parent].rotation, result[i].rotation);
+                result[i].translation = Vector3RotateByQuaternion(result[i].translation, result[bones[i].parent].rotation);
+                result[i].translation = Vector3Add(result[i].translation, result[bones[i].parent].translation);
+                result[i].scale = Vector3Multiply(result[i].scale, result[bones[i].parent].scale);
             }
         }
 
@@ -5507,7 +5506,7 @@ public class rModels{
         return pose;
     }
 
-    private static class Channels {
+    private class Channels {
          AnimationModel.Channel translate;
          AnimationModel.Channel rotate;
          AnimationModel.Channel scale;
