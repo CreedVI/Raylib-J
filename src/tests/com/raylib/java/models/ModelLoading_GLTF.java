@@ -1,13 +1,13 @@
 package com.raylib.java.models;
 
 import com.raylib.java.Raylib;
+import com.raylib.java.core.input.Mouse;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.*;
 import com.raylib.java.structs.ModelAnimation;
 
-import static com.raylib.java.core.input.Keyboard.KEY_DOWN;
-import static com.raylib.java.core.input.Keyboard.KEY_UP;
-import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_THIRD_PERSON;
+import static com.raylib.java.core.input.Keyboard.*;
+import static com.raylib.java.core.rcamera.Camera3D.CameraMode.*;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.structs.Color.*;
 
@@ -43,7 +43,7 @@ public class ModelLoading_GLTF {
         int screenWidth = 800;
         int screenHeight = 450;
 
-        String modelFile = "src/tests/resources/models/models/gltf/robot.glb";
+        String modelFile = "src/tests/resources/models/models/gltf/girl.glb";
 
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - loading glTF");
 
@@ -58,14 +58,14 @@ public class ModelLoading_GLTF {
         // Load glTF model
         Model model = rlj.models.LoadModel(modelFile);
 
-        BoundingBox box = rlj.models.GetModelBoundingBox(model);
-
         // Load glTF model animations
         int animIndex = 0;
         int animCurrentFrame = 0;
         ModelAnimation[] modelAnimations = rlj.models.LoadModelAnimations(modelFile);
 
         Vector3 position = new Vector3();    // Set model position
+
+        boolean drawModel = true;
 
         // rlj.core.DisableCursor();                    // Limit cursor to relative movement inside the window
 
@@ -77,19 +77,39 @@ public class ModelLoading_GLTF {
         {
             // Update
             //----------------------------------------------------------------------------------
-            camera.Update(CAMERA_THIRD_PERSON);
+            camera.Update(CAMERA_ORBITAL);
             // Select current animation
-            if (rlj.core.IsKeyPressed(KEY_UP)) {
+            if (rlj.core.IsMouseButtonPressed(Mouse.MouseButton.MOUSE_BUTTON_LEFT)) {
                 animIndex = (animIndex + 1) % modelAnimations.length;
+                animCurrentFrame = 0;
             }
-            else if (rlj.core.IsKeyPressed(KEY_DOWN)) {
+            else if (rlj.core.IsMouseButtonPressed(Mouse.MouseButton.MOUSE_BUTTON_RIGHT)) {
                 animIndex = (animIndex + modelAnimations.length - 1) % modelAnimations.length;
+                animCurrentFrame = 0;
+            }
+
+            if (rlj.core.IsKeyPressed(KEY_RIGHT)) {
+                animCurrentFrame++;
+
+                if (animCurrentFrame >= modelAnimations[animIndex].frameCount) {
+                    animCurrentFrame = 0;
+                }
+            }
+            else if (rlj.core.IsKeyPressed(KEY_LEFT)) {
+                animCurrentFrame--;
+
+                if (animCurrentFrame < 0) {
+                    animCurrentFrame = modelAnimations[animIndex].frameCount - 1;
+                }
+            }
+            else if (rlj.core.IsKeyPressed(KEY_SPACE)) {
+                drawModel = !drawModel;
             }
 
             // Update model animation
             ModelAnimation anim = modelAnimations[animIndex];
-            animCurrentFrame = (animCurrentFrame + 1) % anim.frameCount;
-            rlj.models.UpdateModelAnimation(model, anim, animCurrentFrame);
+            // animCurrentFrame = (animCurrentFrame + 1) % anim.frameCount;
+            // rlj.models.UpdateModelAnimation(model, anim, animCurrentFrame);
             //----------------------------------------------------------------------------------
 
             // Draw
@@ -100,14 +120,33 @@ public class ModelLoading_GLTF {
 
             rlj.core.BeginMode3D(camera);
 
-            rlj.models.DrawModel(model, position, 1.0f, WHITE);    // Draw animated model
-            rlj.models.DrawBoundingBox(box, DARKBLUE);
+            if (drawModel) {
+                rlj.models.DrawModel(model, position, 1.0f, WHITE);    // Draw animated model
+            }
+
+            for (int i = 0; i < model.boneCount - 1; i++) {
+                // Display the bind-pose skeleton
+                rlj.models.DrawCube(model.bindPose[i].translation, 0.04f, 0.04f, 0.04f, DARKGREEN);
+
+                if (model.bones[i].parent >= 0) {
+                    rlj.models.DrawLine3D(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation, GREEN);
+                }
+
+                // Display the frame-pose skeleton
+                rlj.models.DrawCube(modelAnimations[animIndex].framePoses[animCurrentFrame][i].translation, 0.05f, 0.05f, 0.05f, RED);
+
+                if (modelAnimations[animIndex].bones[i].parent >= 0) {
+                    rlj.models.DrawLine3D(modelAnimations[animIndex].framePoses[animCurrentFrame][i].translation,
+                                          modelAnimations[animIndex].framePoses[animCurrentFrame][modelAnimations[animIndex].bones[i].parent].translation, RED);
+                }
+            }
 
             rlj.models.DrawGrid(10, 1.0f);
 
             rlj.core.EndMode3D();
 
             rlj.text.DrawText("Use the UP/DOWN arrow keys to switch animation", 10, 10, 20, GRAY);
+            rlj.text.DrawText(rlj.text.TextFormat("Animation: %s, frame: %d", anim.name, animCurrentFrame), 10, 30, 20, BLACK);
 
             rlj.core.EndDrawing();
             //----------------------------------------------------------------------------------

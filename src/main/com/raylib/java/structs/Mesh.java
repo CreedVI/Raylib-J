@@ -20,6 +20,8 @@ public class Mesh {
     public float[] animNormals;     // Animated normals (after bones transformations)
     public byte[] boneIds;          // Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
     public float[] boneWeights;     // Vertex bone weight, up to 4 bones influence by vertex (skinning)
+    public Matrix[] boneMatrices;   // Bones animated transformation matrices
+    public int boneCount;          // Number of bones
 
     // OpenGL identifiers
     public int vaoId;               // OpenGL Vertex Array Object id

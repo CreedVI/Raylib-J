@@ -203,7 +203,7 @@ public class VoxLoader {
     public static final int VOX_SUCCESS = 0;
     public static final int VOX_ERROR_FILE_NOT_FOUND = -1;
     public static final int VOX_ERROR_INVALID_FORMAT = -2;
-    public static final int VOX_ERROR_FILE_VERSION_TOO_OLD = -3;
+    public static final int VOX_ERROR_FILE_VERSION_NOT_MATCH = -3;
 
     private static final int CHUNKSIZE                   = 16;      // chunk size (CHUNKSIZE*CHUNKSIZE*CHUNKSIZE) in voxels
     private static final int CHUNKSIZE_OPSHIFT           =  4;      // 1<<4=16 -> Warning depend of CHUNKSIZE
@@ -518,8 +518,8 @@ public class VoxLoader {
             int version = Vox_toInt(tmp);
             fileDataPtr += 4;
 
-            if (Integer.compareUnsigned(version, 150) < 0) {
-                return VOX_ERROR_FILE_VERSION_TOO_OLD; //"MagicaVoxel version too old"
+            if (Integer.compareUnsigned(version, 150) != 0) {
+                return VOX_ERROR_FILE_VERSION_NOT_MATCH; //"MagicaVoxel version does not match"
             }
 
             // header

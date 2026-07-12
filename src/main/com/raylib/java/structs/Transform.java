@@ -12,4 +12,9 @@ public class Transform {
         rotation = new Quaternion();
     }
 
+    public Transform(Vector3 translation, Quaternion rotation, Vector3 scale) {
+        this.translation = translation;
+        this.rotation = rotation;
+        this.scale = scale;
+    }
 }

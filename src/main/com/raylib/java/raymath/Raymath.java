@@ -249,8 +249,7 @@ public class Raymath{
 
         float dot = start.x*end.x + start.y*end.y; // Dor product
 
-        float dotClamp = (dot < -1.0f) ? -1.0f : dot; // Clamp
-        dotClamp = (dot > 1.0f) ? 1.0f : dot; // Clamp
+        float dotClamp = (dot > 1.0f) ? 1.0f : dot; // Clamp
 
         result = (float) Math.acos(dotClamp);
 
@@ -1702,6 +1701,75 @@ public class Raymath{
                         ((Math.abs(p.z + q.z)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.z), Math.abs(q.z))))) &&
                         ((Math.abs(p.w + q.w)) <= (EPSILON*Math.max(1.0f, Math.max(Math.abs(p.w), Math.abs(q.w))))));
         return result;
+    }
+
+    // Decompose a transformation matrix into its rotational, translational and scaling components
+    // NOTE: This method directly modifies `translation`, `rotation`, and `scale`
+    public static void MatrixDecompose(Matrix mat, Vector3 translation, Quaternion rotation, Vector3 scale) {
+        // Extract translation.
+        translation.x = mat.m12;
+        translation.y = mat.m13;
+        translation.z = mat.m14;
+
+        // Extract upper-left for determinant computation
+        float a = mat.m0;
+        float b = mat.m4;
+        float c = mat.m8;
+        float d = mat.m1;
+        float e = mat.m5;
+        float f = mat.m9;
+        float g = mat.m2;
+        float h = mat.m6;
+        float i = mat.m10;
+        float A = e*i - f*h;
+        float B = f*g - d*i;
+        float C = d*h - e*g;
+
+        // Extract scale
+        float det = a*A + b*B + c*C;
+        Vector3 abc = new Vector3(a, b, c);
+        Vector3 def = new Vector3(d, e, f);
+        Vector3 ghi = new Vector3(g, h, i);
+
+        float scalex = Vector3Length(abc);
+        float scaley = Vector3Length(def);
+        float scalez = Vector3Length(ghi);
+        Vector3 s = new Vector3(scalex, scaley, scalez);
+
+        if (det < 0) {
+            s = Vector3Negate(s);
+        }
+
+        scale.x = s.x;
+        scale.y = s.y;
+        scale.z = s.z;
+
+        // Remove scale from the matrix if it is not close to zero
+        if (!FloatEquals(det, 0)) {
+            mat.m0 /= s.x;
+            mat.m4 /= s.x;
+            mat.m8 /= s.x;
+            mat.m1 /= s.y;
+            mat.m5 /= s.y;
+            mat.m9 /= s.y;
+            mat.m2 /= s.z;
+            mat.m6 /= s.z;
+            mat.m10 /= s.z;
+
+            // Extract rotation
+            Quaternion tmp = QuaternionFromMatrix(mat);
+            rotation.x = tmp.x;
+            rotation.y = tmp.y;
+            rotation.z = tmp.z;
+            rotation.w = tmp.w;
+        }
+        else {
+            // Set to identity if close to zero
+            rotation.x = 0;
+            rotation.y = 0;
+            rotation.z = 0;
+            rotation.w = 1;
+        }
     }
 
     //Custom implementation for when 1/0 boolean value is required
