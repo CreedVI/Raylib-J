@@ -39,9 +39,9 @@ public class OBJLoader {
     }
 
     public static class OBJShape {
-        String name;
-        int faceOffset;
-        int length;
+        public String name;
+        public int faceOffset;
+        public int length;
     }
 
     public static class MTLInfo {
@@ -185,7 +185,7 @@ public class OBJLoader {
         }
 
         /* Load material(if exits) */
-        if (mtllibLineIndex >= 0 && cmds[mtllibLineIndex].mtllibName != null && cmds[mtllibLineIndex].mtllibName.length() > 0) {
+        if (mtllibLineIndex >= 0 && cmds[mtllibLineIndex].mtllibName != null && !cmds[mtllibLineIndex].mtllibName.isEmpty()) {
             String dir = fileName.substring(0, fileName.lastIndexOf('/') + 1);
             String filename = cmds[mtllibLineIndex].mtllibName;
 

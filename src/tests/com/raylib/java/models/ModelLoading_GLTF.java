@@ -43,7 +43,7 @@ public class ModelLoading_GLTF {
         int screenWidth = 800;
         int screenHeight = 450;
 
-        String modelFile = "src/tests/resources/models/models/gltf/girl.glb";
+        String modelFile = "src/tests/resources/models/models/gltf/robot.glb";
 
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [models] example - loading glTF");
 
@@ -108,8 +108,8 @@ public class ModelLoading_GLTF {
 
             // Update model animation
             ModelAnimation anim = modelAnimations[animIndex];
-            // animCurrentFrame = (animCurrentFrame + 1) % anim.frameCount;
-            // rlj.models.UpdateModelAnimation(model, anim, animCurrentFrame);
+            animCurrentFrame = (animCurrentFrame + 1) % anim.frameCount;
+            rlj.models.UpdateModelAnimation(model, anim, animCurrentFrame);
             //----------------------------------------------------------------------------------
 
             // Draw
@@ -122,6 +122,9 @@ public class ModelLoading_GLTF {
 
             if (drawModel) {
                 rlj.models.DrawModel(model, position, 1.0f, WHITE);    // Draw animated model
+            }
+            else {
+                rlj.models.DrawModelWires(model, position, 1.0f, WHITE);
             }
 
             for (int i = 0; i < model.boneCount - 1; i++) {

@@ -82,7 +82,7 @@ public class rModels{
     }
 
     private float GRAY_VALUE(Color c) {
-        return (float)((c.r+c.g+c.b)/3f);
+        return (c.r+c.g+c.b)/3f;
     }
 
     private static boolean COLOR_EQUAL(Color col1, Color col2) {
@@ -535,24 +535,24 @@ public class rModels{
                     // as we iterate through the rings they must get smaller by the cos(angle(i))
 
                     // compute the four vertices
-                    float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
-                    float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringSin1 = (float) (Math.sin(baseSliceAngle*(j))*Math.cos(baseRingAngle * (i)));
+                    float ringCos1 = (float) (Math.cos(baseSliceAngle*(j))*Math.cos(baseRingAngle * (i)));
                     Vector3 w1 = new Vector3(
-                        (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin1*b1.x + ringCos1*b2.x) * radius),
-                        (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin1*b1.y + ringCos1*b2.y) * radius),
-                        (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin1*b1.z + ringCos1*b2.z) * radius)
+                        (capCenter.x + (Math.sin(baseRingAngle * (i))*b0.x + ringSin1*b1.x + ringCos1*b2.x) * radius),
+                        (capCenter.y + (Math.sin(baseRingAngle * (i))*b0.y + ringSin1*b1.y + ringCos1*b2.y) * radius),
+                        (capCenter.z + (Math.sin(baseRingAngle * (i))*b0.z + ringSin1*b1.z + ringCos1*b2.z) * radius)
                     );
 
-                    float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
-                    float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * (i)));
+                    float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * (i)));
                     Vector3 w2 = new Vector3(
-                        (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin2*b1.x + ringCos2*b2.x) * radius),
-                        (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin2*b1.y + ringCos2*b2.y) * radius),
-                        (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin2*b1.z + ringCos2*b2.z) * radius)
+                        (capCenter.x + (Math.sin(baseRingAngle * (i))*b0.x + ringSin2*b1.x + ringCos2*b2.x) * radius),
+                        (capCenter.y + (Math.sin(baseRingAngle * (i))*b0.y + ringSin2*b1.y + ringCos2*b2.y) * radius),
+                        (capCenter.z + (Math.sin(baseRingAngle * (i))*b0.z + ringSin2*b1.z + ringCos2*b2.z) * radius)
                     );
 
-                    float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
-                    float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringSin3 = (float) (Math.sin(baseSliceAngle*(j))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringCos3 = (float) (Math.cos(baseSliceAngle*(j))*Math.cos(baseRingAngle * ( i + 1 )));
                     Vector3 w3 = new Vector3(
                         (capCenter.x + (Math.sin(baseRingAngle * ( i + 1 ))*b0.x + ringSin3*b1.x + ringCos3*b2.x) * radius),
                         (capCenter.y + (Math.sin(baseRingAngle * ( i + 1 ))*b0.y + ringSin3*b1.y + ringCos3*b2.y) * radius),
@@ -596,8 +596,8 @@ public class rModels{
         if (!sphereCase) {
             for (int j = 0; j < slices; j++) {
                 // compute the four vertices
-                float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
-                float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                float ringSin1 = (float) (Math.sin(baseSliceAngle*(j))*radius);
+                float ringCos1 = (float) (Math.cos(baseSliceAngle*(j))*radius);
                 Vector3 w1 = new Vector3(
                     startPos.x + ringSin1*b1.x + ringCos1*b2.x,
                     startPos.y + ringSin1*b1.y + ringCos1*b2.y,
@@ -612,8 +612,8 @@ public class rModels{
                     startPos.z + ringSin2*b1.z + ringCos2*b2.z
                 );
 
-                float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
-                float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                float ringSin3 = (float) (Math.sin(baseSliceAngle*(j))*radius);
+                float ringCos3 = (float) (Math.cos(baseSliceAngle*(j))*radius);
                 Vector3 w3 = new Vector3(
                     endPos.x + ringSin3*b1.x + ringCos3*b2.x,
                     endPos.y + ringSin3*b1.y + ringCos3*b2.y,
@@ -678,24 +678,24 @@ public class rModels{
                     // as we iterate through the rings they must get smaller by the cos(angle(i))
 
                     // compute the four vertices
-                    float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
-                    float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringSin1 = (float) (Math.sin(baseSliceAngle*(j))*Math.cos(baseRingAngle * (i)));
+                    float ringCos1 = (float) (Math.cos(baseSliceAngle*(j))*Math.cos(baseRingAngle * (i)));
                     Vector3 w1 = new Vector3(
-                            (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin1*b1.x + ringCos1*b2.x) * radius),
-                            (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin1*b1.y + ringCos1*b2.y) * radius),
-                            (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin1*b1.z + ringCos1*b2.z) * radius)
+                            (capCenter.x + (Math.sin(baseRingAngle * (i))*b0.x + ringSin1*b1.x + ringCos1*b2.x) * radius),
+                            (capCenter.y + (Math.sin(baseRingAngle * (i))*b0.y + ringSin1*b1.y + ringCos1*b2.y) * radius),
+                            (capCenter.z + (Math.sin(baseRingAngle * (i))*b0.z + ringSin1*b1.z + ringCos1*b2.z) * radius)
                     );
 
-                    float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
-                    float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * ( i + 0 )));
+                    float ringSin2 = (float) (Math.sin(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * (i)));
+                    float ringCos2 = (float) (Math.cos(baseSliceAngle*(j + 1))*Math.cos(baseRingAngle * (i)));
                     Vector3 w2 = new Vector3(
-                            (capCenter.x + (Math.sin(baseRingAngle * ( i + 0 ))*b0.x + ringSin2*b1.x + ringCos2*b2.x) * radius),
-                            (capCenter.y + (Math.sin(baseRingAngle * ( i + 0 ))*b0.y + ringSin2*b1.y + ringCos2*b2.y) * radius),
-                            (capCenter.z + (Math.sin(baseRingAngle * ( i + 0 ))*b0.z + ringSin2*b1.z + ringCos2*b2.z) * radius)
+                            (capCenter.x + (Math.sin(baseRingAngle * (i))*b0.x + ringSin2*b1.x + ringCos2*b2.x) * radius),
+                            (capCenter.y + (Math.sin(baseRingAngle * (i))*b0.y + ringSin2*b1.y + ringCos2*b2.y) * radius),
+                            (capCenter.z + (Math.sin(baseRingAngle * (i))*b0.z + ringSin2*b1.z + ringCos2*b2.z) * radius)
                     );
 
-                    float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
-                    float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringSin3 = (float) (Math.sin(baseSliceAngle*(j))*Math.cos(baseRingAngle * ( i + 1 )));
+                    float ringCos3 = (float) (Math.cos(baseSliceAngle*(j))*Math.cos(baseRingAngle * ( i + 1 )));
                     Vector3 w3 = new Vector3(
                             (capCenter.x + (Math.sin(baseRingAngle * ( i + 1 ))*b0.x + ringSin3*b1.x + ringCos3*b2.x) * radius),
                             (capCenter.y + (Math.sin(baseRingAngle * ( i + 1 ))*b0.y + ringSin3*b1.y + ringCos3*b2.y) * radius),
@@ -734,8 +734,8 @@ public class rModels{
         if (!sphereCase) {
             for (int j = 0; j < slices; j++) {
                 // compute the four vertices
-                float ringSin1 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
-                float ringCos1 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                float ringSin1 = (float) (Math.sin(baseSliceAngle*(j))*radius);
+                float ringCos1 = (float) (Math.cos(baseSliceAngle*(j))*radius);
                 Vector3 w1 = new Vector3(
                     startPos.x + ringSin1*b1.x + ringCos1*b2.x,
                     startPos.y + ringSin1*b1.y + ringCos1*b2.y,
@@ -750,8 +750,8 @@ public class rModels{
                     startPos.z + ringSin2*b1.z + ringCos2*b2.z
                 );
 
-                float ringSin3 = (float) (Math.sin(baseSliceAngle*(j + 0))*radius);
-                float ringCos3 = (float) (Math.cos(baseSliceAngle*(j + 0))*radius);
+                float ringSin3 = (float) (Math.sin(baseSliceAngle*(j))*radius);
+                float ringCos3 = (float) (Math.cos(baseSliceAngle*(j))*radius);
                 Vector3 w3 = new Vector3(
                     endPos.x + ringSin3*b1.x + ringCos3*b2.x,
                     endPos.y + ringSin3*b1.y + ringCos3*b2.y,
@@ -862,6 +862,7 @@ public class rModels{
         else if(SUPPORT_FILEFORMAT_VOX && context.core.IsFileExtension(fileName, ".vox")) {
             model = LoadVOX(fileName);
         }
+
         // Make sure model transform is set to identity matrix!
         model.transform = MatrixIdentity();
 
@@ -978,6 +979,12 @@ public class rModels{
             }
         }
 
+        // Apply model.transform to bounding box
+        // WARNING: Current BoundingBox structure design does not support rotation transformations,
+        // in those cases is up to the user to calculate the proper box bounds (8 vertices transformed)
+        bounds.min = Vector3Transform(bounds.min, model.transform);
+        bounds.max = Vector3Transform(bounds.max, model.transform);
+
         return bounds;
     }
 
@@ -1007,7 +1014,7 @@ public class rModels{
             // NOTE: Attributes must be uploaded considering default locations points
 
             // Enable vertex attributes: position (shader-location = 0)
-            float[] vertices = mesh.animVertices != null ? mesh.animVertices : mesh.vertices;
+            float[] vertices = (mesh.animVertices != null) ? mesh.animVertices : mesh.vertices;
             mesh.vboId[0] = context.rlgl.rlLoadVertexBuffer(vertices, dynamic);
             context.rlgl.rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
             context.rlgl.rlEnableVertexAttribute(0);
@@ -1019,14 +1026,14 @@ public class rModels{
 
             if (mesh.normals != null) {
                 // Enable vertex attributes: normals (shader-location = 2)
-                float[] normals = mesh.animNormals != null ? mesh.animNormals : mesh.normals;
+                float[] normals = (mesh.animNormals != null) ? mesh.animNormals : mesh.normals;
                 mesh.vboId[2] = context.rlgl.rlLoadVertexBuffer(normals, dynamic);
                 context.rlgl.rlSetVertexAttribute(2, 3, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(2);
             }
             else {
                 // Default color vertex attribute set to WHITE
-                float[] value ={1.0f, 1.0f, 1.0f} ;
+                float[] value = {1.0f, 1.0f, 1.0f};
                 context.rlgl.rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
                 context.rlgl.rlDisableVertexAttribute(2);
             }
@@ -1036,7 +1043,8 @@ public class rModels{
                 mesh.vboId[3] = context.rlgl.rlLoadVertexBuffer(mesh.colors, dynamic);
                 context.rlgl.rlSetVertexAttribute(3, 4, RL_UNSIGNED_BYTE, true, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(3);
-            } else {
+            }
+            else {
                 // Default color vertex attribute set to WHITE
                 float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
                 context.rlgl.rlSetVertexAttributeDefault(3, value, RL_SHADER_ATTRIB_VEC4, 4);
@@ -1048,7 +1056,8 @@ public class rModels{
                 mesh.vboId[4] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, dynamic);
                 context.rlgl.rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(4);
-            } else {
+            }
+            else {
                 // Default tangents vertex attribute
                 float[] value ={0.0f, 0.0f, 0.0f, 0.0f} ;
                 context.rlgl.rlSetVertexAttributeDefault(4, value, RL_SHADER_ATTRIB_VEC4, 4);
@@ -1060,7 +1069,8 @@ public class rModels{
                 mesh.vboId[5] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords2, dynamic);
                 context.rlgl.rlSetVertexAttribute(5, 2, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(5);
-            } else {
+            }
+            else {
                 // Default texcoord2 vertex attribute
                 float[] value = {0.0f, 0.0f} ;
                 context.rlgl.rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
@@ -1108,10 +1118,12 @@ public class rModels{
 
             context.rlgl.rlPushMatrix();
             context.rlgl.rlMultMatrixf(MatrixToFloat(transform));
-            context.rlgl.rlColor4ub(material.maps[MATERIAL_MAP_DIFFUSE].color.r,
+            context.rlgl.rlColor4ub(
+                    material.maps[MATERIAL_MAP_DIFFUSE].color.r,
                     material.maps[MATERIAL_MAP_DIFFUSE].color.g,
                     material.maps[MATERIAL_MAP_DIFFUSE].color.b,
-                    material.maps[MATERIAL_MAP_DIFFUSE].color.a);
+                    material.maps[MATERIAL_MAP_DIFFUSE].color.a
+            );
 
             if (mesh.indices != null) {
                 context.rlgl.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
@@ -1137,24 +1149,24 @@ public class rModels{
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
             if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
-                float[] values ={
+                float[] values = {
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.b / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
-                } ;
+                };
 
                 context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
             }
 
             // Upload to shader material.colSpecular (if location available)
             if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
-                float[] values ={
+                float[] values = {
                         (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
                         (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
                         (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
                         (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
-                } ;
+                };
 
                 context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
             }
@@ -1177,15 +1189,15 @@ public class rModels{
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
             }
 
-            // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()], transform);
-            }
-
             // Accumulate several model transformations:
             //    transform: model transformation provided (includes DrawModel() params combined with model.transform)
             //    context.rlgl.rlGetMatrixTransform(): rlgl internal transform matrix due to push/pop matrix stack
             matModel = MatrixMultiply(transform, context.rlgl.rlGetMatrixTransform());
+
+            // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
+            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()], matModel);
+            }
 
             // Get model-view matrix
             matModelView = MatrixMultiply(matModel, matView);
@@ -1270,9 +1282,6 @@ public class rModels{
                     context.rlgl.rlEnableVertexBufferElement(mesh.vboId[6]);
                 }
             }
-
-            // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
-            if (mesh.vboId[3] == 0) context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
 
             int eyeCount = 1;
             if (context.rlgl.rlIsStereoRendererEnabled()) {
@@ -1665,25 +1674,39 @@ public class rModels{
             if (loader.mtlInfo.materials[m].diffuse_texname != null) {
                 materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
             }
-
-            materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color((int) (loader.mtlInfo.materials[m].diffuse[0]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[1]*255.0f), (int) (loader.mtlInfo.materials[m].diffuse[2]*255.0f), 255); //float diffuse[3];
-            materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0.0f;
+            else {
+                materials[m].maps[MATERIAL_MAP_DIFFUSE].color = new Color(
+                        (int) (loader.mtlInfo.materials[m].diffuse[0] * 255.0f),
+                        (int) (loader.mtlInfo.materials[m].diffuse[1] * 255.0f),
+                        (int) (loader.mtlInfo.materials[m].diffuse[2] * 255.0f),
+                        255
+                );
+            }
+            materials[m].maps[MATERIAL_MAP_DIFFUSE].value = 0f;
 
             if (loader.mtlInfo.materials[m].specular_texname != null) {
                 materials[m].maps[MATERIAL_MAP_SPECULAR].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
             }
-
-            materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color((int) (loader.mtlInfo.materials[m].specular[0]*255.0f), (int) (loader.mtlInfo.materials[m].specular[1]*255.0f), (int) (loader.mtlInfo.materials[m].specular[2]*255.0f), 255); //float specular[3];
+            materials[m].maps[MATERIAL_MAP_SPECULAR].color = new Color(
+                    (int) (loader.mtlInfo.materials[m].specular[0] * 255.0f),
+                    (int) (loader.mtlInfo.materials[m].specular[1] * 255.0f),
+                    (int) (loader.mtlInfo.materials[m].specular[2] * 255.0f),
+                    255
+            );
             materials[m].maps[MATERIAL_MAP_SPECULAR].value = 0.0f;
 
             if (loader.mtlInfo.materials[m].bump_texname != null) {
                 materials[m].maps[MATERIAL_MAP_NORMAL].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
             }
-
             materials[m].maps[MATERIAL_MAP_NORMAL].color = WHITE;
             materials[m].maps[MATERIAL_MAP_NORMAL].value = loader.mtlInfo.materials[m].shininess;
 
-            materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color((int) (loader.mtlInfo.materials[m].emission[0]*255.0f), (int) (loader.mtlInfo.materials[m].emission[1]*255.0f), (int) (loader.mtlInfo.materials[m].emission[2]*255.0f), 255); //float emission[3];
+            materials[m].maps[MATERIAL_MAP_EMISSION].color = new Color(
+                    (int) (loader.mtlInfo.materials[m].emission[0] * 255.0f),
+                    (int) (loader.mtlInfo.materials[m].emission[1] * 255.0f),
+                    (int) (loader.mtlInfo.materials[m].emission[2] * 255.0f),
+                    255
+            );
 
             if (loader.mtlInfo.materials[m].displacement_texname != null) {
                 materials[m].maps[MATERIAL_MAP_HEIGHT].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
@@ -1818,7 +1841,7 @@ public class rModels{
     // Update model animated bones transform matrices for a given frame
     // NOTE: Updated data is not uploaded to GPU but kept at model.meshes[i].boneMatrices[boneId],
     // to be uploaded to shader at drawing, in case GPU skinning is enabled
-    void UpdateModelAnimationBones(Model model, ModelAnimation anim, int frame) {
+    public void UpdateModelAnimationBones(Model model, ModelAnimation anim, int frame) {
         if ((anim.frameCount > 0) && (anim.bones != null) && (anim.framePoses != null)) {
             if (frame >= anim.frameCount) {
                 frame = frame%anim.frameCount;
@@ -1838,19 +1861,24 @@ public class rModels{
 
             if (firstMeshWithBones != -1) {
                 // Update all bones and boneMatrices of first mesh with bones.
-                for (int boneId = 0; boneId < anim.boneCount; boneId++)
-                {
+                for (int boneId = 0; boneId < anim.boneCount; boneId++) {
                     Transform bindTransform = model.bindPose[boneId];
-                    Matrix bindMatrix = MatrixMultiply(MatrixMultiply(
-                                                               MatrixScale(bindTransform.scale.x, bindTransform.scale.y, bindTransform.scale.z),
-                                                               QuaternionToMatrix(bindTransform.rotation)),
-                                                       MatrixTranslate(bindTransform.translation.x, bindTransform.translation.y, bindTransform.translation.z));
+                    Matrix bindMatrix = MatrixMultiply(
+                            MatrixMultiply(
+                                MatrixScale(bindTransform.scale.x, bindTransform.scale.y, bindTransform.scale.z),
+                                QuaternionToMatrix(bindTransform.rotation)
+                            ),
+                            MatrixTranslate(bindTransform.translation.x, bindTransform.translation.y, bindTransform.translation.z)
+                    );
 
                     Transform targetTransform = anim.framePoses[frame][boneId];
-                    Matrix targetMatrix = MatrixMultiply(MatrixMultiply(
-                                                                 MatrixScale(targetTransform.scale.x, targetTransform.scale.y, targetTransform.scale.z),
-                                                                 QuaternionToMatrix(targetTransform.rotation)),
-                                                         MatrixTranslate(targetTransform.translation.x, targetTransform.translation.y, targetTransform.translation.z));
+                    Matrix targetMatrix = MatrixMultiply(
+                            MatrixMultiply(
+                                MatrixScale(targetTransform.scale.x, targetTransform.scale.y, targetTransform.scale.z),
+                                QuaternionToMatrix(targetTransform.rotation)
+                            ),
+                            MatrixTranslate(targetTransform.translation.x, targetTransform.translation.y, targetTransform.translation.z)
+                    );
 
                     model.meshes[firstMeshWithBones].boneMatrices[boneId] = MatrixMultiply(MatrixInvert(bindMatrix), targetMatrix);
                 }
@@ -1859,7 +1887,7 @@ public class rModels{
                 // NOTE: Using deep copy because shallow copy results in double free with 'UnloadModel()'
                 for (int i = firstMeshWithBones + 1; i < model.meshCount; i++) {
                     if (model.meshes[i].boneMatrices != null) {
-                        model.meshes[i].boneMatrices = model.meshes[firstMeshWithBones].boneMatrices;
+                        System.arraycopy(model.meshes[firstMeshWithBones].boneMatrices, 0, model.meshes[i].boneMatrices, 0, model.meshes[i].boneCount);
                     }
                 }
             }
@@ -1906,10 +1934,10 @@ public class rModels{
                         continue;
                     }
                     animVertex = new Vector3(mesh.vertices[vCounter], mesh.vertices[vCounter + 1], mesh.vertices[vCounter + 2]);
-                    animVertex = Vector3Transform(animVertex,model.meshes[m].boneMatrices[boneId]);
-                    mesh.animVertices[vCounter] += animVertex.x*boneWeight;
-                    mesh.animVertices[vCounter+1] += animVertex.y*boneWeight;
-                    mesh.animVertices[vCounter+2] += animVertex.z*boneWeight;
+                    animVertex = Vector3Transform(animVertex, model.meshes[m].boneMatrices[boneId]);
+                    mesh.animVertices[vCounter] += animVertex.x * boneWeight;
+                    mesh.animVertices[vCounter + 1] += animVertex.y * boneWeight;
+                    mesh.animVertices[vCounter + 2] += animVertex.z * boneWeight;
                     updated = true;
 
                     // Normals processing
@@ -1917,9 +1945,9 @@ public class rModels{
                     if ((mesh.normals != null) && (mesh.animNormals != null )) {
                         animNormal = new Vector3(mesh.normals[vCounter], mesh.normals[vCounter + 1], mesh.normals[vCounter + 2]);
                         animNormal = Vector3Transform(animNormal, MatrixTranspose(MatrixInvert(model.meshes[m].boneMatrices[boneId])));
-                        mesh.animNormals[vCounter] += animNormal.x*boneWeight;
-                        mesh.animNormals[vCounter + 1] += animNormal.y*boneWeight;
-                        mesh.animNormals[vCounter + 2] += animNormal.z*boneWeight;
+                        mesh.animNormals[vCounter] += animNormal.x * boneWeight;
+                        mesh.animNormals[vCounter + 1] += animNormal.y * boneWeight;
+                        mesh.animNormals[vCounter + 2] += animNormal.z * boneWeight;
                     }
                 }
             }
@@ -2047,8 +2075,6 @@ public class rModels{
         Mesh mesh = new Mesh();
 
         if(SUPPORT_CUSTOM_MESH_GEN_PLANE) {
-            //TODO: Fix this.
-
             resX++;
             resZ++;
 
@@ -2086,7 +2112,7 @@ public class rModels{
             int t = 0;
             for(int face = 0; face < numFaces; face++) {
                 // Retrieve lower left corner from face ind
-                int i = face % (resX - 1) + (face / (resZ - 1) * resX);
+                int i = face + face / (resX - 1);
 
                 triangles[t++] = i + resX;
                 triangles[t++] = i + 1;
@@ -2175,7 +2201,6 @@ public class rModels{
         Mesh mesh = new Mesh();
 
         if(SUPPORT_CUSTOM_MESH_GEN_CUBE) {
-            //TODO: Fix this.
             mesh.vertices = new float[] {
                     -width/2, -height/2, length/2,
                     width/2, -height/2, length/2,
@@ -2773,11 +2798,8 @@ public class rModels{
 
         Color[] pixels = Color.FromPixels(context.textures.LoadImageColors(cubicmap));
 
-        int mapWidth = cubicmap.width;
-        int mapHeight = cubicmap.height;
-
         // NOTE: Max possible number of triangles numCubes*(12 triangles by cube)
-        int maxTriangles = cubicmap.width*cubicmap.height*12;
+        int maxTriangles = cubicmap.width * cubicmap.height * 12;
 
         int vCounter = 0;       // Used to count vertices
         int tcCounter = 0;      // Used to count texcoords
@@ -2806,8 +2828,8 @@ public class rModels{
         Rectangle topTexUV = new Rectangle(0.0f, 0.5f, 0.5f, 0.5f);
         Rectangle bottomTexUV = new Rectangle(0.5f, 0.5f, 0.5f, 0.5f);
 
-        for (int z = 0; z < mapHeight; ++z) {
-            for (int x = 0; x < mapWidth; ++x) {
+        for (int z = 0; z < cubicmap.height; ++z) {
+            for (int x = 0; x < cubicmap.width; ++x) {
                 // Define the 8 vertex of the cube, we will combine them accordingly later...
                 Vector3 v1 = new Vector3(w*(x - 0.5f), h2, h*(z - 0.5f));
                 Vector3 v2 = new Vector3(w*(x - 0.5f), h2, h*(z + 0.5f));
@@ -3138,14 +3160,14 @@ public class rModels{
 
         for (int i = 0; i < mesh.vertexCount; i += 3) {
             // Get triangle vertices
-            Vector3 v1 = new Vector3(mesh.vertices[(i + 0)*3 + 0], mesh.vertices[(i + 0)*3 + 1], mesh.vertices[(i + 0)*3 + 2]);
-            Vector3 v2 = new Vector3(mesh.vertices[(i + 1)*3 + 0], mesh.vertices[(i + 1)*3 + 1], mesh.vertices[(i + 1)*3 + 2]);
-            Vector3 v3 = new Vector3(mesh.vertices[(i + 2)*3 + 0], mesh.vertices[(i + 2)*3 + 1], mesh.vertices[(i + 2)*3 + 2]);
+            Vector3 v1 = new Vector3(mesh.vertices[(i) * 3], mesh.vertices[(i)*3 + 1], mesh.vertices[(i)*3 + 2]);
+            Vector3 v2 = new Vector3(mesh.vertices[(i + 1) * 3], mesh.vertices[(i + 1)*3 + 1], mesh.vertices[(i + 1)*3 + 2]);
+            Vector3 v3 = new Vector3(mesh.vertices[(i + 2) * 3], mesh.vertices[(i + 2)*3 + 1], mesh.vertices[(i + 2)*3 + 2]);
 
             // Get triangle texcoords
-            Vector2 uv1 = new Vector2(mesh.texcoords[(i + 0)*2 + 0], mesh.texcoords[(i + 0)*2 + 1]);
-            Vector2 uv2 = new Vector2(mesh.texcoords[(i + 1)*2 + 0], mesh.texcoords[(i + 1)*2 + 1]);
-            Vector2 uv3 = new Vector2(mesh.texcoords[(i + 2)*2 + 0], mesh.texcoords[(i + 2)*2 + 1]);
+            Vector2 uv1 = new Vector2(mesh.texcoords[(i) * 2], mesh.texcoords[(i)*2 + 1]);
+            Vector2 uv2 = new Vector2(mesh.texcoords[(i + 1) * 2], mesh.texcoords[(i + 1)*2 + 1]);
+            Vector2 uv3 = new Vector2(mesh.texcoords[(i + 2) * 2], mesh.texcoords[(i + 2)*2 + 1]);
 
             float x1 = v2.x - v1.x;
             float y1 = v2.y - v1.y;
@@ -3165,32 +3187,32 @@ public class rModels{
             Vector3 sdir = new Vector3((t2*x1 - t1*x2)*r, (t2*y1 - t1*y2)*r, (t2*z1 - t1*z2)*r);
             Vector3 tdir = new Vector3((s1*x2 - s2*x1)*r, (s1*y2 - s2*y1)*r, (s1*z2 - s2*z1)*r);
 
-            tan1[i + 0] = sdir;
+            tan1[i] = sdir;
             tan1[i + 1] = sdir;
             tan1[i + 2] = sdir;
 
-            tan2[i + 0] = tdir;
+            tan2[i] = tdir;
             tan2[i + 1] = tdir;
             tan2[i + 2] = tdir;
         }
 
         // Compute tangents considering normals
         for (int i = 0; i < mesh.vertexCount; i++) {
-            Vector3 normal = new Vector3(mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2]);
+            Vector3 normal = new Vector3(mesh.normals[i * 3], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2]);
             Vector3 tangent = tan1[i];
 
             // TODO: Review, not sure if tangent computation is right, just used reference proposed maths...
             if(COMPUTE_TANGENTS_METHOD_01) {
                 Vector3 tmp = Vector3Subtract(tangent, Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
                 tmp = Vector3Normalize(tmp);
-                mesh.tangents[i * 4 + 0] = tmp.x;
+                mesh.tangents[i * 4] = tmp.x;
                 mesh.tangents[i * 4 + 1] = tmp.y;
                 mesh.tangents[i * 4 + 2] = tmp.z;
                 mesh.tangents[i * 4 + 3] = 1.0f;
             }
             else {
                 Vector3OrthoNormalize(normal, tangent);
-                mesh.tangents[i * 4 + 0] = tangent.x;
+                mesh.tangents[i * 4] = tangent.x;
                 mesh.tangents[i * 4 + 1] = tangent.y;
                 mesh.tangents[i * 4 + 2] = tangent.z;
                 mesh.tangents[i * 4 + 3] = (Vector3DotProduct(Vector3CrossProduct(normal, tangent), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
@@ -3229,28 +3251,31 @@ public class rModels{
         // Calculate transformation matrix from function parameters
         // Get transform matrix (rotation -> scale -> translation)
         Matrix matScale = MatrixScale(scale.x, scale.y, scale.z);
-        Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle* DEG2RAD);
+        Matrix matRotation = MatrixRotate(rotationAxis, rotationAngle * DEG2RAD);
         Matrix matTranslation = MatrixTranslate(position.x, position.y, position.z);
+
         Matrix matTransform = MatrixMultiply(MatrixMultiply(matScale, matRotation), matTranslation);
-        Matrix modTransform = model.transform;
         // Combine model transformation matrix (model.transform) with matrix generated by function parameters (matTransform)
-        model.transform = MatrixMultiply(model.transform, matTransform);
+        Matrix transform = MatrixMultiply(model.transform, matTransform);
 
         for (int i = 0; i < model.meshCount; i++) {
-            Color color = model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color;
+            Color color = new Color(
+                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color.r,
+                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color.g,
+                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color.b,
+                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color.a
+            );
 
-            Color colorTint = WHITE;
-            colorTint.r = (int) (((color.r/255.0f)*(tint.r/255.0f))*255.0f);
-            colorTint.g = (int) (((color.g/255.0f)*(tint.g/255.0f))*255.0f);
-            colorTint.b = (int) (((color.b/255.0f)*(tint.b/255.0f))*255.0f);
-            colorTint.a = (int) (((color.a/255.0f)*(tint.a/255.0f))*255.0f);
+            Color colorTint = new Color(255, 255, 255, 255);
+            colorTint.r = (int) ((color.r*tint.r)/255.0f);
+            colorTint.g = (int) ((color.g*tint.g)/255.0f);
+            colorTint.b = (int) ((color.b*tint.b)/255.0f);
+            colorTint.a = (int) ((color.a*tint.a)/255.0f);
 
             model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = colorTint;
-            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], model.transform);
+            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], transform);
             model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE].color = color;
         }
-
-        model.transform = modTransform;
     }
 
     // Draw a model wires (with texture if set)
@@ -3288,7 +3313,7 @@ public class rModels{
 
     public void DrawBillboardPro(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint) {
         // NOTE: Billboard size will maintain source rectangle aspect ratio, size will represent billboard width
-        Vector2 sizeRatio = new Vector2(size.x*source.width/source.height, size.y );
+        Vector2 sizeRatio = new Vector2(size.x*Math.abs(source.width/source.height), size.y);
 
         Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
 
@@ -3352,23 +3377,39 @@ public class rModels{
         context.rlgl.rlSetTexture(texture.id);
 
         context.rlgl.rlBegin(RL_QUADS);
-        context.rlgl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+            context.rlgl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
 
-        // Bottom-left corner for texture and quad
-        context.rlgl.rlTexCoord2f(source.x/texture.width, source.y/texture.height);
-        context.rlgl.rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
+            if (sizeRatio.x * sizeRatio.y >= 0.0f) {
+                // Bottom-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(source.x /texture.width, source.y /texture.height);
+                context.rlgl.rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
 
-        // Top-left corner for texture and quad
-        context.rlgl.rlTexCoord2f(source.x/texture.width, (source.y + source.height)/texture.height);
-        context.rlgl.rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
+                // Top-left corner for texture and quad
+                context.rlgl.rlTexCoord2f(source.x /texture.width, (source.y + source.height) /texture.height);
+                context.rlgl.rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
 
-        // Top-right corner for texture and quad
-        context.rlgl.rlTexCoord2f((source.x + source.width)/texture.width, (source.y + source.height)/texture.height);
-        context.rlgl.rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
+                // Top-right corner for texture and quad
+                context.rlgl.rlTexCoord2f((source.x + source.width) /texture.width, (source.y + source.height) /texture.height);
+                context.rlgl.rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
 
-        // Bottom-right corner for texture and quad
-        context.rlgl.rlTexCoord2f((source.x + source.width)/texture.width, source.y/texture.height);
-        context.rlgl.rlVertex3f(topRight.x, topRight.y, topRight.z);
+                // Bottom-right corner for texture and quad
+                context.rlgl.rlTexCoord2f((source.x + source.width) /texture.width, source.y /texture.height);
+                context.rlgl.rlVertex3f(topRight.x, topRight.y, topRight.z);
+            }
+            else {
+                // Reverse vertex order if the size has only one negative dimension
+                context.rlgl.rlTexCoord2f((source.x + source.width) /texture.width, source.y /texture.height);
+                context.rlgl.rlVertex3f(topRight.x, topRight.y, topRight.z);
+
+                context.rlgl.rlTexCoord2f((source.x + source.width) /texture.width, (source.y + source.height) /texture.height);
+                context.rlgl.rlVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
+
+                context.rlgl.rlTexCoord2f(source.x /texture.width, (source.y + source.height) /texture.height);
+                context.rlgl.rlVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
+
+                context.rlgl.rlTexCoord2f(source.x /texture.width, source.y /texture.height);
+                context.rlgl.rlVertex3f(topLeft.x, topLeft.y, topLeft.z);
+            }
         context.rlgl.rlEnd();
 
         context.rlgl.rlSetTexture(0);
@@ -3519,8 +3560,8 @@ public class rModels{
         t[3] = (box.max.y - ray.position.y)*t[9];
         t[4] = (box.min.z - ray.position.z)*t[10];
         t[5] = (box.max.z - ray.position.z)*t[10];
-        t[6] = (float)Math.max(Math.max(Math.min(t[0], t[1]), Math.min(t[2], t[3])), Math.min(t[4], t[5]));
-        t[7] = (float)Math.min(Math.min(Math.max(t[0], t[1]), Math.max(t[2], t[3])), Math.max(t[4], t[5]));
+        t[6] = Math.max(Math.max(Math.min(t[0], t[1]), Math.min(t[2], t[3])), Math.min(t[4], t[5]));
+        t[7] = Math.min(Math.min(Math.max(t[0], t[1]), Math.max(t[2], t[3])), Math.max(t[4], t[5]));
 
         collision.hit = !((t[7] < 0) || (t[6] > t[7]));
         collision.distance = t[6];
@@ -3571,12 +3612,12 @@ public class rModels{
                 }
 
                 if (mesh.indices != null) {
-                    a = vertdata[(int) mesh.indices[i*3 + 0]];
+                    a = vertdata[(int) mesh.indices[i * 3]];
                     b = vertdata[(int) mesh.indices[i*3 + 1]];
                     c = vertdata[(int) mesh.indices[i*3 + 2]];
                 }
                 else {
-                    a = vertdata[i*3 + 0];
+                    a = vertdata[i * 3];
                     b = vertdata[i*3 + 1];
                     c = vertdata[i*3 + 2];
                 }
@@ -3701,8 +3742,8 @@ public class rModels{
         return result;
     }
 
+    // Load OBJ mesh data
     private Model LoadOBJ(String fileName) {
-
         Model model = new Model();
 
         try {
@@ -3786,6 +3827,8 @@ public class rModels{
                 for (int v = 0; v < 3; v++) { model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx1.vIndex - 1) * 3 + v]; } vCount[mm] +=3;
                 for (int v = 0; v < 3; v++) { model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx2.vIndex - 1) * 3 + v]; } vCount[mm] +=3;
 
+                //System.out.println(Arrays.toString(model.meshes[mm].vertices));
+
                 if (loader.objInfo.totalTexcoords > 0) {
                     // Fill texcoords buffer (float) using vertex index of the face
                     // NOTE: Y-coordinate must be flipped upside-down to account for
@@ -3816,6 +3859,7 @@ public class rModels{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         return model;
     }
 
@@ -4214,6 +4258,12 @@ public class rModels{
 
             model.bindPose = BuildPoseFromParentJoints(model.bones, model.bindPose);
 
+            for (int i = 0; i < model.meshCount; i++) {
+                model.meshes[i].boneCount = model.boneCount;
+                model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
+                Arrays.fill(model.meshes[i].boneMatrices, MatrixIdentity());
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -4603,9 +4653,7 @@ public class rModels{
 
                 // If no map is provided, and we allocated vertices colors, set them to white
                 if((mi == M3D_UNDEF) && (model.meshes[k].colors != null)) {
-                    for(int c = 0; c < model.meshes[k].vertexCount * 4; c++) {
-                        model.meshes[k].colors[c] = (byte) 255;
-                    }
+                    Arrays.fill(model.meshes[k].colors, (byte) 255);
                 }
 
                 if(!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
@@ -4768,13 +4816,13 @@ public class rModels{
             for (i = 0; i < m3dj.bones.size(); i++) {
                 model.bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
                 model.bindPose[i] = new Transform();
-                model.bindPose[i].translation.x = (float) (m3dj.vertices.get((int) m3dj.bones.get(i).position).x*m3dj.header.scale);
-                model.bindPose[i].translation.y = (float) (m3dj.vertices.get((int) m3dj.bones.get(i).position).y*m3dj.header.scale);
-                model.bindPose[i].translation.z = (float) (m3dj.vertices.get((int) m3dj.bones.get(i).position).z*m3dj.header.scale);
-                model.bindPose[i].rotation.x = (float) m3dj.vertices.get((int) m3dj.bones.get(i).orientation).x;
-                model.bindPose[i].rotation.y = (float) m3dj.vertices.get((int) m3dj.bones.get(i).orientation).y;
-                model.bindPose[i].rotation.z = (float) m3dj.vertices.get((int) m3dj.bones.get(i).orientation).z;
-                model.bindPose[i].rotation.w = (float) m3dj.vertices.get((int) m3dj.bones.get(i).orientation).w;
+                model.bindPose[i].translation.x = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).x*m3dj.header.scale);
+                model.bindPose[i].translation.y = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).y*m3dj.header.scale);
+                model.bindPose[i].translation.z = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).z*m3dj.header.scale);
+                model.bindPose[i].rotation.x = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).x;
+                model.bindPose[i].rotation.y = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).y;
+                model.bindPose[i].rotation.z = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).z;
+                model.bindPose[i].rotation.w = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).w;
 
                 // TODO: If the orientation quaternion is not normalized, then that's encoding scaling
                 model.bindPose[i].rotation = QuaternionNormalize(model.bindPose[i].rotation);
@@ -4808,34 +4856,10 @@ public class rModels{
             for (i = 0; i < model.meshCount; i++) {
                 System.arraycopy(model.meshes[i].vertices, 0, model.meshes[i].animVertices, 0, model.meshes[i].vertexCount*3);
                 System.arraycopy(model.meshes[i].normals, 0, model.meshes[i].animNormals, 0, model.meshes[i].vertexCount*3);
-            }
-        }
 
-        // Make sure model transform is set to identity matrix!
-        model.transform = MatrixIdentity();
-
-        if(model.meshCount == 0) {
-            model.meshCount = 1;
-            model.meshes = new Mesh[model.meshCount];
-            if(SUPPORT_MESH_GENERATION) {
-                model.meshes[0] = context.models.GenMeshCube(1.0f, 1.0f, 1.0f);
-            }
-        }
-        else {
-            // Upload vertex data to GPU (static mesh)
-            for(int z = 0; z < model.meshCount; z++) {
-                context.models.UploadMesh(model.meshes[z], false);
-            }
-        }
-
-        if(model.materialCount == 0) {
-
-            model.materialCount = 1;
-            model.materials = new Material[model.materialCount];
-            model.materials[0] = context.models.LoadMaterialDefault();
-
-            if(model.meshMaterial == null) {
-                model.meshMaterial = new int[model.meshCount];
+                model.meshes[i].boneCount = model.boneCount;
+                model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
+                Arrays.fill(model.meshes[i].boneMatrices, MatrixIdentity());
             }
         }
 
@@ -5004,6 +5028,12 @@ public class rModels{
             }
 
             bones[i].parent = parentIndex;
+        }
+
+        int i = 0;
+        for (BoneInfo bone : bones) {
+            System.out.println(i + ": " + bone.name + ", " + bone.parent);
+            i++;
         }
 
         return bones;
@@ -5288,6 +5318,9 @@ public class rModels{
                     if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") || mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_1")) {
                         float[] texcoords = new float[0];
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TEXCOORD_0");
+                        if (attribute == null) {
+                            attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TEXCOORD_1");
+                        }
 
                         if (attribute.getElementType() == ElementType.VEC2) {
                             if (attribute.getComponentDataType() == float.class) {
@@ -5331,7 +5364,8 @@ public class rModels{
                             context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported, use vec2 float");
                         }
 
-                        int index = mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") ? 0 : 1;
+                        int index = mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") ? 0 :
+                                mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_1") ? 1 : -1;
                         if (index == 0) {
                             model.meshes[meshIndex].texcoords = texcoords;
                         }
@@ -5626,7 +5660,7 @@ public class rModels{
                                 }
                             }
                             else if (attribute.getComponentDataType() == short.class) {
-                                // Init raylib bone weigths to copy glTF attribute data
+                                // Init raylib bone weights to copy glTF attribute data
                                 model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount * 4];
 
                                 // Load data into a temp buffer to be converted to raylib data type
@@ -5741,33 +5775,37 @@ public class rModels{
         if (output.getElementType() == ElementType.VEC3) {
             Vector3 v1, v2, r;
             switch (interpolationType) {
+                case STEP:
+                    v1 = new Vector3(outputData.get(keyframe * advance), outputData.get(keyframe * advance + 1), outputData.get(keyframe * advance + 2));
+                    pose = new float[]{v1.x, v1.y, v1.z};
+                    break;
                 case LINEAR:
-                    v1 = new Vector3(outputData.get(keyframe + 0), outputData.get(keyframe + 1), outputData.get(keyframe + 2));
-                    v2 = new Vector3(outputData.get(keyframe + advance + 0), outputData.get(keyframe + advance + 1), outputData.get(keyframe + advance + 2));
+                    v1 = new Vector3(outputData.get(keyframe * advance), outputData.get(keyframe  * advance + 1), outputData.get(keyframe  * advance + 2));
+                    v2 = new Vector3(outputData.get(keyframe * advance + advance), outputData.get(keyframe * advance + advance + 1), outputData.get(keyframe * advance + advance + 2));
 
                     r = Vector3Lerp(v1, v2, t);
                     pose = new float[]{r.x, r.y, r.z};
                     break;
-                case STEP:
-                    v1 = new Vector3(outputData.get(keyframe + 0), outputData.get(keyframe + 1), outputData.get(keyframe + 2));
-                    pose = new float[]{v1.x, v1.y, v1.z};
+                case CUBICSPLINE:
                     break;
             }
         }
         else if (output.getElementType() == ElementType.VEC4) {
             Quaternion q1, q2, r;
             switch (interpolationType) {
+                case STEP:
+                    q1 = new Quaternion(outputData.get(keyframe), outputData.get(keyframe + 1), outputData.get(keyframe + 2), outputData.get(keyframe + 3));
+                    pose = new float[]{q1.x, q1.y, q1.z, q1.w};
+                    break;
                 case LINEAR:
-                    q1 = new Quaternion(outputData.get(keyframe + 0), outputData.get(keyframe + 1), outputData.get(keyframe + 2), outputData.get(keyframe + 3));
-                    q2 = new Quaternion(outputData.get(keyframe + advance + 0), outputData.get(keyframe + advance + 1), outputData.get(keyframe + advance + 2), outputData.get(keyframe + advance + 3));
+                    q1 = new Quaternion(outputData.get(keyframe * advance), outputData.get(keyframe  * advance + 1), outputData.get(keyframe  * advance + 2), outputData.get(keyframe  * advance + 3));
+                    q2 = new Quaternion(outputData.get(keyframe * advance + advance), outputData.get(keyframe * advance + advance + 1), outputData.get(keyframe * advance + advance + 2), outputData.get(keyframe  * advance + advance + 3));
 
                     // Only v4 is for rotations, so we know it's a quat
                     r = QuaternionSlerp(q1, q2, t);
                     pose = new float[]{r.x, r.y, r.z, r.w};
                     break;
-                case STEP:
-                    q1 = new Quaternion(outputData.get(keyframe + 0), outputData.get(keyframe + 1), outputData.get(keyframe + 2), outputData.get(keyframe + 3));
-                    pose = new float[]{q1.x, q1.y, q1.z, q1.w};
+                case CUBICSPLINE:
                     break;
             }
         }
