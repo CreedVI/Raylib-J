@@ -34,9 +34,10 @@ public class LinesBezier {
         Vector2 endPoint = new Vector2((float)screenWidth - 30, (float)screenHeight - 30);
         boolean moveStartPoint = false;
         boolean moveEndPoint = false;
-
-        Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shapes] example - cubic-bezier lines");
+        
+        Raylib rlj = new Raylib();
         rlj.core.SetConfigFlags(Config.ConfigFlag.FLAG_MSAA_4X_HINT);
+        rlj.core.InitWindow(screenWidth, screenHeight, "raylib [shapes] example - cubic-bezier lines");
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------

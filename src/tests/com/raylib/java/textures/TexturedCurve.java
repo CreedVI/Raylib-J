@@ -105,7 +105,7 @@ public class TexturedCurve {
     //----------------------------------------------------------------------------------
     static void DrawCurve() {
         if (showCurve) {
-            rlj.shapes.DrawLineBezierCubic(curveStartPosition, curveEndPosition, curveStartPositionTangent, curveEndPositionTangent, 2, BLUE);
+            rlj.shapes.DrawSplineSegmentBezierCubic(curveStartPosition, curveEndPosition, curveStartPositionTangent, curveEndPositionTangent, 2, BLUE);
         }
 
         // Draw the various control points and highlight where the mouse is

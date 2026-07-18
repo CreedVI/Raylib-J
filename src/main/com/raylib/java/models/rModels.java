@@ -4261,7 +4261,9 @@ public class rModels{
             for (int i = 0; i < model.meshCount; i++) {
                 model.meshes[i].boneCount = model.boneCount;
                 model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
-                Arrays.fill(model.meshes[i].boneMatrices, MatrixIdentity());
+                for (int j = 0; j < model.meshes[i].boneMatrices.length; j++) {
+                    model.meshes[i].boneMatrices[j] = MatrixIdentity();
+                }
             }
 
         } catch (IOException e) {
@@ -4859,7 +4861,9 @@ public class rModels{
 
                 model.meshes[i].boneCount = model.boneCount;
                 model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
-                Arrays.fill(model.meshes[i].boneMatrices, MatrixIdentity());
+                for (int bm = 0; bm < model.meshes[i].boneMatrices.length; bm++) {
+                    model.meshes[i].boneMatrices[bm] = MatrixIdentity();
+                }
             }
         }
 

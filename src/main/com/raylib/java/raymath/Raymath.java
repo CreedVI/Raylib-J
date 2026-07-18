@@ -3,7 +3,7 @@ package com.raylib.java.raymath;
 import com.raylib.java.structs.*;
 import com.raylib.java.structs.*;
 
-public class Raymath{
+public class Raymath {
 
     /**********************************************************************************************
      *
@@ -520,12 +520,43 @@ public class Raymath{
 
         float length, iLength;
         length = Vector3Length(result);
-        if (length == 0.0f) length = 1.0f;
-        iLength = 1.0f / length;
+        if (length != 0.0f) {
+            iLength = 1/length;
 
-        result.x *= iLength;
-        result.y *= iLength;
-        result.z *= iLength;
+            result.x *= iLength;
+            result.y *= iLength;
+            result.z *= iLength;
+        }
+
+        return result;
+    }
+
+    public static Vector3 Vector3Project(Vector3 v1, Vector3 v2) {
+        Vector3 result = new Vector3();
+
+        float v1dv2 = (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z);
+        float v2dv2 = (v2.x*v2.x + v2.y*v2.y + v2.z*v2.z);
+
+        float mag = v1dv2/v2dv2;
+
+        result.x = v2.x*mag;
+        result.y = v2.y*mag;
+        result.z = v2.z*mag;
+
+        return result;
+    }
+
+    public static Vector3 Vector3Reject(Vector3 v1, Vector3 v2) {
+        Vector3 result = new Vector3();
+
+        float v1dv2 = (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z);
+        float v2dv2 = (v2.x*v2.x + v2.y*v2.y + v2.z*v2.z);
+
+        float mag = v1dv2/v2dv2;
+
+        result.x = v1.x - (v2.x*mag);
+        result.y = v1.y - (v2.y*mag);
+        result.z = v1.z - (v2.z*mag);
 
         return result;
     }
@@ -1745,19 +1776,20 @@ public class Raymath{
         scale.z = s.z;
 
         // Remove scale from the matrix if it is not close to zero
+        Matrix clone = new Matrix(MatrixToFloat(mat));
         if (!FloatEquals(det, 0)) {
-            mat.m0 /= s.x;
-            mat.m4 /= s.x;
-            mat.m8 /= s.x;
-            mat.m1 /= s.y;
-            mat.m5 /= s.y;
-            mat.m9 /= s.y;
-            mat.m2 /= s.z;
-            mat.m6 /= s.z;
-            mat.m10 /= s.z;
+            clone.m0 /= s.x;
+            clone.m4 /= s.x;
+            clone.m8 /= s.x;
+            clone.m1 /= s.y;
+            clone.m5 /= s.y;
+            clone.m9 /= s.y;
+            clone.m2 /= s.z;
+            clone.m6 /= s.z;
+            clone.m10 /= s.z;
 
             // Extract rotation
-            Quaternion tmp = QuaternionFromMatrix(mat);
+            Quaternion tmp = QuaternionFromMatrix(clone);
             rotation.x = tmp.x;
             rotation.y = tmp.y;
             rotation.z = tmp.z;
@@ -1770,15 +1802,5 @@ public class Raymath{
             rotation.z = 0;
             rotation.w = 1;
         }
-    }
-
-    //Custom implementation for when 1/0 boolean value is required
-
-    public static int getIntFromBoolean(boolean b){
-        return b ? 1 : 0;
-    }
-
-    public static boolean getBooleanFromInt(int i) {
-        return i == 1;
     }
 }
