@@ -251,8 +251,7 @@ public class GL_33 {
             rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords[2*rlglData.getState().vertexCounter] = rlglData.getState().texcoordx;
             rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].texcoords[2*rlglData.getState().vertexCounter + 1] = rlglData.getState().texcoordy;
 
-            // TODO: Add current normal
-            // By default rlVertexBuffer type does not store normals
+            // WARNING: By default rlVertexBuffer does not store normals
 
             // Add current color
             rlglData.getCurrentBatch().rlVertexBuffer[rlglData.getCurrentBatch().currentBuffer].colors[4*rlglData.getState().vertexCounter] = rlglData.getState().colorr;

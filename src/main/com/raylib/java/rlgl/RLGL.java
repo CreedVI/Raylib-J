@@ -17,17 +17,125 @@ import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.*;
 import static com.raylib.java.rlgl.RLGL.rlGlVersion.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
+import static org.lwjgl.opengl.EXTFramebufferObject.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31.*;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.opengl.GL33.GL_TEXTURE_SWIZZLE_RGBA;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 import static org.lwjgl.opengl.GL43.*;
+import static org.lwjgl.opengles.EXTDrawBuffers.glDrawBuffersEXT;
 import static org.lwjgl.opengles.GLES20.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS;
 import static org.lwjgl.opengles.OESDepth24.GL_DEPTH_COMPONENT24_OES;
 import static org.lwjgl.opengles.OESDepth32.GL_DEPTH_COMPONENT32_OES;
 
 public class RLGL{
+
+    /**********************************************************************************************
+     *
+     *   rlgl v4.5 - A multi-OpenGL abstraction layer with an immediate-mode style API
+     *
+     *   DESCRIPTION:
+     *       An abstraction layer for multiple OpenGL versions (1.1, 2.1, 3.3 Core, 4.3 Core, ES 2.0)
+     *       that provides a pseudo-OpenGL 1.1 immediate-mode style API (rlVertex, rlTranslate, rlRotate...)
+     *
+     *   ADDITIONAL NOTES:
+     *       When choosing an OpenGL backend different than OpenGL 1.1, some internal buffer are
+     *       initialized on rlglInit() to accumulate vertex data.
+     *
+     *       When an internal state change is required all the stored vertex data is renderer in batch,
+     *       additionally, rlDrawRenderBatchActive() could be called to force flushing of the batch.
+     *
+     *       Some resources are also loaded for convenience, here the complete list:
+     *          - Default batch (RLGL.defaultBatch): RenderBatch system to accumulate vertex data
+     *          - Default texture (RLGL.defaultTextureId): 1x1 white pixel R8G8B8A8
+     *          - Default shader (RLGL.State.defaultShaderId, RLGL.State.defaultShaderLocs)
+     *
+     *       Internal buffer (and resources) must be manually unloaded calling rlglClose().
+     *
+     *   CONFIGURATION:
+     *       #define GRAPHICS_API_OPENGL_11
+     *       #define GRAPHICS_API_OPENGL_21
+     *       #define GRAPHICS_API_OPENGL_33
+     *       #define GRAPHICS_API_OPENGL_43
+     *       #define GRAPHICS_API_OPENGL_ES2
+     *       #define GRAPHICS_API_OPENGL_ES3
+     *           Use selected OpenGL graphics backend, should be supported by platform
+     *           Those preprocessor defines are only used on rlgl module, if OpenGL version is
+     *           required by any other module, use rlGetVersion() to check it
+     *
+     *       #define RLGL_IMPLEMENTATION
+     *           Generates the implementation of the library into the included file.
+     *           If not defined, the library is in header only mode and can be included in other headers
+     *           or source files without problems. But only ONE file should hold the implementation.
+     *
+     *       #define RLGL_RENDER_TEXTURES_HINT
+     *           Enable framebuffer objects (fbo) support (enabled by default)
+     *           Some GPUs could not support them despite the OpenGL version
+     *
+     *       #define RLGL_SHOW_GL_DETAILS_INFO
+     *           Show OpenGL extensions and capabilities detailed logs on init
+     *
+     *       #define RLGL_ENABLE_OPENGL_DEBUG_CONTEXT
+     *           Enable debug context (only available on OpenGL 4.3)
+     *
+     *       rlgl capabilities could be customized just defining some internal
+     *       values before library inclusion (default values listed):
+     *
+     *       #define RL_DEFAULT_BATCH_BUFFER_ELEMENTS   8192    // Default internal render batch elements limits
+     *       #define RL_DEFAULT_BATCH_BUFFERS              1    // Default number of batch buffers (multi-buffering)
+     *       #define RL_DEFAULT_BATCH_DRAWCALLS          256    // Default number of batch draw calls (by state changes: mode, texture)
+     *       #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS    4    // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
+     *
+     *       #define RL_MAX_MATRIX_STACK_SIZE             32    // Maximum size of internal Matrix stack
+     *       #define RL_MAX_SHADER_LOCATIONS              32    // Maximum number of shader locations supported
+     *       #define RL_CULL_DISTANCE_NEAR              0.01    // Default projection matrix near cull distance
+     *       #define RL_CULL_DISTANCE_FAR             1000.0    // Default projection matrix far cull distance
+     *
+     *       When loading a shader, the following vertex attributes and uniform
+     *       location names are tried to be set automatically:
+     *
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION     "vertexPosition"    // Bound by default to shader location: 0
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD     "vertexTexCoord"    // Bound by default to shader location: 1
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL       "vertexNormal"      // Bound by default to shader location: 2
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR        "vertexColor"       // Bound by default to shader location: 3
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT      "vertexTangent"     // Bound by default to shader location: 4
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2    "vertexTexCoord2"   // Bound by default to shader location: 5
+     *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_MVP         "mvp"               // model-view-projection matrix
+     *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW        "matView"           // view matrix
+     *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION  "matProjection"     // projection matrix
+     *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL       "matModel"          // model matrix
+     *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL      "matNormal"         // normal matrix (transpose(inverse(matModelView))
+     *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR       "colDiffuse"        // color diffuse (base tint color, multiplied by texture color)
+     *       #define RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0  "texture0"          // texture0 (texture slot active 0)
+     *       #define RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1  "texture1"          // texture1 (texture slot active 1)
+     *       #define RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2  "texture2"          // texture2 (texture slot active 2)
+     *
+     *   DEPENDENCIES:
+     *      - OpenGL libraries (depending on platform and OpenGL version selected)
+     *      - GLAD OpenGL extensions loading library (only for OpenGL 3.3 Core, 4.3 Core)
+     *
+     *
+     *   LICENSE: zlib/libpng
+     *
+     *   Copyright (c) 2014-2023 Ramon Santamaria (@raysan5)
+     *
+     *   This software is provided "as-is", without any express or implied warranty. In no event
+     *   will the authors be held liable for any damages arising from the use of this software.
+     *
+     *   Permission is granted to anyone to use this software for any purpose, including commercial
+     *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+     *
+     *     1. The origin of this software must not be misrepresented; you must not claim that you
+     *     wrote the original software. If you use this software in a product, an acknowledgment
+     *     in the product documentation would be appreciated but is not required.
+     *
+     *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+     *     as being the original software.
+     *
+     *     3. This notice may not be removed or altered from any source distribution.
+     *
+     **********************************************************************************************/
 
     //*********************
     //GL API VERSION
@@ -37,6 +145,7 @@ public class RLGL{
     public static boolean GRAPHICS_API_OPENGL_33 = true;
     public static boolean GRAPHICS_API_OPENGL_43 = false;
     public static boolean GRAPHICS_API_OPENGL_ES2 = false;
+    public static boolean GRAPHICS_API_OPENGL_ES3 = false;
     private static final boolean RLGL_RENDER_TEXTURES_HINT = true;
 
     public static final int DEFAULT_BATCH_BUFFERS = 1;
@@ -150,11 +259,12 @@ public class RLGL{
      * Version of OpenGL being used by Raylib-J
      */
     public enum rlGlVersion {
-        OPENGL_11(1), 
-        OPENGL_21(2), 
-        OPENGL_33(3), 
-        OPENGL_43(4), 
-        OPENGL_ES_20(5);
+        OPENGL_11(1),       // OpenGL 1.1
+        OPENGL_21(2),       // OpenGL 2.1 (GLSL 120)
+        OPENGL_33(3),       // OpenGL 3.3 (GLSL 330)
+        OPENGL_43(4),       // OpenGL 4.3 (using GLSL 330)
+        OPENGL_ES_20(5),    // OpenGL ES 2.0 (GLSL 120)
+        OPENGL_ES_30(6);    // OpenGL ES 3.0 (GLSL 300 es)
         
         private final int version;
         
@@ -164,6 +274,173 @@ public class RLGL{
 
         public int GetVersion() {
             return version;
+        }
+    }
+
+    /**
+     * Texture formats (support depends on OpenGL version)
+     */
+    public enum rlPixelFormat {
+        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE(1),              // 8 bit per pixel (no alpha)
+        PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA(2),             // 8*2 bpp (2 channels)
+        PIXELFORMAT_UNCOMPRESSED_R5G6B5(3),                 // 16 bpp
+        PIXELFORMAT_UNCOMPRESSED_R8G8B8(4),                 // 24 bpp
+        PIXELFORMAT_UNCOMPRESSED_R5G5B5A1(5),               // 16 bpp (1 bit alpha)
+        PIXELFORMAT_UNCOMPRESSED_R4G4B4A4(6),               // 16 bpp (4 bit alpha)
+        PIXELFORMAT_UNCOMPRESSED_R8G8B8A8(7),               // 32 bpp
+        PIXELFORMAT_UNCOMPRESSED_R32(8),                    // 32 bpp (1 channel - float)
+        PIXELFORMAT_UNCOMPRESSED_R32G32B32(9),              // 32*3 bpp (3 channels - float)
+        PIXELFORMAT_UNCOMPRESSED_R32G32B32A32(10),          // 32*4 bpp (4 channels - float)
+        PIXELFORMAT_UNCOMPRESSED_R16(11),                // 16 bpp (1 channel - half float)
+        PIXELFORMAT_UNCOMPRESSED_R16G16B16(12),          // 16*3 bpp (3 channels - half float)
+        PIXELFORMAT_UNCOMPRESSED_R16G16B16A16(13),       // 16*4 bpp (4 channels - half float)
+        PIXELFORMAT_COMPRESSED_DXT1_RGB(14),                // 4 bpp (no alpha)
+        PIXELFORMAT_COMPRESSED_DXT1_RGBA(15),               // 4 bpp (1 bit alpha)
+        PIXELFORMAT_COMPRESSED_DXT3_RGBA(16),               // 8 bpp
+        PIXELFORMAT_COMPRESSED_DXT5_RGBA(17),               // 8 bpp
+        PIXELFORMAT_COMPRESSED_ETC1_RGB(18),                // 4 bpp
+        PIXELFORMAT_COMPRESSED_ETC2_RGB(19),                // 4 bpp
+        PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA(20),           // 8 bpp
+        PIXELFORMAT_COMPRESSED_PVRT_RGB(21),                // 4 bpp
+        PIXELFORMAT_COMPRESSED_PVRT_RGBA(22),               // 4 bpp
+        PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA(23),           // 8 bpp
+        PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA(24);           // 2 bpp
+
+        private final int format;
+
+        rlPixelFormat(int value) {
+            this.format = value;
+        }
+
+        public int GetFormat() {
+            return format;
+        }
+    }
+
+    // Texture parameters: filter mode
+    // NOTE 1: Filtering considers mipmaps if available in the texture
+    // NOTE 2: Filter is accordingly set for minification and magnification
+    public enum rlTextureFilterMode {
+        TEXTURE_FILTER_POINT(0),                   // No filter, just pixel approximation
+        TEXTURE_FILTER_BILINEAR(1),                // Linear filtering
+        TEXTURE_FILTER_TRILINEAR(2),               // Trilinear filtering  = linear with mipmaps)
+        TEXTURE_FILTER_ANISOTROPIC_4X(3),          // Anisotropic filtering 4x
+        TEXTURE_FILTER_ANISOTROPIC_8X(4),          // Anisotropic filtering 8x
+        TEXTURE_FILTER_ANISOTROPIC_16X(5);         // Anisotropic filtering 16x
+        
+        private final int mode;
+
+        rlTextureFilterMode(int value) {
+            this.mode = value;
+        }
+
+        public int GetMode() {
+            return mode;
+        }
+    }
+
+    // Color blending modes (pre-defined)
+    public enum rlBlendMode {
+        BLEND_ALPHA(0),                    // Blend textures considering alpha  = default)
+        BLEND_ADDITIVE(1),                 // Blend textures adding colors
+        BLEND_MULTIPLIED(2),               // Blend textures multiplying colors
+        BLEND_ADD_COLORS(3),               // Blend textures adding colors (alternative)
+        BLEND_SUBTRACT_COLORS(4),          // Blend textures subtracting colors (alternative)
+        BLEND_ALPHA_PREMULTIPLY(5),        // Blend premultiplied textures considering alpha
+        BLEND_CUSTOM(6),                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
+        BLEND_CUSTOM_SEPARATE(7);          // Blend textures using custom src/dst factors (use rlSetBlendFactorsSeparate())
+
+        private final int mode;
+
+        rlBlendMode(int value) {
+            this.mode = value;
+        }
+
+        public int GetMode() {
+            return mode;
+        }
+
+    }
+
+    // Shader location point type
+    public enum rlShaderLocationIndex {
+        SHADER_LOC_VERTEX_POSITION(0), // Shader location: vertex attribute: position
+        SHADER_LOC_VERTEX_TEXCOORD01(1), // Shader location: vertex attribute: texcoord01
+        SHADER_LOC_VERTEX_TEXCOORD02(2), // Shader location: vertex attribute: texcoord02
+        SHADER_LOC_VERTEX_NORMAL(3), // Shader location: vertex attribute: normal
+        SHADER_LOC_VERTEX_TANGENT(4), // Shader location: vertex attribute: tangent
+        SHADER_LOC_VERTEX_COLOR(5), // Shader location: vertex attribute: color
+        SHADER_LOC_MATRIX_MVP(6), // Shader location: matrix uniform: model-view-projection
+        SHADER_LOC_MATRIX_VIEW(7), // Shader location: matrix uniform: view (camera transform)
+        SHADER_LOC_MATRIX_PROJECTION(8), // Shader location: matrix uniform: projection
+        SHADER_LOC_MATRIX_MODEL(9), // Shader location: matrix uniform: model (transform)
+        SHADER_LOC_MATRIX_NORMAL(10), // Shader location: matrix uniform: normal
+        SHADER_LOC_VECTOR_VIEW(11), // Shader location: vector uniform: view
+        SHADER_LOC_COLOR_DIFFUSE(12), // Shader location: vector uniform: diffuse color
+        SHADER_LOC_COLOR_SPECULAR(13), // Shader location: vector uniform: specular color
+        SHADER_LOC_COLOR_AMBIENT(14), // Shader location: vector uniform: ambient color
+        SHADER_LOC_MAP_ALBEDO(15), // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+        SHADER_LOC_MAP_DIFFUSE(15),
+        SHADER_LOC_MAP_METALNESS(16), // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+        SHADER_LOC_MAP_SPECULAR(16),
+        SHADER_LOC_MAP_NORMAL(17), // Shader location: sampler2d texture: normal
+        SHADER_LOC_MAP_ROUGHNESS(18), // Shader location: sampler2d texture: roughness
+        SHADER_LOC_MAP_OCCLUSION(19), // Shader location: sampler2d texture: occlusion
+        SHADER_LOC_MAP_EMISSION(20), // Shader location: sampler2d texture: emission
+        SHADER_LOC_MAP_HEIGHT(21), // Shader location: sampler2d texture: height
+        SHADER_LOC_MAP_CUBEMAP(22), // Shader location: samplerCube texture: cubemap
+        SHADER_LOC_MAP_IRRADIANCE(23), // Shader location: samplerCube texture: irradiance
+        SHADER_LOC_MAP_PREFILTER(24), // Shader location: samplerCube texture: prefilter
+        SHADER_LOC_MAP_BRDF(25); // Shader location: sampler2d texture: brdf
+        
+        private final int location;
+
+        rlShaderLocationIndex(int value) {
+            this.location = value;
+        }
+
+        public int GetLocation() {
+            return location;
+        }
+    }
+
+    // Shader uniform data types
+    public enum rlShaderUniformDataType {
+        SHADER_UNIFORM_FLOAT(0), // Shader uniform type: float
+        SHADER_UNIFORM_VEC2(1), // Shader uniform type: vec2 (2 float)
+        SHADER_UNIFORM_VEC3(2), // Shader uniform type: vec3 (3 float)
+        SHADER_UNIFORM_VEC4(3), // Shader uniform type: vec4 (4 float)
+        SHADER_UNIFORM_INT(4), // Shader uniform type: int
+        SHADER_UNIFORM_IVEC2(5), // Shader uniform type: ivec2 (2 int)
+        SHADER_UNIFORM_IVEC3(6), // Shader uniform type: ivec3 (3 int)
+        SHADER_UNIFORM_IVEC4(7), // Shader uniform type: ivec4 (4 int)
+        SHADER_UNIFORM_SAMPLER2D(8); // Shader uniform type: sampler2d
+
+        private final int type;
+
+        rlShaderUniformDataType(int value) {
+            this.type = value;
+        }
+
+        public int GetType() {
+            return type;
+        }
+    }
+
+    public enum rlShaderAttributeDataType {
+        SHADER_ATTRIB_FLOAT(0),        // Shader attribute type: float
+        SHADER_ATTRIB_VEC2(1),        // Shader attribute type: vec2 (2 float)
+        SHADER_ATTRIB_VEC3(2),        // Shader attribute type: vec3 (3 float)
+        SHADER_ATTRIB_VEC4(3);        // Shader attribute type: vec4 (4 float)
+
+        private final int type;
+
+        rlShaderAttributeDataType(int value) {
+            this.type = value;
+        }
+
+        public int GetType() {
+            return type;
         }
     }
 
@@ -214,173 +491,6 @@ public class RLGL{
     public enum rlCullMode {
         RL_FRONT,
         RL_BACK
-    }
-
-    /**
-     * Texture formats (support depends on OpenGL version)
-     */
-    public enum rlPixelFormat{
-        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE(1),              // 8 bit per pixel (no alpha)
-        PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA(2),             // 8*2 bpp (2 channels)
-        PIXELFORMAT_UNCOMPRESSED_R5G6B5(3),                 // 16 bpp
-        PIXELFORMAT_UNCOMPRESSED_R8G8B8(4),                 // 24 bpp
-        PIXELFORMAT_UNCOMPRESSED_R5G5B5A1(5),               // 16 bpp (1 bit alpha)
-        PIXELFORMAT_UNCOMPRESSED_R4G4B4A4(6),               // 16 bpp (4 bit alpha)
-        PIXELFORMAT_UNCOMPRESSED_R8G8B8A8(7),               // 32 bpp
-        PIXELFORMAT_UNCOMPRESSED_R32(8),                    // 32 bpp (1 channel - float)
-        PIXELFORMAT_UNCOMPRESSED_R32G32B32(9),              // 32*3 bpp (3 channels - float)
-        PIXELFORMAT_UNCOMPRESSED_R32G32B32A32(10),          // 32*4 bpp (4 channels - float)
-        PIXELFORMAT_UNCOMPRESSED_R16(11),                // 16 bpp (1 channel - half float)
-        PIXELFORMAT_UNCOMPRESSED_R16G16B16(12),          // 16*3 bpp (3 channels - half float)
-        PIXELFORMAT_UNCOMPRESSED_R16G16B16A16(13),       // 16*4 bpp (4 channels - half float)
-        PIXELFORMAT_COMPRESSED_DXT1_RGB(14),                // 4 bpp (no alpha)
-        PIXELFORMAT_COMPRESSED_DXT1_RGBA(15),               // 4 bpp (1 bit alpha)
-        PIXELFORMAT_COMPRESSED_DXT3_RGBA(16),               // 8 bpp
-        PIXELFORMAT_COMPRESSED_DXT5_RGBA(17),               // 8 bpp
-        PIXELFORMAT_COMPRESSED_ETC1_RGB(18),                // 4 bpp
-        PIXELFORMAT_COMPRESSED_ETC2_RGB(19),                // 4 bpp
-        PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA(20),           // 8 bpp
-        PIXELFORMAT_COMPRESSED_PVRT_RGB(21),                // 4 bpp
-        PIXELFORMAT_COMPRESSED_PVRT_RGBA(22),               // 4 bpp
-        PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA(23),           // 8 bpp
-        PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA(24);           // 2 bpp
-
-        private final int format;
-
-        rlPixelFormat(int value) {
-            this.format = value;
-        }
-
-        public int GetFormat() {
-            return format;
-        }
-    }
-
-    // Texture parameters: filter mode
-    // NOTE 1: Filtering considers mipmaps if available in the texture
-    // NOTE 2: Filter is accordingly set for minification and magnification
-    public enum rlTextureFilterMode{
-        TEXTURE_FILTER_POINT(0),                   // No filter, just pixel approximation
-        TEXTURE_FILTER_BILINEAR(1),                // Linear filtering
-        TEXTURE_FILTER_TRILINEAR(2),               // Trilinear filtering  = linear with mipmaps)
-        TEXTURE_FILTER_ANISOTROPIC_4X(3),          // Anisotropic filtering 4x
-        TEXTURE_FILTER_ANISOTROPIC_8X(4),          // Anisotropic filtering 8x
-        TEXTURE_FILTER_ANISOTROPIC_16X(5);         // Anisotropic filtering 16x
-        
-        private final int mode;
-
-        rlTextureFilterMode(int value) {
-            this.mode = value;
-        }
-
-        public int GetMode() {
-            return mode;
-        }
-    }
-
-    // Color blending modes (pre-defined)
-    public enum rlBlendMode{
-        BLEND_ALPHA(0),                    // Blend textures considering alpha  = default)
-        BLEND_ADDITIVE(1),                 // Blend textures adding colors
-        BLEND_MULTIPLIED(2),               // Blend textures multiplying colors
-        BLEND_ADD_COLORS(3),               // Blend textures adding colors (alternative)
-        BLEND_SUBTRACT_COLORS(4),          // Blend textures subtracting colors (alternative)
-        BLEND_ALPHA_PREMULTIPLY(5),        // Blend premultiplied textures considering alpha
-        BLEND_CUSTOM(6),                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
-        BLEND_CUSTOM_SEPARATE(7);          // Blend textures using custom src/dst factors (use rlSetBlendFactorsSeparate())
-
-        private final int mode;
-
-        rlBlendMode(int value) {
-            this.mode = value;
-        }
-
-        public int GetMode() {
-            return mode;
-        }
-
-    }
-
-    // Shader location point type
-    public enum rlShaderLocationIndex{
-        SHADER_LOC_VERTEX_POSITION(0), // Shader location: vertex attribute: position
-        SHADER_LOC_VERTEX_TEXCOORD01(1), // Shader location: vertex attribute: texcoord01
-        SHADER_LOC_VERTEX_TEXCOORD02(2), // Shader location: vertex attribute: texcoord02
-        SHADER_LOC_VERTEX_NORMAL(3), // Shader location: vertex attribute: normal
-        SHADER_LOC_VERTEX_TANGENT(4), // Shader location: vertex attribute: tangent
-        SHADER_LOC_VERTEX_COLOR(5), // Shader location: vertex attribute: color
-        SHADER_LOC_MATRIX_MVP(6), // Shader location: matrix uniform: model-view-projection
-        SHADER_LOC_MATRIX_VIEW(7), // Shader location: matrix uniform: view (camera transform)
-        SHADER_LOC_MATRIX_PROJECTION(8), // Shader location: matrix uniform: projection
-        SHADER_LOC_MATRIX_MODEL(9), // Shader location: matrix uniform: model (transform)
-        SHADER_LOC_MATRIX_NORMAL(10), // Shader location: matrix uniform: normal
-        SHADER_LOC_VECTOR_VIEW(11), // Shader location: vector uniform: view
-        SHADER_LOC_COLOR_DIFFUSE(12), // Shader location: vector uniform: diffuse color
-        SHADER_LOC_COLOR_SPECULAR(13), // Shader location: vector uniform: specular color
-        SHADER_LOC_COLOR_AMBIENT(14), // Shader location: vector uniform: ambient color
-        SHADER_LOC_MAP_ALBEDO(15), // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
-        SHADER_LOC_MAP_DIFFUSE(15),
-        SHADER_LOC_MAP_METALNESS(16), // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
-        SHADER_LOC_MAP_SPECULAR(16),
-        SHADER_LOC_MAP_NORMAL(17), // Shader location: sampler2d texture: normal
-        SHADER_LOC_MAP_ROUGHNESS(18), // Shader location: sampler2d texture: roughness
-        SHADER_LOC_MAP_OCCLUSION(19), // Shader location: sampler2d texture: occlusion
-        SHADER_LOC_MAP_EMISSION(20), // Shader location: sampler2d texture: emission
-        SHADER_LOC_MAP_HEIGHT(21), // Shader location: sampler2d texture: height
-        SHADER_LOC_MAP_CUBEMAP(22), // Shader location: samplerCube texture: cubemap
-        SHADER_LOC_MAP_IRRADIANCE(23), // Shader location: samplerCube texture: irradiance
-        SHADER_LOC_MAP_PREFILTER(24), // Shader location: samplerCube texture: prefilter
-        SHADER_LOC_MAP_BRDF(25); // Shader location: sampler2d texture: brdf
-        
-        private final int location;
-
-        rlShaderLocationIndex(int value) {
-            this.location = value;
-        }
-
-        public int GetLocation() {
-            return location;
-        }
-    }
-
-    // Shader uniform data types
-    public enum rlShaderUniformDataType{
-        SHADER_UNIFORM_FLOAT(0), // Shader uniform type: float
-        SHADER_UNIFORM_VEC2(1), // Shader uniform type: vec2 (2 float)
-        SHADER_UNIFORM_VEC3(2), // Shader uniform type: vec3 (3 float)
-        SHADER_UNIFORM_VEC4(3), // Shader uniform type: vec4 (4 float)
-        SHADER_UNIFORM_INT(4), // Shader uniform type: int
-        SHADER_UNIFORM_IVEC2(5), // Shader uniform type: ivec2 (2 int)
-        SHADER_UNIFORM_IVEC3(6), // Shader uniform type: ivec3 (3 int)
-        SHADER_UNIFORM_IVEC4(7), // Shader uniform type: ivec4 (4 int)
-        SHADER_UNIFORM_SAMPLER2D(8); // Shader uniform type: sampler2d
-
-        private final int type;
-
-        rlShaderUniformDataType(int value) {
-            this.type = value;
-        }
-
-        public int GetType() {
-            return type;
-        }
-    }
-
-    public enum rlShaderAttributeDataType{
-        SHADER_ATTRIB_FLOAT(0),        // Shader attribute type: float
-        SHADER_ATTRIB_VEC2(1),        // Shader attribute type: vec2 (2 float)
-        SHADER_ATTRIB_VEC3(2),        // Shader attribute type: vec3 (3 float)
-        SHADER_ATTRIB_VEC4(3);        // Shader attribute type: vec4 (4 float)
-
-        private final int type;
-
-        rlShaderAttributeDataType(int value) {
-            this.type = value;
-        }
-
-        public int GetType() {
-            return type;
-        }
     }
 
     private final Raylib context;
@@ -822,10 +932,17 @@ public class RLGL{
         }
     }
 
+    // Blit active framebuffer to main framebuffer
+    public void rlBlitFramebuffer(int srcX, int srcY, int srcWidth, int srcHeight, int dstX, int dstY, int dstWidth, int dstHeight, int bufferMask) {
+        if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES3) && RLGL_RENDER_TEXTURES_HINT){
+            glBlitFramebuffer(srcX, srcY, srcWidth, srcHeight, dstX, dstY, dstWidth, dstHeight, bufferMask, GL_NEAREST);
+        }
+    }
+
     // Activate multiple draw color buffers
     // NOTE: One color buffer is always active by default
     void rlActiveDrawBuffers(int count){
-        if(GRAPHICS_API_OPENGL_33 && RLGL_RENDER_TEXTURES_HINT){
+        if((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES3) && RLGL_RENDER_TEXTURES_HINT){
             // NOTE: Maximum number of draw buffers supported is implementation dependant,
             // it can be queried with glGet*() but it must be at least 8
             //GLint maxDrawBuffers = 0;
@@ -836,8 +953,22 @@ public class RLGL{
                     context.tracelog.TRACELOG(LOG_WARNING, "GL: Max color buffers limited to 8");
                 }
                 else{
-                    int[] buffers ={
-                        GL_COLOR_ATTACHMENT0,
+                    if (GRAPHICS_API_OPENGL_ES3) {
+                        int[] buffers = {
+                                GL_COLOR_ATTACHMENT0_EXT,
+                                GL_COLOR_ATTACHMENT1_EXT,
+                                GL_COLOR_ATTACHMENT2_EXT,
+                                GL_COLOR_ATTACHMENT3_EXT,
+                                GL_COLOR_ATTACHMENT4_EXT,
+                                GL_COLOR_ATTACHMENT5_EXT,
+                                GL_COLOR_ATTACHMENT6_EXT,
+                                GL_COLOR_ATTACHMENT7_EXT,
+                        };
+                        glDrawBuffersEXT(buffers);
+                    }
+                    else {
+                        int[] buffers = {
+                                GL_COLOR_ATTACHMENT0,
                                 GL_COLOR_ATTACHMENT1,
                                 GL_COLOR_ATTACHMENT2,
                                 GL_COLOR_ATTACHMENT3,
@@ -845,9 +976,9 @@ public class RLGL{
                                 GL_COLOR_ATTACHMENT5,
                                 GL_COLOR_ATTACHMENT6,
                                 GL_COLOR_ATTACHMENT7,
-                    } ;
-
-                    glDrawBuffers(buffers);
+                        };
+                        glDrawBuffers(buffers);
+                    }
                 }
             }
             else {
@@ -927,6 +1058,15 @@ public class RLGL{
         if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33){
             // NOTE: glPolygonMode() not available on OpenGL ES
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+    }
+
+    // Enable point mode
+    public void rlEnablePointMode() {
+        if(GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_33) {
+            // NOTE: glPolygonMode() not available on OpenGL ES
+            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            glEnable(GL_PROGRAM_POINT_SIZE);
         }
     }
 
@@ -1285,6 +1425,7 @@ public class RLGL{
             rlglData.getExtSupported().instancing = true;
             rlglData.getExtSupported().texNPOT = true;
             rlglData.getExtSupported().texFloat32 = true;
+            rlglData.getExtSupported().texFloat16 = true;
             rlglData.getExtSupported().texDepth = true;
             rlglData.getExtSupported().maxDepthBits = 32;
             rlglData.getExtSupported().texAnisoFilter = true;
@@ -1302,7 +1443,30 @@ public class RLGL{
             }
         } // GRAPHICS_API_OPENGL_33
 
-        if (GRAPHICS_API_OPENGL_ES2){
+        if (GRAPHICS_API_OPENGL_ES3) {
+            // Register supported extensions flags
+            // OpenGL ES 3.0 extensions supported by default (or it should be)
+            rlglData.getExtSupported().vao = true;
+            rlglData.getExtSupported().instancing = true;
+            rlglData.getExtSupported().texNPOT = true;
+            rlglData.getExtSupported().texFloat32 = true;
+            rlglData.getExtSupported().texFloat16 = true;
+            rlglData.getExtSupported().texDepth = true;
+            rlglData.getExtSupported().texDepthWebGL = true;
+            rlglData.getExtSupported().maxDepthBits = 24;
+            rlglData.getExtSupported().texAnisoFilter = true;
+            rlglData.getExtSupported().texMirrorClamp = true;
+            // TODO: Check for additional OpenGL ES 3.0 supported extensions:
+            //rlglData.getExtSupported().texCompDXT = true;
+            //rlglData.getExtSupported().texCompETC1 = true;
+            //rlglData.getExtSupported().texCompETC2 = true;
+            //rlglData.getExtSupported().texCompPVRT = true;
+            //rlglData.getExtSupported().texCompASTC = true;
+            //rlglData.getExtSupported().maxAnisotropyLevel = true;
+            //rlglData.getExtSupported().computeShader = true;
+            //rlglData.getExtSupported().ssbo = true;
+        }
+        else if (GRAPHICS_API_OPENGL_ES2){
             // Get supported extensions list
             int numExt = 0;
             String[] extList = new String[512]; // Allocate 512 strings pointers (2 KB)
@@ -1379,6 +1543,9 @@ public class RLGL{
                 // Check texture float support
                 if (extList[i].equals("GL_OES_texture_float")) {
                     rlglData.getExtSupported().setTexFloat32(true);
+                }
+                if (extList[i].equals("GL_OES_texture_half_float")) {
+                    rlglData.getExtSupported().setTexFloat16(true);
                 }
 
                 // Check depth texture support
@@ -1553,8 +1720,14 @@ public class RLGL{
                 version = OPENGL_21;
             }
         }
+        else if (GRAPHICS_API_OPENGL_43) {
+            version = OPENGL_43;
+        }
         else if (GRAPHICS_API_OPENGL_33){
             version = OPENGL_33;
+        }
+        else if (GRAPHICS_API_OPENGL_ES3) {
+            version = OPENGL_ES_30;
         }
         else if (GRAPHICS_API_OPENGL_ES2){
             version = OPENGL_ES_20;
@@ -1817,7 +1990,7 @@ public class RLGL{
         // Update batch vertex buffers
         //------------------------------------------------------------------------------------------------------------
         // NOTE: If there is not vertex data, buffers doesn't need to be updated (vertexCount > 0)
-        // TODO: If no data changed on the CPU arrays --> No need to re-update GPU arrays (change flag required)
+        // TODO: If no data changed on the CPU arrays --> No need to re-update GPU arrays (use a change flag?)
         if (rlglData.getState().vertexCounter > 0){
             // Activate elements VAO
             if (rlglData.getExtSupported().isVao()){
@@ -2128,7 +2301,7 @@ public class RLGL{
             context.tracelog.TRACELOG(null, "TEXTURE: Load mipmap level " + i + " (" + mipWidth + " x " + mipHeight + "), size: " +
                     mipSize + ", offset: " + mipOffset);
 
-            if (glInternalFormat != -1) {
+            if (glInternalFormat != 0) {
                 ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
                 dataBuffer.put(data);
                 dataBuffer.flip();
@@ -2163,7 +2336,9 @@ public class RLGL{
 
             mipWidth /= 2;
             mipHeight /= 2;
-            mipOffset += mipSize;
+            mipOffset += mipSize; // Increment offset position to next mipmap
+            //todo
+            // if (data != NULL) dataPtr += mipSize;         // Increment data pointer to next mipmap
 
             // Security check for NPOT textures
             if (mipWidth < 1){
@@ -2239,7 +2414,7 @@ public class RLGL{
             // Possible formats: GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32 and GL_DEPTH_COMPONENT32F
             int glInternalFormat = GL_DEPTH_COMPONENT;
 
-            if (GRAPHICS_API_OPENGL_ES2) {
+            if (GRAPHICS_API_OPENGL_ES2 || GRAPHICS_API_OPENGL_ES3) {
                 if(!rlglData.getExtSupported().texDepthWebGL) {
                     if (rlglData.getExtSupported().getMaxDepthBits() == 32) {
                         glInternalFormat = GL_DEPTH_COMPONENT32_OES;
@@ -2297,32 +2472,25 @@ public class RLGL{
 
             rlGetGlTextureFormats(format);
 
-            if (glInternalFormat != -1) {
+            if (glInternalFormat != 0) {
                 // Load cubemap faces
                 for (int i = 0; i < 6; i++) {
                     if (data == null){
                         if (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
-                            if (format == PIXELFORMAT_UNCOMPRESSED_R32G32B32) {
-                                // Instead of using a sized internal texture format (GL_RGB16F, GL_RGB32F), we let the driver to choose the better format for us (GL_RGB)
-                                if (rlglData.getExtSupported().isTexFloat32()){
-                                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, size, size,
-                                                 0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
-                                }
-                                else{
-                                    context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
-                                }
-                            }
-                            else if ((format == PIXELFORMAT_UNCOMPRESSED_R32) || (format == PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)){
+                            if (
+                                    (format == PIXELFORMAT_UNCOMPRESSED_R32) ||
+                                    (format == PIXELFORMAT_UNCOMPRESSED_R32G32B32A32) ||
+                                    (format == PIXELFORMAT_UNCOMPRESSED_R16) ||
+                                    (format == PIXELFORMAT_UNCOMPRESSED_R16G16B16A16)
+                            ) {
                                 context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
                             }
                             else{
-                                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
-                                             glFormat, glType, (ByteBuffer) null);
+                                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0, glFormat, glType, (ByteBuffer) null);
                             }
                         }
                         else{
-                            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Empty cubemap creation does not support compressed " +
-                                    "format");
+                            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Empty cubemap creation does not support compressed format");
                         }
                     }
                     else{
@@ -2385,7 +2553,7 @@ public class RLGL{
 
         rlGetGlTextureFormats(format);
 
-        if ((glInternalFormat != -1) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
+        if ((glInternalFormat != 0) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
             ByteBuffer bb = ByteBuffer.allocateDirect(data.length);
             bb.put(data);
             bb.flip();
@@ -2535,6 +2703,27 @@ public class RLGL{
                     glType = GL_FLOAT;
                 } // NOTE: Requires extension OES_texture_float
                 break;
+            case PIXELFORMAT_UNCOMPRESSED_R16:
+                if (rlglData.getExtSupported().isTexFloat16()){
+                    glInternalFormat = GL_R16F;
+                }
+                glFormat = GL_RED;
+                glType = GL_HALF_FLOAT;
+                break;
+            case PIXELFORMAT_UNCOMPRESSED_R16G16B16:
+                if (rlglData.getExtSupported().isTexFloat16()){
+                    glInternalFormat = GL_RGB16F;
+                }
+                glFormat = GL_RGB;
+                glType = GL_HALF_FLOAT;
+                break;
+            case PIXELFORMAT_UNCOMPRESSED_R16G16B16A16:
+                if (rlglData.getExtSupported().isTexFloat16()){
+                    glInternalFormat = GL_RGBA16F;
+                }
+                glFormat = GL_RGBA;
+                glType = GL_HALF_FLOAT;
+                break;
             case PIXELFORMAT_COMPRESSED_DXT1_RGB:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompDXT()){
@@ -2674,7 +2863,7 @@ public class RLGL{
             rlGetGlTextureFormats(format);
             int size = rlGetPixelDataSize(width, height, format);
 
-            if ((glInternalFormat != -1) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
+            if ((glInternalFormat != 0) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
                 pixels = new byte[size];
                 ByteBuffer bb = ByteBuffer.allocateDirect(pixels.length);
                 bb.put(pixels).flip();
@@ -2868,14 +3057,14 @@ public class RLGL{
     // NOTE: All attached textures/cubemaps/renderbuffers are also deleted
     public void rlUnloadFramebuffer(int id){
         if ((GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) && RLGL_RENDER_TEXTURES_HINT){
-
             // Query depth attachment to automatically delete texture/renderbuffer
             int depthType, depthId;
             glBindFramebuffer(GL_FRAMEBUFFER, id);   // Bind framebuffer to query depth texture type
-            depthType = glGetFramebufferAttachmentParameteri(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                    GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE);
-            depthId = glGetFramebufferAttachmentParameteri(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                    GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME);
+            depthType = glGetFramebufferAttachmentParameteri(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE);
+            // TODO: Review warning retrieving object name in WebGL
+            // WARNING: WebGL: INVALID_ENUM: getFramebufferAttachmentParameter: invalid parameter name
+            // https://registry.khronos.org/webgl/specs/latest/1.0/
+            depthId = glGetFramebufferAttachmentParameteri(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME);
 
             int depthIdU = depthId;
             if (depthType == GL_RENDERBUFFER){
@@ -3265,7 +3454,7 @@ public class RLGL{
     }
 
     // Compile custom shader and return shader id
-    int rlCompileShader(String shaderStr, int type){
+    private int rlCompileShader(String shaderStr, int type){
         int shader = glCreateShader(type);
         glShaderSource(shader, shaderStr);
 
@@ -3319,7 +3508,7 @@ public class RLGL{
     }
 
     // Load custom shader strings and return program id
-    int rlLoadShaderProgram(int vShaderId, int fShaderId) {
+    private int rlLoadShaderProgram(int vShaderId, int fShaderId) {
         int program = 0;
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
@@ -3388,10 +3577,12 @@ public class RLGL{
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             location = glGetUniformLocation(shaderId, uniformName);
 
-            if (location == -1)
-                context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shaderId + "] Failed to find shader uniform: " + uniformName);
-            else
-                context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader uniform (" + uniformName + ") set at location: " + location);
+            if (location == -1) {
+                // context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shaderId + "] Failed to find shader uniform: " + uniformName);
+            }
+            else {
+                // context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader uniform (" + uniformName + ") set at location: " + location);
+            }
         }
         return location;
     }
@@ -3403,12 +3594,10 @@ public class RLGL{
             location = glGetAttribLocation(shaderId, attribName);
 
             if (location == -1){
-                context.tracelog.TRACELOG(LOG_WARNING,
-                                          "SHADER: [ID " + shaderId + "] Failed to find shader attribute: " + attribName);
+                // context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shaderId + "] Failed to find shader attribute: " + attribName);
             }
             else{
-                context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader attribute (" + attribName + ") set at " +
-                        "location: " + location);
+                // context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader attribute (" + attribName + ") set at " + "location: " + location);
             }
         }
         return location;
@@ -3604,7 +3793,7 @@ public class RLGL{
     }
 
     // Load shader storage buffer object (SSBO)
-    public int rlLoadShaderBuffer(long size, byte[] data, int usageHint) {
+    public int rlLoadShaderBuffer(byte[] data, int usageHint) {
         int ssbo = 0;
 
         if (GRAPHICS_API_OPENGL_43){
@@ -3940,6 +4129,9 @@ public class RLGL{
             case PIXELFORMAT_UNCOMPRESSED_R32: return "R32";                      // 32 bpp (1 channel - float)
             case PIXELFORMAT_UNCOMPRESSED_R32G32B32: return "R32G32B32";          // 32*3 bpp (3 channels - float)
             case PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: return "R32G32B32A32";    // 32*4 bpp (4 channels - float)
+            case PIXELFORMAT_UNCOMPRESSED_R16: return "R16";                      // 16 bpp (1 channel - half float)
+            case PIXELFORMAT_UNCOMPRESSED_R16G16B16: return "R16G16B16";          // 16*3 bpp (3 channels - half float)
+            case PIXELFORMAT_UNCOMPRESSED_R16G16B16A16: return "R16G16B16A16";    // 16*4 bpp (4 channels - half float)
             case PIXELFORMAT_COMPRESSED_DXT1_RGB: return "DXT1_RGB";              // 4 bpp (no alpha)
             case PIXELFORMAT_COMPRESSED_DXT1_RGBA: return "DXT1_RGBA";            // 4 bpp (1 bit alpha)
             case PIXELFORMAT_COMPRESSED_DXT3_RGBA: return "DXT3_RGBA";            // 8 bpp
@@ -3991,6 +4183,7 @@ public class RLGL{
         }
         if (GRAPHICS_API_OPENGL_ES2){
             defaultVShaderCode.append("#version 100                       \n");
+            defaultVShaderCode.append("precision mediump float            \n");
             defaultVShaderCode.append("attribute vec3 vertexPosition;     \n");
             defaultVShaderCode.append("attribute vec2 vertexTexCoord;     \n");
             defaultVShaderCode.append("attribute vec4 vertexColor;        \n");
@@ -4376,6 +4569,15 @@ public class RLGL{
                 break;
             case PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:
                 bpp = 32 * 4;
+                break;
+            case PIXELFORMAT_UNCOMPRESSED_R16:
+                bpp = 16;
+                break;
+            case PIXELFORMAT_UNCOMPRESSED_R16G16B16:
+                bpp = 16 * 3;
+                break;
+            case PIXELFORMAT_UNCOMPRESSED_R16G16B16A16:
+                bpp = 16 * 4;
                 break;
             case PIXELFORMAT_COMPRESSED_DXT1_RGB:
             case PIXELFORMAT_COMPRESSED_DXT1_RGBA:

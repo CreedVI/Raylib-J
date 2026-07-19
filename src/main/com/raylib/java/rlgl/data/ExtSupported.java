@@ -8,6 +8,7 @@ public class ExtSupported{
     public boolean texDepth;                      // Depth textures supported (GL_ARB_depth_texture, GL_OES_depth_texture)
     public boolean texDepthWebGL;                 // Depth textures supported WebGL specific (GL_WEBGL_depth_texture)
     public boolean texFloat32;                    // float textures support (32 bit per channel) (GL_OES_texture_float)
+    public boolean texFloat16;                    // half float textures support (16 bit per channel) (GL_OES_texture_half_float)
     public boolean texCompDXT;                    // DDS texture compression support (GL_EXT_texture_compression_s3tc, GL_WEBGL_compressed_texture_s3tc, GL_WEBKIT_WEBGL_compressed_texture_s3tc)
     public boolean texCompETC1;                   // ETC1 texture compression support (GL_OES_compressed_ETC1_RGB8_texture, GL_WEBGL_compressed_texture_etc1)
     public boolean texCompETC2;                   // ETC2/EAC texture compression support (GL_ARB_ES3_compatibility)
@@ -67,6 +68,14 @@ public class ExtSupported{
 
     public void setTexFloat32(boolean texFloat32) {
         this.texFloat32 = texFloat32;
+    }
+
+    public boolean isTexFloat16() {
+        return texFloat16;
+    }
+
+    public void setTexFloat16(boolean texFloat16) {
+        this.texFloat16 = texFloat16;
     }
 
     public boolean isTexCompDXT() {
