@@ -131,20 +131,20 @@ public class rAudioAL {
         long device = alcOpenDevice(defaultDevice);
 
         if (device == 0) {
-            context.traceLog.TRACELOG(LOG_WARNING, "Failed to open default audio device. Trying alternative devices...");
+            context.tracelog.TRACELOG(LOG_WARNING, "Failed to open default audio device. Trying alternative devices...");
             List<String> devices = ALUtil.getStringList(0, ALC_ALL_DEVICES_SPECIFIER);
             System.out.println("Available audio devices: " + devices);
             for (int i = 0; i < devices.size(); i++) {
                 device = alcOpenDevice(devices.get(i));
                 if (device != 0) {
-                    context.traceLog.TRACELOG(LOG_INFO, "Fallback device opened. Using " + devices.get(i));
+                    context.tracelog.TRACELOG(LOG_INFO, "Fallback device opened. Using " + devices.get(i));
                     break;
                 }
             }
         }
 
         if (device==0) {
-            context.traceLog.TRACELOG(LOG_ERROR, "Audio device could not be opened");
+            context.tracelog.TRACELOG(LOG_ERROR, "Audio device could not be opened");
         }
         else {
             int[] attrib = {0};
@@ -162,10 +162,10 @@ public class rAudioAL {
 
                 alcCloseDevice(device);
 
-                context.traceLog.TRACELOG(LOG_ERROR, "Could not initialize audio context");
+                context.tracelog.TRACELOG(LOG_ERROR, "Could not initialize audio context");
             }
             else {
-                context.traceLog.TRACELOG(LOG_INFO, "Audio device and context initialized successfully: " + alcGetString(device, ALC_DEVICE_SPECIFIER));
+                context.tracelog.TRACELOG(LOG_INFO, "Audio device and context initialized successfully: " + alcGetString(device, ALC_DEVICE_SPECIFIER));
 
                 // Listener definition (just for 2D)
                 alListener3f(AL_POSITION, 0.0f, 0.0f, 0.0f);
@@ -183,7 +183,7 @@ public class rAudioAL {
         long alContext = alcGetCurrentContext();
 
         if (alContext == 0) {
-            context.traceLog.TRACELOG(LOG_WARNING, "Could not get current audio alContext for closing");
+            context.tracelog.TRACELOG(LOG_WARNING, "Could not get current audio alContext for closing");
         }
 
         device = alcGetContextsDevice(alContext);
@@ -192,7 +192,7 @@ public class rAudioAL {
         alcDestroyContext(alContext);
         alcCloseDevice(device);
 
-        context.traceLog.TRACELOG(LOG_INFO, "Audio device closed successfully");
+        context.tracelog.TRACELOG(LOG_INFO, "Audio device closed successfully");
     }
 
     // Check if device has been initialized successfully
@@ -250,7 +250,7 @@ public class rAudioAL {
         }*/
 
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
+            context.tracelog.TRACELOG(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
         }
 
         return wave;
@@ -305,7 +305,7 @@ public class rAudioAL {
                         format = AL_FORMAT_MONO_FLOAT32;
                         break;  // Requires OpenAL extension: AL_EXT_FLOAT32
                     default:
-                        context.traceLog.TRACELOG(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
+                        context.tracelog.TRACELOG(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
                         break;
                 }
             }
@@ -321,12 +321,12 @@ public class rAudioAL {
                         format = AL_FORMAT_STEREO_FLOAT32;
                         break;  // Requires OpenAL extension: AL_EXT_FLOAT32
                     default:
-                        context.traceLog.TRACELOG(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
+                        context.tracelog.TRACELOG(LOG_WARNING, "Wave sample size not supported: " + wave.sampleSize);
                         break;
                 }
             }
             else {
-                context.traceLog.TRACELOG(LOG_WARNING, "Wave number of channels not supported: " + wave.channels);
+                context.tracelog.TRACELOG(LOG_WARNING, "Wave number of channels not supported: " + wave.channels);
             }
 
             // Create an audio source
@@ -355,7 +355,7 @@ public class rAudioAL {
             // Attach sound buffer to source
             alSourcei(source, AL_BUFFER, buffer);
 
-            context.traceLog.TRACELOG(LOG_INFO, "[SND ID "+source+"][BUFR ID "+buffer+"] Sound data loaded successfully ("+wave.sampleRate+" Hz, "+wave.sampleSize+" bit, "+((wave.channels == 1) ? "Mono" : "Stereo")+")");
+            context.tracelog.TRACELOG(LOG_INFO, "[SND ID "+source+"][BUFR ID "+buffer+"] Sound data loaded successfully ("+wave.sampleRate+" Hz, "+wave.sampleSize+" bit, "+((wave.channels == 1) ? "Mono" : "Stereo")+")");
 
             sound.source = source;
             sound.buffer = buffer;
@@ -371,7 +371,7 @@ public class rAudioAL {
            wave.data.clear();
         }
 
-        context.traceLog.TRACELOG(LOG_INFO, "Unloaded wave data from RAM");
+        context.tracelog.TRACELOG(LOG_INFO, "Unloaded wave data from RAM");
     }
 
     // Unload sound
@@ -381,7 +381,7 @@ public class rAudioAL {
         alDeleteSources(sound.source);
         alDeleteBuffers(sound.buffer);
 
-        context.traceLog.TRACELOG(LOG_INFO, "[SND ID "+sound.source+"][BUFR ID "+sound.buffer+"] Unloaded sound data from RAM");
+        context.tracelog.TRACELOG(LOG_INFO, "[SND ID "+sound.source+"][BUFR ID "+sound.buffer+"] Unloaded sound data from RAM");
     }
 
     // Update sound buffer with new data
@@ -392,9 +392,9 @@ public class rAudioAL {
         sampleSize = alGetBufferi(sound.buffer, AL_BITS);           // It could also be retrieved from sound.format
         channels = alGetBufferi(sound.buffer, AL_CHANNELS);         // It could also be retrieved from sound.format
 
-        context.traceLog.TRACELOG(LOG_DEBUG, "UpdateSound() : AL_FREQUENCY: " + sampleRate);
-        context.traceLog.TRACELOG(LOG_DEBUG, "UpdateSound() : AL_BITS: " + sampleSize);
-        context.traceLog.TRACELOG(LOG_DEBUG, "UpdateSound() : AL_CHANNELS: " + channels);
+        context.tracelog.TRACELOG(LOG_DEBUG, "UpdateSound() : AL_FREQUENCY: " + sampleRate);
+        context.tracelog.TRACELOG(LOG_DEBUG, "UpdateSound() : AL_BITS: " + sampleSize);
+        context.tracelog.TRACELOG(LOG_DEBUG, "UpdateSound() : AL_CHANNELS: " + channels);
 
         int dataSize = samplesCount*channels*sampleSize/8;   // Size of data in bytes
 
@@ -606,7 +606,7 @@ public class rAudioAL {
             wave.data = data;
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "Wave crop range out of bounds");
+            context.tracelog.TRACELOG(LOG_WARNING, "Wave crop range out of bounds");
         }
     }
 
@@ -648,7 +648,7 @@ public class rAudioAL {
             music.ctxOgg = stb_vorbis_open_filename(fileName, errorBuffer, null);
 
             if (music.ctxOgg == 0) {
-                context.traceLog.TRACELOG(LOG_WARNING, "["+fileName+"] OGG audio file could not be opened");
+                context.tracelog.TRACELOG(LOG_WARNING, "["+fileName+"] OGG audio file could not be opened");
             }
             else {
                  // Get Ogg file info
@@ -669,10 +669,10 @@ public class rAudioAL {
                 }
                 finally {
 
-                    context.traceLog.TRACELOG(LOG_DEBUG, "["+fileName+"] FLAC total samples: " + music.totalSamples);
-                    context.traceLog.TRACELOG(LOG_DEBUG, "["+fileName+"] OGG sample rate: " + info.sample_rate());
-                    context.traceLog.TRACELOG(LOG_DEBUG, "["+fileName+"] OGG channels: " + info.channels());
-                    context.traceLog.TRACELOG(LOG_DEBUG, "["+fileName+"] OGG memory required: " + info.temp_memory_required());
+                    context.tracelog.TRACELOG(LOG_DEBUG, "["+fileName+"] FLAC total samples: " + music.totalSamples);
+                    context.tracelog.TRACELOG(LOG_DEBUG, "["+fileName+"] OGG sample rate: " + info.sample_rate());
+                    context.tracelog.TRACELOG(LOG_DEBUG, "["+fileName+"] OGG channels: " + info.channels());
+                    context.tracelog.TRACELOG(LOG_DEBUG, "["+fileName+"] OGG memory required: " + info.temp_memory_required());
                 }
 
             }
@@ -762,7 +762,7 @@ public class rAudioAL {
         #endif
         */
     else {
-        context.traceLog.TRACELOG(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
+        context.tracelog.TRACELOG(LOG_WARNING, "["+fileName+"] Audio fileformat not supported, it can't be loaded");
         }
 
         return music;
@@ -803,7 +803,7 @@ public class rAudioAL {
         int state = alGetSourcei(music.stream.source, AL_SOURCE_STATE);
 
         if (state == AL_PAUSED) {
-            context.traceLog.TRACELOG(LOG_INFO, "[AUD ID "+music.stream.source+"] Resume music stream playing");
+            context.tracelog.TRACELOG(LOG_INFO, "[AUD ID "+music.stream.source+"] Resume music stream playing");
             alSourcePlay(music.stream.source);
         }
     }
@@ -984,7 +984,7 @@ public class rAudioAL {
             stream.channels = channels;
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "Init audio stream: Number of channels not supported: " + channels);
+            context.tracelog.TRACELOG(LOG_WARNING, "Init audio stream: Number of channels not supported: " + channels);
             stream.channels = 1;  // Fallback to mono channel
         }
 
@@ -994,7 +994,7 @@ public class rAudioAL {
                 case 8: stream.format = AL_FORMAT_MONO8; break;
                 case 16: stream.format = AL_FORMAT_MONO16; break;
                 case 32: stream.format = AL_FORMAT_MONO_FLOAT32; break;     // Requires OpenAL extension: AL_EXT_FLOAT32
-                default: context.traceLog.TRACELOG(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize); break;
+                default: context.tracelog.TRACELOG(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize); break;
             }
         }
         else if (stream.channels == 2) {
@@ -1009,7 +1009,7 @@ public class rAudioAL {
                     stream.format = AL_FORMAT_STEREO_FLOAT32;
                     break;   // Requires OpenAL extension: AL_EXT_FLOAT32
                 default:
-                    context.traceLog.TRACELOG(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize);
+                    context.tracelog.TRACELOG(LOG_WARNING, "Init audio stream: Sample size not supported: " + sampleSize);
                     break;
             }
         }
@@ -1038,7 +1038,7 @@ public class rAudioAL {
 
         alSourceQueueBuffers(stream.source, stream.buffers);
 
-        context.traceLog.TRACELOG(LOG_INFO, "[AUD ID "+ stream.source+"] Audio stream loaded successfully ("+stream.sampleRate+" Hz, "+stream.sampleSize+" bit, "+((stream.channels == 1) ? "Mono" : "Stereo")+")");
+        context.tracelog.TRACELOG(LOG_INFO, "[AUD ID "+ stream.source+"] Audio stream loaded successfully ("+stream.sampleRate+" Hz, "+stream.sampleSize+" bit, "+((stream.channels == 1) ? "Mono" : "Stereo")+")");
 
         return stream;
     }
@@ -1062,7 +1062,7 @@ public class rAudioAL {
         alDeleteSources(stream.source);
         alDeleteBuffers(stream.buffers);
 
-        context.traceLog.TRACELOG(LOG_INFO, "[AUD ID "+stream.source+"] Unloaded audio stream data");
+        context.tracelog.TRACELOG(LOG_INFO, "[AUD ID "+stream.source+"] Unloaded audio stream data");
     }
 
     // Update audio stream buffers with data
@@ -1077,7 +1077,7 @@ public class rAudioAL {
             alSourceQueueBuffers(stream.source, buffer);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "[AUD ID "+stream.source+"] Audio buffer not available for unqueuing");
+            context.tracelog.TRACELOG(LOG_WARNING, "[AUD ID "+stream.source+"] Audio buffer not available for unqueuing");
         }
     }
 

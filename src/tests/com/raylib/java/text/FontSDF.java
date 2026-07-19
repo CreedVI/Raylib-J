@@ -3,7 +3,6 @@ package com.raylib.java.text;
 import com.raylib.java.Raylib;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.structs.*;
-import com.raylib.java.text.rText;
 
 import java.io.IOException;
 
@@ -74,7 +73,7 @@ public class FontSDF{
 
         // Load SDF required shader (we use default vertex shader)
         Shader shader = rlj.core.LoadShader(null, "src/tests/resources/text/shaders/glsl330/sdf.fs");
-        rlj.textures.SetTextureFilter(fontSDF.texture, RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR);    // Required for SDF font
+        rlj.textures.SetTextureFilter(fontSDF.texture, RLGL.rlTextureFilterMode.TEXTURE_FILTER_BILINEAR);    // Required for SDF font
 
         Vector2 fontPosition = new Vector2(40, screenHeight / 2.0f - 50);
         Vector2 textSize;

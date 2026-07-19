@@ -1,7 +1,6 @@
 package com.raylib.java.textures;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.core.input.Mouse;
 import com.raylib.java.structs.Texture2D;
 import com.raylib.java.structs.Vector2;
 
@@ -11,7 +10,7 @@ import static com.raylib.java.core.input.Keyboard.*;
 import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_LEFT;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.RL_QUADS;
-import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR;
+import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.TEXTURE_FILTER_BILINEAR;
 import static com.raylib.java.structs.Color.*;
 
 public class TexturedCurve {
@@ -53,7 +52,7 @@ public class TexturedCurve {
 
         // Load the road texture
         texRoad = rlj.textures.LoadTexture("src/tests/resources/textures/road.png");
-        rlj.textures.SetTextureFilter(texRoad, RL_TEXTURE_FILTER_BILINEAR);
+        rlj.textures.SetTextureFilter(texRoad, TEXTURE_FILTER_BILINEAR);
 
         // Setup the curve
         curveStartPosition = new Vector2(80, 100);

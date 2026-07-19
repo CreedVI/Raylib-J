@@ -150,7 +150,11 @@ public class RLGL{
      * Version of OpenGL being used by Raylib-J
      */
     public enum rlGlVersion {
-        OPENGL_11(1), OPENGL_21(2), OPENGL_33(3), OPENGL_43(4), OPENGL_ES_20(5);
+        OPENGL_11(1), 
+        OPENGL_21(2), 
+        OPENGL_33(3), 
+        OPENGL_43(4), 
+        OPENGL_ES_20(5);
         
         private final int version;
         
@@ -164,16 +168,16 @@ public class RLGL{
     }
 
     public enum rlFramebufferAttachType{
-        RL_ATTACHMENT_COLOR_CHANNEL0(0),
-        RL_ATTACHMENT_COLOR_CHANNEL1(1),
-        RL_ATTACHMENT_COLOR_CHANNEL2(2),
-        RL_ATTACHMENT_COLOR_CHANNEL3(3),
-        RL_ATTACHMENT_COLOR_CHANNEL4(4),
-        RL_ATTACHMENT_COLOR_CHANNEL5(5),
-        RL_ATTACHMENT_COLOR_CHANNEL6(6),
-        RL_ATTACHMENT_COLOR_CHANNEL7(7),
-        RL_ATTACHMENT_DEPTH(100),
-        RL_ATTACHMENT_STENCIL(200);
+        ATTACHMENT_COLOR_CHANNEL0(0),
+        ATTACHMENT_COLOR_CHANNEL1(1),
+        ATTACHMENT_COLOR_CHANNEL2(2),
+        ATTACHMENT_COLOR_CHANNEL3(3),
+        ATTACHMENT_COLOR_CHANNEL4(4),
+        ATTACHMENT_COLOR_CHANNEL5(5),
+        ATTACHMENT_COLOR_CHANNEL6(6),
+        ATTACHMENT_COLOR_CHANNEL7(7),
+        ATTACHMENT_DEPTH(100),
+        ATTACHMENT_STENCIL(200);
 
         private final int type;
 
@@ -187,14 +191,14 @@ public class RLGL{
     }
 
     public enum rlFramebufferAttachTextureType{
-        RL_ATTACHMENT_CUBEMAP_POSITIVE_X(0),
-        RL_ATTACHMENT_CUBEMAP_NEGATIVE_X(1),
-        RL_ATTACHMENT_CUBEMAP_POSITIVE_Y(2),
-        RL_ATTACHMENT_CUBEMAP_NEGATIVE_Y(3),
-        RL_ATTACHMENT_CUBEMAP_POSITIVE_Z(4),
-        RL_ATTACHMENT_CUBEMAP_NEGATIVE_Z(5),
-        RL_ATTACHMENT_TEXTURE2D(100),
-        RL_ATTACHMENT_RENDERBUFFER(200);
+        ATTACHMENT_CUBEMAP_POSITIVE_X(0),
+        ATTACHMENT_CUBEMAP_NEGATIVE_X(1),
+        ATTACHMENT_CUBEMAP_POSITIVE_Y(2),
+        ATTACHMENT_CUBEMAP_NEGATIVE_Y(3),
+        ATTACHMENT_CUBEMAP_POSITIVE_Z(4),
+        ATTACHMENT_CUBEMAP_NEGATIVE_Z(5),
+        ATTACHMENT_TEXTURE2D(100),
+        ATTACHMENT_RENDERBUFFER(200);
 
         private final int type;
 
@@ -216,27 +220,30 @@ public class RLGL{
      * Texture formats (support depends on OpenGL version)
      */
     public enum rlPixelFormat{
-        RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE(1),  // 8 bit per pixel (no alpha)
-        RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA(2),  // 8*2 bpp (2 channels)
-        RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5(3),  // 16 bpp
-        RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8(4),  // 24 bpp
-        RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1(5),  // 16 bpp (1 bit alpha)
-        RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4(6),  // 16 bpp (4 bit alpha)
-        RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8(7),  // 32 bpp
-        RL_PIXELFORMAT_UNCOMPRESSED_R32(8),  // 32 bpp (1 channel - float)
-        RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32(9),  // 32*3 bpp (3 channels - float)
-        RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32(10), // 32*4 bpp (4 channels - float)
-        RL_PIXELFORMAT_COMPRESSED_DXT1_RGB(11), // 4 bpp (no alpha)
-        RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA(12), // 4 bpp (1 bit alpha)
-        RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA(13), // 8 bpp
-        RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA(14), // 8 bpp
-        RL_PIXELFORMAT_COMPRESSED_ETC1_RGB(15), // 4 bpp
-        RL_PIXELFORMAT_COMPRESSED_ETC2_RGB(16), // 4 bpp
-        RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA(17), // 8 bpp
-        RL_PIXELFORMAT_COMPRESSED_PVRT_RGB(18), // 4 bpp
-        RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA(19), // 4 bpp
-        RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA(20), // 8 bpp
-        RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA(21); // 2 bpp
+        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE(1),              // 8 bit per pixel (no alpha)
+        PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA(2),             // 8*2 bpp (2 channels)
+        PIXELFORMAT_UNCOMPRESSED_R5G6B5(3),                 // 16 bpp
+        PIXELFORMAT_UNCOMPRESSED_R8G8B8(4),                 // 24 bpp
+        PIXELFORMAT_UNCOMPRESSED_R5G5B5A1(5),               // 16 bpp (1 bit alpha)
+        PIXELFORMAT_UNCOMPRESSED_R4G4B4A4(6),               // 16 bpp (4 bit alpha)
+        PIXELFORMAT_UNCOMPRESSED_R8G8B8A8(7),               // 32 bpp
+        PIXELFORMAT_UNCOMPRESSED_R32(8),                    // 32 bpp (1 channel - float)
+        PIXELFORMAT_UNCOMPRESSED_R32G32B32(9),              // 32*3 bpp (3 channels - float)
+        PIXELFORMAT_UNCOMPRESSED_R32G32B32A32(10),          // 32*4 bpp (4 channels - float)
+        PIXELFORMAT_UNCOMPRESSED_R16(11),                // 16 bpp (1 channel - half float)
+        PIXELFORMAT_UNCOMPRESSED_R16G16B16(12),          // 16*3 bpp (3 channels - half float)
+        PIXELFORMAT_UNCOMPRESSED_R16G16B16A16(13),       // 16*4 bpp (4 channels - half float)
+        PIXELFORMAT_COMPRESSED_DXT1_RGB(14),                // 4 bpp (no alpha)
+        PIXELFORMAT_COMPRESSED_DXT1_RGBA(15),               // 4 bpp (1 bit alpha)
+        PIXELFORMAT_COMPRESSED_DXT3_RGBA(16),               // 8 bpp
+        PIXELFORMAT_COMPRESSED_DXT5_RGBA(17),               // 8 bpp
+        PIXELFORMAT_COMPRESSED_ETC1_RGB(18),                // 4 bpp
+        PIXELFORMAT_COMPRESSED_ETC2_RGB(19),                // 4 bpp
+        PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA(20),           // 8 bpp
+        PIXELFORMAT_COMPRESSED_PVRT_RGB(21),                // 4 bpp
+        PIXELFORMAT_COMPRESSED_PVRT_RGBA(22),               // 4 bpp
+        PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA(23),           // 8 bpp
+        PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA(24);           // 2 bpp
 
         private final int format;
 
@@ -253,12 +260,12 @@ public class RLGL{
     // NOTE 1: Filtering considers mipmaps if available in the texture
     // NOTE 2: Filter is accordingly set for minification and magnification
     public enum rlTextureFilterMode{
-        RL_TEXTURE_FILTER_POINT(0),                   // No filter, just pixel approximation
-        RL_TEXTURE_FILTER_BILINEAR(1),                // Linear filtering
-        RL_TEXTURE_FILTER_TRILINEAR(2),               // Trilinear filtering  = linear with mipmaps)
-        RL_TEXTURE_FILTER_ANISOTROPIC_4X(3),          // Anisotropic filtering 4x
-        RL_TEXTURE_FILTER_ANISOTROPIC_8X(4),          // Anisotropic filtering 8x
-        RL_TEXTURE_FILTER_ANISOTROPIC_16X(5);         // Anisotropic filtering 16x
+        TEXTURE_FILTER_POINT(0),                   // No filter, just pixel approximation
+        TEXTURE_FILTER_BILINEAR(1),                // Linear filtering
+        TEXTURE_FILTER_TRILINEAR(2),               // Trilinear filtering  = linear with mipmaps)
+        TEXTURE_FILTER_ANISOTROPIC_4X(3),          // Anisotropic filtering 4x
+        TEXTURE_FILTER_ANISOTROPIC_8X(4),          // Anisotropic filtering 8x
+        TEXTURE_FILTER_ANISOTROPIC_16X(5);         // Anisotropic filtering 16x
         
         private final int mode;
 
@@ -273,14 +280,14 @@ public class RLGL{
 
     // Color blending modes (pre-defined)
     public enum rlBlendMode{
-        RL_BLEND_ALPHA(0),                    // Blend textures considering alpha  = default)
-        RL_BLEND_ADDITIVE(1),                 // Blend textures adding colors
-        RL_BLEND_MULTIPLIED(2),               // Blend textures multiplying colors
-        RL_BLEND_ADD_COLORS(3),               // Blend textures adding colors (alternative)
-        RL_BLEND_SUBTRACT_COLORS(4),          // Blend textures subtracting colors (alternative)
-        RL_BLEND_ALPHA_PREMULTIPLY(5),        // Blend premultiplied textures considering alpha
-        RL_BLEND_CUSTOM(6),                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
-        RL_BLEND_CUSTOM_SEPARATE(7);          // Blend textures using custom src/dst factors (use rlSetBlendFactorsSeparate())
+        BLEND_ALPHA(0),                    // Blend textures considering alpha  = default)
+        BLEND_ADDITIVE(1),                 // Blend textures adding colors
+        BLEND_MULTIPLIED(2),               // Blend textures multiplying colors
+        BLEND_ADD_COLORS(3),               // Blend textures adding colors (alternative)
+        BLEND_SUBTRACT_COLORS(4),          // Blend textures subtracting colors (alternative)
+        BLEND_ALPHA_PREMULTIPLY(5),        // Blend premultiplied textures considering alpha
+        BLEND_CUSTOM(6),                   // Blend textures using custom src/dst factors (use SetBlendModeCustom())
+        BLEND_CUSTOM_SEPARATE(7);          // Blend textures using custom src/dst factors (use rlSetBlendFactorsSeparate())
 
         private final int mode;
 
@@ -296,34 +303,34 @@ public class RLGL{
 
     // Shader location point type
     public enum rlShaderLocationIndex{
-        RL_SHADER_LOC_VERTEX_POSITION(0), // Shader location: vertex attribute: position
-        RL_SHADER_LOC_VERTEX_TEXCOORD01(1), // Shader location: vertex attribute: texcoord01
-        RL_SHADER_LOC_VERTEX_TEXCOORD02(2), // Shader location: vertex attribute: texcoord02
-        RL_SHADER_LOC_VERTEX_NORMAL(3), // Shader location: vertex attribute: normal
-        RL_SHADER_LOC_VERTEX_TANGENT(4), // Shader location: vertex attribute: tangent
-        RL_SHADER_LOC_VERTEX_COLOR(5), // Shader location: vertex attribute: color
-        RL_SHADER_LOC_MATRIX_MVP(6), // Shader location: matrix uniform: model-view-projection
-        RL_SHADER_LOC_MATRIX_VIEW(7), // Shader location: matrix uniform: view (camera transform)
-        RL_SHADER_LOC_MATRIX_PROJECTION(8), // Shader location: matrix uniform: projection
-        RL_SHADER_LOC_MATRIX_MODEL(9), // Shader location: matrix uniform: model (transform)
-        RL_SHADER_LOC_MATRIX_NORMAL(10), // Shader location: matrix uniform: normal
-        RL_SHADER_LOC_VECTOR_VIEW(11), // Shader location: vector uniform: view
-        RL_SHADER_LOC_COLOR_DIFFUSE(12), // Shader location: vector uniform: diffuse color
-        RL_SHADER_LOC_COLOR_SPECULAR(13), // Shader location: vector uniform: specular color
-        RL_SHADER_LOC_COLOR_AMBIENT(14), // Shader location: vector uniform: ambient color
-        RL_SHADER_LOC_MAP_ALBEDO(15), // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
-        RL_SHADER_LOC_MAP_DIFFUSE(15),
-        RL_SHADER_LOC_MAP_METALNESS(16), // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
-        RL_SHADER_LOC_MAP_SPECULAR(16),
-        RL_SHADER_LOC_MAP_NORMAL(17), // Shader location: sampler2d texture: normal
-        RL_SHADER_LOC_MAP_ROUGHNESS(18), // Shader location: sampler2d texture: roughness
-        RL_SHADER_LOC_MAP_OCCLUSION(19), // Shader location: sampler2d texture: occlusion
-        RL_SHADER_LOC_MAP_EMISSION(20), // Shader location: sampler2d texture: emission
-        RL_SHADER_LOC_MAP_HEIGHT(21), // Shader location: sampler2d texture: height
-        RL_SHADER_LOC_MAP_CUBEMAP(22), // Shader location: samplerCube texture: cubemap
-        RL_SHADER_LOC_MAP_IRRADIANCE(23), // Shader location: samplerCube texture: irradiance
-        RL_SHADER_LOC_MAP_PREFILTER(24), // Shader location: samplerCube texture: prefilter
-        RL_SHADER_LOC_MAP_BRDF(25); // Shader location: sampler2d texture: brdf
+        SHADER_LOC_VERTEX_POSITION(0), // Shader location: vertex attribute: position
+        SHADER_LOC_VERTEX_TEXCOORD01(1), // Shader location: vertex attribute: texcoord01
+        SHADER_LOC_VERTEX_TEXCOORD02(2), // Shader location: vertex attribute: texcoord02
+        SHADER_LOC_VERTEX_NORMAL(3), // Shader location: vertex attribute: normal
+        SHADER_LOC_VERTEX_TANGENT(4), // Shader location: vertex attribute: tangent
+        SHADER_LOC_VERTEX_COLOR(5), // Shader location: vertex attribute: color
+        SHADER_LOC_MATRIX_MVP(6), // Shader location: matrix uniform: model-view-projection
+        SHADER_LOC_MATRIX_VIEW(7), // Shader location: matrix uniform: view (camera transform)
+        SHADER_LOC_MATRIX_PROJECTION(8), // Shader location: matrix uniform: projection
+        SHADER_LOC_MATRIX_MODEL(9), // Shader location: matrix uniform: model (transform)
+        SHADER_LOC_MATRIX_NORMAL(10), // Shader location: matrix uniform: normal
+        SHADER_LOC_VECTOR_VIEW(11), // Shader location: vector uniform: view
+        SHADER_LOC_COLOR_DIFFUSE(12), // Shader location: vector uniform: diffuse color
+        SHADER_LOC_COLOR_SPECULAR(13), // Shader location: vector uniform: specular color
+        SHADER_LOC_COLOR_AMBIENT(14), // Shader location: vector uniform: ambient color
+        SHADER_LOC_MAP_ALBEDO(15), // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+        SHADER_LOC_MAP_DIFFUSE(15),
+        SHADER_LOC_MAP_METALNESS(16), // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+        SHADER_LOC_MAP_SPECULAR(16),
+        SHADER_LOC_MAP_NORMAL(17), // Shader location: sampler2d texture: normal
+        SHADER_LOC_MAP_ROUGHNESS(18), // Shader location: sampler2d texture: roughness
+        SHADER_LOC_MAP_OCCLUSION(19), // Shader location: sampler2d texture: occlusion
+        SHADER_LOC_MAP_EMISSION(20), // Shader location: sampler2d texture: emission
+        SHADER_LOC_MAP_HEIGHT(21), // Shader location: sampler2d texture: height
+        SHADER_LOC_MAP_CUBEMAP(22), // Shader location: samplerCube texture: cubemap
+        SHADER_LOC_MAP_IRRADIANCE(23), // Shader location: samplerCube texture: irradiance
+        SHADER_LOC_MAP_PREFILTER(24), // Shader location: samplerCube texture: prefilter
+        SHADER_LOC_MAP_BRDF(25); // Shader location: sampler2d texture: brdf
         
         private final int location;
 
@@ -338,15 +345,15 @@ public class RLGL{
 
     // Shader uniform data types
     public enum rlShaderUniformDataType{
-        RL_SHADER_UNIFORM_FLOAT(0), // Shader uniform type: float
-        RL_SHADER_UNIFORM_VEC2(1), // Shader uniform type: vec2 (2 float)
-        RL_SHADER_UNIFORM_VEC3(2), // Shader uniform type: vec3 (3 float)
-        RL_SHADER_UNIFORM_VEC4(3), // Shader uniform type: vec4 (4 float)
-        RL_SHADER_UNIFORM_INT(4), // Shader uniform type: int
-        RL_SHADER_UNIFORM_IVEC2(5), // Shader uniform type: ivec2 (2 int)
-        RL_SHADER_UNIFORM_IVEC3(6), // Shader uniform type: ivec3 (3 int)
-        RL_SHADER_UNIFORM_IVEC4(7), // Shader uniform type: ivec4 (4 int)
-        RL_SHADER_UNIFORM_SAMPLER2D(8); // Shader uniform type: sampler2d
+        SHADER_UNIFORM_FLOAT(0), // Shader uniform type: float
+        SHADER_UNIFORM_VEC2(1), // Shader uniform type: vec2 (2 float)
+        SHADER_UNIFORM_VEC3(2), // Shader uniform type: vec3 (3 float)
+        SHADER_UNIFORM_VEC4(3), // Shader uniform type: vec4 (4 float)
+        SHADER_UNIFORM_INT(4), // Shader uniform type: int
+        SHADER_UNIFORM_IVEC2(5), // Shader uniform type: ivec2 (2 int)
+        SHADER_UNIFORM_IVEC3(6), // Shader uniform type: ivec3 (3 int)
+        SHADER_UNIFORM_IVEC4(7), // Shader uniform type: ivec4 (4 int)
+        SHADER_UNIFORM_SAMPLER2D(8); // Shader uniform type: sampler2d
 
         private final int type;
 
@@ -360,10 +367,10 @@ public class RLGL{
     }
 
     public enum rlShaderAttributeDataType{
-        RL_SHADER_ATTRIB_FLOAT(0),        // Shader attribute type: float
-        RL_SHADER_ATTRIB_VEC2(1),        // Shader attribute type: vec2 (2 float)
-        RL_SHADER_ATTRIB_VEC3(2),        // Shader attribute type: vec3 (3 float)
-        RL_SHADER_ATTRIB_VEC4(3);        // Shader attribute type: vec4 (4 float)
+        SHADER_ATTRIB_FLOAT(0),        // Shader attribute type: float
+        SHADER_ATTRIB_VEC2(1),        // Shader attribute type: vec2 (2 float)
+        SHADER_ATTRIB_VEC3(2),        // Shader attribute type: vec3 (3 float)
+        SHADER_ATTRIB_VEC4(3);        // Shader attribute type: vec4 (4 float)
 
         private final int type;
 
@@ -389,92 +396,92 @@ public class RLGL{
 
     public void rlMatrixMode(int mode){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlMatrixMode(mode);
+            gl33.rlMatrixMode(mode);
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlMatrixMode(mode);
+            gl11.rlMatrixMode(mode);
         }
     }
 
     public void rlFrustum(double left, double right, double bottom, double top, double znear, double zfar){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlFrustum(left, right, bottom, top, znear, zfar);
+            gl33.rlFrustum(left, right, bottom, top, znear, zfar);
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlFrustum(left, right, bottom, top, znear, zfar);
+            gl11.rlFrustum(left, right, bottom, top, znear, zfar);
         }
     }
 
     public void rlOrtho(double left, double right, double bottom, double top, double znear, double zfar){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlOrtho(left, right, bottom, top, znear, zfar);
+            gl33.rlOrtho(left, right, bottom, top, znear, zfar);
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlOrtho(left, right, bottom, top, znear, zfar);
+            gl11.rlOrtho(left, right, bottom, top, znear, zfar);
         }
     }
 
     public void rlPushMatrix(){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlPushMatrix();
+            gl33.rlPushMatrix();
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlPushMatrix();
+            gl11.rlPushMatrix();
         }
     }
 
     public void rlPopMatrix(){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlPopMatrix();
+            gl33.rlPopMatrix();
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlPopMatrix();
+            gl11.rlPopMatrix();
         }
     }
 
     public void rlLoadIdentity(){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlLoadIdentity();
+            gl33.rlLoadIdentity();
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlLoadIdentity();
+            gl11.rlLoadIdentity();
         }
     }
 
     public void rlTranslatef(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlTranslatef(x, y, z);
+            gl33.rlTranslatef(x, y, z);
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlTranslatef(x, y, z);
+            gl11.rlTranslatef(x, y, z);
         }
     }
 
     public void rlRotatef(float angle, float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlRotatef(angle, x, y, z);
+            gl33.rlRotatef(angle, x, y, z);
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlRotatef(angle, x, y, z);
+            gl11.rlRotatef(angle, x, y, z);
         }
     }
 
     public void rlScalef(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlScalef(x, y, z);
+            gl33.rlScalef(x, y, z);
 
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlScalef(x, y, z);
+            gl11.rlScalef(x, y, z);
         }
     }
 
     public void rlMultMatrixf(float[] matf){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlMultMatrixf(matf);
+            gl33.rlMultMatrixf(matf);
         }
         else if (GRAPHICS_API_OPENGL_11){
-            GL_11.rlMultMatrixf(matf);
+            gl11.rlMultMatrixf(matf);
         }
 
     }
@@ -487,19 +494,19 @@ public class RLGL{
 
     public void rlBegin(int mode){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlBegin(this, mode);
+            gl33.rlBegin(this, mode);
         }
         else{
-            GL_11.rlBegin(mode);
+            gl11.rlBegin(mode);
         }
     }
 
     public void rlEnd(){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlEnd(this);
+            gl33.rlEnd(this);
         }
         else{
-            GL_11.rlEnd();
+            gl11.rlEnd();
         }
     }
 
@@ -507,30 +514,30 @@ public class RLGL{
     // NOTE: Vertex position data is the basic information required for drawing
     public void rlVertex3f(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlVertex3f(x, y, z);
+            gl33.rlVertex3f(x, y, z);
         }
         else{
-            GL_11.rlVertex3f(x, y, z);
+            gl11.rlVertex3f(x, y, z);
         }
     }
 
     // Define one vertex (position)
     public void rlVertex2f(float x, float y){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlVertex2f(x, y);
+            gl33.rlVertex2f(x, y);
         }
         else{
-            GL_11.rlVertex2f(x, y);
+            gl11.rlVertex2f(x, y);
         }
     }
 
     // Define one vertex (position)
     public void rlVertex2i(int x, int y){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlVertex2i(x, y);
+            gl33.rlVertex2i(x, y);
         }
         else{
-            GL_11.rlVertex2i(x, y);
+            gl11.rlVertex2i(x, y);
         }
     }
 
@@ -538,10 +545,10 @@ public class RLGL{
     // NOTE: Texture coordinates are limited to QUADS only
     public void rlTexCoord2f(float x, float y){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlTexCoord2f(x, y);
+            gl33.rlTexCoord2f(x, y);
         }
         else{
-            GL_11.rlTexCoord2f(x, y);
+            gl11.rlTexCoord2f(x, y);
         }
     }
 
@@ -549,40 +556,40 @@ public class RLGL{
     // NOTE: Normals limited to TRIANGLES only?
     public void rlNormal3f(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlNormal3f(x, y, z);
+            gl33.rlNormal3f(x, y, z);
         }
         else{
-            GL_11.rlNormal3f(x, y, z);
+            gl11.rlNormal3f(x, y, z);
         }
     }
 
     // Define one vertex (color)
     public void rlColor4ub(int x, int y, int z, int w){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlColor4ub((byte)x, (byte)y, (byte)z, (byte)w);
+            gl33.rlColor4ub((byte)x, (byte)y, (byte)z, (byte)w);
         }
         else{
-            GL_11.rlColor4ub(x, y, z, w);
+            gl11.rlColor4ub(x, y, z, w);
         }
     }
 
     // Define one vertex (color)
     void rlColor4f(float r, float g, float b, float a){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlColor4f(r, g, b, a);
+            gl33.rlColor4f(r, g, b, a);
         }
         else{
-            GL_11.rlColor4f(r, g, b, a);
+            gl11.rlColor4f(r, g, b, a);
         }
     }
 
     // Define one vertex (color)
     public void rlColor3f(float x, float y, float z){
         if (GRAPHICS_API_OPENGL_33){
-            GL_33.rlColor3f(x, y, z);
+            gl33.rlColor3f(x, y, z);
         }
         else{
-            GL_11.rlColor3f(x, y, z);
+            gl11.rlColor3f(x, y, z);
         }
     }
 
@@ -694,7 +701,7 @@ public class RLGL{
                             glTexParameteri(GL_TEXTURE_2D, param, value);
                         }
                         else{
-                            context.traceLog.TRACELOG(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
+                            context.tracelog.TRACELOG(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
                         }
                     }
                 }
@@ -714,12 +721,12 @@ public class RLGL{
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
                     }
                     else if (rlglData.getExtSupported().getMaxAnisotropyLevel() > 0.0f){
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " +
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " +
                                 rlglData.getExtSupported().getMaxAnisotropyLevel());
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
                     }
                     else{
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Anisotropic filtering not supported");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Anisotropic filtering not supported");
                     }
                 }
             }
@@ -749,7 +756,7 @@ public class RLGL{
                             glTexParameteri(GL_TEXTURE_CUBE_MAP, param, value);
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
+                            context.tracelog.TRACELOG(LOG_WARNING, "GL: Clamp mirror wrap mode not supported (GL_MIRROR_CLAMP_EXT)");
                         }
                     }
                 }
@@ -767,11 +774,11 @@ public class RLGL{
                         glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
                     }
                     else if (rlglData.getExtSupported().maxAnisotropyLevel > 0.0f) {
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " + rlglData.getExtSupported().maxAnisotropyLevel);
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Maximum anisotropic filter level supported is " + rlglData.getExtSupported().maxAnisotropyLevel);
                         glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, (float) value);
                     }
                     else {
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Anisotropic filtering not supported");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Anisotropic filtering not supported");
                     }
                 }
                 break;
@@ -826,7 +833,7 @@ public class RLGL{
 
             if (count > 0){
                 if (count > 8){
-                    context.traceLog.TRACELOG(LOG_WARNING, "GL: Max color buffers limited to 8");
+                    context.tracelog.TRACELOG(LOG_WARNING, "GL: Max color buffers limited to 8");
                 }
                 else{
                     int[] buffers ={
@@ -844,7 +851,7 @@ public class RLGL{
                 }
             }
             else {
-                context.traceLog.TRACELOG(LOG_WARNING, "GL: One color buffer active by default");
+                context.tracelog.TRACELOG(LOG_WARNING, "GL: One color buffer active by default");
             }
         }
     }
@@ -996,28 +1003,28 @@ public class RLGL{
                         check = false;
                         break;
                     case 0x0500:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_ENUM");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_ENUM");
                         break;
                     case 0x0501:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_VALUE");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_VALUE");
                         break;
                     case 0x0502:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_OPERATION");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_OPERATION");
                         break;
                     case 0x0503:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_STACK_OVERFLOW");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_STACK_OVERFLOW");
                         break;
                     case 0x0504:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_STACK_UNDERFLOW");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_STACK_UNDERFLOW");
                         break;
                     case 0x0505:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_OUT_OF_MEMORY");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_OUT_OF_MEMORY");
                         break;
                     case 0x0506:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_FRAMEBUFFER_OPERATION");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: GL_INVALID_FRAMEBUFFER_OPERATION");
                         break;
                     default:
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: Error detected: Unknown error code: " + err);
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: Error detected: Unknown error code: " + err);
                         break;
                 }
             }
@@ -1028,42 +1035,42 @@ public class RLGL{
     public void rlSetBlendMode(rlBlendMode mode){
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             if (rlglData.getState().getCurrentBlendMode() != mode.GetMode() ||
-                    ((mode == RL_BLEND_CUSTOM || mode == RL_BLEND_CUSTOM_SEPARATE) &&
+                    ((mode == BLEND_CUSTOM || mode == BLEND_CUSTOM_SEPARATE) &&
                     rlglData.getState().glCustomBlendModeModified))
             {
                 rlDrawRenderBatch(rlglData.getCurrentBatch());
 
                 switch (mode){
-                    case RL_BLEND_ALPHA:
+                    case BLEND_ALPHA:
                         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                         glBlendEquation(GL_FUNC_ADD);
                         break;
-                    case RL_BLEND_ADDITIVE:
+                    case BLEND_ADDITIVE:
                         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
                         glBlendEquation(GL_FUNC_ADD);
                         break;
-                    case RL_BLEND_MULTIPLIED:
+                    case BLEND_MULTIPLIED:
                         glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
                         glBlendEquation(GL_FUNC_ADD);
                         break;
-                    case RL_BLEND_ADD_COLORS:
+                    case BLEND_ADD_COLORS:
                         glBlendFunc(GL_ONE, GL_ONE);
                         glBlendEquation(GL_FUNC_ADD);
                         break;
-                    case RL_BLEND_SUBTRACT_COLORS:
+                    case BLEND_SUBTRACT_COLORS:
                         glBlendFunc(GL_ONE, GL_ONE);
                         glBlendEquation(GL_FUNC_SUBTRACT);
                         break;
-                    case RL_BLEND_ALPHA_PREMULTIPLY:
+                    case BLEND_ALPHA_PREMULTIPLY:
                         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
                         glBlendEquation(GL_FUNC_ADD);
                         break;
-                    case RL_BLEND_CUSTOM:
+                    case BLEND_CUSTOM:
                         // NOTE: Using GL blend src/dst factors and GL equation configured with rlSetBlendFactors()
                         glBlendFunc(rlglData.getState().glBlendSrcFactor, rlglData.getState().glBlendDstFactor);
                         glBlendEquation(rlglData.getState().glBlendEquation);
                         break;
-                    case RL_BLEND_CUSTOM_SEPARATE:
+                    case BLEND_CUSTOM_SEPARATE:
                         // NOTE: Using GL blend src/dst factors and GL equation configured with rlSetBlendFactorsSeparate()
                         glBlendFuncSeparate(rlglData.getState().glBlendSrcFactorRGB, rlglData.getState().glBlendDestFactorRGB, rlglData.getState().glBlendSrcFactorAlpha, rlglData.getState().glBlendDestFactorAlpha);
                         glBlendEquationSeparate(rlglData.getState().glBlendEquationRGB, rlglData.getState().glBlendEquationAlpha);
@@ -1155,13 +1162,13 @@ public class RLGL{
             byte[] pixels = {
                     (byte) 255, (byte) 255, (byte) 255, (byte) 255
             };
-            rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
+            rlglData.getState().setDefaultTextureId(rlLoadTexture(pixels, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1));
 
             if(rlglData.getState().getDefaultTextureId() != 0) {
-                context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Default texture loaded successfully");
+                context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Default texture loaded successfully");
             }
             else{
-                context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to load default texture");
+                context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to load default texture");
             }
 
             // Init default Shader (customized for GL 3.3 and ES2)
@@ -1219,7 +1226,7 @@ public class RLGL{
             rlglData.getState().setFramebufferWidth(width);
             rlglData.getState().setFramebufferHeight(height);
 
-            context.traceLog.TRACELOG(LOG_INFO, "RLGL: Default OpenGL state initialized successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "RLGL: Default OpenGL state initialized successfully");
         }
 
         // Init state: custom blend factor and equation modification flag
@@ -1240,7 +1247,7 @@ public class RLGL{
             rlUnloadShaderDefault();          // Unload default shader
             glDeleteTextures(rlglData.getState().getDefaultTextureId()); // Unload default texture
 
-            context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Default texture unloaded successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + rlglData.getState().getDefaultTextureId() + "] Default texture unloaded successfully");
         }
     }
 
@@ -1258,16 +1265,16 @@ public class RLGL{
 
             // Get number of supported extensions
             int numExt = glGetInteger(GL_NUM_EXTENSIONS);
-            context.traceLog.TRACELOG(LOG_INFO, "GL: Supported extensions count: " + numExt);
+            context.tracelog.TRACELOG(LOG_INFO, "GL: Supported extensions count: " + numExt);
 
             if (SUPPORT_GL_DETAILS_INFO){
                 // Get supported extensions list
                 // WARNING: glGetStringi() not available on OpenGL 2.1
                 String[] extList = new String[numExt];
-                context.traceLog.TRACELOG(LOG_INFO, "GL: OpenGL extensions:");
+                context.tracelog.TRACELOG(LOG_INFO, "GL: OpenGL extensions:");
                 for (int i = 0; i < numExt; i++){
                     extList[i] = glGetStringi(GL_EXTENSIONS, i);
-                    context.traceLog.TRACELOG(LOG_INFO, "    " + extList[i]);
+                    context.tracelog.TRACELOG(LOG_INFO, "    " + extList[i]);
                 }
                 extList = null;       // Free extensions pointers
             }
@@ -1314,11 +1321,11 @@ public class RLGL{
                 }
             }
 
-            context.traceLog.TRACELOG(LOG_INFO, "GL: Supported extensions count: " + numExt);
+            context.tracelog.TRACELOG(LOG_INFO, "GL: Supported extensions count: " + numExt);
 
             if (SUPPORT_GL_DETAILS_INFO){
-                context.traceLog.TRACELOG(LOG_INFO, "GL: OpenGL extensions:");
-                for (int i = 0; i < numExt; i++) context.traceLog.TRACELOG(LOG_INFO, "    " + extList[i]);
+                context.tracelog.TRACELOG(LOG_INFO, "GL: OpenGL extensions:");
+                for (int i = 0; i < numExt; i++) context.tracelog.TRACELOG(LOG_INFO, "    " + extList[i]);
             }
 
             // Check required extensions
@@ -1443,11 +1450,11 @@ public class RLGL{
         // Check OpenGL information and capabilities
         //------------------------------------------------------------------------------
         // Show current OpenGL and GLSL version
-        context.traceLog.TRACELOG(LOG_INFO, "GL: OpenGL device information:");
-        context.traceLog.TRACELOG(LOG_INFO, "    > Vendor:   " + glGetString(GL_VENDOR));
-        context.traceLog.TRACELOG(LOG_INFO, "    > Renderer: " + glGetString(GL_RENDERER));
-        context.traceLog.TRACELOG(LOG_INFO, "    > Version:  " + glGetString(GL_VERSION));
-        context.traceLog.TRACELOG(LOG_INFO, "    > GLSL:     " +  glGetString(GL_SHADING_LANGUAGE_VERSION));
+        context.tracelog.TRACELOG(LOG_INFO, "GL: OpenGL device information:");
+        context.tracelog.TRACELOG(LOG_INFO, "    > Vendor:   " + glGetString(GL_VENDOR));
+        context.tracelog.TRACELOG(LOG_INFO, "    > Renderer: " + glGetString(GL_RENDERER));
+        context.tracelog.TRACELOG(LOG_INFO, "    > Version:  " + glGetString(GL_VERSION));
+        context.tracelog.TRACELOG(LOG_INFO, "    > GLSL:     " +  glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             // NOTE: Anisotropy levels capability is an extension
@@ -1457,76 +1464,76 @@ public class RLGL{
 
             if (SUPPORT_GL_DETAILS_INFO){
                 // Show some OpenGL GPU capabilities
-                context.traceLog.TRACELOG(LOG_INFO, "GL: OpenGL capabilities:");
+                context.tracelog.TRACELOG(LOG_INFO, "GL: OpenGL capabilities:");
                 int capability = 0;
                 capability = glGetInteger(GL_MAX_TEXTURE_SIZE);
-                context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_TEXTURE_SIZE: " + capability);
+                context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_TEXTURE_SIZE: " + capability);
                 capability = glGetInteger(GL_MAX_CUBE_MAP_TEXTURE_SIZE);
-                context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_CUBE_MAP_TEXTURE_SIZE: " + capability);
+                context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_CUBE_MAP_TEXTURE_SIZE: " + capability);
                 capability = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS);
-                context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_TEXTURE_IMAGE_UNITS: " + capability);
+                context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_TEXTURE_IMAGE_UNITS: " + capability);
                 capability = glGetInteger(GL_MAX_VERTEX_ATTRIBS);
-                context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_VERTEX_ATTRIBS: " + capability);
+                context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_VERTEX_ATTRIBS: " + capability);
 
                 if (!GRAPHICS_API_OPENGL_ES2){
                     capability = glGetInteger(GL_MAX_UNIFORM_BLOCK_SIZE);
-                    context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_UNIFORM_BLOCK_SIZE: " + capability);
+                    context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_UNIFORM_BLOCK_SIZE: " + capability);
                     capability = glGetInteger(GL_MAX_DRAW_BUFFERS);
-                    context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_DRAW_BUFFERS: " + capability);
+                    context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_DRAW_BUFFERS: " + capability);
                     if (rlglData.getExtSupported().isTexAnisoFilter())
-                        context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_TEXTURE_MAX_ANISOTROPY: " + rlglData.getExtSupported().getMaxAnisotropyLevel());
+                        context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_TEXTURE_MAX_ANISOTROPY: " + rlglData.getExtSupported().getMaxAnisotropyLevel());
                 }
                 capability = glGetInteger(GL_NUM_COMPRESSED_TEXTURE_FORMATS);
-                context.traceLog.TRACELOG(LOG_INFO, "    GL_NUM_COMPRESSED_TEXTURE_FORMATS: " + capability);
+                context.tracelog.TRACELOG(LOG_INFO, "    GL_NUM_COMPRESSED_TEXTURE_FORMATS: " + capability);
                 int[] format = new int[32];
                 glGetInteger(GL_COMPRESSED_TEXTURE_FORMATS);
                 for (int i = 0; i < capability; i++) {
-                    context.traceLog.TRACELOG(LOG_INFO, "        " + rlGetCompressedFormatName(format[i]));
+                    context.tracelog.TRACELOG(LOG_INFO, "        " + rlGetCompressedFormatName(format[i]));
                 }
 
                 if (GRAPHICS_API_OPENGL_43) {
                     IntBuffer capabilityIB = IntBuffer.allocate(1);
                     glGetIntegerv(GL_MAX_VERTEX_ATTRIB_BINDINGS, capabilityIB);
-                    context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_VERTEX_ATTRIB_BINDINGS: " + capabilityIB.get());
+                    context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_VERTEX_ATTRIB_BINDINGS: " + capabilityIB.get());
                     glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, capabilityIB);
-                    context.traceLog.TRACELOG(LOG_INFO, "    GL_MAX_UNIFORM_LOCATIONS: " +  capabilityIB.get());
+                    context.tracelog.TRACELOG(LOG_INFO, "    GL_MAX_UNIFORM_LOCATIONS: " +  capabilityIB.get());
                 }
             }
             else{   // SUPPORT_GL_DETAILS_INFO
                 // Show some basic info about GL supported features
                 if (GRAPHICS_API_OPENGL_ES2){
                     if (rlglData.getExtSupported().isVao()) {
-                        context.traceLog.TRACELOG(LOG_INFO, "GL: VAO extension detected, VAO functions loaded successfully");
+                        context.tracelog.TRACELOG(LOG_INFO, "GL: VAO extension detected, VAO functions loaded successfully");
                     }
                     else {
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: VAO extension not found, VAO not supported");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: VAO extension not found, VAO not supported");
                     }
 
                     if (rlglData.getExtSupported().isTexNPOT()) {
-                        context.traceLog.TRACELOG(LOG_INFO, "GL: NPOT textures extension detected, full NPOT textures supported");
+                        context.tracelog.TRACELOG(LOG_INFO, "GL: NPOT textures extension detected, full NPOT textures supported");
                     }
                     else {
-                        context.traceLog.TRACELOG(LOG_WARNING, "GL: NPOT textures extension not found, limited NPOT support (no-mipmaps, no-repeat)");
+                        context.tracelog.TRACELOG(LOG_WARNING, "GL: NPOT textures extension not found, limited NPOT support (no-mipmaps, no-repeat)");
                     }
                 }
                 if (rlglData.getExtSupported().isTexCompDXT()) {
-                    context.traceLog.TRACELOG(LOG_INFO, "GL: DXT compressed textures supported");
+                    context.tracelog.TRACELOG(LOG_INFO, "GL: DXT compressed textures supported");
                 }
 
                 if (rlglData.getExtSupported().isTexCompETC1()) {
-                    context.traceLog.TRACELOG(LOG_INFO, "GL: ETC1 compressed textures supported");
+                    context.tracelog.TRACELOG(LOG_INFO, "GL: ETC1 compressed textures supported");
                 }
 
                 if (rlglData.getExtSupported().isTexCompETC2()) {
-                    context.traceLog.TRACELOG(LOG_INFO, "GL: ETC2/EAC compressed textures supported");
+                    context.tracelog.TRACELOG(LOG_INFO, "GL: ETC2/EAC compressed textures supported");
                 }
 
                 if (rlglData.getExtSupported().isTexCompPVRT()) {
-                    context.traceLog.TRACELOG(LOG_INFO, "GL: PVRT compressed textures supported");
+                    context.tracelog.TRACELOG(LOG_INFO, "GL: PVRT compressed textures supported");
                 }
 
                 if (rlglData.getExtSupported().isTexCompASTC()) {
-                    context.traceLog.TRACELOG(LOG_INFO, "GL: ASTC compressed textures supported");
+                    context.tracelog.TRACELOG(LOG_INFO, "GL: ASTC compressed textures supported");
                 }
             }  // SUPPORT_GL_DETAILS_INFO
         }  // GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2
@@ -1692,7 +1699,7 @@ public class RLGL{
                 rlglData.getState().vertexCounter = 0;
             }
 
-            context.traceLog.TRACELOG(LOG_INFO, "RLGL: Internal vertex buffers initialized successfully in RAM (CPU)");
+            context.tracelog.TRACELOG(LOG_INFO, "RLGL: Internal vertex buffers initialized successfully in RAM (CPU)");
             //--------------------------------------------------------------------------------------------
             // Upload to GPU (VRAM) vertex data and initialize VAOs/VBOs
             //--------------------------------------------------------------------------------------------
@@ -1709,16 +1716,16 @@ public class RLGL{
                 batch.rlVertexBuffer[i].vboId[0] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[0]);
                 glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vertices, GL_DYNAMIC_DRAW);
-                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()]);
-                glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()],
+                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_POSITION.GetLocation()]);
+                glVertexAttribPointer(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_POSITION.GetLocation()],
                         3, GL_FLOAT, false, 0, 0);
 
                 // Vertex texcoord buffer (shader-location = 1)
                 batch.rlVertexBuffer[i].vboId[1] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[1]);
                 glBufferData(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].texcoords, GL_DYNAMIC_DRAW);
-                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
-                glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()],
+                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
+                glVertexAttribPointer(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()],
                         2, GL_FLOAT, false, 0, 0);
 
                 // Vertex color buffer (shader-location = 3)
@@ -1727,8 +1734,8 @@ public class RLGL{
                 batch.rlVertexBuffer[i].vboId[2] = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[i].vboId[2]);
                 glBufferData(GL_ARRAY_BUFFER, colours, GL_DYNAMIC_DRAW);
-                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
-                glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()],
+                glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                glVertexAttribPointer(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_COLOR.GetLocation()],
                         4, GL_UNSIGNED_BYTE, true, 0, 0);
 
                 // Fill index buffer
@@ -1742,7 +1749,7 @@ public class RLGL{
                 }
             }
 
-            context.traceLog.TRACELOG(LOG_INFO, "RLGL: Render batch vertex buffers loaded successfully in VRAM (GPU)");
+            context.tracelog.TRACELOG(LOG_INFO, "RLGL: Render batch vertex buffers loaded successfully in VRAM (GPU)");
 
             // Unbind the current VAO
             if(rlglData.getExtSupported().isVao()){
@@ -1887,7 +1894,7 @@ public class RLGL{
 
                 // Create modelview-projection matrix and upload to shader
                 Matrix matMVP = MatrixMultiply(rlglData.getState().getModelview(), rlglData.getState().getProjection());
-                glUniformMatrix4fv(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()], false, MatrixToFloat(matMVP));
+                glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_MVP.GetLocation()], false, MatrixToFloat(matMVP));
 
                 if (rlglData.getExtSupported().isVao()){
                     glBindVertexArray(batch.rlVertexBuffer[batch.currentBuffer].vaoId);
@@ -1895,28 +1902,28 @@ public class RLGL{
                 else{
                     // Bind vertex attrib: position (shader-location = 0)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[0]);
-                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()],
+                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_POSITION.GetLocation()],
                             3, GL_FLOAT, false, 0, 0);
-                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()]);
+                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                     // Bind vertex attrib: texcoord (shader-location = 1)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[1]);
-                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()],
+                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()],
                             2, GL_FLOAT, false, 0, 0);
-                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
+                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
                     // Bind vertex attrib: color (shader-location = 3)
                     glBindBuffer(GL_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[2]);
-                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()],
+                    glVertexAttribPointer(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_COLOR.GetLocation()],
                             4, GL_UNSIGNED_BYTE, true, 0, 0);
-                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                    glEnableVertexAttribArray(rlglData.getState().currentShaderLocs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
 
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch.rlVertexBuffer[batch.currentBuffer].vboId[3]);
                 }
 
                 // Setup some default shader values
-                glUniform4f(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()], 1.0f, 1.0f, 1.0f, 1.0f);
-                glUniform1i(rlglData.getState().currentShaderLocs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation()], 0); // Active default sampler2D: texture0
+                glUniform4f(rlglData.getState().currentShaderLocs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()], 1.0f, 1.0f, 1.0f, 1.0f);
+                glUniform1i(rlglData.getState().currentShaderLocs[SHADER_LOC_MAP_DIFFUSE.GetLocation()], 0); // Active default sampler2D: texture0
 
                 // Activate additional sampler textures
                 // Those additional textures will be common for all draw calls of the batch
@@ -2063,39 +2070,39 @@ public class RLGL{
 
         // Check texture format support by OpenGL 1.1 (compressed textures not supported)
         if (GRAPHICS_API_OPENGL_11){
-            if (format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
-                context.traceLog.TRACELOG(LOG_WARNING, "GL: OpenGL 1.1 does not support GPU compressed texture formats");
+            if (format.GetFormat() >= PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
+                context.tracelog.TRACELOG(LOG_WARNING, "GL: OpenGL 1.1 does not support GPU compressed texture formats");
                 return id;
             }
         }
         else{
-            if ((!rlglData.getExtSupported().isTexCompDXT()) && ((format == RL_PIXELFORMAT_COMPRESSED_DXT1_RGB) ||
-                    (format == RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA) || (format == RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA) ||
-                    (format == RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA))){
-                context.traceLog.TRACELOG(LOG_WARNING, "GL: DXT compressed texture format not supported");
+            if ((!rlglData.getExtSupported().isTexCompDXT()) && ((format == PIXELFORMAT_COMPRESSED_DXT1_RGB) ||
+                    (format == PIXELFORMAT_COMPRESSED_DXT1_RGBA) || (format == PIXELFORMAT_COMPRESSED_DXT3_RGBA) ||
+                    (format == PIXELFORMAT_COMPRESSED_DXT5_RGBA))){
+                context.tracelog.TRACELOG(LOG_WARNING, "GL: DXT compressed texture format not supported");
                 return id;
             }
             if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
-                if ((!rlglData.getExtSupported().isTexCompETC1()) && (format == RL_PIXELFORMAT_COMPRESSED_ETC1_RGB)){
-                    context.traceLog.TRACELOG(LOG_WARNING, "GL: ETC1 compressed texture format not supported");
+                if ((!rlglData.getExtSupported().isTexCompETC1()) && (format == PIXELFORMAT_COMPRESSED_ETC1_RGB)){
+                    context.tracelog.TRACELOG(LOG_WARNING, "GL: ETC1 compressed texture format not supported");
                     return id;
                 }
 
-                if ((!rlglData.getExtSupported().isTexCompETC2()) && ((format == RL_PIXELFORMAT_COMPRESSED_ETC2_RGB) ||
-                        (format == RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA))){
-                    context.traceLog.TRACELOG(LOG_WARNING, "GL: ETC2 compressed texture format not supported");
+                if ((!rlglData.getExtSupported().isTexCompETC2()) && ((format == PIXELFORMAT_COMPRESSED_ETC2_RGB) ||
+                        (format == PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA))){
+                    context.tracelog.TRACELOG(LOG_WARNING, "GL: ETC2 compressed texture format not supported");
                     return id;
                 }
 
-                if ((!rlglData.getExtSupported().isTexCompPVRT()) && ((format == RL_PIXELFORMAT_COMPRESSED_PVRT_RGB) ||
-                        (format == RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA))){
-                    context.traceLog.TRACELOG(LOG_WARNING, "GL: PVRT compressed texture format not supported");
+                if ((!rlglData.getExtSupported().isTexCompPVRT()) && ((format == PIXELFORMAT_COMPRESSED_PVRT_RGB) ||
+                        (format == PIXELFORMAT_COMPRESSED_PVRT_RGBA))){
+                    context.tracelog.TRACELOG(LOG_WARNING, "GL: PVRT compressed texture format not supported");
                     return id;
                 }
 
-                if ((!rlglData.getExtSupported().isTexCompASTC()) && ((format == RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA) ||
-                        (format == RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA))){
-                    context.traceLog.TRACELOG(LOG_WARNING, "GL: ASTC compressed texture format not supported");
+                if ((!rlglData.getExtSupported().isTexCompASTC()) && ((format == PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA) ||
+                        (format == PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA))){
+                    context.tracelog.TRACELOG(LOG_WARNING, "GL: ASTC compressed texture format not supported");
                     return id;
                 }
             }
@@ -2118,7 +2125,7 @@ public class RLGL{
             //using globals here to get around pointers
             rlGetGlTextureFormats(format);
 
-            context.traceLog.TRACELOG(null, "TEXTURE: Load mipmap level " + i + " (" + mipWidth + " x " + mipHeight + "), size: " +
+            context.tracelog.TRACELOG(null, "TEXTURE: Load mipmap level " + i + " (" + mipWidth + " x " + mipHeight + "), size: " +
                     mipSize + ", offset: " + mipOffset);
 
             if (glInternalFormat != -1) {
@@ -2126,7 +2133,7 @@ public class RLGL{
                 dataBuffer.put(data);
                 dataBuffer.flip();
 
-                if (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
+                if (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
                     // Todo: HDR breaks here
                     glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, dataBuffer);
                 }
@@ -2138,11 +2145,11 @@ public class RLGL{
 
                 int[] swizzleMask = new int[4];
                 if (GRAPHICS_API_OPENGL_33){
-                    if (format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
+                    if (format == PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
                         swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ONE};
                         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
                     }
-                    else if (format == RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA){
+                    else if (format == PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA){
                         if (GRAPHICS_API_OPENGL_21){
                             swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ALPHA};
                         }
@@ -2207,11 +2214,11 @@ public class RLGL{
         glBindTexture(GL_TEXTURE_2D, 0);
 
         if (id > 0){
-            context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + id + "] Texture loaded successfully (" + width + "x" + height +
+            context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + id + "] Texture loaded successfully (" + width + "x" + height +
                     " | " + rlGetPixelFormatName(format) + " | " + mipmapCount + " mipmaps)");
         }
         else{
-            context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to load texture");
+            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to load texture");
         }
 
         return id;
@@ -2258,7 +2265,7 @@ public class RLGL{
 
                 glBindTexture(GL_TEXTURE_2D, 0);
 
-                context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: Depth texture loaded successfully");
+                context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: Depth texture loaded successfully");
             }
             else{
                 // Create the renderbuffer that will serve as the depth attachment for the framebuffer
@@ -2269,7 +2276,7 @@ public class RLGL{
 
                 glBindRenderbuffer(GL_RENDERBUFFER, 0);
                 int logTmp = rlglData.getExtSupported().getMaxDepthBits() >= 24 ? rlglData.getExtSupported().getMaxDepthBits() : 16;
-                context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + id + "] Depth renderbuffer loaded successfully (" + logTmp + " bits)");
+                context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + id + "] Depth renderbuffer loaded successfully (" + logTmp + " bits)");
 
             }
         }
@@ -2294,19 +2301,19 @@ public class RLGL{
                 // Load cubemap faces
                 for (int i = 0; i < 6; i++) {
                     if (data == null){
-                        if (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
-                            if (format == RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32) {
+                        if (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
+                            if (format == PIXELFORMAT_UNCOMPRESSED_R32G32B32) {
                                 // Instead of using a sized internal texture format (GL_RGB16F, GL_RGB32F), we let the driver to choose the better format for us (GL_RGB)
                                 if (rlglData.getExtSupported().isTexFloat32()){
                                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, size, size,
                                                  0, GL_RGB, GL_FLOAT, (ByteBuffer) null);
                                 }
                                 else{
-                                    context.traceLog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
+                                    context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
                                 }
                             }
-                            else if ((format == RL_PIXELFORMAT_UNCOMPRESSED_R32) || (format == RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)){
-                                context.traceLog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
+                            else if ((format == PIXELFORMAT_UNCOMPRESSED_R32) || (format == PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)){
+                                context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Cubemap requested format not supported");
                             }
                             else{
                                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
@@ -2314,7 +2321,7 @@ public class RLGL{
                             }
                         }
                         else{
-                            context.traceLog.TRACELOG(LOG_WARNING, "TEXTURES: Empty cubemap creation does not support compressed " +
+                            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURES: Empty cubemap creation does not support compressed " +
                                     "format");
                         }
                     }
@@ -2322,7 +2329,7 @@ public class RLGL{
                         ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
                         dataBuffer.put(data);
 
-                        if (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
+                        if (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()){
                             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glInternalFormat, size, size, 0,
                                          glFormat, glType, dataBuffer);
                         }
@@ -2334,11 +2341,11 @@ public class RLGL{
                     int[] swizzleMask = new int[16];
 
                     if (GRAPHICS_API_OPENGL_33){
-                        if (format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
+                        if (format == PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
                             swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ONE};
                             glTexParameteriv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
                         }
-                        else if (format == RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA){
+                        else if (format == PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA){
                             if (GRAPHICS_API_OPENGL_21){
                                 swizzleMask = new int[]{GL_RED, GL_RED, GL_RED, GL_ALPHA};
                             }
@@ -2364,10 +2371,10 @@ public class RLGL{
         }
 
         if (id > 0){
-            context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + id + "] Cubemap texture created successfully (" + size + "x" + size + ")");
+            context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + id + "] Cubemap texture created successfully (" + size + "x" + size + ")");
         }
         else{
-            context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to load cubemap texture");
+            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to load cubemap texture");
         }
 
         return id;
@@ -2378,14 +2385,14 @@ public class RLGL{
 
         rlGetGlTextureFormats(format);
 
-        if ((glInternalFormat != -1) && (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
+        if ((glInternalFormat != -1) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
             ByteBuffer bb = ByteBuffer.allocateDirect(data.length);
             bb.put(data);
             bb.flip();
             glTexSubImage2D(GL_TEXTURE_2D, 0, offsetX, offsetY, width, height, glFormat, glType, bb);
         }
         else{
-            context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: [ID " + id + "] Failed to update for current texture format (" + format + ")");
+            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: [ID " + id + "] Failed to update for current texture format (" + format + ")");
         }
     }
 
@@ -2396,7 +2403,7 @@ public class RLGL{
         glType = -1;
 
         switch (format){
-            case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
+            case PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_LUMINANCE;
                     glFormat = GL_LUMINANCE;
@@ -2408,7 +2415,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_BYTE;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
+            case PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_LUMINANCE_ALPHA;
                     glFormat = GL_LUMINANCE_ALPHA;
@@ -2420,7 +2427,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_BYTE;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5:
+            case PIXELFORMAT_UNCOMPRESSED_R5G6B5:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGB;
                     glFormat = GL_RGB;
@@ -2432,7 +2439,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_SHORT_5_6_5;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:
+            case PIXELFORMAT_UNCOMPRESSED_R8G8B8:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGB;
                     glFormat = GL_RGB;
@@ -2444,7 +2451,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_BYTE;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:
+            case PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGBA;
                     glFormat = GL_RGBA;
@@ -2456,7 +2463,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_SHORT_5_5_5_1;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:
+            case PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGBA;
                     glFormat = GL_RGBA;
@@ -2468,7 +2475,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_SHORT_4_4_4_4;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
+            case PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
                 if (GRAPHICS_API_OPENGL_11 || GRAPHICS_API_OPENGL_21 || GRAPHICS_API_OPENGL_ES2){
                     glInternalFormat = GL_RGBA;
                     glFormat = GL_RGBA;
@@ -2480,7 +2487,7 @@ public class RLGL{
                     glType = GL_UNSIGNED_BYTE;
                 }
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32:
+            case PIXELFORMAT_UNCOMPRESSED_R32:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexFloat32()){
                         glInternalFormat = GL_LUMINANCE;
@@ -2496,7 +2503,7 @@ public class RLGL{
                     }
                 } // NOTE: Requires extension OES_texture_float
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32:
+            case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexFloat32()){
                         glInternalFormat = GL_RGB;
@@ -2512,7 +2519,7 @@ public class RLGL{
                     }
                 }    // NOTE: Requires extension OES_texture_float
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:
+            case PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexFloat32()){
                         glInternalFormat = GL_RGBA;
@@ -2528,77 +2535,77 @@ public class RLGL{
                     glType = GL_FLOAT;
                 } // NOTE: Requires extension OES_texture_float
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_DXT1_RGB:
+            case PIXELFORMAT_COMPRESSED_DXT1_RGB:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
                     }
                 }
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA:
+            case PIXELFORMAT_COMPRESSED_DXT1_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
                     }
                 }
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA:
+            case PIXELFORMAT_COMPRESSED_DXT3_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
                     }
                 }
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA:
+            case PIXELFORMAT_COMPRESSED_DXT5_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompDXT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
                     }
                 }
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_ETC1_RGB:
+            case PIXELFORMAT_COMPRESSED_ETC1_RGB:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompETC1()){
                         glInternalFormat = GL_ETC1_RGB8_OES;
                     }
                 }  // NOTE: Requires OpenGL ES 2.0 or OpenGL 4.3
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_ETC2_RGB:
+            case PIXELFORMAT_COMPRESSED_ETC2_RGB:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompETC2()){
                         glInternalFormat = GL_COMPRESSED_RGB8_ETC2;
                     }
                 }      // NOTE: Requires OpenGL ES 3.0 or OpenGL 4.3
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA:
+            case PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompETC2()){
                         glInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
                     }
                 }    // NOTE: Requires OpenGL ES 3.0 or OpenGL 4.3
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_PVRT_RGB:
+            case PIXELFORMAT_COMPRESSED_PVRT_RGB:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompPVRT()){
                         glInternalFormat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
                     }
                 } // NOTE: Requires PowerVR GPU
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA:
+            case PIXELFORMAT_COMPRESSED_PVRT_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompPVRT()){
                         glInternalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
                     }
                 } // NOTE: Requires PowerVR GPU
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA:
+            case PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompASTC()){
                         glInternalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
                     }
                 } // NOTE: Requires OpenGL ES 3.1 or OpenGL 4.3
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA:
+            case PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA:
                 if (!GRAPHICS_API_OPENGL_11){
                     if (rlglData.getExtSupported().isTexCompASTC()){
                         glInternalFormat = GL_COMPRESSED_RGBA_ASTC_8x8_KHR;
@@ -2610,7 +2617,7 @@ public class RLGL{
                     throw new IllegalStateException("Unexpected value: " + format);
                 }
                 if (!GRAPHICS_API_OPENGL_11){
-                    context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: Current format not supported (" + format + ")");
+                    context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: Current format not supported (" + format + ")");
                 }
                 break;
         }
@@ -2634,11 +2641,11 @@ public class RLGL{
                 glGenerateMipmap(GL_TEXTURE_2D);    // Generate mipmaps automatically
 
                 texture.setMipmaps(1 + (int) Math.floor(Math.log(Math.max(texture.getWidth(), texture.getHeight())) / Math.log(2)));
-                context.traceLog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Mipmaps generated automatically, total: " + texture.getMipmaps());
+                context.tracelog.TRACELOG(LOG_INFO, "TEXTURE: [ID " + texture.getId() + "] Mipmaps generated automatically, total: " + texture.getMipmaps());
             }
         }
         else{
-            context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.getId() + "] Failed to generate mipmaps");
+            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: [ID " + texture.getId() + "] Failed to generate mipmaps");
         }
 
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -2667,7 +2674,7 @@ public class RLGL{
             rlGetGlTextureFormats(format);
             int size = rlGetPixelDataSize(width, height, format);
 
-            if ((glInternalFormat != -1) && (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
+            if ((glInternalFormat != -1) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat())){
                 pixels = new byte[size];
                 ByteBuffer bb = ByteBuffer.allocateDirect(pixels.length);
                 bb.put(pixels).flip();
@@ -2677,7 +2684,7 @@ public class RLGL{
                 }
             }
             else{
-                context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: [ID " + id + "] Data retrieval not suported for " +
+                context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: [ID " + id + "] Data retrieval not suported for " +
                         "pixel format (" + format + ")");
             }
 
@@ -2704,7 +2711,7 @@ public class RLGL{
 
             // We read data as RGBA because FBO texture is configured as RGBA, despite binding another texture format
             pixels = new byte[rlGetPixelDataSize(width, width,
-                                                 RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)];
+                                                 PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)];
             ByteBuffer bb = ByteBuffer.allocateDirect(pixels.length);
             bb.put(pixels).flip();
             glReadPixels(0, 0, width, width, GL_RGBA, GL_UNSIGNED_BYTE, bb);
@@ -2770,41 +2777,41 @@ public class RLGL{
             glBindFramebuffer(GL_FRAMEBUFFER, fboId);
 
             switch (attachType){
-                case RL_ATTACHMENT_COLOR_CHANNEL0:
-                case RL_ATTACHMENT_COLOR_CHANNEL1:
-                case RL_ATTACHMENT_COLOR_CHANNEL2:
-                case RL_ATTACHMENT_COLOR_CHANNEL3:
-                case RL_ATTACHMENT_COLOR_CHANNEL4:
-                case RL_ATTACHMENT_COLOR_CHANNEL5:
-                case RL_ATTACHMENT_COLOR_CHANNEL6:
-                case RL_ATTACHMENT_COLOR_CHANNEL7:{
-                    if (texType == RL_ATTACHMENT_TEXTURE2D){
+                case ATTACHMENT_COLOR_CHANNEL0:
+                case ATTACHMENT_COLOR_CHANNEL1:
+                case ATTACHMENT_COLOR_CHANNEL2:
+                case ATTACHMENT_COLOR_CHANNEL3:
+                case ATTACHMENT_COLOR_CHANNEL4:
+                case ATTACHMENT_COLOR_CHANNEL5:
+                case ATTACHMENT_COLOR_CHANNEL6:
+                case ATTACHMENT_COLOR_CHANNEL7:{
+                    if (texType == ATTACHMENT_TEXTURE2D){
                         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachType.GetType(), GL_TEXTURE_2D, texId, 0);
                     }
-                    else if (texType == RL_ATTACHMENT_RENDERBUFFER){
+                    else if (texType == ATTACHMENT_RENDERBUFFER){
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachType.GetType(), GL_RENDERBUFFER, texId);
                     }
-                    else if (texType.GetType() >= RL_ATTACHMENT_CUBEMAP_POSITIVE_X.GetType()){
+                    else if (texType.GetType() >= ATTACHMENT_CUBEMAP_POSITIVE_X.GetType()){
                         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachType.GetType(), GL_TEXTURE_CUBE_MAP_POSITIVE_X + texType.GetType(), texId, 0);
                     }
 
                 }
                 break;
-                case RL_ATTACHMENT_DEPTH:{
-                    if (texType == RL_ATTACHMENT_TEXTURE2D){
+                case ATTACHMENT_DEPTH:{
+                    if (texType == ATTACHMENT_TEXTURE2D){
                         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
                     }
-                    else if (texType == RL_ATTACHMENT_RENDERBUFFER){
+                    else if (texType == ATTACHMENT_RENDERBUFFER){
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, texId);
                     }
 
                 }
                 break;
-                case RL_ATTACHMENT_STENCIL:{
-                    if (texType == RL_ATTACHMENT_TEXTURE2D){
+                case ATTACHMENT_STENCIL:{
+                    if (texType == ATTACHMENT_TEXTURE2D){
                         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
                     }
-                    else if (texType == RL_ATTACHMENT_RENDERBUFFER){
+                    else if (texType == ATTACHMENT_RENDERBUFFER){
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, texId);
                     }
 
@@ -2830,19 +2837,19 @@ public class RLGL{
             if (status != GL_FRAMEBUFFER_COMPLETE){
                 switch (status){
                     case GL_FRAMEBUFFER_UNSUPPORTED:
-                        context.traceLog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer is unsupported");
+                        context.tracelog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer is unsupported");
                         break;
                     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                        context.traceLog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer has incomplete attachment");
+                        context.tracelog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer has incomplete attachment");
                         break;
 
                     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
                         if (GRAPHICS_API_OPENGL_ES2){
-                            context.traceLog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer has incomplete dimensions");
+                            context.tracelog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer has incomplete dimensions");
                         }
                         break;
                     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                        context.traceLog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer has a missing attachment");
+                        context.tracelog.TRACELOG(LOG_WARNING, "FBO: [ID " + id + "] Framebuffer has a missing attachment");
                         break;
                     default:
                         break;
@@ -2884,7 +2891,7 @@ public class RLGL{
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDeleteFramebuffers(id);
 
-            context.traceLog.TRACELOG(LOG_INFO, "FBO: [ID " + id + "] Unloaded framebuffer from VRAM (GPU)");
+            context.tracelog.TRACELOG(LOG_INFO, "FBO: [ID " + id + "] Unloaded framebuffer from VRAM (GPU)");
         }
     }
 
@@ -3160,7 +3167,7 @@ public class RLGL{
             {
                 glBindVertexArray(0);
                 glDeleteVertexArrays(vaoId);
-                context.traceLog.TRACELOG(LOG_INFO, "VAO: [ID " + vaoId + "] Unloaded vertex array data from VRAM (GPU)");
+                context.tracelog.TRACELOG(LOG_INFO, "VAO: [ID " + vaoId + "] Unloaded vertex array data from VRAM (GPU)");
             }
         }
     }
@@ -3229,7 +3236,7 @@ public class RLGL{
                 }
                 // In case shader program loading failed, we assign default shader
                 if (id == 0){
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: Failed to load custom shader code, using default shader");
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: Failed to load custom shader code, using default shader");
                     id = rlglData.getState().defaultShaderId;
                 }
             }
@@ -3268,14 +3275,14 @@ public class RLGL{
         if (success == GL_FALSE){
             switch (type) {
                 case GL_VERTEX_SHADER:
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile vertex shader code");
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile vertex shader code");
                     break;
                 case GL_FRAGMENT_SHADER:
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile fragment shader code");
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile fragment shader code");
                     break;
                 //case GL_GEOMETRY_SHADER:
                 case GL_COMPUTE_SHADER:
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile compute shader code");
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Failed to compile compute shader code");
                     break;
                 default:
                     break;
@@ -3288,20 +3295,20 @@ public class RLGL{
                 String log = "";
 
                 log = glGetShaderInfoLog(shader, maxLength);
-                context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Compile error: " + log);
+                context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shader + "] Compile error: " + log);
             }
         }
         else {
             switch (type) {
                 case GL_VERTEX_SHADER:
-                    context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + shader + "] Vertex shader compiled successfully");
+                    context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shader + "] Vertex shader compiled successfully");
                     break;
                 case GL_FRAGMENT_SHADER:
-                    context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + shader + "] Fragment shader compiled successfully");
+                    context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shader + "] Fragment shader compiled successfully");
                     break;
                 //case GL_GEOMETRY_SHADER:
                 case GL_COMPUTE_SHADER:
-                    context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + shader + "] Compute shader compiled successfully");
+                    context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shader + "] Compute shader compiled successfully");
                 break;
                 default:
                     break;
@@ -3339,14 +3346,14 @@ public class RLGL{
             success = glGetProgrami(program, GL_LINK_STATUS);
 
             if (success == GL_FALSE){
-                context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Failed to link shader program");
+                context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Failed to link shader program");
 
                 int maxLength = 0;
                 maxLength = glGetProgrami(program, GL_INFO_LOG_LENGTH);
 
                 if (maxLength > 0){
                     String log = glGetProgramInfoLog(program, maxLength);
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Link error: " + log);
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Link error: " + log);
                     log = null;
                 }
 
@@ -3360,7 +3367,7 @@ public class RLGL{
                 //GLint binarySize = 0;
                 //glGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binarySize);
 
-                context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + program + "] Program shader loaded successfully");
+                context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + program + "] Program shader loaded successfully");
             }
         }
         return program;
@@ -3371,7 +3378,7 @@ public class RLGL{
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
             glDeleteProgram(id);
 
-            context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + id + "] Unloaded shader program data from VRAM (GPU)");
+            context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + id + "] Unloaded shader program data from VRAM (GPU)");
         }
     }
 
@@ -3382,9 +3389,9 @@ public class RLGL{
             location = glGetUniformLocation(shaderId, uniformName);
 
             if (location == -1)
-                context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shaderId + "] Failed to find shader uniform: " + uniformName);
+                context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + shaderId + "] Failed to find shader uniform: " + uniformName);
             else
-                context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader uniform (" + uniformName + ") set at location: " + location);
+                context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader uniform (" + uniformName + ") set at location: " + location);
         }
         return location;
     }
@@ -3396,11 +3403,11 @@ public class RLGL{
             location = glGetAttribLocation(shaderId, attribName);
 
             if (location == -1){
-                context.traceLog.TRACELOG(LOG_WARNING,
+                context.tracelog.TRACELOG(LOG_WARNING,
                                           "SHADER: [ID " + shaderId + "] Failed to find shader attribute: " + attribName);
             }
             else{
-                context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader attribute (" + attribName + ") set at " +
+                context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + shaderId + "] Shader attribute (" + attribName + ") set at " +
                         "location: " + location);
             }
         }
@@ -3413,7 +3420,7 @@ public class RLGL{
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             switch (uniformType){
-                case RL_SHADER_UNIFORM_FLOAT:
+                case SHADER_UNIFORM_FLOAT:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putFloat(v);
@@ -3421,7 +3428,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform1fv(locIndex, buffer.asFloatBuffer());
                     break;
-                case RL_SHADER_UNIFORM_VEC2:
+                case SHADER_UNIFORM_VEC2:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putFloat(v);
@@ -3429,7 +3436,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform2fv(locIndex, buffer.asFloatBuffer());
                     break;
-                case RL_SHADER_UNIFORM_VEC3:
+                case SHADER_UNIFORM_VEC3:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putFloat(v);
@@ -3437,7 +3444,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform3fv(locIndex, buffer.asFloatBuffer());
                     break;
-                case RL_SHADER_UNIFORM_VEC4:
+                case SHADER_UNIFORM_VEC4:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putFloat(v);
@@ -3445,7 +3452,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform4fv(locIndex, buffer.asFloatBuffer());
                     break;
-                case RL_SHADER_UNIFORM_INT, RL_SHADER_UNIFORM_SAMPLER2D:
+                case SHADER_UNIFORM_INT, SHADER_UNIFORM_SAMPLER2D:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putInt((int) v);
@@ -3453,7 +3460,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform1iv(locIndex, buffer.asIntBuffer());
                     break;
-                case RL_SHADER_UNIFORM_IVEC2:
+                case SHADER_UNIFORM_IVEC2:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putInt((int) v);
@@ -3461,7 +3468,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform2iv(locIndex, buffer.asIntBuffer());
                     break;
-                case RL_SHADER_UNIFORM_IVEC3:
+                case SHADER_UNIFORM_IVEC3:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putInt((int) v);
@@ -3469,7 +3476,7 @@ public class RLGL{
                     buffer.flip();
                     glUniform3iv(locIndex, buffer.asIntBuffer());
                     break;
-                case RL_SHADER_UNIFORM_IVEC4:
+                case SHADER_UNIFORM_IVEC4:
                     buffer = ByteBuffer.allocateDirect(value.length * 4).order(ByteOrder.LITTLE_ENDIAN);
                     for (float v : value) {
                         buffer.putInt((int) v);
@@ -3478,7 +3485,7 @@ public class RLGL{
                     glUniform4iv(locIndex, buffer.asIntBuffer());
                     break;
                 default:
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: Failed to set uniform value, data type not recognized");
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: Failed to set uniform value, data type not recognized");
             }
         }
     }
@@ -3488,20 +3495,20 @@ public class RLGL{
         if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
 
             switch (attribType){
-                case RL_SHADER_ATTRIB_FLOAT:
+                case SHADER_ATTRIB_FLOAT:
                     if (count == 1) glVertexAttrib1fv(locIndex, value);
                     break;
-                case RL_SHADER_ATTRIB_VEC2:
+                case SHADER_ATTRIB_VEC2:
                     if (count == 2) glVertexAttrib2fv(locIndex, value);
                     break;
-                case RL_SHADER_ATTRIB_VEC3:
+                case SHADER_ATTRIB_VEC3:
                     if (count == 3) glVertexAttrib3fv(locIndex, value);
                     break;
-                case RL_SHADER_ATTRIB_VEC4:
+                case SHADER_ATTRIB_VEC4:
                     if (count == 4) glVertexAttrib4fv(locIndex, value);
                     break;
                 default:
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: Failed to set attrib default value, data type not recognized");
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: Failed to set attrib default value, data type not recognized");
             }
         }
     }
@@ -3561,7 +3568,7 @@ public class RLGL{
             glGetProgramiv(program, GL_LINK_STATUS, success);
 
             if (success.get(0) == GL_FALSE){
-                context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Failed to link compute shader program");
+                context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Failed to link compute shader program");
 
                 IntBuffer maxLength = IntBuffer.allocate(1);
                 glGetProgramiv(program, GL_INFO_LOG_LENGTH, maxLength);
@@ -3569,7 +3576,7 @@ public class RLGL{
                 if (maxLength.get(0) > 0){
                     int length = 0;
                     String log = glGetProgramInfoLog(program, maxLength.get(0));
-                    context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Link error: " + log);
+                    context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + program + "] Link error: " + log);
                 }
 
                 glDeleteProgram(program);
@@ -3582,7 +3589,7 @@ public class RLGL{
                 //GLint binarySize = 0;
                 //glGetProgramiv(id, GL_PROGRAM_BINARY_LENGTH, &binarySize);
 
-                context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + program + "] Compute shader program loaded successfully");
+                context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + program + "] Compute shader program loaded successfully");
             }
         }
 
@@ -3923,27 +3930,27 @@ public class RLGL{
     // Get name string for pixel format
     public String rlGetPixelFormatName(rlPixelFormat format){
         switch (format) {
-            case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE: return "GRAYSCALE";          // 8 bit per pixel (no alpha)
-            case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA: return "GRAY_ALPHA";        // 8*2 bpp (2 channels)
-            case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5: return "R5G6B5";                // 16 bpp
-            case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8: return "R8G8B8";                // 24 bpp
-            case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1: return "R5G5B5A1";            // 16 bpp (1 bit alpha)
-            case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4: return "R4G4B4A4";            // 16 bpp (4 bit alpha)
-            case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: return "R8G8B8A8";            // 32 bpp
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32: return "R32";                      // 32 bpp (1 channel - float)
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: return "R32G32B32";          // 32*3 bpp (3 channels - float)
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: return "R32G32B32A32";    // 32*4 bpp (4 channels - float)
-            case RL_PIXELFORMAT_COMPRESSED_DXT1_RGB: return "DXT1_RGB";              // 4 bpp (no alpha)
-            case RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA: return "DXT1_RGBA";            // 4 bpp (1 bit alpha)
-            case RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA: return "DXT3_RGBA";            // 8 bpp
-            case RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA: return "DXT5_RGBA";            // 8 bpp
-            case RL_PIXELFORMAT_COMPRESSED_ETC1_RGB: return "ETC1_RGB";              // 4 bpp
-            case RL_PIXELFORMAT_COMPRESSED_ETC2_RGB: return "ETC2_RGB";              // 4 bpp
-            case RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA: return "ETC2_RGBA";        // 8 bpp
-            case RL_PIXELFORMAT_COMPRESSED_PVRT_RGB: return "PVRT_RGB";              // 4 bpp
-            case RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA: return "PVRT_RGBA";            // 4 bpp
-            case RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA: return "ASTC_4x4_RGBA";    // 8 bpp
-            case RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA: return "ASTC_8x8_RGBA";    // 2 bpp
+            case PIXELFORMAT_UNCOMPRESSED_GRAYSCALE: return "GRAYSCALE";          // 8 bit per pixel (no alpha)
+            case PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA: return "GRAY_ALPHA";        // 8*2 bpp (2 channels)
+            case PIXELFORMAT_UNCOMPRESSED_R5G6B5: return "R5G6B5";                // 16 bpp
+            case PIXELFORMAT_UNCOMPRESSED_R8G8B8: return "R8G8B8";                // 24 bpp
+            case PIXELFORMAT_UNCOMPRESSED_R5G5B5A1: return "R5G5B5A1";            // 16 bpp (1 bit alpha)
+            case PIXELFORMAT_UNCOMPRESSED_R4G4B4A4: return "R4G4B4A4";            // 16 bpp (4 bit alpha)
+            case PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: return "R8G8B8A8";            // 32 bpp
+            case PIXELFORMAT_UNCOMPRESSED_R32: return "R32";                      // 32 bpp (1 channel - float)
+            case PIXELFORMAT_UNCOMPRESSED_R32G32B32: return "R32G32B32";          // 32*3 bpp (3 channels - float)
+            case PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: return "R32G32B32A32";    // 32*4 bpp (4 channels - float)
+            case PIXELFORMAT_COMPRESSED_DXT1_RGB: return "DXT1_RGB";              // 4 bpp (no alpha)
+            case PIXELFORMAT_COMPRESSED_DXT1_RGBA: return "DXT1_RGBA";            // 4 bpp (1 bit alpha)
+            case PIXELFORMAT_COMPRESSED_DXT3_RGBA: return "DXT3_RGBA";            // 8 bpp
+            case PIXELFORMAT_COMPRESSED_DXT5_RGBA: return "DXT5_RGBA";            // 8 bpp
+            case PIXELFORMAT_COMPRESSED_ETC1_RGB: return "ETC1_RGB";              // 4 bpp
+            case PIXELFORMAT_COMPRESSED_ETC2_RGB: return "ETC2_RGB";              // 4 bpp
+            case PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA: return "ETC2_RGBA";        // 8 bpp
+            case PIXELFORMAT_COMPRESSED_PVRT_RGB: return "PVRT_RGB";              // 4 bpp
+            case PIXELFORMAT_COMPRESSED_PVRT_RGBA: return "PVRT_RGBA";            // 4 bpp
+            case PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA: return "ASTC_4x4_RGBA";    // 8 bpp
+            case PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA: return "ASTC_8x8_RGBA";    // 2 bpp
             default: return "UNKNOWN";
         }
     }
@@ -4047,20 +4054,20 @@ public class RLGL{
         rlglData.getState().defaultShaderId = rlLoadShaderProgram(rlglData.getState().defaultVShaderId, rlglData.getState().defaultFShaderId);
 
         if (rlglData.getState().getDefaultShaderId() > 0){
-            context.traceLog.TRACELOG(LOG_INFO, "SHADER: [ID " + rlglData.getState().defaultShaderId + "] Default shader loaded successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "SHADER: [ID " + rlglData.getState().defaultShaderId + "] Default shader loaded successfully");
 
             // Set default shader locations: attributes locations
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()] = glGetAttribLocation(rlglData.getState().defaultShaderId, "vertexPosition");
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()] = glGetAttribLocation(rlglData.getState().defaultShaderId, "vertexTexCoord");
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()] = glGetAttribLocation(rlglData.getState().defaultShaderId, "vertexColor");
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_VERTEX_POSITION.GetLocation()] = glGetAttribLocation(rlglData.getState().defaultShaderId, "vertexPosition");
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()] = glGetAttribLocation(rlglData.getState().defaultShaderId, "vertexTexCoord");
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_VERTEX_COLOR.GetLocation()] = glGetAttribLocation(rlglData.getState().defaultShaderId, "vertexColor");
 
             // Set default shader locations: uniform locations
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()]  = glGetUniformLocation(rlglData.getState().defaultShaderId, "mvp");
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, "colDiffuse");
-            rlglData.getState().defaultShaderLocs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, "texture0");
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_MATRIX_MVP.GetLocation()]  = glGetUniformLocation(rlglData.getState().defaultShaderId, "mvp");
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, "colDiffuse");
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_MAP_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, "texture0");
         }
         else{
-            context.traceLog.TRACELOG(LOG_WARNING, "SHADER: [ID " + rlglData.getState().getDefaultShaderId() + "] Failed to load default shader");
+            context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + rlglData.getState().getDefaultShaderId() + "] Failed to load default shader");
         }
     }
 
@@ -4235,15 +4242,15 @@ public class RLGL{
             width /= 2;
             height /= 2;
 
-            context.traceLog.TRACELOG(null, "TEXTURE: Next mipmap size: " + width + " x " + height);
+            context.tracelog.TRACELOG(null, "TEXTURE: Next mipmap size: " + width + " x " + height);
 
             mipmapCount++;
 
             size += (width * height * 4);       // Add mipmap size (in bytes)
         }
 
-        context.traceLog.TRACELOG(null, "TEXTURE: Total mipmaps required: " + mipmapCount);
-        context.traceLog.TRACELOG(null, "TEXTURE: Total size of data required: " + size);
+        context.tracelog.TRACELOG(null, "TEXTURE: Total mipmaps required: " + mipmapCount);
+        context.tracelog.TRACELOG(null, "TEXTURE: Total size of data required: " + size);
 
         byte[] temp = new byte[data.length];
 
@@ -4251,7 +4258,7 @@ public class RLGL{
             data = temp;
         }
         else{
-            context.traceLog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to re-allocate required mipmaps memory");
+            context.tracelog.TRACELOG(LOG_WARNING, "TEXTURE: Failed to re-allocate required mipmaps memory");
         }
 
         width = baseWidth;
@@ -4272,7 +4279,7 @@ public class RLGL{
 
         }
 
-        context.traceLog.TRACELOG(null, "TEXTURE: Mipmap base size (" + width + "x" + height + ")");
+        context.tracelog.TRACELOG(null, "TEXTURE: Mipmap base size (" + width + "x" + height + ")");
 
         for (int mip = 1; mip < mipmapCount; mip++){
             mipmap = rlGenNextMipmapData(image, width, height);
@@ -4336,7 +4343,7 @@ public class RLGL{
             }
         }
 
-        context.traceLog.TRACELOG(null, "TEXTURE: Mipmap generated successfully (" + width + "x" + height + ")");
+        context.tracelog.TRACELOG(null, "TEXTURE: Mipmap generated successfully (" + width + "x" + height + ")");
 
         return mipmap;
     }
@@ -4346,45 +4353,45 @@ public class RLGL{
         int bpp = 0;            // Bits per pixel
 
         switch (format){
-            case RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
+            case PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
                 bpp = 8;
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
-            case RL_PIXELFORMAT_UNCOMPRESSED_R5G6B5:
-            case RL_PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:
-            case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:
+            case PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
+            case PIXELFORMAT_UNCOMPRESSED_R5G6B5:
+            case PIXELFORMAT_UNCOMPRESSED_R5G5B5A1:
+            case PIXELFORMAT_UNCOMPRESSED_R4G4B4A4:
                 bpp = 16;
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
+            case PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
                 bpp = 32;
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8:
+            case PIXELFORMAT_UNCOMPRESSED_R8G8B8:
                 bpp = 24;
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32:
+            case PIXELFORMAT_UNCOMPRESSED_R32:
                 bpp = 32;
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32:
+            case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
                 bpp = 32 * 3;
                 break;
-            case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:
+            case PIXELFORMAT_UNCOMPRESSED_R32G32B32A32:
                 bpp = 32 * 4;
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_DXT1_RGB:
-            case RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA:
-            case RL_PIXELFORMAT_COMPRESSED_ETC1_RGB:
-            case RL_PIXELFORMAT_COMPRESSED_ETC2_RGB:
-            case RL_PIXELFORMAT_COMPRESSED_PVRT_RGB:
-            case RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA:
+            case PIXELFORMAT_COMPRESSED_DXT1_RGB:
+            case PIXELFORMAT_COMPRESSED_DXT1_RGBA:
+            case PIXELFORMAT_COMPRESSED_ETC1_RGB:
+            case PIXELFORMAT_COMPRESSED_ETC2_RGB:
+            case PIXELFORMAT_COMPRESSED_PVRT_RGB:
+            case PIXELFORMAT_COMPRESSED_PVRT_RGBA:
                 bpp = 4;
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA:
-            case RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA:
-            case RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA:
-            case RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA:
+            case PIXELFORMAT_COMPRESSED_DXT3_RGBA:
+            case PIXELFORMAT_COMPRESSED_DXT5_RGBA:
+            case PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA:
+            case PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA:
                 bpp = 8;
                 break;
-            case RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA:
+            case PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA:
                 bpp = 2;
                 break;
             default:
@@ -4396,10 +4403,10 @@ public class RLGL{
         // Most compressed formats works on 4x4 blocks,
         // if texture is smaller, minimum dataSize is 8 or 16
         if ((width < 4) && (height < 4)){
-            if ((format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) && (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA.GetFormat())){
+            if ((format.GetFormat() >= PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT3_RGBA.GetFormat())){
                 dataSize = 8;
             }
-            else if ((format.GetFormat() >= RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA.GetFormat()) && (format.GetFormat() < RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA.GetFormat())){
+            else if ((format.GetFormat() >= PIXELFORMAT_COMPRESSED_DXT3_RGBA.GetFormat()) && (format.GetFormat() < PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA.GetFormat())){
                 dataSize = 16;
             }
         }

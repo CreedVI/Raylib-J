@@ -55,9 +55,9 @@ public class TextureOutline {
         int textureSizeLoc = rlj.core.GetShaderLocation(shaderOutline, "textureSize");
 
         // Set shader values (they can be changed later)
-        rlj.core.SetShaderValue(shaderOutline, outlineSizeLoc, new float[] {outlineSize}, RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shaderOutline, outlineColorLoc, outlineColor, RL_SHADER_UNIFORM_VEC4);
-        rlj.core.SetShaderValue(shaderOutline, textureSizeLoc, textureSize, RL_SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shaderOutline, outlineSizeLoc, new float[] {outlineSize}, SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shaderOutline, outlineColorLoc, outlineColor, SHADER_UNIFORM_VEC4);
+        rlj.core.SetShaderValue(shaderOutline, textureSizeLoc, textureSize, SHADER_UNIFORM_VEC2);
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ public class TextureOutline {
                 outlineSize = 1.0f;
             }
 
-            rlj.core.SetShaderValue(shaderOutline, outlineSizeLoc, new float[]{outlineSize}, RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shaderOutline, outlineSizeLoc, new float[]{outlineSize}, SHADER_UNIFORM_FLOAT);
             //----------------------------------------------------------------------------------
 
             // Draw

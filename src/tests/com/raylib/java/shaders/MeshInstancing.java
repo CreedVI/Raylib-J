@@ -11,8 +11,8 @@ import static com.raylib.java.extras.rLights.LIGHT_DIRECTIONAL;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC3;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC3;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC4;
 import static com.raylib.java.structs.Color.*;
 
 public class MeshInstancing {
@@ -76,13 +76,13 @@ public class MeshInstancing {
         Shader shader = rlj.core.LoadShader(rlj.text.TextFormat("src/tests/resources/shaders/shaders/glsl%d/lighting_instancing.vs", GLSL_VERSION),
                                    rlj.text.TextFormat("src/tests/resources/shaders/shaders/glsl%d/lighting.fs", GLSL_VERSION));
         // Get shader locations
-        shader.locs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()] = rlj.core.GetShaderLocation(shader, "mvp");
-        shader.locs[RL_SHADER_LOC_VECTOR_VIEW.GetLocation()] = rlj.core.GetShaderLocation(shader, "viewPos");
-        shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] = rlj.core.GetShaderLocationAttrib(shader, "instanceTransform");
+        shader.locs[SHADER_LOC_MATRIX_MVP.GetLocation()] = rlj.core.GetShaderLocation(shader, "mvp");
+        shader.locs[SHADER_LOC_VECTOR_VIEW.GetLocation()] = rlj.core.GetShaderLocation(shader, "viewPos");
+        shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] = rlj.core.GetShaderLocationAttrib(shader, "instanceTransform");
 
         // Set shader value: ambient light level
         int ambientLoc = rlj.core.GetShaderLocation(shader, "ambient");
-        rlj.core.SetShaderValue(shader, ambientLoc, new float[]{ 0.2f, 0.2f, 0.2f, 1.0f }, RL_SHADER_UNIFORM_VEC4);
+        rlj.core.SetShaderValue(shader, ambientLoc, new float[]{ 0.2f, 0.2f, 0.2f, 1.0f }, SHADER_UNIFORM_VEC4);
 
         // Create one light
         rLights.CreateLight(rlj, LIGHT_DIRECTIONAL, new Vector3(50.0f, 50.0f, 0.0f), Vector3Zero(), WHITE, shader);
@@ -111,7 +111,7 @@ public class MeshInstancing {
 
             // Update the light shader with the camera view position
             float[] cameraPos = { camera.position.x, camera.position.y, camera.position.z };
-            rlj.core.SetShaderValue(shader, shader.locs[RL_SHADER_LOC_VECTOR_VIEW.GetLocation()], cameraPos, RL_SHADER_UNIFORM_VEC3);
+            rlj.core.SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW.GetLocation()], cameraPos, SHADER_UNIFORM_VEC3);
             //----------------------------------------------------------------------------------
 
             // Draw

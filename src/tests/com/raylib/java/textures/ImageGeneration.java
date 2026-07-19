@@ -38,8 +38,8 @@ public class ImageGeneration{
 
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - procedural images generation");
 
-        Image verticalGradient = rlj.textures.GenImageGradientV(screenWidth, screenHeight, Color.RED, Color.BLUE);
-        Image horizontalGradient = rlj.textures.GenImageGradientH(screenWidth, screenHeight, Color.RED, Color.BLUE);
+        Image verticalGradient = rlj.textures.GenImageGradientLinear(screenWidth, screenHeight, 0, Color.RED, Color.BLUE);
+        Image horizontalGradient = rlj.textures.GenImageGradientLinear(screenWidth, screenHeight, 90, Color.RED, Color.BLUE);
         Image radialGradient = rlj.textures.GenImageGradientRadial(screenWidth, screenHeight, 0.0f, Color.WHITE, Color.BLACK);
         Image checked = rlj.textures.GenImageChecked(screenWidth, screenHeight, 32, 32, Color.RED, Color.BLUE);
         Image whiteNoise = rlj.textures.GenImageWhiteNoise(screenWidth, screenHeight, 0.5f);

@@ -30,17 +30,16 @@ import static com.creedvi.utils.m3dj.M3DJ.M3D_UNDEF;
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 import static com.raylib.java.structs.Color.BLACK;
 import static com.raylib.java.structs.Color.WHITE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.*;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
-import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC4;
+import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.SHADER_ATTRIB_VEC4;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4;
-import static de.javagl.jgltf.model.animation.InterpolatorType.SLERP;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_INT;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC4;
 
 public class rModels{
 
@@ -870,11 +869,11 @@ public class rModels{
             model.meshCount = 1;
             model.meshes = new Mesh[model.meshCount];
             if(SUPPORT_MESH_GENERATION) {
-                context.traceLog.TRACELOG(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data, default to cube mesh");
+                context.tracelog.TRACELOG(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data, default to cube mesh");
                 model.meshes[0] = GenMeshCube(1.0f, 1.0f, 1.0f);
             }
             else {
-                context.traceLog.TRACELOG(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data");
+                context.tracelog.TRACELOG(LOG_WARNING, "MESH: ["+fileName+"] Failed to load mesh data");
             }
         }
         else {
@@ -885,7 +884,7 @@ public class rModels{
         }
 
         if (model.materialCount == 0) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MATERIAL: ["+fileName+"] Failed to load material data, default to white material");
+            context.tracelog.TRACELOG(LOG_WARNING, "MATERIAL: ["+fileName+"] Failed to load material data, default to white material");
 
             model.materialCount = 1;
             model.materials = new Material[model.materialCount];
@@ -953,7 +952,7 @@ public class rModels{
         model.bones = null;
         model.bindPose = null;
 
-        context.traceLog.TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
+        context.tracelog.TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
     }
 
     // Compute model bounding box limits (considers all meshes)
@@ -992,7 +991,7 @@ public class rModels{
     public void UploadMesh(Mesh mesh, boolean dynamic) {
         if (mesh.vaoId > 0) {
             // Check if mesh has already been loaded in GPU
-            context.traceLog.TRACELOG(LOG_WARNING, "VAO: [ID "+mesh.vaoId+"] Trying to re-load an already loaded mesh");
+            context.tracelog.TRACELOG(LOG_WARNING, "VAO: [ID "+mesh.vaoId+"] Trying to re-load an already loaded mesh");
             return;
         }
 
@@ -1034,7 +1033,7 @@ public class rModels{
             else {
                 // Default color vertex attribute set to WHITE
                 float[] value = {1.0f, 1.0f, 1.0f};
-                context.rlgl.rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC3, 3);
+                context.rlgl.rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC3, 3);
                 context.rlgl.rlDisableVertexAttribute(2);
             }
 
@@ -1047,7 +1046,7 @@ public class rModels{
             else {
                 // Default color vertex attribute set to WHITE
                 float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
-                context.rlgl.rlSetVertexAttributeDefault(3, value, RL_SHADER_ATTRIB_VEC4, 4);
+                context.rlgl.rlSetVertexAttributeDefault(3, value, SHADER_ATTRIB_VEC4, 4);
                 context.rlgl.rlDisableVertexAttribute(3);
             }
 
@@ -1060,7 +1059,7 @@ public class rModels{
             else {
                 // Default tangents vertex attribute
                 float[] value ={0.0f, 0.0f, 0.0f, 0.0f} ;
-                context.rlgl.rlSetVertexAttributeDefault(4, value, RL_SHADER_ATTRIB_VEC4, 4);
+                context.rlgl.rlSetVertexAttributeDefault(4, value, SHADER_ATTRIB_VEC4, 4);
                 context.rlgl.rlDisableVertexAttribute(4);
             }
 
@@ -1073,7 +1072,7 @@ public class rModels{
             else {
                 // Default texcoord2 vertex attribute
                 float[] value = {0.0f, 0.0f} ;
-                context.rlgl.rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.RL_SHADER_ATTRIB_VEC2, 2);
+                context.rlgl.rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC2, 2);
                 context.rlgl.rlDisableVertexAttribute(5);
             }
 
@@ -1086,10 +1085,10 @@ public class rModels{
             }
 
             if (mesh.vaoId > 0) {
-                context.traceLog.TRACELOG(LOG_INFO, "VAO: [ID "+mesh.vaoId+"] Mesh uploaded successfully to VRAM (GPU)");
+                context.tracelog.TRACELOG(LOG_INFO, "VAO: [ID "+mesh.vaoId+"] Mesh uploaded successfully to VRAM (GPU)");
             }
             else {
-                context.traceLog.TRACELOG(LOG_INFO, "VBO: Mesh uploaded successfully to VRAM (GPU)");
+                context.tracelog.TRACELOG(LOG_INFO, "VBO: Mesh uploaded successfully to VRAM (GPU)");
             }
 
             context.rlgl.rlDisableVertexArray();
@@ -1148,7 +1147,7 @@ public class rModels{
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
+            if (material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
                 float[] values = {
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
@@ -1156,19 +1155,19 @@ public class rModels{
                         (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
                 };
 
-                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
+                context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, SHADER_UNIFORM_VEC4);
             }
 
             // Upload to shader material.colSpecular (if location available)
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
+            if (material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values = {
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
-                        (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
+                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
+                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
+                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
+                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
                 };
 
-                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
+                context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, SHADER_UNIFORM_VEC4);
             }
 
             // Get a copy of current matrices to work with,
@@ -1182,11 +1181,11 @@ public class rModels{
             Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
+            if (material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
             }
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
+            if (material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
             }
 
             // Accumulate several model transformations:
@@ -1195,16 +1194,16 @@ public class rModels{
             matModel = MatrixMultiply(transform, context.rlgl.rlGetMatrixTransform());
 
             // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()], matModel);
+            if (material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()], matModel);
             }
 
             // Get model-view matrix
             matModelView = MatrixMultiply(matModel, matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
+            if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
             //-----------------------------------------------------
 
@@ -1222,7 +1221,7 @@ public class rModels{
                         context.rlgl.rlEnableTexture(material.maps[i].texture.id);
                     }
 
-                    context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation() + i], new float[]{i}, RL_SHADER_UNIFORM_INT);
+                    context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_MAP_DIFFUSE.GetLocation() + i], new float[]{i}, SHADER_UNIFORM_INT);
                 }
             }
 
@@ -1233,49 +1232,49 @@ public class rModels{
             if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
                 context.rlgl.rlEnableVertexBuffer(mesh.vboId[0]);
-                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                 // Bind mesh VBO data: vertex texcoords (shader-location = 1)
                 context.rlgl.rlEnableVertexBuffer(mesh.vboId[1]);
-                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[2]);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
                     if (mesh.vboId[3] != 0) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[3]);
-                        context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
-                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                     else {
                         // Set default value for defined vertex attribute in shader but not provided by mesh
                         // WARNING: It could result in GPU undefined behaviour
                         float[] value ={1.0f, 1.0f, 1.0f, 1.0f} ;
-                        context.rlgl.rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], value, RL_SHADER_ATTRIB_VEC4, 4);
-                        context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                        context.rlgl.rlSetVertexAttributeDefault(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], value, SHADER_ATTRIB_VEC4, 4);
+                        context.rlgl.rlDisableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                 }
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[4]);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[5]);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
                 if (mesh.indices != null || mesh.indicesS != null) {
@@ -1301,7 +1300,7 @@ public class rModels{
                 }
 
                 // Send combined model-view-projection matrix to shader
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
 
                 // Draw mesh
                 if (mesh.indices != null || mesh.indicesS != null) {
@@ -1353,7 +1352,7 @@ public class rModels{
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
+            if (material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
                 float[] values ={
                     (float) material.maps[MATERIAL_MAP_DIFFUSE].color.r / 255.0f,
                     (float) material.maps[MATERIAL_MAP_DIFFUSE].color.g / 255.0f,
@@ -1361,19 +1360,19 @@ public class rModels{
                     (float) material.maps[MATERIAL_MAP_DIFFUSE].color.a / 255.0f
                 } ;
 
-                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
+                context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()], values, SHADER_UNIFORM_VEC4);
             }
 
             // Upload to shader material.colSpecular (if location available)
-            if (material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
+            if (material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values = {
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
-                    (float) material.maps[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
+                    (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
+                    (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
+                    (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
+                    (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
                 } ;
 
-                context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, RL_SHADER_UNIFORM_VEC4);
+                context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, SHADER_UNIFORM_VEC4);
             }
 
             // Get a copy of current matrices to work with,
@@ -1387,11 +1386,11 @@ public class rModels{
             Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
+            if (material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
             }
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
+            if (material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
                 }
 
             // Create instances buffer
@@ -1414,9 +1413,9 @@ public class rModels{
 
             // Instances transformation matrices are send to shader attribute location: SHADER_LOC_MATRIX_MODEL
             for (int i = 0; i < 4; i++) {
-                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] + i);
-                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 4, RL_FLOAT, false, 16, i);
-                context.rlgl.rlSetVertexAttributeDivisor(material.shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 1);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] + i);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 4, RL_FLOAT, false, 16, i);
+                context.rlgl.rlSetVertexAttributeDivisor(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 1);
             }
 
             context.rlgl.rlDisableVertexBuffer();
@@ -1427,8 +1426,8 @@ public class rModels{
             matModelView = MatrixMultiply(context.rlgl.rlGetMatrixTransform(), matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
+            if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
             //-----------------------------------------------------
 
@@ -1446,7 +1445,7 @@ public class rModels{
                         context.rlgl.rlEnableTexture(material.maps[i].texture.id);
                     }
 
-                    context.rlgl.rlSetUniform(material.shader.locs[RL_SHADER_LOC_MAP_DIFFUSE.GetLocation() + i],  new float[]{i}, RL_SHADER_UNIFORM_INT);
+                    context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_MAP_DIFFUSE.GetLocation() + i], new float[]{i}, SHADER_UNIFORM_INT);
                 }
             }
 
@@ -1455,27 +1454,27 @@ public class rModels{
             if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
                 context.rlgl.rlEnableVertexBuffer(mesh.vboId[0]);
-                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_POSITION.GetLocation()]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                 // Bind mesh VBO data: vertex texcoords (shader-location = 1)
                 context.rlgl.rlEnableVertexBuffer(mesh.vboId[1]);
-                context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
+                context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[2]);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
                     if (mesh.vboId[3] != 0) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[3]);
-                        context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
-                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                     else {
                         // Set default value for unused attribute
@@ -1483,23 +1482,23 @@ public class rModels{
                         float[] value ={
                             1.0f, 1.0f, 1.0f, 1.0f
                         };
-                        context.rlgl.rlSetVertexAttributeDefault(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()], value, RL_SHADER_ATTRIB_VEC4, 4);
-                        context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                        context.rlgl.rlSetVertexAttributeDefault(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], value, SHADER_ATTRIB_VEC4, 4);
+                        context.rlgl.rlDisableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
                 }
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[4]);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
-                if (material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
+                if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[5]);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
                 if (mesh.indices != null) {
@@ -1509,7 +1508,7 @@ public class rModels{
 
             // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
             if (mesh.vboId[3] == 0) {
-                context.rlgl.rlDisableVertexAttribute(material.shader.locs[RL_SHADER_LOC_VERTEX_COLOR.GetLocation()]);
+                context.rlgl.rlDisableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
             }
 
             int eyeCount = 1;
@@ -1530,7 +1529,7 @@ public class rModels{
                 }
 
                 // Send combined model-view-projection matrix to shader
-                context.rlgl.rlSetUniformMatrix(material.shader.locs[RL_SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
+                context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
 
                 // Draw mesh instanced
                 if (mesh.indices != null){
@@ -1660,7 +1659,7 @@ public class rModels{
 
     private Material[] ProcessMaterialsOBJ(OBJLoader loader, String path) {
         Material[] materials = new Material[loader.objInfo.totalMaterials];
-        context.traceLog.TRACELOG(LOG_INFO, path);
+        context.tracelog.TRACELOG(LOG_INFO, path);
         // Init model materials
         for (int m = 0; m < loader.objInfo.totalMaterials; m++) {
             // Init material to default
@@ -1669,7 +1668,7 @@ public class rModels{
 
             // Get default texture, in case no texture is defined
             // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-            materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
             if (loader.mtlInfo.materials[m].diffuse_texname != null) {
                 materials[m].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
@@ -1735,7 +1734,7 @@ public class rModels{
                 }
                 boolean result = loader.ReadMTL(context, fileText);
                 if (!result) {
-                    context.traceLog.TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
+                    context.tracelog.TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
                 }
 
                 String path = fileName.substring(fileName.lastIndexOf("/") + 1);
@@ -1743,7 +1742,7 @@ public class rModels{
             }
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to load material file");
+            context.tracelog.TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to load material file");
         }
 
         return materials;
@@ -1762,7 +1761,7 @@ public class rModels{
         material.shader.locs = context.rlgl.rlGetShaderLocsDefault();
 
         // Using rlgl default texture (1x1 pixel, UNCOMPRESSED_R8G8B8A8, 1 mipmap)
-        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        material.maps[MATERIAL_MAP_DIFFUSE].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
         //material.maps[MATERIAL_MAP_NORMAL].texture;         // NOTE: By default, not set
         //material.maps[MATERIAL_MAP_SPECULAR].texture;       // NOTE: By default, not set
 
@@ -1805,10 +1804,10 @@ public class rModels{
     // Set the material for a mesh
     public void SetModelMeshMaterial(Model model, int meshId, int materialId) {
         if (meshId >= model.meshCount) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Id greater than mesh count");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Id greater than mesh count");
         }
         else if (materialId >= model.materialCount) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MATERIAL: Id greater than material count");
+            context.tracelog.TRACELOG(LOG_WARNING, "MATERIAL: Id greater than material count");
         }
         else {
             model.meshMaterial[meshId] = materialId;
@@ -2380,7 +2379,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: sphere");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: sphere");
         }
 
         return mesh;
@@ -2430,7 +2429,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: hemisphere");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: hemisphere");
         }
 
         return mesh;
@@ -2496,7 +2495,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: cylinder");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: cylinder");
         }
 
         return mesh;
@@ -2553,7 +2552,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: cone");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: cone");
         }
 
         return mesh;
@@ -2607,7 +2606,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: torus");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: torus");
         }
 
         return mesh;
@@ -2659,7 +2658,7 @@ public class rModels{
             UploadMesh(mesh, false);
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: knot");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to generate mesh: knot");
         }
 
         return mesh;
@@ -3149,7 +3148,7 @@ public class rModels{
     // Implementation base don: https://answers.unity.com/questions/7789/calculating-tangents-vector4.html
     public void GenMeshTangents(Mesh mesh) {
         if ((mesh.vertices == null) || (mesh.texcoords == null)) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MESH: Tangents generation requires texcoord vertex attribute data");
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Tangents generation requires texcoord vertex attribute data");
             return;
         }
 
@@ -3220,13 +3219,13 @@ public class rModels{
         }
 
         if (mesh.vboId != null) {
-            if (mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
+            if (mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
                 // Upate existing vertex buffer
-                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount*4);
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount*4);
             }
             else {
                 // Load a new tangent attributes buffer
-                mesh.vboId[RL_SHADER_LOC_VERTEX_TANGENT.GetLocation()] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, false);
+                mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, false);
             }
 
             context.rlgl.rlEnableVertexArray(mesh.vaoId);
@@ -3235,7 +3234,7 @@ public class rModels{
             context.rlgl.rlDisableVertexArray();
         }
 
-        context.traceLog.TRACELOG(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
+        context.tracelog.TRACELOG(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
     }
 
     // Draw a model (with texture if set)
@@ -3729,7 +3728,7 @@ public class rModels{
 
             if (bones[i].parent >= 0) {
                 if (bones[i].parent > i) {
-                    context.traceLog.TRACELOG(LOG_WARNING, "Assumes bones are topologically sorted, but bone " + i + " has parent " + bones[i].parent + ". Skipping.");
+                    context.tracelog.TRACELOG(LOG_WARNING, "Assumes bones are topologically sorted, but bone " + i + " has parent " + bones[i].parent + ". Skipping.");
                     continue;
                 }
                 result[i].rotation = QuaternionMultiply(result[bones[i].parent].rotation, result[i].rotation);
@@ -3751,10 +3750,10 @@ public class rModels{
             boolean success = loader.ReadOBJ(context, fileName, true);
 
             if(success) {
-                context.traceLog.TRACELOG(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
+                context.tracelog.TRACELOG(LOG_INFO, "MODEL: ["+fileName+"] OBJ data loaded successfully: "+ loader.objInfo.shapes.length+" meshes/"+loader.objInfo.totalMaterials+" materials");
             }
             else {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] Failed to load OBJ data");
+                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] Failed to load OBJ data");
                 return model;
             }
 
@@ -3764,11 +3763,11 @@ public class rModels{
             if(loader.objInfo.totalMaterials > 0) {
                 model.materialCount = loader.objInfo.totalMaterials;
                 model.materials = new Material[model.materialCount];
-                context.traceLog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes.");
+                context.tracelog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes.");
             }
             else {
                 model.meshCount = 1;
-                context.traceLog.TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
+                context.tracelog.TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
             }
 
             model.meshes = new Mesh[model.meshCount];
@@ -3969,10 +3968,10 @@ public class rModels{
             header.ofs_extensions = IQM_toInt(intBuffer);
 
             if (!IQM_MAGIC.equals(String.valueOf(header.magic))) {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
+                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
             }
             if (IQM_VERSION != header.version) {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+header.version+")");
+                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+header.version+")");
             }
 
             imesh = new IQMMesh[header.num_meshes];
@@ -4029,7 +4028,7 @@ public class rModels{
                 model.meshes[i] = new Mesh();
                 model.materials[i] = LoadMaterialDefault();
 
-                context.traceLog.TRACELOG(LOG_DEBUG, "MODEL: [" + fileName + "] mesh name (" + String.valueOf(name) + "), material (" + String.valueOf(material) + ")");
+                context.tracelog.TRACELOG(LOG_DEBUG, "MODEL: [" + fileName + "] mesh name (" + String.valueOf(name) + "), material (" + String.valueOf(material) + ")");
 
                 model.meshes[i].vertexCount = imesh[i].num_vertexes;
 
@@ -4354,10 +4353,10 @@ public class rModels{
             iqmHeader.ofs_extensions = IQM_toInt(intBuffer);
 
             if (!IQM_MAGIC.equals(String.valueOf(iqmHeader.magic))) {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
+                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
             }
             if (IQM_VERSION != iqmHeader.version) {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+iqmHeader.version+")");
+                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: ["+fileName+"] IQM file version not supported ("+iqmHeader.version+")");
             }
 
             // Get bones data
@@ -4555,12 +4554,12 @@ public class rModels{
 
         if(!m3dj.materials.isEmpty()) {
             model.meshCount = model.materialCount = m3dj.materials.size();
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes");
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes");
         }
         else {
             model.meshCount = 1;
             model.materialCount = 0;
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
         }
 
         // We always need a default material, so we add +1
@@ -4783,9 +4782,9 @@ public class rModels{
                     image.height = m3dj.textures.get((int) property.GetPropertyValue()).height;
                     image.mipmaps = 1;
                     image.format =
-                            (m3dj.textures.get((int) property.GetPropertyValue()).format == 4) ? RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 :
-                                    ((m3dj.textures.get((int) property.GetPropertyValue()).format == 3) ? RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8 :
-                                            ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
+                            (m3dj.textures.get((int) property.GetPropertyValue()).format == 4) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 :
+                                    ((m3dj.textures.get((int) property.GetPropertyValue()).format == 3) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8 :
+                                            ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
 
                     if (property.key.equals("m3dp_map_Kd")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE].texture = context.textures.LoadTextureFromImage(image);
@@ -4883,11 +4882,11 @@ public class rModels{
         }
 
         if (m3dj == null) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + filePath + "] Failed to load M3D.");
+            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + filePath + "] Failed to load M3D.");
             return null;
         }
         else {
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] Loaded successfully: " +
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] Loaded successfully: " +
                     m3dj.actions.size() + " animations[a](s), " + m3dj.bones.size() + " bones, " + m3dj.skins.size() + " skins.");
         }
 
@@ -4905,7 +4904,7 @@ public class rModels{
             animations[a].bones = new BoneInfo[animations[a].boneCount];
             animations[a].framePoses = new Transform[animations[a].frameCount][];
 
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] animations[a] #" + a + ": " + m3dj.actions.get(a).animationLength +
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] animations[a] #" + a + ": " + m3dj.actions.get(a).animationLength +
                     " msec, " + animations[a].frameCount + " frames.");
 
             for (i = 0; i < m3dj.bones.size(); i++) {
@@ -4976,7 +4975,7 @@ public class rModels{
                 }
 
                 if (i == img.getUri().length()) {
-                    context.traceLog.TRACELOG(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
+                    context.tracelog.TRACELOG(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
                 }
                 else {
                     String uri = img.getUri();
@@ -5004,7 +5003,7 @@ public class rModels{
                 image = context.textures.LoadImageFromMemory(".jpg", data);
             }
             else {
-                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + img.getMimeType() + ")");
+                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: glTF image data MIME type not recognized (" + texPath + "/" + img.getMimeType() + ")");
             }
         }
 
@@ -5077,29 +5076,29 @@ public class rModels{
             gltf = new GltfModelReader().read(Paths.get(fileName));
         }
         catch (IOException e) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
+            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
             return model;
         }
 
         if (context.core.GetFileExtension(fileName).equalsIgnoreCase(".glb")) {
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
         }
         else if (context.core.GetFileExtension(fileName).equalsIgnoreCase(".gltf")) {
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
         }
 
-        context.traceLog.TRACELOG(LOG_INFO, "    > Meshes count: " + gltf.getMeshModels().size());
-        context.traceLog.TRACELOG(LOG_INFO, "    > Materials count: " + gltf.getMaterialModels().size() + " (+1 default)");
-        context.traceLog.TRACELOG(LOG_DEBUG, "    > Buffers count: " + gltf.getBufferModels().size());
-        context.traceLog.TRACELOG(LOG_DEBUG, "    > Images count: " + gltf.getImageModels().size());
-        context.traceLog.TRACELOG(LOG_DEBUG, "    > Textures count: " + gltf.getTextureModels().size());
+        context.tracelog.TRACELOG(LOG_INFO, "    > Meshes count: " + gltf.getMeshModels().size());
+        context.tracelog.TRACELOG(LOG_INFO, "    > Materials count: " + gltf.getMaterialModels().size() + " (+1 default)");
+        context.tracelog.TRACELOG(LOG_DEBUG, "    > Buffers count: " + gltf.getBufferModels().size());
+        context.tracelog.TRACELOG(LOG_DEBUG, "    > Images count: " + gltf.getImageModels().size());
+        context.tracelog.TRACELOG(LOG_DEBUG, "    > Textures count: " + gltf.getTextureModels().size());
 
         int primitivesCount = 0;
         // NOTE: We will load every primitive in the glTF as a separate raylib mesh
         for (int i = 0; i < gltf.getMeshModels().size(); i++) {
             primitivesCount += gltf.getMeshModels().get(i).getMeshPrimitiveModels().size();
         }
-        context.traceLog.TRACELOG(LOG_DEBUG, "    > Primitives (triangles only) count based on hierarchy : " + primitivesCount);
+        context.tracelog.TRACELOG(LOG_DEBUG, "    > Primitives (triangles only) count based on hierarchy : " + primitivesCount);
 
         // Load our model data: meshes and materials
         model.meshCount = primitivesCount;
@@ -5257,7 +5256,7 @@ public class rModels{
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Vertices attribute data format not supported, use vec3 float");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Vertices attribute data format not supported, use vec3 float");
                         }
                     }
                     // NORMAL
@@ -5286,7 +5285,7 @@ public class rModels{
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Normal attribute data format not supported, use vec3 float");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Normal attribute data format not supported, use vec3 float");
                         }
                     }
                     // TANGENT
@@ -5315,7 +5314,7 @@ public class rModels{
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Tangent attribute data format not supported, use vec4 float");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Tangent attribute data format not supported, use vec4 float");
                         }
                     }
                     // TEXCOORD_n, vec2, float/byte/short
@@ -5361,11 +5360,11 @@ public class rModels{
                                 }
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported");
+                                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported");
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported, use vec2 float");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Texcoords attribute data format not supported, use vec2 float");
                         }
 
                         int index = mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") ? 0 :
@@ -5377,7 +5376,7 @@ public class rModels{
                             model.meshes[meshIndex].texcoords2 = texcoords;
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] No more than 2 texture coordinates attributes supported");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] No more than 2 texture coordinates attributes supported");
                         }
                     }
                     // COLOR_0
@@ -5473,11 +5472,11 @@ public class rModels{
                                 }
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
+                                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Color attribute data format not supported");
                         }
                     }
                 }
@@ -5523,10 +5522,10 @@ public class rModels{
                             model.meshes[meshIndex].indicesS[d] = (short) temp[d];
                         }
 
-                        context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Indices data converted from u32 to u16, possible loss of data");
+                        context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Indices data converted from u32 to u16, possible loss of data");
                     }
                     else {
-                        context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Indices data format not supported, use u16");
+                        context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Indices data format not supported, use u16");
                     }
                 }
                 else {
@@ -5580,7 +5579,7 @@ public class rModels{
         }
 
         if (gltf.getSkinModels().size() > 1) {
-            context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.getSkinModels().size());
+            context.tracelog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.getSkinModels().size());
         }
 
         for (int i = 0, meshIndex = 0; i < gltf.getMeshModels().size(); i++) {
@@ -5629,7 +5628,7 @@ public class rModels{
                                 boolean boneIdOverflowWarning = false;
                                 for (int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
                                     if ((tmp[b] > 255) && !boneIdOverflowWarning) {
-                                        context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format (short) overflow");
+                                        context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format (short) overflow");
                                         boneIdOverflowWarning = true;
                                     }
 
@@ -5638,11 +5637,11 @@ public class rModels{
                                 }
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported");
+                                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported");
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported");
                         }
                     }
                     if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("WEIGHTS_0")) {
@@ -5687,11 +5686,11 @@ public class rModels{
                                 attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(model.meshes[meshIndex].boneWeights);
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint weight attribute data format not supported, use vec4 float");
+                                context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint weight attribute data format not supported, use vec4 float");
                             }
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint weight attribute data format not supported, use vec4 float");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint weight attribute data format not supported, use vec4 float");
                         }
                     }
                 }
@@ -5837,8 +5836,8 @@ public class rModels{
             gltf = new GltfModelReader().read(Paths.get(fileName));
         }
         catch (IOException e) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load animation buffers");
+            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load animation buffers");
 
             return animations;
         }
@@ -5889,18 +5888,18 @@ public class rModels{
                             boneChannels[boneIndex].scale = channel;
                         }
                         else {
-                            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Unsupported target_path on channel " + j + "'s sampler for animation " + i + ". Skipping.");
+                            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Unsupported target_path on channel " + j + "'s sampler for animation " + i + ". Skipping.");
                         }
                     }
                     else {
-                        context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Only linear interpolation curves are supported for GLTF animation.");
+                        context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Only linear interpolation curves are supported for GLTF animation.");
                     }
 
                     AccessorModel inputAccessor = channel.getSampler().getInput();
                     float t = inputAccessor.getBufferViewModel().getBufferViewData().getFloat(inputAccessor.getBufferViewModel().getByteLength() - Float.BYTES);
 
                     if (t <= 0f) {
-                        context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load input time");
+                        context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load input time");
                         continue;
                     }
 
@@ -5930,7 +5929,7 @@ public class rModels{
                                 translation = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load translate pose data for bone " + animations[i].bones[k].name);
+                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load translate pose data for bone " + animations[i].bones[k].name);
                             }
                         }
 
@@ -5942,7 +5941,7 @@ public class rModels{
                                 rotation = new Quaternion(tRotate[0], tRotate[1], tRotate[2], tRotate[3]);
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load rotate pose data for bone " + animations[i].bones[k].name);
+                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load rotate pose data for bone " + animations[i].bones[k].name);
                             }
                         }
 
@@ -5954,7 +5953,7 @@ public class rModels{
                                 scale = new Vector3(tScale[0], tScale[1], tScale[2]);
                             }
                             else {
-                                context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load scale pose data for bone " + animations[i].bones[k].name);
+                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load scale pose data for bone " + animations[i].bones[k].name);
                             }
                         }
 
@@ -5964,12 +5963,12 @@ public class rModels{
                     animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].framePoses[j]);
                 }
 
-                context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.getName() + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
+                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.getName() + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
             }
         }
 
         if (gltf.getSkinModels().size() > 1) {
-            context.traceLog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] expected exactly one skin to load animation data from, but found " + gltf.getSkinModels().size());
+            context.tracelog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] expected exactly one skin to load animation data from, but found " + gltf.getSkinModels().size());
         }
 
         return animations;
@@ -5990,7 +5989,7 @@ public class rModels{
             throw new RuntimeException(e);
         }
         if (fileData == null) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
+            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
             return model;
         }
 
@@ -6000,7 +5999,7 @@ public class rModels{
         VoxLoader.VoxArray3D voxarray = voxLoader.pvoxArray;
 
         if (ret != VoxLoader.VOX_SUCCESS) {
-            context.traceLog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
+            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
             return model;
         }
         else {
@@ -6008,7 +6007,7 @@ public class rModels{
             nbvertices = voxarray.vertices.used;
             meshescount = 1 + (nbvertices/65536);
 
-            context.traceLog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/ " + meshescount + " meshes");
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] VOX data loaded successfully : " + nbvertices + " vertices/ " + meshescount + " meshes");
         }
 
         // Build models from meshes

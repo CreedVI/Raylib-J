@@ -23,7 +23,7 @@ public class Raylib{
     public rTextures textures;
     public rModels models;
     public Physac physac;
-    public TraceLog traceLog;
+    public TraceLog tracelog;
 
     /**
      * Creates new Raylib instance.

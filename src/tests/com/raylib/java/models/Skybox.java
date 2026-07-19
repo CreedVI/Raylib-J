@@ -12,14 +12,14 @@ import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERS
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_CUBEMAP;
 import static com.raylib.java.raymath.Raymath.*;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.RL_ATTACHMENT_CUBEMAP_POSITIVE_X;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.RL_ATTACHMENT_RENDERBUFFER;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_COLOR_CHANNEL0;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_DEPTH;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_PROJECTION;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_VIEW;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.ATTACHMENT_CUBEMAP_POSITIVE_X;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.ATTACHMENT_RENDERBUFFER;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.ATTACHMENT_COLOR_CHANNEL0;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.ATTACHMENT_DEPTH;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.SHADER_LOC_MATRIX_PROJECTION;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.SHADER_LOC_MATRIX_VIEW;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_INT;
 import static com.raylib.java.structs.Color.*;
 import static com.raylib.java.textures.rTextures.CubemapLayoutType.CUBEMAP_AUTO_DETECT;
 
@@ -75,9 +75,9 @@ public class Skybox {
                 rlj.text.TextFormat("src/tests/resources/models/shaders/glsl%d/skybox.fs", GLSL_VERSION)
         );
 
-        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "environmentMap"), new float[]{ MATERIAL_MAP_CUBEMAP }, RL_SHADER_UNIFORM_INT);
-        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "doGamma"), new float[] { useHDR ? 1 : 0 }, RL_SHADER_UNIFORM_INT);
-        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "vflipped"), new float[]{ useHDR ? 1 : 0 }, RL_SHADER_UNIFORM_INT);
+        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "environmentMap"), new float[]{ MATERIAL_MAP_CUBEMAP }, SHADER_UNIFORM_INT);
+        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "doGamma"), new float[] { useHDR ? 1 : 0 }, SHADER_UNIFORM_INT);
+        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "vflipped"), new float[]{ useHDR ? 1 : 0 }, SHADER_UNIFORM_INT);
 
         // Load cubemap shader and setup required shader locations
         Shader shdrCubemap = rlj.core.LoadShader(
@@ -85,7 +85,7 @@ public class Skybox {
                 rlj.text.TextFormat("src/tests/resources/models/shaders/glsl%d/cubemap.fs", GLSL_VERSION)
         );
 
-        rlj.core.SetShaderValue(shdrCubemap, rlj.core.GetShaderLocation(shdrCubemap, "equirectangularMap"), new float[]{ 0 }, RL_SHADER_UNIFORM_INT);
+        rlj.core.SetShaderValue(shdrCubemap, rlj.core.GetShaderLocation(shdrCubemap, "equirectangularMap"), new float[]{ 0 }, SHADER_UNIFORM_INT);
 
         String skyboxFileName = new String();
 
@@ -101,7 +101,7 @@ public class Skybox {
             // NOTE 1: New texture is generated rendering to texture, shader calculates the sphere->cube coordinates mapping
             // NOTE 2: It seems on some Android devices WebGL, fbo does not properly support a FLOAT-based attachment,
             // despite texture can be successfully created.. so using PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 instead of PIXELFORMAT_UNCOMPRESSED_R32G32B32A32
-            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
             //UnloadTexture(panorama);    // Texture not required anymore, cubemap already generated
         }
@@ -135,7 +135,7 @@ public class Skybox {
                             panorama = rlj.textures.LoadTexture(droppedFiles.paths[0]);
 
                             // Generate cubemap from panorama texture
-                            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+                            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
                             rlj.textures.UnloadTexture(panorama);
                         }
                         else {
@@ -209,12 +209,12 @@ public class Skybox {
         cubemap.id = rlj.rlgl.rlLoadTextureCubemap(null, size, format);
 
         int fbo = rlj.rlgl.rlLoadFramebuffer(size, size);
-        rlj.rlgl.rlFramebufferAttach(fbo, rbo, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER);
-        rlj.rlgl.rlFramebufferAttach(fbo, cubemap.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_CUBEMAP_POSITIVE_X);
+        rlj.rlgl.rlFramebufferAttach(fbo, rbo, ATTACHMENT_DEPTH, ATTACHMENT_RENDERBUFFER);
+        rlj.rlgl.rlFramebufferAttach(fbo, cubemap.id, ATTACHMENT_COLOR_CHANNEL0, ATTACHMENT_CUBEMAP_POSITIVE_X);
 
         // Check if framebuffer is complete with attachments (valid)
         if (rlj.rlgl.rlFramebufferComplete(fbo)) {
-            rlj.traceLog.TRACELOG(LOG_INFO, "FBO: [ID %d] Framebuffer object created successfully", fbo);
+            rlj.tracelog.TRACELOG(LOG_INFO, "FBO: [ID %d] Framebuffer object created successfully", fbo);
         }
         //------------------------------------------------------------------------------------------
 
@@ -225,7 +225,7 @@ public class Skybox {
 
         // Define projection matrix and send it to shader
         Matrix matFboProjection = MatrixPerspective(90.0*DEG2RAD, 1.0, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
-        rlj.rlgl.rlSetUniformMatrix(shader.locs[RL_SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matFboProjection);
+        rlj.rlgl.rlSetUniformMatrix(shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matFboProjection);
 
         // Define view matrix for every side of the cubemap
         Matrix fboViews[] = {
@@ -245,11 +245,11 @@ public class Skybox {
 
         for (int i = 0; i < 6; i++) {
             // Set the view matrix for the current cube face
-            rlj.rlgl.rlSetUniformMatrix(shader.locs[RL_SHADER_LOC_MATRIX_VIEW.GetLocation()], fboViews[i]);
+            rlj.rlgl.rlSetUniformMatrix(shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()], fboViews[i]);
 
             // Select the current cubemap face attachment for the fbo
             // WARNING: This function by default enables->attach->disables fbo!!!
-            rlj.rlgl.rlFramebufferAttach(fbo, cubemap.id, RL_ATTACHMENT_COLOR_CHANNEL0, RLGL.rlFramebufferAttachTextureType.values()[i]);
+            rlj.rlgl.rlFramebufferAttach(fbo, cubemap.id, ATTACHMENT_COLOR_CHANNEL0, RLGL.rlFramebufferAttachTextureType.values()[i]);
             rlj.rlgl.rlEnableFramebuffer(fbo);
 
             // Load and draw a cube, it uses the current enabled texture

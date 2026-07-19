@@ -62,7 +62,7 @@ public class KeyCallback extends GLFWKeyCallback {
                 context.core.LoadAutomationEvents("eventsrec.rep");
                 context.core.eventsPlaying = true;
 
-                context.traceLog.TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
+                context.tracelog.TRACELOG(LOG_WARNING, "eventsPlaying enabled!");
             }
 
         }

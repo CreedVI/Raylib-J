@@ -49,7 +49,7 @@ public class HotReloading{
         int timeLoc = rlj.core.GetShaderLocation(shader, "time");
 
         float[] resolution = {(float) screenWidth, (float) screenHeight};
-        rlj.core.SetShaderValue(shader, resolutionLoc, resolution, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shader, resolutionLoc, resolution, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
 
         float totalTime = 0.0f;
         boolean shaderAutoReloading = false;
@@ -67,8 +67,8 @@ public class HotReloading{
             float[] mousePos = {mouse.x, mouse.y};
 
             // Set shader required uniform values
-            rlj.core.SetShaderValue(shader, timeLoc, new float[]{totalTime}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-            rlj.core.SetShaderValue(shader, mouseLoc, mousePos, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+            rlj.core.SetShaderValue(shader, timeLoc, new float[]{totalTime}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shader, mouseLoc, mousePos, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
 
             // Hot shader reloading
             if (shaderAutoReloading || (rlj.core.IsMouseButtonPressed(Mouse.MouseButton.MOUSE_BUTTON_LEFT))){
@@ -89,7 +89,7 @@ public class HotReloading{
                         timeLoc = rlj.core.GetShaderLocation(shader, "time");
 
                         // Reset required uniforms
-                        rlj.core.SetShaderValue(shader, resolutionLoc, resolution, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                        rlj.core.SetShaderValue(shader, resolutionLoc, resolution, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
                     }
 
                     fragShaderFileModTime = currentFragShaderModTime;

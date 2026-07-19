@@ -4,17 +4,15 @@ import com.raylib.java.Raylib;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.*;
 
-import java.nio.ByteBuffer;
-
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_ORBITAL;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.RL_ATTACHMENT_TEXTURE2D;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_COLOR_CHANNEL0;
-import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.RL_ATTACHMENT_DEPTH;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachTextureType.ATTACHMENT_TEXTURE2D;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.ATTACHMENT_COLOR_CHANNEL0;
+import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.ATTACHMENT_DEPTH;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_COMPRESSED_PVRT_RGBA;
+import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 import static com.raylib.java.structs.Color.*;
 
 public class WriteDepth {
@@ -124,32 +122,32 @@ public class WriteDepth {
             context.rlgl.rlEnableFramebuffer(target.id);
 
             // Create color texture (default to RGBA)
-            target.texture.id = context.rlgl.rlLoadTexture(new byte[width * height], width, height, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+            target.texture.id = context.rlgl.rlLoadTexture(new byte[width * height], width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
             target.texture.width = width;
             target.texture.height = height;
-            target.texture.format = RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+            target.texture.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
             target.texture.mipmaps = 1;
 
             // Create depth texture buffer (instead of raylib default renderbuffer)
             target.depth.id = context.rlgl.rlLoadTextureDepth(width, height, false);
             target.depth.width = width;
             target.depth.height = height;
-            target.depth.format = RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA;       //DEPTH_COMPONENT_24BIT?
+            target.depth.format = PIXELFORMAT_COMPRESSED_PVRT_RGBA;       //DEPTH_COMPONENT_24BIT?
             target.depth.mipmaps = 1;
 
             // Attach color texture and depth texture to FBO
-            context.rlgl.rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D);
-            context.rlgl.rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D);
+            context.rlgl.rlFramebufferAttach(target.id, target.texture.id, ATTACHMENT_COLOR_CHANNEL0, ATTACHMENT_TEXTURE2D);
+            context.rlgl.rlFramebufferAttach(target.id, target.depth.id, ATTACHMENT_DEPTH, ATTACHMENT_TEXTURE2D);
 
             // Check if fbo is complete with attachments (valid)
             if (context.rlgl.rlFramebufferComplete(target.id)) {
-                context.traceLog.TRACELOG(LOG_INFO, "FBO: [ID %d] Framebuffer object created successfully", target.id);
+                context.tracelog.TRACELOG(LOG_INFO, "FBO: [ID %d] Framebuffer object created successfully", target.id);
             }
 
             context.rlgl.rlDisableFramebuffer();
         }
         else {
-            context.traceLog.TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
+            context.tracelog.TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
         }
 
         return target;

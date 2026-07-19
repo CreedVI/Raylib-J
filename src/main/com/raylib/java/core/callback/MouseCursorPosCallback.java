@@ -15,7 +15,7 @@ public class MouseCursorPosCallback extends GLFWCursorPosCallback {
 
     @Override
     public void invoke(long window, double xpos, double ypos){
-        context.traceLog.TRACELOG(LOG_DEBUG, "Cursor Position Callback Triggered");
+        context.tracelog.TRACELOG(LOG_DEBUG, "Cursor Position Callback Triggered");
         context.core.input.mouse.currentPosition = new Vector2(xpos, ypos);
     }
 }

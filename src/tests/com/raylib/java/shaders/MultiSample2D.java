@@ -73,7 +73,7 @@ public class MultiSample2D{
             if (dividerValue[0] < 0.0f) dividerValue[0] = 0.0f;
             else if (dividerValue[0] > 1.0f) dividerValue[0] = 1.0f;
 
-            rlj.core.SetShaderValue(shader, dividerLoc, dividerValue, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shader, dividerLoc, dividerValue, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
             //----------------------------------------------------------------------------------
 
             // Draw

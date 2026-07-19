@@ -9,8 +9,8 @@ import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_FIRST_PERS
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_EMISSION;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_MAP_EMISSION;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_INT;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.SHADER_LOC_MAP_EMISSION;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_INT;
 import static com.raylib.java.structs.Color.*;
 
 public class SimpleMask {
@@ -85,7 +85,7 @@ public class SimpleMask {
         Texture2D texMask = rlj.textures.LoadTexture("src/tests/resources/shaders/mask.png");
         model1.materials[0].maps[MATERIAL_MAP_EMISSION].texture = texMask;
         model2.materials[0].maps[MATERIAL_MAP_EMISSION].texture = texMask;
-        shader.locs[RL_SHADER_LOC_MAP_EMISSION.GetLocation()] = rlj.core.GetShaderLocation(shader, "mask");
+        shader.locs[SHADER_LOC_MAP_EMISSION.GetLocation()] = rlj.core.GetShaderLocation(shader, "mask");
 
         // Frame is incremented each frame to animate the shader
         int shaderFrame = rlj.core.GetShaderLocation(shader, "frame");
@@ -114,7 +114,7 @@ public class SimpleMask {
             rotation.z -= 0.0025f;
 
             // Send frames counter to shader for animation
-            rlj.core.SetShaderValue(shader, shaderFrame, new float[] {framesCounter}, RL_SHADER_UNIFORM_INT);
+            rlj.core.SetShaderValue(shader, shaderFrame, new float[] {framesCounter}, SHADER_UNIFORM_INT);
 
             // Rotate one of the models
             model1.transform = Raymath.MatrixRotateXYZ(rotation);

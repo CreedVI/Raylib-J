@@ -54,7 +54,7 @@ public class BlendModes{
         rlj.textures.UnloadImage(fgImage);
 
         final int blendCountMax = 4;
-        int blendMode = RL_BLEND_ALPHA.GetMode();
+        int blendMode = BLEND_ALPHA.GetMode();
 
         // Main game loop
         while (!rlj.core.WindowShouldClose())    // Detect window close button or ESC key
@@ -90,13 +90,13 @@ public class BlendModes{
             rlj.text.DrawText("Press SPACE to change blend modes.", 310, 350, 10, Color.GRAY);
 
             switch (GetBlendModeFromInt(blendMode)) {
-                case RL_BLEND_ALPHA ->
+                case BLEND_ALPHA ->
                         rlj.text.DrawText("Current: BLEND_ALPHA", (screenWidth / 2) - 60, 370, 10, Color.GRAY);
-                case RL_BLEND_ADDITIVE ->
+                case BLEND_ADDITIVE ->
                         rlj.text.DrawText("Current: BLEND_ADDITIVE", (screenWidth / 2) - 60, 370, 10, Color.GRAY);
-                case RL_BLEND_MULTIPLIED ->
+                case BLEND_MULTIPLIED ->
                         rlj.text.DrawText("Current: BLEND_MULTIPLIED", (screenWidth / 2) - 60, 370, 10, Color.GRAY);
-                case RL_BLEND_ADD_COLORS ->
+                case BLEND_ADD_COLORS ->
                         rlj.text.DrawText("Current: BLEND_ADD_COLORS", (screenWidth / 2) - 60, 370, 10, Color.GRAY);
                 default -> {
                 }
@@ -119,14 +119,14 @@ public class BlendModes{
 
     private static rlBlendMode GetBlendModeFromInt(int mode) {
         return switch (mode) {
-            case 1 -> RL_BLEND_ADDITIVE;
-            case 2 -> RL_BLEND_MULTIPLIED;
-            case 3 -> RL_BLEND_ADD_COLORS;
-            case 4 -> RL_BLEND_SUBTRACT_COLORS;
-            case 5 -> RL_BLEND_ALPHA_PREMULTIPLY;
-            case 6 -> RL_BLEND_CUSTOM;
-            case 7 -> RL_BLEND_CUSTOM_SEPARATE;
-            default -> RL_BLEND_ALPHA;
+            case 1 -> BLEND_ADDITIVE;
+            case 2 -> BLEND_MULTIPLIED;
+            case 3 -> BLEND_ADD_COLORS;
+            case 4 -> BLEND_SUBTRACT_COLORS;
+            case 5 -> BLEND_ALPHA_PREMULTIPLY;
+            case 6 -> BLEND_CUSTOM;
+            case 7 -> BLEND_CUSTOM_SEPARATE;
+            default -> BLEND_ALPHA;
         };
     }
 }

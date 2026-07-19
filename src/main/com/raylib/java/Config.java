@@ -175,6 +175,7 @@ public class Config{
     public static boolean SUPPORT_FILEFORMAT_BMP = true;
     public static boolean SUPPORT_FILEFORMAT_TGA = true;
     public static boolean SUPPORT_FILEFORMAT_JPG = true;
+    public static boolean SUPPORT_FILEFORMAT_SVG = true;
     public static boolean SUPPORT_FILEFORMAT_GIF = true;
     public static boolean SUPPORT_FILEFORMAT_PIC = true;
     public static boolean SUPPORT_FILEFORMAT_PNM = true;

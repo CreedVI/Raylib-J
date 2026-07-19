@@ -7,7 +7,7 @@ import com.raylib.java.structs.Vector2;
 import java.util.Arrays;
 
 import static com.raylib.java.core.input.Keyboard.*;
-import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR;
+import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.TEXTURE_FILTER_BILINEAR;
 import static com.raylib.java.structs.Color.*;
 
 public class CodepointsLoading {
@@ -56,7 +56,7 @@ public class CodepointsLoading {
         Font font = rlj.text.LoadFontEx("src/tests/resources/text/DotGothic16-Regular.ttf", 36, codepointsNoDups, codepointsNoDupsCount);
 
         // Set bilinear scale filter for better font scaling
-        rlj.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_BILINEAR);
+        rlj.textures.SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
         // Free codepoints, atlas has already been generated
         rlj.text.UnloadCodepoints(codepointsNoDups);

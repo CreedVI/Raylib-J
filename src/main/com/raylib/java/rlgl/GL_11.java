@@ -14,7 +14,7 @@ public class GL_11{
         this.context = context;
     }
 
-    static void rlMatrixMode(int mode) {
+    void rlMatrixMode(int mode) {
         switch (mode) {
             case RL_PROJECTION:
                 glMatrixMode(GL_PROJECTION);
@@ -30,7 +30,7 @@ public class GL_11{
         }
     }
 
-    static void rlBegin(int mode) {
+    void rlBegin(int mode) {
         switch (mode) {
             case RL_LINES:
                 glBegin(GL_LINES);
@@ -45,49 +45,49 @@ public class GL_11{
                 break;
         }
     }
-    static void rlEnd() { glEnd(); }
-    static void rlVertex2i(int x, int y) { glVertex2i(x, y); }
-    static void rlVertex2f(float x, float y) { glVertex2f(x, y); }
-    static void rlVertex3f(float x, float y, float z) { glVertex3f(x, y, z); }
-    static void rlTexCoord2f(float x, float y) { glTexCoord2f(x, y); }
-    static void rlNormal3f(float x, float y, float z) { glNormal3f(x, y, z); }
-    static void rlColor4ub(int r, int g, int b, int a) { glColor4ub((byte)r, (byte)g, (byte)b, (byte)a); }
-    static void rlColor3f(float x, float y, float z) { glColor3f(x, y, z); }
-    static void rlColor4f(float x, float y, float z, float w) { glColor4f(x, y, z, w); }
+    void rlEnd() { glEnd(); }
+    void rlVertex2i(int x, int y) { glVertex2i(x, y); }
+    void rlVertex2f(float x, float y) { glVertex2f(x, y); }
+    void rlVertex3f(float x, float y, float z) { glVertex3f(x, y, z); }
+    void rlTexCoord2f(float x, float y) { glTexCoord2f(x, y); }
+    void rlNormal3f(float x, float y, float z) { glNormal3f(x, y, z); }
+    void rlColor4ub(int r, int g, int b, int a) { glColor4ub((byte)r, (byte)g, (byte)b, (byte)a); }
+    void rlColor3f(float x, float y, float z) { glColor3f(x, y, z); }
+    void rlColor4f(float x, float y, float z, float w) { glColor4f(x, y, z, w); }
 
-    static void rlFrustum(double left, double right, double bottom, double top, double znear, double zfar) {
+    void rlFrustum(double left, double right, double bottom, double top, double znear, double zfar) {
         glFrustum(left, right, bottom, top, znear, zfar);
     }
 
-    static void rlOrtho(double left, double right, double bottom, double top, double znear, double zfar) {
+    void rlOrtho(double left, double right, double bottom, double top, double znear, double zfar) {
         glOrtho(left, right, bottom, top, znear, zfar);
     }
 
-    static void rlPushMatrix() {
+    void rlPushMatrix() {
         glPushMatrix();
     }
 
-    static void rlPopMatrix() {
+    void rlPopMatrix() {
         glPopMatrix();
     }
 
-    static void rlLoadIdentity() {
+    void rlLoadIdentity() {
         glLoadIdentity();
     }
 
-    static void rlTranslatef(float x, float y, float z) {
+    void rlTranslatef(float x, float y, float z) {
         glTranslatef(x, y, z);
     }
 
-    static void rlRotatef(float angle, float x, float y, float z) {
+    void rlRotatef(float angle, float x, float y, float z) {
         glRotatef(angle, x, y, z);
     }
 
-    static void rlScalef(float x, float y, float z) {
+    void rlScalef(float x, float y, float z) {
         glScalef(x, y, z);
     }
 
-    static void rlMultMatrixf(float[] matf) {
+    void rlMultMatrixf(float[] matf) {
         glMultMatrixf(matf);
     }
 }

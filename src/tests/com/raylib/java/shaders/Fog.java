@@ -15,8 +15,8 @@ import static com.raylib.java.core.input.Keyboard.KEY_UP;
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_ORBITAL;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_MATRIX_MODEL;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.RL_SHADER_LOC_VECTOR_VIEW;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.SHADER_LOC_MATRIX_MODEL;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.SHADER_LOC_VECTOR_VIEW;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.*;
 import static com.raylib.java.structs.Color.*;
 
@@ -81,16 +81,16 @@ public class Fog {
         // Load shader and set up some uniforms
         Shader shader = rlj.core.LoadShader(rlj.text.TextFormat("src/tests/resources/shaders/shaders/glsl%d/lighting.vs", GLSL_VERSION),
                                             rlj.text.TextFormat("src/tests/resources/shaders/shaders/glsl%d/fog.fs", GLSL_VERSION));
-        shader.locs[RL_SHADER_LOC_MATRIX_MODEL.GetLocation()] = rlj.core.GetShaderLocation(shader, "matModel");
-        shader.locs[RL_SHADER_LOC_VECTOR_VIEW.GetLocation()] = rlj.core.GetShaderLocation(shader, "viewPos");
+        shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] = rlj.core.GetShaderLocation(shader, "matModel");
+        shader.locs[SHADER_LOC_VECTOR_VIEW.GetLocation()] = rlj.core.GetShaderLocation(shader, "viewPos");
 
         // Ambient light level
         int ambientLoc = rlj.core.GetShaderLocation(shader, "ambient");
-        rlj.core.SetShaderValue(shader, ambientLoc, new float[]{ 0.2f, 0.2f, 0.2f, 1.0f }, RL_SHADER_UNIFORM_VEC4);
+        rlj.core.SetShaderValue(shader, ambientLoc, new float[]{ 0.2f, 0.2f, 0.2f, 1.0f }, SHADER_UNIFORM_VEC4);
 
         float fogDensity = 0.15f;
         int fogDensityLoc = rlj.core.GetShaderLocation(shader, "fogDensity");
-        rlj.core.SetShaderValue(shader, fogDensityLoc, new float[]{fogDensity}, RL_SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, fogDensityLoc, new float[]{fogDensity}, SHADER_UNIFORM_FLOAT);
 
         // NOTE: All models share the same shader
         modelA.materials[0].shader = shader;
@@ -120,14 +120,14 @@ public class Fog {
                 if (fogDensity < 0.0f) fogDensity = 0.0f;
             }
 
-            rlj.core.SetShaderValue(shader, fogDensityLoc, new float[]{fogDensity}, RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shader, fogDensityLoc, new float[]{fogDensity}, SHADER_UNIFORM_FLOAT);
 
             // Rotate the torus
             modelA.transform = Raymath.MatrixMultiply(modelA.transform, Raymath.MatrixRotateX(-0.025f));
             modelA.transform = Raymath.MatrixMultiply(modelA.transform, Raymath.MatrixRotateZ(0.012f));
 
             // Update the light shader with the camera view position
-            rlj.core.SetShaderValue(shader, shader.locs[RL_SHADER_LOC_VECTOR_VIEW.GetLocation()], new float[]{camera.position.x, 0, 0}, RL_SHADER_UNIFORM_VEC3);
+            rlj.core.SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW.GetLocation()], new float[]{camera.position.x, 0, 0}, SHADER_UNIFORM_VEC3);
             //----------------------------------------------------------------------------------
 
             // Draw

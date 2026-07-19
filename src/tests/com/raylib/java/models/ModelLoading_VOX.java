@@ -69,7 +69,7 @@ public class ModelLoading_VOX {
             models[i] = rlj.models.LoadModel(voxFileNames[i]);
             double t1 = rlj.core.GetTime()*1000.0;
 
-            rlj.traceLog.TRACELOG(LOG_WARNING, rlj.text.TextFormat("[%s] File loaded in %.3f ms", voxFileNames[i], t1 - t0));
+            rlj.tracelog.TRACELOG(LOG_WARNING, rlj.text.TextFormat("[%s] File loaded in %.3f ms", voxFileNames[i], t1 - t0));
 
             // Compute model translation matrix to center model on draw position (0, 0 , 0)
             BoundingBox bb = rlj.models.GetModelBoundingBox(models[i]);

@@ -48,7 +48,7 @@ public class DrawTiled{
 
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Texture2D texPattern = rlj.textures.LoadTexture("src/tests/resources/textures/patterns.png");
-        rlj.textures.SetTextureFilter(texPattern, RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_TRILINEAR); // Makes the texture smoother when upscaled
+        rlj.textures.SetTextureFilter(texPattern, RLGL.rlTextureFilterMode.TEXTURE_FILTER_TRILINEAR); // Makes the texture smoother when upscaled
 
         // Coordinates for all patterns inside the texture
          Rectangle[] recPattern = {

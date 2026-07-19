@@ -8,7 +8,7 @@ import com.raylib.java.structs.Texture2D;
 import com.raylib.java.structs.Vector2;
 
 import static com.raylib.java.core.input.Keyboard.KEY_SPACE;
-import static com.raylib.java.rlgl.RLGL.rlBlendMode.RL_BLEND_ALPHA;
+import static com.raylib.java.rlgl.RLGL.rlBlendMode.BLEND_ALPHA;
 
 public class ParticlesBlending{
 
@@ -66,7 +66,7 @@ public class ParticlesBlending{
 
         Texture2D smoke = rlj.textures.LoadTexture("src/tests/resources/textures/spark_flame.png");
 
-        RLGL.rlBlendMode blending = RL_BLEND_ALPHA;
+        RLGL.rlBlendMode blending = BLEND_ALPHA;
 
         rlj.core.SetTargetFPS(60);
         //--------------------------------------------------------------------------------------
@@ -107,11 +107,11 @@ public class ParticlesBlending{
 
             if (rlj.core.IsKeyPressed(KEY_SPACE))
             {
-                if (blending == RL_BLEND_ALPHA){
-                    blending = RLGL.rlBlendMode.RL_BLEND_ADDITIVE;
+                if (blending == BLEND_ALPHA){
+                    blending = RLGL.rlBlendMode.BLEND_ADDITIVE;
                 }
                 else{
-                    blending = RL_BLEND_ALPHA;
+                    blending = BLEND_ALPHA;
                 }
             }
             //----------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ public class ParticlesBlending{
 
             rlj.text.DrawText("PRESS SPACE to CHANGE BLENDING MODE", 180, 20, 20, Color.BLACK);
 
-            if (blending == RL_BLEND_ALPHA){
+            if (blending == BLEND_ALPHA){
                 rlj.text.DrawText("ALPHA BLENDING", 290, screenHeight - 40, 20, Color.BLACK);
             }
             else{

@@ -8,7 +8,7 @@ import static com.raylib.java.Config.ConfigFlag.FLAG_MSAA_4X_HINT;
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.CAMERA_ORBITAL;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.MATERIAL_MAP_DIFFUSE;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2;
 import static com.raylib.java.structs.Color.*;
 
 public class CustomUniform {
@@ -95,7 +95,7 @@ public class CustomUniform {
             swirlCenter[1] = screenHeight - mousePosition.y;
 
             // Send new value to the shader to be used on drawing
-            rlj.core.SetShaderValue(shader, swirlCenterLoc, swirlCenter, RL_SHADER_UNIFORM_VEC2);
+            rlj.core.SetShaderValue(shader, swirlCenterLoc, swirlCenter, SHADER_UNIFORM_VEC2);
             //----------------------------------------------------------------------------------
 
             // Draw

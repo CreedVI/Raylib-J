@@ -13,16 +13,14 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.IntBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_POINT;
+import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
 
 public class rText{
@@ -202,7 +200,7 @@ public class rText{
         Image imFont = new Image();
         imFont.setWidth(128);
         imFont.setHeight(128);
-        imFont.setFormat(RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA);
+        imFont.setFormat(PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA);
         imFont.setMipmaps(1);
 
         short[] fontdata = new short[128 * 128 * 2];  // 2 bytes per pixel (gray + alpha)
@@ -280,7 +278,7 @@ public class rText{
 
         defaultFont.baseSize = (int)defaultFont.recs[0].height;
 
-        context.traceLog.TRACELOG(LOG_INFO, "FONT: Default font loaded successfully (" + defaultFont.glyphCount + " glyphs)");
+        context.tracelog.TRACELOG(LOG_INFO, "FONT: Default font loaded successfully (" + defaultFont.glyphCount + " glyphs)");
     }
 
     // Unload raylib default font
@@ -326,12 +324,12 @@ public class rText{
         }
 
         if (font.texture.getId() == 0) {
-            context.traceLog.TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load font texture -> Using default font");
+            context.tracelog.TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load font texture -> Using default font");
             font = GetFontDefault();
         }
         else{
-            context.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT); // By default we set point filter (best performance)
-            context.traceLog.TRACELOG(LOG_INFO, "FONT: Data loaded successfully (" + FONT_TTF_DEFAULT_SIZE + " pixel size | " + FONT_TTF_DEFAULT_NUMCHARS + " glyphs)");
+            context.textures.SetTextureFilter(font.texture, TEXTURE_FILTER_POINT); // By default we set point filter (best performance)
+            context.tracelog.TRACELOG(LOG_INFO, "FONT: Data loaded successfully (" + FONT_TTF_DEFAULT_SIZE + " pixel size | " + FONT_TTF_DEFAULT_NUMCHARS + " glyphs)");
         }
 
         return font;
@@ -448,7 +446,7 @@ public class rText{
 
         // Create a new image with the processed color data (key color replaced by BLANK)
         Image fontClear = new Image(pixels, image.getWidth(), image.getHeight(),
-                                    RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+                                    PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
 
         // Create spritefont with all data parsed from image
         Font font = new Font();
@@ -516,7 +514,7 @@ public class rText{
                     }
 
                     context.textures.UnloadImage(atlas);
-                    context.traceLog.TRACELOG(LOG_INFO, "FONT: Data loaded successfully (" + font.baseSize + " pixel size | " + font.glyphCount + " glyphs)");
+                    context.tracelog.TRACELOG(LOG_INFO, "FONT: Data loaded successfully (" + font.baseSize + " pixel size | " + font.glyphCount + " glyphs)");
                 }
                 else {
                     font = GetFontDefault();
@@ -654,7 +652,7 @@ public class rText{
                             chars[i].image.width = chwidth;
                             chars[i].image.height = chheight;
                             chars[i].image.mipmaps = 1;
-                            chars[i].image.format = RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+                            chars[i].image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 
                             chars[i].offsetY += (int) ((float) asc * scaleFactor);
 
@@ -665,7 +663,7 @@ public class rText{
                                     c[j] = new Color(0, 0, 0, (byte) 255);
                                 }
 
-                                chars[i].image = new Image(c, chars[i].advanceX, fontSize, RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE, 1);
+                                chars[i].image = new Image(c, chars[i].advanceX, fontSize, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE, 1);
                             }
 
                             if (type == FONT_BITMAP) {
@@ -708,7 +706,7 @@ public class rText{
                         }
                     }
                     else{
-                        context.traceLog.TRACELOG(LOG_WARNING, "FONT: Failed to process TTF font data");
+                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to process TTF font data");
                     }
                 }
             }
@@ -723,7 +721,7 @@ public class rText{
         Image atlas = new Image();
         if (SUPPORT_FILEFORMAT_TTF) {
             if (font.glyphs == null) {
-                context.traceLog.TRACELOG(LOG_WARNING, "FONT: Provided chars info not valid, returning empty image atlas");
+                context.tracelog.TRACELOG(LOG_WARNING, "FONT: Provided chars info not valid, returning empty image atlas");
                 return atlas;
             }
 
@@ -753,7 +751,7 @@ public class rText{
             atlas.setHeight(imageSize);  // Atlas bitmap height
             byte[] atlasData = new byte[atlas.width * atlas.height];
             // Create a bitmap to store characters (8 bpp)
-            atlas.setFormat(RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
+            atlas.setFormat(PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
             atlas.setMipmaps(1);
 
             // DEBUG: We can see padding in the generated image setting a gray background...
@@ -795,7 +793,7 @@ public class rText{
 
                         if (offsetY > (atlas.height - font.baseSize - font.glyphPadding)) {
                             for (int j = i + 1; j < font.glyphCount; j++) {
-                                context.traceLog.TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + j + ")");
+                                context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + j + ")");
                                 // make sure remaining recs contain valid data
                                 recs[j].x = 0;
                                 recs[j].y = 0;
@@ -854,7 +852,7 @@ public class rText{
                         }
                     }
                     else{
-                        context.traceLog.TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + i + ")");
+                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + i + ")");
                     }
                 }
             }
@@ -867,7 +865,7 @@ public class rText{
             }
 
             atlas.setData(dataGrayAlpha);
-            atlas.setFormat(RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA);
+            atlas.setFormat(PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA);
 
             font.recs = recs;
         }
@@ -927,8 +925,8 @@ public class rText{
         // Support font export and initialization
         // NOTE: This mechanism is highly coupled to raylib
         Image image = context.textures.LoadImageFromTexture(font.texture);
-        if (image.format != RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
-            context.traceLog.TRACELOG(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
+        if (image.format != PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
+            context.tracelog.TRACELOG(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
         }
         int imageDataSize = context.textures.GetPixelDataSize(image.width, image.height, image.format);
 
@@ -1047,11 +1045,11 @@ public class rText{
         // NOTE: Text data size exported is determined by '\0' (NULL) character
         try {
             success = context.files.SaveFileText(fileName, txtData.toString());
-            context.traceLog.TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
         }
         catch (IOException e) {
             success = false;
-            context.traceLog.TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export font as code");
+            context.tracelog.TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export font as code");
         }
 
         return success;
@@ -1731,27 +1729,27 @@ public class rText{
         imHeight = Integer.parseInt(fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("scaleH=") + 7,
                                                                      fileLines[lineTracker].indexOf("pages=") - 1));
         lineTracker++;
-        context.traceLog.TRACELOG(null, "FONT: [" + fileName + "] Loaded font info:");
-        context.traceLog.TRACELOG(null, "    > Base size: " + fontSize);
-        context.traceLog.TRACELOG(null, "    > Texture scale: " + imWidth + "x" + imHeight);
+        context.tracelog.TRACELOG(null, "FONT: [" + fileName + "] Loaded font info:");
+        context.tracelog.TRACELOG(null, "    > Base size: " + fontSize);
+        context.tracelog.TRACELOG(null, "    > Texture scale: " + imWidth + "x" + imHeight);
 
         imFileName = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("file=\"") + 6,
                                                       fileLines[lineTracker].lastIndexOf("\""));
         lineTracker++;
-        context.traceLog.TRACELOG(null, "    > Texture filename: " + imFileName);
+        context.tracelog.TRACELOG(null, "    > Texture filename: " + imFileName);
 
         String linesCount = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("=") + 1);
         linesCount = linesCount.trim();
 
         charsCount = Integer.parseInt(linesCount);
         lineTracker++;
-        context.traceLog.TRACELOG(null, "    > Chars count: " + charsCount);
+        context.tracelog.TRACELOG(null, "    > Chars count: " + charsCount);
 
         String imPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + imFileName;
 
         Image imFont = context.textures.LoadImage(imPath);
 
-        if (imFont.format == RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE) {
+        if (imFont.format == PIXELFORMAT_UNCOMPRESSED_GRAYSCALE) {
             // Convert image to GRAYSCALE + ALPHA, using the mask as the alpha channel
             Image imFontAlpha = new Image();
 
@@ -1765,7 +1763,7 @@ public class rText{
             imFontAlpha.setData(ifaData);
             imFontAlpha.width = imFont.width;
             imFontAlpha.height = imFont.height;
-            imFontAlpha.format = RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
+            imFontAlpha.format = PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
             imFontAlpha.mipmaps = 1;
 
             context.textures.UnloadImage(imFont);
@@ -1848,10 +1846,10 @@ public class rText{
         if (font.texture.getId() == 0) {
             UnloadFont(font);
             font = GetFontDefault();
-            context.traceLog.TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load texture, reverted to default font");
+            context.tracelog.TRACELOG(LOG_WARNING, "FONT: [" + fileName + "] Failed to load texture, reverted to default font");
         }
         else {
-            context.traceLog.TRACELOG(LOG_INFO, "FONT: [" + fileName + "] Font loaded successfully");
+            context.tracelog.TRACELOG(LOG_INFO, "FONT: [" + fileName + "] Font loaded successfully");
         }
 
         return font;

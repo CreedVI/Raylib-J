@@ -34,7 +34,7 @@ public class RawData{
 
         // Load RAW image data (512x512, 32bit RGBA, no file header)
         Image fudesumiRaw = rlj.textures.LoadImageRaw("src/tests/resources/textures/fudesumi.raw", 384, 512,
-                                                      RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 0);
+                                                      RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 0);
         Texture2D fudesumi = rlj.textures.LoadTextureFromImage(fudesumiRaw);  // Upload CPU (RAM) image to GPU (VRAM)
         rlj.textures.UnloadImage(fudesumiRaw);                                // Unload CPU (RAM) image data
 
@@ -57,7 +57,7 @@ public class RawData{
         }
 
         // Load pixels data into an image structure and create texture
-        Image checkedIm = new Image(pixels, width, height, RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+        Image checkedIm = new Image(pixels, width, height, RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
 
         Texture2D checked = rlj.textures.LoadTextureFromImage(checkedIm);
         rlj.textures.UnloadImage(checkedIm);         // Unload CPU (RAM) image data (pixels)

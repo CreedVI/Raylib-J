@@ -63,13 +63,13 @@ public class TextureWaves{
         float[] speedY = {8.0f};
 
         float[] screenSize = { (float) rlj.core.GetScreenWidth(), (float) rlj.core.GetScreenHeight() };
-        rlj.core.SetShaderValue(shader, rlj.core.GetShaderLocation(shader, "size"), screenSize, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
-        rlj.core.SetShaderValue(shader, freqXLoc, freqX, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shader, freqYLoc, freqY, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shader, ampXLoc, ampX, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shader, ampYLoc, ampY, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shader, speedXLoc, speedX, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shader, speedYLoc, speedY, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, rlj.core.GetShaderLocation(shader, "size"), screenSize, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shader, freqXLoc, freqX, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, freqYLoc, freqY, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, ampXLoc, ampX, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, ampYLoc, ampY, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, speedXLoc, speedX, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, speedYLoc, speedY, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
 
         float seconds = 0.0f;
 
@@ -83,7 +83,7 @@ public class TextureWaves{
             //----------------------------------------------------------------------------------
             seconds += rlj.core.GetFrameTime();
 
-            rlj.core.SetShaderValue(shader, secondsLoc, new float[]{seconds}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shader, secondsLoc, new float[]{seconds}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
             //----------------------------------------------------------------------------------
 
             // Draw

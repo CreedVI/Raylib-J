@@ -94,7 +94,7 @@ public class Spotlight{
         // a pitch black half and a dimly lit half.
         int wLoc = rlj.core.GetShaderLocation(shdrSpot, "screenWidth");
         float sw = (float) rlj.core.GetScreenWidth();
-        rlj.core.SetShaderValue(shdrSpot, wLoc, new float[]{sw}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shdrSpot, wLoc, new float[]{sw}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
 
         // Randomize the locations and velocities of the spotlights
         // and initialize the shader locations
@@ -111,9 +111,9 @@ public class Spotlight{
             spots[i].inner = 28.0f * (i + 1);
             spots[i].radius = 48.0f * (i + 1);
 
-            rlj.core.SetShaderValue(shdrSpot, spots[i].posLoc, new float[]{spots[i].pos.x, spots[i].pos.y}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
-            rlj.core.SetShaderValue(shdrSpot, spots[i].innerLoc, new float[]{spots[i].inner}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-            rlj.core.SetShaderValue(shdrSpot, spots[i].radiusLoc, new float[]{spots[i].radius}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shdrSpot, spots[i].posLoc, new float[]{spots[i].pos.x, spots[i].pos.y}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
+            rlj.core.SetShaderValue(shdrSpot, spots[i].innerLoc, new float[]{spots[i].inner}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shdrSpot, spots[i].radiusLoc, new float[]{spots[i].radius}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
         }
 
         rlj.core.SetTargetFPS(60);               // Set  to run at 60 frames-per-second
@@ -148,7 +148,7 @@ public class Spotlight{
                     if (spots[i].pos.y > (screenHeight - 64)) spots[i].vel.y = -spots[i].vel.y;
                 }
 
-                rlj.core.SetShaderValue(shdrSpot, spots[i].posLoc, new float[]{spots[i].pos.x, spots[i].pos.y}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                rlj.core.SetShaderValue(shdrSpot, spots[i].posLoc, new float[]{spots[i].pos.x, spots[i].pos.y}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
             }
 
             // Draw

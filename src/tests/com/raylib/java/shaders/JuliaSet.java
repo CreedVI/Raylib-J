@@ -77,11 +77,11 @@ public class JuliaSet{
 
         // Tell the shader what the screen dimensions, zoom, offset and c are
         float[] screenDims = {(float) rlj.core.GetScreenWidth(), (float) rlj.core.GetScreenHeight()};
-        rlj.core.SetShaderValue(shader, rlj.core.GetShaderLocation(shader, "screenDims"), screenDims, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shader, rlj.core.GetShaderLocation(shader, "screenDims"), screenDims, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
 
-        rlj.core.SetShaderValue(shader, cLoc, c, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
-        rlj.core.SetShaderValue(shader, zoomLoc, new float[]{zoom}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-        rlj.core.SetShaderValue(shader, offsetLoc, offset, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shader, cLoc, c, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shader, zoomLoc, new float[]{zoom}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, offsetLoc, offset, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
 
         int incrementSpeed = 0;         // Multiplier of speed to change c value
         boolean showControls = true;       // Show controls
@@ -127,7 +127,7 @@ public class JuliaSet{
                     c[1] = pointsOfInterest[5][1];
                 }
 
-                rlj.core.SetShaderValue(shader, cLoc, c, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                rlj.core.SetShaderValue(shader, cLoc, c, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
             }
 
             if (rlj.core.IsKeyPressed(KEY_SPACE)) pause = !pause;                 // Pause animation (c change)
@@ -158,15 +158,15 @@ public class JuliaSet{
                     offsetSpeed = new Vector2(0.0f, 0.0f);
                 }
 
-                rlj.core.SetShaderValue(shader, zoomLoc, new float[]{zoom}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
-                rlj.core.SetShaderValue(shader, offsetLoc, offset, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                rlj.core.SetShaderValue(shader, zoomLoc, new float[]{zoom}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+                rlj.core.SetShaderValue(shader, offsetLoc, offset, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
 
                 // Increment c value with time
                 float amount = rlj.core.GetFrameTime() * incrementSpeed * 0.0005f;
                 c[0] += amount;
                 c[1] += amount;
 
-                rlj.core.SetShaderValue(shader, cLoc, c, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                rlj.core.SetShaderValue(shader, cLoc, c, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
             }
             //----------------------------------------------------------------------------------
 

@@ -56,7 +56,7 @@ public class WindowLetterbox{
 
         // Render texture initialization, used to hold the rendering result so we can easily resize it
         RenderTexture target = rlj.textures.LoadRenderTexture(gameScreenWidth, gameScreenHeight);
-        rlj.textures.SetTextureFilter(target.texture, RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR);  // Texture scale
+        rlj.textures.SetTextureFilter(target.texture, RLGL.rlTextureFilterMode.TEXTURE_FILTER_BILINEAR);  // Texture scale
         // filter to use
 
         Color[] colors = new Color[10];

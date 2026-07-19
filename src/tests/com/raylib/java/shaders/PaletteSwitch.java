@@ -117,7 +117,7 @@ public class PaletteSwitch{
 
             // Send new value to the shader to be used on drawing.
             // NOTE: We are sending RGB triplets w/o the alpha channel
-            rlj.core.SetShaderValueV(shader, paletteLoc, palettes[currentPalette], RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_IVEC3);
+            rlj.core.SetShaderValueV(shader, paletteLoc, palettes[currentPalette], RLGL.rlShaderUniformDataType.SHADER_UNIFORM_IVEC3);
             //----------------------------------------------------------------------------------
 
             // Draw

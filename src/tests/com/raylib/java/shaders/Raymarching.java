@@ -65,7 +65,7 @@ public class Raymarching {
         int resolutionLoc = rlj.core.GetShaderLocation(shader, "resolution");
 
         float[] resolution = { (float)screenWidth, (float)screenHeight };
-        rlj.core.SetShaderValue(shader, resolutionLoc, resolution, RL_SHADER_UNIFORM_VEC2);
+        rlj.core.SetShaderValue(shader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
 
         float runTime = 0.0f;
 
@@ -87,14 +87,14 @@ public class Raymarching {
             runTime += deltaTime;
 
             // Set shader required uniform values
-            rlj.core.SetShaderValue(shader, viewEyeLoc, cameraPos, RL_SHADER_UNIFORM_VEC3);
-            rlj.core.SetShaderValue(shader, viewCenterLoc, cameraTarget, RL_SHADER_UNIFORM_VEC3);
-            rlj.core.SetShaderValue(shader, runTimeLoc, new float[] {runTime}, RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shader, viewEyeLoc, cameraPos, SHADER_UNIFORM_VEC3);
+            rlj.core.SetShaderValue(shader, viewCenterLoc, cameraTarget, SHADER_UNIFORM_VEC3);
+            rlj.core.SetShaderValue(shader, runTimeLoc, new float[] {runTime}, SHADER_UNIFORM_FLOAT);
 
             // Check if screen is resized
             if (rlj.core.IsWindowResized()) {
                 resolution = new float[]{(float) rlj.core.GetScreenWidth(), (float) rlj.core.GetScreenHeight()};
-                rlj.core.SetShaderValue(shader, resolutionLoc, resolution, RL_SHADER_UNIFORM_VEC2);
+                rlj.core.SetShaderValue(shader, resolutionLoc, resolution, SHADER_UNIFORM_VEC2);
             }
             //----------------------------------------------------------------------------------
 

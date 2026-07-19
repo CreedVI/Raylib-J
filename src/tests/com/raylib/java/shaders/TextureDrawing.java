@@ -46,7 +46,7 @@ public class TextureDrawing{
 
         float time = 0.0f;
         int timeLoc = rlj.core.GetShaderLocation(shader, "uTime");
-        rlj.core.SetShaderValue(shader, timeLoc, new float[]{time}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+        rlj.core.SetShaderValue(shader, timeLoc, new float[]{time}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         // -------------------------------------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ public class TextureDrawing{
             // Update
             //----------------------------------------------------------------------------------
             time = (float) rlj.core.GetTime();
-            rlj.core.SetShaderValue(shader, timeLoc, new float[]{time}, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_FLOAT);
+            rlj.core.SetShaderValue(shader, timeLoc, new float[]{time}, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_FLOAT);
             //----------------------------------------------------------------------------------
 
             // Draw

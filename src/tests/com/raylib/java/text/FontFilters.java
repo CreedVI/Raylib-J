@@ -54,7 +54,7 @@ public class FontFilters{
         Vector2 textSize = new Vector2(0.0f, 0.0f);
 
         // Setup texture scaling filter
-        rlj.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT);
+        rlj.textures.SetTextureFilter(font.texture, TEXTURE_FILTER_POINT);
         int currentFontFilter = 0;      // TEXTURE_FILTER_POINT
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -69,16 +69,16 @@ public class FontFilters{
 
             // Choose font texture filter method
             if (rlj.core.IsKeyPressed(KEY_ONE)) {
-                rlj.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_POINT);
+                rlj.textures.SetTextureFilter(font.texture, TEXTURE_FILTER_POINT);
                 currentFontFilter = 0;
             }
             else if (rlj.core.IsKeyPressed(KEY_TWO)) {
-                rlj.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_BILINEAR);
+                rlj.textures.SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
                 currentFontFilter = 1;
             }
             else if (rlj.core.IsKeyPressed(KEY_THREE)) {
                 // NOTE: Trilinear filter won't be noticed on 2D drawing
-                rlj.textures.SetTextureFilter(font.texture, RL_TEXTURE_FILTER_TRILINEAR);
+                rlj.textures.SetTextureFilter(font.texture, TEXTURE_FILTER_TRILINEAR);
                 currentFontFilter = 2;
             }
 

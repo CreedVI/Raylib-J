@@ -130,16 +130,16 @@ public class rLights{
     // NOTE: Light shader locations should be available
     public static void UpdateLightValues(Raylib context, Shader shader, Light light){
         // Send to shader light enabled state and type
-        context.core.SetShaderValue(shader, light.enabledLoc, new float[]{(light.enabled ? 1 : 0)}, RL_SHADER_UNIFORM_INT);
-        context.core.SetShaderValue(shader, light.typeLoc, new float[]{light.type}, RL_SHADER_UNIFORM_INT);
+        context.core.SetShaderValue(shader, light.enabledLoc, new float[]{(light.enabled ? 1 : 0)}, SHADER_UNIFORM_INT);
+        context.core.SetShaderValue(shader, light.typeLoc, new float[]{light.type}, SHADER_UNIFORM_INT);
 
         // Send to shader light position values
         float[] position = new float[]{light.position.x, light.position.y, light.position.z};
-        context.core.SetShaderValue(shader, light.posLoc, position, RL_SHADER_UNIFORM_VEC3);
+        context.core.SetShaderValue(shader, light.posLoc, position, SHADER_UNIFORM_VEC3);
 
         // Send to shader light target position values
         float[] target = new float[]{light.target.x, light.target.y, light.target.z};
-        context.core.SetShaderValue(shader, light.targetLoc, target, RL_SHADER_UNIFORM_VEC3);
+        context.core.SetShaderValue(shader, light.targetLoc, target, SHADER_UNIFORM_VEC3);
 
         // Send to shader light color values
         float[] color = new float[]{
@@ -148,7 +148,7 @@ public class rLights{
                 (float) light.color.b / (float) 255,
                 (float) light.color.a / (float) 255
         };
-        context.core.SetShaderValue(shader, light.colorLoc, color, RL_SHADER_UNIFORM_VEC4);
+        context.core.SetShaderValue(shader, light.colorLoc, color, SHADER_UNIFORM_VEC4);
     }
 
 }

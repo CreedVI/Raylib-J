@@ -66,22 +66,22 @@ public class VRSimulator{
 
         // Update distortion shader with lens and distortion-scale parameters
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "leftLensCenter"),
-                config.leftLensCenter, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                config.leftLensCenter, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "rightLensCenter"),
-                config.rightLensCenter, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                config.rightLensCenter, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "leftScreenCenter"),
-                config.leftScreenCenter, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                config.leftScreenCenter, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "rightScreenCenter"),
-                config.rightScreenCenter, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                config.rightScreenCenter, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
 
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "scale"),
-                config.scale, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                config.scale, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "scaleIn"),
-                config.scaleIn, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC2);
+                config.scaleIn, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC2);
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "deviceWarpParam"),
-                device.lensDistortionValues, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4);
+                device.lensDistortionValues, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC4);
         rlj.core.SetShaderValue(distortion, rlj.core.GetShaderLocation(distortion, "chromaAbParam"),
-                device.chromaAbCorrection, RLGL.rlShaderUniformDataType.RL_SHADER_UNIFORM_VEC4);
+                device.chromaAbCorrection, RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC4);
 
         // Initialize framebuffer for stereo rendering
         // NOTE: Screen size should match HMD aspect ratio

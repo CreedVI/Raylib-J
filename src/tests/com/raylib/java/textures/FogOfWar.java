@@ -6,7 +6,7 @@ import com.raylib.java.structs.RenderTexture;
 import com.raylib.java.structs.Vector2;
 
 import static com.raylib.java.core.input.Keyboard.*;
-import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.RL_TEXTURE_FILTER_BILINEAR;
+import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.TEXTURE_FILTER_BILINEAR;
 import static com.raylib.java.structs.Color.*;
 
 public class FogOfWar {
@@ -73,7 +73,7 @@ public class FogOfWar {
         // NOTE: To get an automatic smooth-fog effect we use a render texture to render fog
         // at a smaller size (one pixel per tile) and scale it on drawing with bilinear filtering
         RenderTexture fogOfWar = rlj.textures.LoadRenderTexture(map.tilesX, map.tilesY);
-        rlj.textures.SetTextureFilter(fogOfWar.texture, RL_TEXTURE_FILTER_BILINEAR);
+        rlj.textures.SetTextureFilter(fogOfWar.texture, TEXTURE_FILTER_BILINEAR);
 
         rlj.core.SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------

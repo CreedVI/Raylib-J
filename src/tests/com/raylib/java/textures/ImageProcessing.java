@@ -66,7 +66,7 @@ public class ImageProcessing{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib-j [textures] example - image processing");
 
         Image imOrigin = rlj.textures.LoadImage("src/tests/resources/textures/parrots.png");   // Loaded in CPU memory (RAM)
-        imOrigin = rlj.textures.ImageFormat(imOrigin, RLGL.rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8); // Format image to RGBA 32bit (required for texture update) <-- ISSUE
+        imOrigin = rlj.textures.ImageFormat(imOrigin, RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8); // Format image to RGBA 32bit (required for texture update) <-- ISSUE
         Texture2D texture = rlj.textures.LoadTextureFromImage(imOrigin);    // Image converted to texture, GPU memory (VRAM)
 
         Image imCopy = rlj.textures.ImageCopy(imOrigin);

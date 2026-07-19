@@ -7,8 +7,8 @@ import static com.raylib.java.core.input.Keyboard.KEY_F1;
 import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_LEFT;
 import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_RIGHT;
 import static com.raylib.java.raymath.Raymath.*;
-import static com.raylib.java.rlgl.RLGL.rlBlendMode.RL_BLEND_ALPHA;
-import static com.raylib.java.rlgl.RLGL.rlBlendMode.RL_BLEND_CUSTOM;
+import static com.raylib.java.rlgl.RLGL.rlBlendMode.BLEND_ALPHA;
+import static com.raylib.java.rlgl.RLGL.rlBlendMode.BLEND_CUSTOM;
 import static com.raylib.java.structs.Color.*;
 
 public class TopDownLights {
@@ -122,7 +122,7 @@ public class TopDownLights {
 
         // Force the blend mode to only set the alpha of the destination
         rlj.rlgl.rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
-        rlj.rlgl.rlSetBlendMode(RL_BLEND_CUSTOM);
+        rlj.rlgl.rlSetBlendMode(BLEND_CUSTOM);
 
         // If we are valid, then draw the light radius to the alpha mask
         if (lights[slot].valid) {
@@ -132,9 +132,9 @@ public class TopDownLights {
         rlj.rlgl.rlDrawRenderBatchActive();
 
         // Cut out the shadows from the light radius by forcing the alpha to maximum
-        rlj.rlgl.rlSetBlendMode(RL_BLEND_ALPHA);
+        rlj.rlgl.rlSetBlendMode(BLEND_ALPHA);
         rlj.rlgl.rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MAX);
-        rlj.rlgl.rlSetBlendMode(RL_BLEND_CUSTOM);
+        rlj.rlgl.rlSetBlendMode(BLEND_CUSTOM);
 
         // Draw the shadows to the alpha mask
         for (int i = 0; i < lights[slot].shadowCount; i++) {
@@ -144,7 +144,7 @@ public class TopDownLights {
         rlj.rlgl.rlDrawRenderBatchActive();
 
         // Go back to normal blend mode
-        rlj.rlgl.rlSetBlendMode(RL_BLEND_ALPHA);
+        rlj.rlgl.rlSetBlendMode(BLEND_ALPHA);
 
         rlj.core.EndTextureMode();
     }
@@ -319,7 +319,7 @@ public class TopDownLights {
 
                 // Force the blend mode to only set the alpha of the destination
                 rlj.rlgl.rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
-                rlj.rlgl.rlSetBlendMode(RL_BLEND_CUSTOM);
+                rlj.rlgl.rlSetBlendMode(BLEND_CUSTOM);
 
                 // Merge in all the light masks
                 for (int i = 0; i < MAX_LIGHTS; i++) {
@@ -331,7 +331,7 @@ public class TopDownLights {
                 rlj.rlgl.rlDrawRenderBatchActive();
 
                 // Go back to normal blend
-                rlj.rlgl.rlSetBlendMode(RL_BLEND_ALPHA);
+                rlj.rlgl.rlSetBlendMode(BLEND_ALPHA);
                 rlj.core.EndTextureMode();
             }
             //----------------------------------------------------------------------------------

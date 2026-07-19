@@ -4,8 +4,6 @@ import com.raylib.java.Raylib;
 import com.raylib.java.structs.*;
 import org.jetbrains.annotations.Contract;
 
-import java.util.Arrays;
-
 import static com.raylib.java.Config.SUPPORT_QUADS_DRAW_MODE;
 import static com.raylib.java.raymath.Raymath.DEG2RAD;
 import static com.raylib.java.raymath.Raymath.PI;
@@ -70,7 +68,7 @@ public class rShapes {
      */
     int SPLINE_SEGMENT_DIVISIONS = 24;
 
-    private Texture2D texShapes = new Texture2D(1, 1, 1, 1, rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8); // Texture used on rShapes drawing (white pixel loaded by rlgl)
+    private Texture2D texShapes = new Texture2D(1, 1, 1, 1, rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8); // Texture used on rShapes drawing (white pixel loaded by rlgl)
     private Rectangle texShapesRec = new Rectangle(0f, 0f, 1f, 1f);        // Texture source rectangle used on rShapes drawing
 
     final private Raylib context;
@@ -95,7 +93,7 @@ public class rShapes {
         // WARNING: Shapes texture should be probably better validated,
         // it can break the rendering of all shapes if misused
         if ((texture.id == 0) || (source.width == 0) || (source.height == 0)) {
-            texShapes = new Texture2D(1, 1, 1, 1, rlPixelFormat.RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            texShapes = new Texture2D(1, 1, 1, 1, rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
             texShapesRec = new Rectangle(0.0f, 0.0f, 1.0f, 1.0f);
         }
         else {
