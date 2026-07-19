@@ -2829,8 +2829,8 @@ public class rCore {
 
     // NOTE: Gamepad support not implemented in emscripten GLFW3 (PLATFORM_WEB)
     // Detect if a gamepad is available
-    public boolean IsGamepadAvailable(int gamepad){
-        return (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad];
+    public boolean IsGamepadAvailable(int gamepad) {
+        return (gamepad < MAX_GAMEPADS) & input.gamepad.getReady()[gamepad];
     }
 
     // Return gamepad internal name id
@@ -3654,11 +3654,12 @@ public class rCore {
 
         // Check if gamepads are ready
         // NOTE: We do it here in case of disconnection
-        boolean[] gamepadReady = new boolean[MAX_GAMEPADS];
-        for (int i = 0; i < MAX_GAMEPADS; i++){
-            gamepadReady[i] = glfwJoystickPresent(i);
+        for (int i = 0; i < MAX_GAMEPADS; i++) {
+            input.gamepad.ready[i] = glfwJoystickIsGamepad(i);
+            if (input.gamepad.ready[i]) {
+                System.out.println(i + ": " + GetGamepadName(i));
+            }
         }
-        input.gamepad.setReady(gamepadReady);
 
         // Register gamepads buttons events
         for (int i = 0; i < MAX_GAMEPADS; i++){

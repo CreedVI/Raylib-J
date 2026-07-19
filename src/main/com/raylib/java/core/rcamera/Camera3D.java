@@ -54,6 +54,7 @@ public class Camera3D {
 
     private final float CAMERA_MOVE_SPEED = 0.09f;
     private final float CAMERA_ROTATION_SPEED = 0.03f;
+    private final float CAMERA_PAN_SPEED = 0.2f;
 
     // Camera mouse movement sensitivity
     private final float CAMERA_MOUSE_MOVE_SENSITIVITY = 0.003f;    // TODO: it should be independent of framerate
@@ -198,7 +199,7 @@ public class Camera3D {
         distance += delta;
 
         // Distance must be greater than 0
-        if (distance < 0) {
+        if (distance <= 0) {
             distance = 0.001f;
         }
 
@@ -340,8 +341,8 @@ public class Camera3D {
 
         boolean moveInWorldPlane = ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON));
         boolean rotateAroundTarget = ((mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL));
-        boolean lockView = ((mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL));
-        boolean rotateUp = (mode == CAMERA_FREE);
+        boolean lockView = (mode == CAMERA_FIRST_PERSON) || (mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL);
+        boolean rotateUp = false;
 
         if (mode == CAMERA_ORBITAL) {
             // Orbital can just orbit
@@ -371,27 +372,74 @@ public class Camera3D {
                 Roll(CAMERA_ROTATION_SPEED);
             }
 
-            Yaw(-mousePositionDelta.x*CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
-            Pitch(-mousePositionDelta.y*CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
-
             // Camera movement
-            if (context.core.IsKeyDown(KEY_W)) {
-                MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
+            if (!context.core.IsGamepadAvailable(0)) {
+                // Camera pan (for CAMERA_FREE)
+                if ((mode == CAMERA_FREE) && (context.core.IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))) {
+                    Vector2 mouseDelta = context.core.GetMouseDelta();
+                    if (mouseDelta.x > 0.0f) {
+                        MoveRight(CAMERA_PAN_SPEED, moveInWorldPlane);
+                    }
+                    if (mouseDelta.x < 0.0f) {
+                        MoveRight(-CAMERA_PAN_SPEED, moveInWorldPlane);
+                    }
+                    if (mouseDelta.y > 0.0f) {
+                        MoveUp(-CAMERA_PAN_SPEED);
+                    }
+                    if (mouseDelta.y < 0.0f) {
+                        MoveUp(CAMERA_PAN_SPEED);
+                    }
+                }
+                else {
+                    // Mouse support
+                    Yaw(-mousePositionDelta.x*CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
+                    Pitch(-mousePositionDelta.y*CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
+                }
+
+                // Keyboard support
+                if (context.core.IsKeyDown(KEY_W)) {
+                    MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
+                if (context.core.IsKeyDown(KEY_A)) {
+                    MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
+                if (context.core.IsKeyDown(KEY_S)) {
+                    MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
+                if (context.core.IsKeyDown(KEY_D)) {
+                    MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
             }
-            if (context.core.IsKeyDown(KEY_A)) {
-                MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+            else {
+                // Gamepad controller support
+                Yaw(-(context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_X) * 2)*CAMERA_MOUSE_MOVE_SENSITIVITY, rotateAroundTarget);
+                Pitch(-(context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_Y) * 2)*CAMERA_MOUSE_MOVE_SENSITIVITY, lockView, rotateAroundTarget, rotateUp);
+
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) <= -0.25f) {
+                    MoveForward(CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) <= -0.25f) {
+                    MoveRight(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y) >= 0.25f) {
+                    MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
+                if (context.core.GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X) >= 0.25f) {
+                    MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
+                }
             }
-            if (context.core.IsKeyDown(KEY_S)) {
-                MoveForward(-CAMERA_MOVE_SPEED, moveInWorldPlane);
+
+            if (mode == CAMERA_FREE) {
+                if (context.core.IsKeyDown(KEY_SPACE)) {
+                    MoveUp(CAMERA_MOVE_SPEED);
+                }
+                if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) {
+                    MoveUp(-CAMERA_MOVE_SPEED);
+                }
             }
-            if (context.core.IsKeyDown(KEY_D)) {
-                MoveRight(CAMERA_MOVE_SPEED, moveInWorldPlane);
-            }
-            // if (context.core.IsKeyDown(KEY_SPACE)) MoveUp(CAMERA_MOVE_SPEED);
-            // if (context.core.IsKeyDown(KEY_LEFT_CONTROL)) MoveUp(-CAMERA_MOVE_SPEED);
         }
 
-        if ((mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL)) {
+        if ((mode == CAMERA_THIRD_PERSON) || (mode == CAMERA_ORBITAL) || (mode == CAMERA_FREE)) {
             // Zoom target distance
             CameraMoveToTarget(-context.core.GetMouseWheelMove());
             if (context.core.IsKeyPressed(KEY_KP_SUBTRACT)) {
