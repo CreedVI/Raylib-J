@@ -30,25 +30,28 @@ public class rText{
      *   rtext - Basic functions to load fonts and draw text
      *
      *   CONFIGURATION:
+     *       #define SUPPORT_MODULE_RTEXT
+     *           rtext module is included in the build
      *
-     *   #define SUPPORT_MODULE_RTEXT
-     *       rtext module is included in the build
+     *       #define SUPPORT_DEFAULT_FONT
+     *           Load default raylib font on initialization to be used by DrawText() and MeasureText().
+     *           If no default font loaded, DrawTextEx() and MeasureTextEx() are required.
      *
-     *   #define SUPPORT_FILEFORMAT_FNT
-     *   #define SUPPORT_FILEFORMAT_TTF
-     *       Selected desired fileformats to be supported for loading. Some of those formats are
-     *       supported by default, to remove support, just comment unrequired #define in this module
+     *       #define SUPPORT_FILEFORMAT_FNT
+     *       #define SUPPORT_FILEFORMAT_TTF
+     *           Selected desired fileformats to be supported for loading. Some of those formats are
+     *           supported by default, to remove support, just comment unrequired #define in this module
      *
-     *   #define SUPPORT_DEFAULT_FONT
-     *       Load default raylib font on initialization to be used by DrawText() and MeasureText().
-     *       If no default font loaded, DrawTextEx() and MeasureTextEx() are required.
+     *       #define SUPPORT_FONT_ATLAS_WHITE_REC
+     *           On font atlas image generation [GenImageFontAtlas()], add a 3x3 pixels white rectangle
+     *           at the bottom-right corner of the atlas. It can be useful to for shapes drawing, to allow
+     *           drawing text and shapes with a single draw call [SetShapesTexture()].
      *
-     *   #define TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH
-     *       TextSplit() function static buffer max size
+     *       #define TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH
+     *           TextSplit() function static buffer max size
      *
-     *   #define MAX_TEXTSPLIT_COUNT
-     *       TextSplit() function static substrings pointers array (pointing to static buffer)
-     *
+     *       #define MAX_TEXTSPLIT_COUNT
+     *           TextSplit() function static substrings pointers array (pointing to static buffer)
      *
      *   DEPENDENCIES:
      *       stb_truetype  - Load TTF file and rasterize characters data
@@ -57,7 +60,7 @@ public class rText{
      *
      *   LICENSE: zlib/libpng
      *
-     *   Copyright (c) 2013-2022 Ramon Santamaria (@raysan5)
+     *   Copyright (c) 2013-2023 Ramon Santamaria (@raysan5)
      *
      *   This software is provided "as-is", without any express or implied warranty. In no event
      *   will the authors be held liable for any damages arising from the use of this software.
@@ -76,17 +79,25 @@ public class rText{
      *
      **********************************************************************************************/
 
-    public static class FontType{ // Font type, defines generation method
+    /**
+     * Font type, defines generation method
+     */
+    public enum FontType {
 
-        public final static int
-                FONT_DEFAULT = 0,       // Default font generation, anti-aliased
-                FONT_BITMAP = 1,                 // Bitmap font generation, no anti-aliasing
-                FONT_SDF = 2;                    // SDF font generation, requires external shader
+        FONT_DEFAULT(0), // Default font generation, anti-aliased
+        FONT_BITMAP(1), // Bitmap font generation, no anti-aliasing
+        FONT_SDF(2);  // SDF font generation, requires external shader
+                       
+        private final int value;
+
+        FontType(int value) {
+            this.value = value;
+        }
     }
 
-    final int MAX_TEXTFORMAT_BUFFERS = 4;             // Maximum number of static buffers for text formatting
-    final int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
-    private int next;
+    private final int MAX_TEXTFORMAT_BUFFERS = 4;             // Maximum number of static buffers for text formatting
+    private final int GLYPH_NOTFOUND_CHAR_FALLBACK = 63;      // Character used if requested codepoint is not found: '?'
+    private int textLineSpacing = 15;        // Text vertical line spacing in pixels
 
     // Default values for ttf font generation
     final int FONT_TTF_DEFAULT_SIZE = 32;          // TTF font generation default char size (char-height)
@@ -98,7 +109,7 @@ public class rText{
     final int MAX_TEXT_UNICODE_CHARS = 512;        // Maximum number of unicode codepoints: GetCodepoints()
     final int MAX_TEXTSPLIT_COUNT = 128;           // Maximum number of substrings to split: TextSplit()
 
-    Font defaultFont;
+    private Font defaultFont;
     private final Raylib context;
 
     public rText(Raylib raylib) {
@@ -281,7 +292,9 @@ public class rText{
         context.tracelog.TRACELOG(LOG_INFO, "FONT: Default font loaded successfully (" + defaultFont.glyphCount + " glyphs)");
     }
 
-    // Unload raylib default font
+    /**
+     * Unload raylib default font
+     */
     public void UnloadFontDefault() {
         for (int i = 0; i < defaultFont.glyphCount; i++) {
             defaultFont.glyphs[i].image = context.textures.UnloadImage(defaultFont.glyphs[i].image);
@@ -291,7 +304,10 @@ public class rText{
         defaultFont.recs = null;
     }
 
-    // Get the default font, useful to be used with extended parameters
+    /**
+     * Get the default font, useful to be used with extended parameters
+     * @return Default raylib font
+     */
     public Font GetFontDefault() {
         if (SUPPORT_DEFAULT_FONT) {
             return defaultFont;
@@ -301,7 +317,11 @@ public class rText{
         }
     }
 
-    // Load Font from file into GPU memory (VRAM)
+    /**
+     * Load Font from file into GPU memory (VRAM)
+     * @param fileName Path to font file
+     * @return Font defined by file
+     */
     public Font LoadFont(String fileName) {
         Font font = null;
 
@@ -338,7 +358,7 @@ public class rText{
     // Load Font from TTF font file with generation parameters
     // NOTE: You can pass an array with desired characters, those characters should be available in the font
     // if array is null, default char set is selected 32..126
-    public Font LoadFontEx(String fileName, int fontSize, int[] fontChars, int charsCount) {
+    public Font LoadFontEx(String fileName, int fontSize, int[] codepoints, int codepointCount) {
         Font font;
 
         // Loading file to memory
@@ -351,7 +371,7 @@ public class rText{
 
         if (fileData != null) {
             // Loading font from memory data
-            font = LoadFontFromMemory(context.core.GetFileExtension(fileName), fileData, fontSize, fontChars, charsCount);
+            font = LoadFontFromMemory(context.core.GetFileExtension(fileName), fileData, fontSize, codepoints, codepointCount);
         }
         else{
             font = GetFontDefault();
@@ -489,7 +509,7 @@ public class rText{
     }
 
     // Load font from memory buffer, fileType refers to extension: i.e. ".ttf"
-    public Font LoadFontFromMemory(String fileType, byte[] fileData, int fontSize, int[] fontChars, int charsCount) {
+    public Font LoadFontFromMemory(String fileType, byte[] fileData, int fontSize, int[] codepoints, int codepointCount) {
         Font font = new Font();
 
         String fileExtLower = fileType.toLowerCase();
@@ -497,9 +517,9 @@ public class rText{
         if (SUPPORT_FILEFORMAT_TTF) {
             if (fileExtLower.equals(".ttf") || fileExtLower.equals(".otf")){
                 font.baseSize = fontSize;
-                font.glyphCount = (charsCount > 0) ? charsCount : 95;
+                font.glyphCount = (codepointCount > 0) ? codepointCount : 95;
                 font.glyphPadding = 0;
-                font.glyphs = LoadFontData(fileData, font.baseSize, fontChars, font.glyphCount, FONT_DEFAULT);
+                font.glyphs = LoadFontData(fileData, font.baseSize, codepoints, font.glyphCount, FONT_DEFAULT);
 
                 if (font.glyphs != null) {
                     font.glyphPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
@@ -535,7 +555,7 @@ public class rText{
 
     // Load font data for further use
     // NOTE: Requires TTF font memory data and can generate SDF data
-    public GlyphInfo[] LoadFontData(byte[] fileData, int fontSize, int[] fontChars, int charsCount, int type) {
+    public GlyphInfo[] LoadFontData(byte[] fileData, int fontSize, int[] codepoints, int codepointCount, FontType type) {
         // NOTE: Using some SDF generation default values,
         // trades off precision with ability to handle *smaller* sizes
         GlyphInfo[] chars = null;
@@ -573,31 +593,31 @@ public class rText{
                         STBTruetype.stbtt_GetFontVMetrics(fontInfo, ascent, descent, lineGap);
 
                         // In case no chars count provided, default to 95
-                        charsCount = (charsCount > 0) ? charsCount : 95;
+                        codepointCount = (codepointCount > 0) ? codepointCount : 95;
 
-                        // Fill fontChars in case not provided externally
-                        // NOTE: By default we fill charsCount consecutively, starting at 32 (Space)
+                        // Fill codepoints in case not provided externally
+                        // NOTE: By default we fill codepointCount consecutively, starting at 32 (Space)
 
-                        if (fontChars == null) {
-                            fontChars = new int[charsCount];
-                            for (int i = 0; i < charsCount; i++) {
-                                fontChars[i] = i + 32;
+                        if (codepoints == null) {
+                            codepoints = new int[codepointCount];
+                            for (int i = 0; i < codepointCount; i++) {
+                                codepoints[i] = i + 32;
                             }
                             genFontChars = true;
                         }
 
-                        chars = new GlyphInfo[charsCount];
-                        for (int i = 0; i < charsCount; i++) {
+                        chars = new GlyphInfo[codepointCount];
+                        for (int i = 0; i < codepointCount; i++) {
                             chars[i] = new GlyphInfo();
                         }
 
                         // NOTE: Using simple packaging, one char after another
-                        for (int i = 0; i < fontChars.length; i++) {
+                        for (int i = 0; i < codepoints.length; i++) {
                             IntBuffer chw, chh; // Character width and height (on generation)
                             chw = stack.mallocInt(1);
                             chh = stack.mallocInt(1);
 
-                            int ch = fontChars[i];  // Character value to get info for
+                            int ch = codepoints[i];  // Character value to get info for
                             chars[i].value = ch;
 
                             //  Render a unicode codepoint to a bitmap
@@ -874,9 +894,9 @@ public class rText{
     }
 
     // Unload font chars info data (RAM)
-    public void UnloadFontData(GlyphInfo[] glyphs, int charsCount) {
+    public void UnloadFontData(GlyphInfo[] glyphs, int codepointCount) {
         if (glyphs != null) {
-            for (int i = 0; i < charsCount; i++) {
+            for (int i = 0; i < codepointCount; i++) {
                 context.textures.UnloadImage(glyphs[i].image);
             }
         }
@@ -1025,7 +1045,7 @@ public class rText{
             txtData.append("    font.recs = (Rectangle *)malloc(font.glyphCount*sizeof(Rectangle));\n");
             txtData.append("    memcpy(font.recs, fontRecs_" + fileNamePascal + ", font.glyphCount*sizeof(Rectangle));\n\n");
 
-            txtData.append("    // Copy font glyph info data from global fontChars\n");
+            txtData.append("    // Copy font glyph info data from global codepoints\n");
             txtData.append("    // NOTE: Required to avoid issues if trying to free font\n");
             txtData.append("    font.glyphs = (GlyphInfo *)malloc(font.glyphCount*sizeof(GlyphInfo));\n");
             txtData.append("    memcpy(font.glyphs, fontGlyphs_" + fileNamePascal + ", font.glyphCount*sizeof(GlyphInfo));\n\n");
@@ -1068,7 +1088,7 @@ public class rText{
             color = Color.RED;    // Low FPS
         }
 
-        DrawText(fps + " + FPS", posX, posY, 20, color);
+        DrawText(TextFormat("%2d FPS", fps), posX, posY, 20, color);
     }
 
     // Draw current FPS
@@ -1114,16 +1134,9 @@ public class rText{
             int codepointByteCount = GetCodePointByteCount(codepoint);
             int index = GetGlyphIndex(font, codepoint);
 
-            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-            // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-            if (codepoint == 0x3f) {
-                codepointByteCount = 1;
-            }
-
             if (codepoint == '\n') {
-                // NOTE: Fixed line spacing of 1.5 line-height
-                // TODO: Support custom line spacing defined by user
-                textOffsetY += (int)((font.baseSize + font.baseSize/2.0f)*scaleFactor);
+                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
+                textOffsetY += textLineSpacing;
                 textOffsetX = 0.0f;
             }
             else{
@@ -1194,9 +1207,8 @@ public class rText{
         for (int i = 0; i < codepoints.length; i++) {
             int index = GetGlyphIndex(font, codepoints[i]);
             if (codepoints[i] == '\n') {
-                // NOTE: Fixed line spacing of 1.5 line-height
-                // TODO: Support custom line spacing defined by user
-                textOffsetY += (int)((font.baseSize + font.baseSize/2.0f)*scaleFactor);
+                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
+                textOffsetY += textLineSpacing;
                 textOffsetX = 0.0f;
             }
             else {
@@ -1205,13 +1217,18 @@ public class rText{
                 }
 
                 if (font.glyphs[index].advanceX == 0) {
-                    textOffsetX += ((float)font.recs[index].width*scaleFactor + spacing);
+                    textOffsetX += (font.recs[index].width*scaleFactor + spacing);
                 }
                 else {
                     textOffsetX += ((float)font.glyphs[index].advanceX*scaleFactor + spacing);
                 }
             }
         }
+    }
+
+    // Set vertical line spacing when drawing with line-breaks
+    public void SetTextLineSpacing(int spacing) {
+        textLineSpacing = spacing;
     }
 
     // Measure string width for default font
@@ -1253,7 +1270,7 @@ public class rText{
         int letter = 0;                 // Current character
         int index = 0;                  // Index position in sprite font
 
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size;) {
             byteCounter++;
 
             int next = 0;
@@ -1261,12 +1278,8 @@ public class rText{
             index = GetGlyphIndex(font, letter);
             next = GetCodePointByteCount(letter);
 
-            // NOTE: normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-            // but we need to draw all the bad bytes using the '?' symbol so to not skip any we set next = 1
-            if (letter == 0x3f) {
-                next = 1;
-            }
-            i += next - 1;
+
+            i += next;
 
             if (letter != '\n') {
                 if (font.glyphs[index].advanceX != 0) {
@@ -1282,7 +1295,8 @@ public class rText{
                 }
                 byteCounter = 0;
                 textWidth = 0;
-                textHeight += ((float)font.baseSize*1.5f); // NOTE: Fixed line spacing of 1.5 lines
+                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
+                textHeight += (float)textLineSpacing;
             }
 
             if (tempByteCounter < byteCounter) {
@@ -1294,22 +1308,32 @@ public class rText{
             tempTextWidth = textWidth;
         }
 
-        textSize.x = tempTextWidth * scaleFactor + ((tempByteCounter - 1) * spacing); // Adds chars spacing to measure
+        textSize.x = tempTextWidth * scaleFactor + ((tempByteCounter - 1) * spacing);
         textSize.y = textHeight * scaleFactor;
 
         return textSize;
     }
 
-    // Returns index position for a unicode character on spritefont
+    // Returns index position for a Unicode character on spritefont
     public int GetGlyphIndex(Font font, int codepoint){
         // Support charsets with any characters order
-        int index = 0x3f;
+        int index = 0;
+        int fallbackIndex = 0;
 
-        for (int i = 0; i < font.glyphCount; i++){
-            if (font.glyphs[i].value == codepoint){
+        // Look for character index in the unordered charset
+        for (int i = 0; i < font.glyphCount; i++) {
+            if (font.glyphs[i].value == 63) {
+                fallbackIndex = i;
+            }
+
+            if (font.glyphs[i].value == codepoint) {
                 index = i;
                 break;
             }
+        }
+
+        if ((index == 0) && (font.glyphs[0].value != codepoint)) {
+            index = fallbackIndex;
         }
 
         return index;
@@ -1456,7 +1480,7 @@ public class rText{
 
     // Encode text codepoint into UTF-8 text
     public String LoadUTF8(int[] codepoints, int length){
-        // We allocate enough memory fo fit all possible codepoints
+        // We allocate enough memory to fit all possible codepoints
         // NOTE: 5 bytes for every codepoint should be enough
         StringBuilder text = new StringBuilder();
         String utf8;
@@ -1706,7 +1730,7 @@ public class rText{
 
     // Load a BMFont file (AngelCode font file)
     public Font LoadBMFont(String fileName){
-        int fontSize, imWidth, imHeight, charsCount;
+        int fontSize, imWidth, imHeight, codepointCount;
         int lineTracker = 1;
         String fileText = null, imFileName = null;
         String[] fileLines;
@@ -1741,9 +1765,9 @@ public class rText{
         String linesCount = fileLines[lineTracker].substring(fileLines[lineTracker].indexOf("=") + 1);
         linesCount = linesCount.trim();
 
-        charsCount = Integer.parseInt(linesCount);
+        codepointCount = Integer.parseInt(linesCount);
         lineTracker++;
-        context.tracelog.TRACELOG(null, "    > Chars count: " + charsCount);
+        context.tracelog.TRACELOG(null, "    > Chars count: " + codepointCount);
 
         String imPath = fileName.substring(0, fileName.lastIndexOf('/') + 1) + imFileName;
 
@@ -1774,13 +1798,13 @@ public class rText{
 
         // Fill font characters info data
         font.baseSize = fontSize;
-        font.glyphCount = charsCount;
+        font.glyphCount = codepointCount;
         font.glyphPadding = 0;
-        font.glyphs = new GlyphInfo[charsCount];
+        font.glyphs = new GlyphInfo[codepointCount];
         for (int i = 0; i < font.glyphs.length; i++) {
             font.glyphs[i] = new GlyphInfo();
         }
-        font.recs = new Rectangle[charsCount];
+        font.recs = new Rectangle[codepointCount];
         for (int i = 0; i < font.recs.length; i++) {
             font.recs[i] = new Rectangle();
         }
