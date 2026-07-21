@@ -1,18 +1,28 @@
 package com.raylib.java.textures;
 
+import com.kitfox.svg.SVGDiagram;
+import com.kitfox.svg.SVGException;
+import com.kitfox.svg.SVGUniverse;
+import com.kitfox.svg.animation.AnimationElement;
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.*;
+import com.raylib.java.structs.Color;
+import com.raylib.java.structs.Font;
+import com.raylib.java.structs.Image;
+import com.raylib.java.structs.Rectangle;
 import org.jetbrains.annotations.Contract;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryStack;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
@@ -204,10 +214,10 @@ public class rTextures {
         boolean isSvgStringValid = false;
 
         if (SUPPORT_FILEFORMAT_SVG) {
-            byte[] fileData;
+            String fileText = "";
             if (context.core.FileExists(fileNameOrString)) {
                 try {
-                    fileData = context.files.LoadFileData(fileNameOrString);
+                    fileText = context.files.LoadFileText(fileNameOrString);
                     isSvgStringValid = true;
                 }
                 catch (IOException e) {
@@ -216,12 +226,45 @@ public class rTextures {
             }
             else {
                 if (fileNameOrString.substring(0, 3).equalsIgnoreCase("<svg")) {
+                    fileText = fileNameOrString;
                     isSvgStringValid = true;
                 }
             }
 
             if (isSvgStringValid) {
                 //TODO: Load SVG data and convert to raylib datatype
+                SVGUniverse universe = new SVGUniverse();
+                universe.loadSVG(new StringReader(fileText), "svg");
+                SVGDiagram diagram = universe.getDiagram(universe.getLoadedDocumentURIs().get(0));
+                diagram.setDeviceViewport(new java.awt.Rectangle(0, 0, width, height));
+
+                BufferedImage svg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D graphics2D = svg.createGraphics();
+                graphics2D.setClip(0, 0, width, height);
+
+                try {
+                    diagram.render(null, graphics2D);
+                    Color[] pixels = new Color[width * height];
+
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            int argb = svg.getRGB(x, y);
+
+                            int alpha = (argb >> 24) & 0xff;
+                            int red   = (argb >> 16) & 0xff;
+                            int green = (argb >> 8)  & 0xff;
+                            int blue  =  argb        & 0xff;
+
+                            pixels[(y * width) + x] = new Color(red, green, blue, alpha);
+                        }
+                    }
+
+                    image = new Image(pixels, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+                    graphics2D.dispose();
+                }
+                catch (SVGException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 

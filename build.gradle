@@ -41,6 +41,7 @@ dependencies {
     implementation("fr.delthas:javamp3:1.0.1")
     implementation("io.github.creedvi:M3D-J:0.1.0a")
     implementation("de.javagl:jgltf-model:2.0.4")
+    implementation("io.github.blackears:svg-salamander:1.1.5.5")
     implementation("org.jetbrains:annotations:24.1.0")
 
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
