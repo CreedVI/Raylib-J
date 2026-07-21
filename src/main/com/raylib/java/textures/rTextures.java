@@ -13,6 +13,7 @@ import com.raylib.java.structs.Rectangle;
 import org.jetbrains.annotations.Contract;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBImage;
+import org.lwjgl.stb.STBImageResize;
 import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryStack;
 
@@ -37,7 +38,7 @@ import static com.raylib.java.rlgl.RLGL.rlGlVersion.OPENGL_ES_20;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.structs.NPatchInfo.NPatchType.*;
 import static com.raylib.java.textures.rTextures.CubemapLayoutType.*;
-import static org.lwjgl.stb.STBImageResize.stbir_resize_uint8;
+import static org.lwjgl.stb.STBImageResize.stbir_resize_uint8_linear;
 import static org.lwjgl.stb.STBPerlin.stb_perlin_fbm_noise3;
 
 public class rTextures {
@@ -1529,19 +1530,19 @@ public class rTextures {
 
             switch (image.format) {
                 case PIXELFORMAT_UNCOMPRESSED_GRAYSCALE:
-                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
+                    stbir_resize_uint8_linear(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 1);
                     break;
                 case PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA:
-                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
+                    stbir_resize_uint8_linear(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 2);
                     break;
                 case PIXELFORMAT_UNCOMPRESSED_R8G8B8:
-                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
+                    stbir_resize_uint8_linear(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 3);
                     break;
                 case PIXELFORMAT_UNCOMPRESSED_R8G8B8A8:
-                    stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
+                    stbir_resize_uint8_linear(image.data, image.width, image.height, 0, outputBuffer,
                                        newWidth, newHeight, 0, 4);
                     break;
                 default:
@@ -1556,7 +1557,7 @@ public class rTextures {
         else{
             ByteBuffer outputBuffer = ByteBuffer.allocateDirect(newWidth * newHeight * 4);
 
-            stbir_resize_uint8(image.data, image.width, image.height, 0, outputBuffer,
+            stbir_resize_uint8_linear(image.data, image.width, image.height, 0, outputBuffer,
                                newWidth, newHeight, 0, 4);
 
             rlPixelFormat format = image.format;

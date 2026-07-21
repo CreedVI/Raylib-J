@@ -3,7 +3,7 @@ plugins {
     id 'com.vanniktech.maven.publish' version "0.36.0"
 }
 
-project.ext.lwjglVersion = "3.3.3"
+project.ext.lwjglVersion = "3.4.2"
 
 switch (org.gradle.internal.os.OperatingSystem.current()) {
     case org.gradle.internal.os.OperatingSystem.LINUX:
@@ -54,6 +54,7 @@ dependencies {
     implementation("org.lwjgl:lwjgl-opengles")
     implementation("org.lwjgl:lwjgl-par")
     implementation("org.lwjgl:lwjgl-stb")
+    implementation("org.lwjgl:lwjgl-renderdoc")
 
     runtimeOnly("org.lwjgl:lwjgl::$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-assimp::$lwjglNatives")

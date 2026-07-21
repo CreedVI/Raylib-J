@@ -3656,9 +3656,6 @@ public class rCore {
         // NOTE: We do it here in case of disconnection
         for (int i = 0; i < MAX_GAMEPADS; i++) {
             input.gamepad.ready[i] = glfwJoystickIsGamepad(i);
-            if (input.gamepad.ready[i]) {
-                System.out.println(i + ": " + GetGamepadName(i));
-            }
         }
 
         // Register gamepads buttons events
