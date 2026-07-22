@@ -43,7 +43,7 @@ public class MeshGeneration {
         models[8] = rlj.models.LoadModelFromMesh(MakeMesh());
 
         for (int i = 0; i < NUM_MODELS; i++) {
-            models[i].materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = meshTexture;
+            models[i].materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = meshTexture;
         }
 
         int currentModel = 0;

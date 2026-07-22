@@ -39,7 +39,7 @@ public class Heightmap {
         Mesh mesh = rlj.models.GenMeshHeightmap(image, new Vector3(16, 8, 16));    // Generate heightmap mesh (RAM and VRAM)
         Model model = rlj.models.LoadModelFromMesh(mesh);                          // Load model from generated mesh
 
-        model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;         // Set map diffuse texture
+        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;         // Set map diffuse texture
         Vector3 mapPosition = new Vector3(-8.0f, 0.0f, -8.0f);                   // Define model position
 
         rlj.textures.UnloadImage(image);                     // Unload heightmap image from RAM, already uploaded to VRAM

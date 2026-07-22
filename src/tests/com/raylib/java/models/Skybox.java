@@ -75,7 +75,7 @@ public class Skybox {
                 rlj.text.TextFormat("src/tests/resources/models/shaders/glsl%d/skybox.fs", GLSL_VERSION)
         );
 
-        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "environmentMap"), new float[]{ MATERIAL_MAP_CUBEMAP }, SHADER_UNIFORM_INT);
+        rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "environmentMap"), new float[]{ MATERIAL_MAP_CUBEMAP.GetIndex() }, SHADER_UNIFORM_INT);
         rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "doGamma"), new float[] { useHDR ? 1 : 0 }, SHADER_UNIFORM_INT);
         rlj.core.SetShaderValue(skybox.materials[0].shader, rlj.core.GetShaderLocation(skybox.materials[0].shader, "vflipped"), new float[]{ useHDR ? 1 : 0 }, SHADER_UNIFORM_INT);
 
@@ -101,13 +101,13 @@ public class Skybox {
             // NOTE 1: New texture is generated rendering to texture, shader calculates the sphere->cube coordinates mapping
             // NOTE 2: It seems on some Android devices WebGL, fbo does not properly support a FLOAT-based attachment,
             // despite texture can be successfully created.. so using PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 instead of PIXELFORMAT_UNCOMPRESSED_R32G32B32A32
-            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
             //UnloadTexture(panorama);    // Texture not required anymore, cubemap already generated
         }
         else {
             Image img = rlj.textures.LoadImage("src/tests/resources/models/skybox.png");
-            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = rlj.textures.LoadTextureCubemap(img, CUBEMAP_AUTO_DETECT);    // CUBEMAP_LAYOUT_PANORAMA
+            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture = rlj.textures.LoadTextureCubemap(img, CUBEMAP_AUTO_DETECT);    // CUBEMAP_LAYOUT_PANORAMA
             rlj.textures.UnloadImage(img);
         }
 
@@ -130,17 +130,17 @@ public class Skybox {
                 if (droppedFiles.count == 1) {         // Only support one file dropped
                     if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".png;.jpg;.hdr;.bmp;.tga")) {
                         // Unload current cubemap texture and load new one
-                        rlj.textures.UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture);
+                        rlj.textures.UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture);
                         if (useHDR) {
                             panorama = rlj.textures.LoadTexture(droppedFiles.paths[0]);
 
                             // Generate cubemap from panorama texture
-                            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+                            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture = GenTextureCubemap(shdrCubemap, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
                             rlj.textures.UnloadTexture(panorama);
                         }
                         else {
                             Image img = rlj.textures.LoadImage(droppedFiles.paths[0]);
-                            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = rlj.textures.LoadTextureCubemap(img, CUBEMAP_AUTO_DETECT);
+                            skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture = rlj.textures.LoadTextureCubemap(img, CUBEMAP_AUTO_DETECT);
                             rlj.textures.UnloadImage(img);
                         }
 
@@ -189,7 +189,7 @@ public class Skybox {
         // De-Initialization
         //--------------------------------------------------------------------------------------
         rlj.core.UnloadShader(skybox.materials[0].shader);
-        rlj.textures.UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture);
+        rlj.textures.UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture);
 
         rlj.models.UnloadModel(skybox);        // Unload skybox model
 

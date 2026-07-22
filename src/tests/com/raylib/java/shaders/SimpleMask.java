@@ -77,14 +77,14 @@ public class SimpleMask {
 
         // Load and apply the diffuse texture (colour map)
         Texture2D texDiffuse = rlj.textures.LoadTexture("src/tests/resources/shaders/plasma.png");
-        model1.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texDiffuse;
-        model2.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texDiffuse;
+        model1.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texDiffuse;
+        model2.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texDiffuse;
 
         // Using MATERIAL_MAP_EMISSION as a spare slot to use for 2nd texture
         // NOTE: Don't use MATERIAL_MAP_IRRADIANCE, MATERIAL_MAP_PREFILTER or  MATERIAL_MAP_CUBEMAP as they are bound as cube maps
         Texture2D texMask = rlj.textures.LoadTexture("src/tests/resources/shaders/mask.png");
-        model1.materials[0].maps[MATERIAL_MAP_EMISSION].texture = texMask;
-        model2.materials[0].maps[MATERIAL_MAP_EMISSION].texture = texMask;
+        model1.materials[0].maps[MATERIAL_MAP_EMISSION.GetIndex()].texture = texMask;
+        model2.materials[0].maps[MATERIAL_MAP_EMISSION.GetIndex()].texture = texMask;
         shader.locs[SHADER_LOC_MAP_EMISSION.GetLocation()] = rlj.core.GetShaderLocation(shader, "mask");
 
         // Frame is incremented each frame to animate the shader

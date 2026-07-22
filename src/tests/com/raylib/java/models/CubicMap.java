@@ -48,7 +48,7 @@ public class CubicMap {
 
         // NOTE: By default each cube is mapped to one part of texture atlas
         Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/cubicmap_atlas.png");    // Load map texture
-        model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;             // Set map diffuse texture
+        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;             // Set map diffuse texture
 
         Vector3 mapPosition = new Vector3(-16.0f, 0.0f, -8.0f);          // Set model position
 

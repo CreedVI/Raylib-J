@@ -68,7 +68,7 @@ public class ModelShader {
         Shader shader = rlj.core.LoadShader(null, rlj.text.TextFormat("src/tests/resources/shaders/shaders/glsl%d/grayscale.fs", GLSL_VERSION));
 
         model.materials[0].shader = shader;                     // Set shader effect to 3d model
-        model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture; // Bind texture to model
+        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture; // Bind texture to model
 
         Vector3 position = new Vector3();    // Set model position
 

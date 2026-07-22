@@ -58,7 +58,7 @@ public class ModelAnimation {
 
         Model model = rlj.models.LoadModel("src/tests/resources/models/models/iqm/guy.iqm");                    // Load the animated model mesh and basic data
         Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/models/iqm/guytex.png");         // Load model texture and set material
-        rlj.models.SetMaterialTexture(model.materials[0], MATERIAL_MAP_DIFFUSE, texture);     // Set model material map texture
+        rlj.models.SetMaterialTexture(model.materials[0], MATERIAL_MAP_DIFFUSE.GetIndex(), texture);     // Set model material map texture
 
         Vector3 position = new Vector3();            // Set model position
 

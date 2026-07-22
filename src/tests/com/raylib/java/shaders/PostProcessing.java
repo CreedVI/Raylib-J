@@ -91,7 +91,7 @@ public class PostProcessing {
 
                 Model model = rlj.models.LoadModel("src/tests/resources/shaders/models/church.obj");                 // Load OBJ model
                 Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/shaders/models/church_diffuse.png"); // Load model texture (diffuse map)
-                model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;        // Set model diffuse texture
+                model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;        // Set model diffuse texture
 
                 Vector3 position = new Vector3();            // Set model position
 

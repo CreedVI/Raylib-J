@@ -39,7 +39,7 @@ public class FirstPersonMaze {
 
         // NOTE: By default each cube is mapped to one part of texture atlas
         Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/cubicmap_atlas.png");    // Load map texture
-        model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;             // Set map diffuse texture
+        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;             // Set map diffuse texture
 
         // Get map image data to be used for collision detection
         byte[] mapPixels = rlj.textures.LoadImageColors(imMap);

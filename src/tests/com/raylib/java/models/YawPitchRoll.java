@@ -51,7 +51,7 @@ public class YawPitchRoll {
 
         Model model = rlj.models.LoadModel("src/tests/resources/models/models/obj/plane.obj");                  // Load model
         Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/models/obj/plane_diffuse.png");  // Load model texture
-        model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;            // Set map diffuse texture
+        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;            // Set map diffuse texture
 
         float pitch = 0.0f;
         float roll = 0.0f;

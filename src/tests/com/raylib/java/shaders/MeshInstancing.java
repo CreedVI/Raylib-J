@@ -91,13 +91,13 @@ public class MeshInstancing {
         // to be used on mesh drawing with DrawMeshInstanced()
         Material matInstances = rlj.models.LoadMaterialDefault();
         matInstances.shader = shader;
-        matInstances.maps[MATERIAL_MAP_DIFFUSE].color = RED;
+        matInstances.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = RED;
 
         // Load default material (using raylib intenral default shader) for non-instanced mesh drawing
         // WARNING: Default shader enables vertex color attribute BUT GenMeshCube() does not generate vertex colors, so,
         // when drawing the color attribute is disabled and a default color value is provided as input for the vertex attribute
         Material matDefault = rlj.models.LoadMaterialDefault();
-        matDefault.maps[MATERIAL_MAP_DIFFUSE].color = BLUE;
+        matDefault.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = BLUE;
 
         rlj.core.SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
         //--------------------------------------------------------------------------------------

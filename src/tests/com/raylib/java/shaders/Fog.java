@@ -74,9 +74,9 @@ public class Fog {
         Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/shaders/texel_checker.png");
 
         // Assign texture to default model material
-        modelA.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
-        modelB.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
-        modelC.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+        modelA.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;
+        modelB.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;
+        modelC.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;
 
         // Load shader and set up some uniforms
         Shader shader = rlj.core.LoadShader(rlj.text.TextFormat("src/tests/resources/shaders/shaders/glsl%d/lighting.vs", GLSL_VERSION),
