@@ -60,6 +60,7 @@ public class TraceLogCallback implements TraceLog {
             }
 
             buffer.append(text).append("\n");
+
             if(tracelogType != LOG_DEBUG){
                 System.out.printf(buffer.toString(), args);
             }

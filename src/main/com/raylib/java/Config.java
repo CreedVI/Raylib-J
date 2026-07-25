@@ -35,7 +35,7 @@ public class Config{
     /**
      * Gestures module is included (core.input.gestures.java) to support gestures detection: tap, hold, swipe, drag
      */
-    static boolean SUPPORT_GESTURES_SYSTEM = false;
+    public static boolean SUPPORT_GESTURES_SYSTEM = false;
     /**
      * Mouse gestures are directly mapped like touches and processed by gestures system
      */

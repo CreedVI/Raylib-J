@@ -20,6 +20,7 @@ public class Callbacks{
     public final MouseCursorPosCallback mouseCursorPosCallback;
     public final MouseScrollCallback mouseScrollCallback;
     public final CursorEnterCallback cursorEnterCallback;
+    public final JoystickCallback joystickCallback;
 
 
     public Callbacks(Raylib context) {
@@ -37,6 +38,7 @@ public class Callbacks{
         mouseCursorPosCallback = new MouseCursorPosCallback(context);
         mouseScrollCallback = new MouseScrollCallback(context);
         cursorEnterCallback = new CursorEnterCallback(context);
+        joystickCallback = new JoystickCallback(context);
     }
 
 }

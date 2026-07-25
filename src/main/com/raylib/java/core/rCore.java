@@ -2,9 +2,12 @@ package com.raylib.java.core;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.core.callback.Callbacks;
+import com.raylib.java.core.callback.TraceLogCallback;
 import com.raylib.java.core.input.Gamepad;
 import com.raylib.java.core.input.Input;
 import com.raylib.java.core.input.Mouse;
+import com.raylib.java.core.platforms.Desktop;
+import com.raylib.java.core.platforms.Platform;
 import com.raylib.java.core.tracelog.TraceLog;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
@@ -54,11 +57,93 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class rCore {
 
+    /**********************************************************************************************
+     *
+     *   rcore - Window/display management, Graphic device/context management and input management
+     *
+     *   PLATFORMS SUPPORTED:
+     *       > PLATFORM_DESKTOP (GLFW backend):
+     *           - Windows (Win32, Win64)
+     *           - Linux (X11/Wayland desktop mode)
+     *           - macOS/OSX (x64, arm64)
+     *           - FreeBSD, OpenBSD, NetBSD, DragonFly (X11 desktop)
+     *       > PLATFORM_DESKTOP_SDL (SDL backend):
+     *           - Windows (Win32, Win64)
+     *           - Linux (X11/Wayland desktop mode)
+     *           - Others (not tested)
+     *       > PLATFORM_WEB:
+     *           - HTML5 (WebAssembly)
+     *       > PLATFORM_DRM:
+     *           - Raspberry Pi 0-5 (DRM/KMS)
+     *           - Linux DRM subsystem (KMS mode)
+     *       > PLATFORM_ANDROID:
+     *           - Android (ARM, ARM64)
+     *
+     *   CONFIGURATION:
+     *       #define SUPPORT_DEFAULT_FONT (default)
+     *           Default font is loaded on window initialization to be available for the user to render simple text.
+     *           NOTE: If enabled, uses external module functions to load default raylib font (module: text)
+     *
+     *       #define SUPPORT_CAMERA_SYSTEM
+     *           Camera module is included (rcamera.h) and multiple predefined cameras are available:
+     *               free, 1st/3rd person, orbital, custom
+     *
+     *       #define SUPPORT_GESTURES_SYSTEM
+     *           Gestures module is included (rgestures.h) to support gestures detection: tap, hold, swipe, drag
+     *
+     *       #define SUPPORT_MOUSE_GESTURES
+     *           Mouse gestures are directly mapped like touches and processed by gestures system.
+     *
+     *       #define SUPPORT_BUSY_WAIT_LOOP
+     *           Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
+     *
+     *       #define SUPPORT_PARTIALBUSY_WAIT_LOOP
+     *           Use a partial-busy wait loop, in this case frame sleeps for most of the time and runs a busy-wait-loop at the end
+     *
+     *       #define SUPPORT_SCREEN_CAPTURE
+     *           Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
+     *
+     *       #define SUPPORT_GIF_RECORDING
+     *           Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
+     *
+     *       #define SUPPORT_COMPRESSION_API
+     *           Support CompressData() and DecompressData() functions, those functions use zlib implementation
+     *           provided by stb_image and stb_image_write libraries, so, those libraries must be enabled on textures module
+     *           for linkage
+     *
+     *       #define SUPPORT_AUTOMATION_EVENTS
+     *           Support automatic events recording and playing, useful for automated testing systems or AI based game playing
+     *
+     *   DEPENDENCIES:
+     *       raymath  - 3D math functionality (Vector2, Vector3, Matrix, Quaternion)
+     *       camera   - Multiple 3D camera modes (free, orbital, 1st person, 3rd person)
+     *       gestures - Gestures system for touch-ready devices (or simulated from mouse inputs)
+     *
+     *
+     *   LICENSE: zlib/libpng
+     *
+     *   Copyright (c) 2013-2023 Ramon Santamaria (@raysan5) and contributors
+     *
+     *   This software is provided "as-is", without any express or implied warranty. In no event
+     *   will the authors be held liable for any damages arising from the use of this software.
+     *
+     *   Permission is granted to anyone to use this software for any purpose, including commercial
+     *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+     *
+     *     1. The origin of this software must not be misrepresented; you must not claim that you
+     *     wrote the original software. If you use this software in a product, an acknowledgment
+     *     in the product documentation would be appreciated but is not required.
+     *
+     *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+     *     as being the original software.
+     *
+     *     3. This notice may not be removed or altered from any source distribution.
+     *
+     **********************************************************************************************/
+
     public final Window window;
     public final Input input;
     public final Time time;
-
-    public Callbacks callbacks;
 
     ArrayList<AutomationEvent> events;
     int eventCount = 0;                 // Events count
@@ -81,12 +166,12 @@ public class rCore {
     private final Random random;
 
     private final Raylib context;
+    private Platform platform;
 
     public rCore(Raylib context){
         this.context = context;
 
-        callbacks = new Callbacks(context);
-        SetTraceLogCallback(callbacks.traceLogCallback);
+        SetTraceLogCallback(new TraceLogCallback());
         window = new Window();
         input = new Input();
         time = new Time();
@@ -94,18 +179,25 @@ public class rCore {
         this.random = new Random();
 
         events = new ArrayList<>();
+
+        this.platform = new Desktop(context, window, input);
     }
 
-    //ANDROID
-    //extern main
-    //android_main
-    //GetAndroidApp
-    //END ANDROID
-
-    //RPI | DRM
-    //InitTerminal
-    //RestoreTerminal
-    //END RPI | DRM
+    /**
+     * Set a specific platform backend. Can be used to set custom backends implementing the {@code Platform} interface.
+     * @param platform Platform backend to use
+     * @return {@code true} if platform backend is successfully set.
+     */
+    public boolean SetPlatform(Platform platform) {
+        if (!window.isReady()) {
+            this.platform = platform;
+            return true;
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "Attempted to set platform backend after initialising window.");
+            return false;
+        }
+    }
 
     /**
      * Initialize window and OpenGL context. <br/>
@@ -116,7 +208,32 @@ public class rCore {
      * @param title  Window title - passing null will use a default title
      */
     public void InitWindow(int width, int height, String title){
-        context.tracelog.TRACELOG(LOG_INFO, "Initializing raylib " + RAYLIB_VERSION);
+        context.tracelog.TRACELOG(LOG_INFO, "Initializing raylib %s", RAYLIB_VERSION);
+
+        if(PLATFORM_DESKTOP) {
+            context.tracelog.TRACELOG(LOG_INFO, "Platform backend: DESKTOP (GLFW)");
+        }
+        /*
+        TODO: ..?
+        else if(PLATFORM_DESKTOP_SDL) {
+            context.tracelog.TRACELOG(LOG_INFO, "Platform backend: DESKTOP (SDL)");
+        }
+        else if(PLATFORM_WEB) {
+            context.tracelog.TRACELOG(LOG_INFO, "Platform backend: WEB (HTML5)");
+        }
+        else if(PLATFORM_DRM) {
+            context.tracelog.TRACELOG(LOG_INFO, "Platform backend: NATIVE DRM");
+        }
+        else if(PLATFORM_ANDROID) {
+            context.tracelog.TRACELOG(LOG_INFO, "Platform backend: ANDROID");
+        }
+         */
+        else {
+            // TODO: Include your custom platform backend!
+            // i.e software rendering backend or console backend!
+            context.tracelog.TRACELOG(LOG_INFO, "Platform backend: CUSTOM");
+        }
+
         context.tracelog.TRACELOG(LOG_INFO, "Supported raylib modules: ");
         context.tracelog.TRACELOG(LOG_INFO, "    > rcore:..... loaded (mandatory)");
         context.tracelog.TRACELOG(LOG_INFO, "    > rlgl:...... loaded (mandatory)");
@@ -156,53 +273,68 @@ public class rCore {
             context.tracelog.TRACELOG(LOG_INFO, "    > raudio:.... not loaded (optional)");
         }
 
-
-        if(title == null || title.isEmpty()){
-            title = "Raylib-J Application";
+        // Initialize window data
+        window.screen.width = width;
+        window.screen.height = height;
+        window.eventWaiting = false;
+        window.screenScale = MatrixIdentity();     // No draw scaling required by default
+        if ((title != null) && (!title.isEmpty())) {
+            window.title = title;
         }
-
-        window.setTitle(title);
+        else {
+            window.title = "Raylib-J Application";
+        }
 
         // Initialize global input state
         input.keyboard.setExitKey(KEY_ESCAPE);
         input.mouse.setScale(new Vector2(1.0f, 1.0f));
-        input.mouse.setCursor(MOUSE_CURSOR_ARROW.ordinal());
+        input.mouse.setCursor(MOUSE_CURSOR_ARROW);
         input.gamepad.setLastButtonPressed(0);
 
         if (SUPPORT_EVENTS_WAITING) {
             window.eventWaiting = true;
         }
 
-        // Init graphics device (display device and OpenGL context)
-        // NOTE: returns true if the window and graphic device has been initialized successfully
-        window.ready = InitGraphicsDevice(width, height);
+        // Initialize platform
+        //--------------------------------------------------------------
+        platform.InitPlatform();
+        //--------------------------------------------------------------
 
-        if (!window.ready){
-            System.exit(-1);
-            return;
-        }
+        // Initialize rlgl default data (buffers and shaders)
+        // NOTE: window.currentFbo.width and window.currentFbo.height not used, just stored as globals in rlgl
+        context.rlgl.rlglInit(window.currentFbo.width, window.currentFbo.height);
 
-        // Init hi-res timer
-        InitTimer();
+        // Setup default viewport
+        SetupViewport(window.currentFbo.width, window.currentFbo.height);
 
-        if (SUPPORT_MODULE_RTEXT && SUPPORT_DEFAULT_FONT){
+        if((SUPPORT_MODULE_RTEXT) && (SUPPORT_DEFAULT_FONT)) {
             // Load default font
             // WARNING: External function: Module required: rtext
             context.text.LoadFontDefault();
-            Rectangle rec = context.text.GetFontDefault().getRecs()[95];
-            // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
-            context.shapes.SetShapesTexture(context.text.GetFontDefault().getTexture(), new Rectangle(rec.x + 1, rec.y + 1,
-                                                                                        rec.width - 2, rec.height - 2));
+            if (SUPPORT_MODULE_RSHAPES) {
+                // Set font white rectangle for shapes drawing, so shapes and text can be batched together
+                // WARNING: rshapes module is required, if not available, default internal white rectangle is used
+                Rectangle rec = context.text.GetFontDefault().recs[0];
+                if ((window.flags & FLAG_MSAA_4X_HINT) != 0) {
+                    // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
+                    context.shapes.SetShapesTexture(context.text.GetFontDefault().texture, new Rectangle(rec.x + 2, rec.y + 2, 1, 1));
+                }
+                else {
+                    // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding
+                    context.shapes.SetShapesTexture(context.text.GetFontDefault().texture, new Rectangle(rec.x + 1, rec.y + 1, rec.width - 2, rec.height - 2));
+                }
+            }
         }
-        else if (SUPPORT_MODULE_RSHAPES){
-            // Set default texture and rectangle to be used for shapes drawing
-            // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
-            Texture2D texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-            context.shapes.SetShapesTexture(texture, new Rectangle(0.0f, 0.0f, 1.0f, 1.0f));    // WARNING: Module required: rshapes
+        else {
+            if (SUPPORT_MODULE_RSHAPES) {
+                // Set default texture and rectangle to be used for shapes drawing
+                // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
+                Texture2D texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+                context.shapes.SetShapesTexture(texture, new Rectangle(0.0f, 0.0f, 1.0f, 1.0f));    // WARNING: Module required: rshapes
+            }
         }
-
-        if (SUPPORT_MODULE_RTEXT && SUPPORT_MODULE_RTEXTURES) {
-            if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
+        if((SUPPORT_MODULE_RTEXT) && (SUPPORT_DEFAULT_FONT)) {
+            if ((window.flags & FLAG_WINDOW_HIGHDPI) > 0) {
                 // Set default font texture filter for HighDPI (blurry)
                 // RL_TEXTURE_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
                 context.rlgl.rlTextureParameters(context.text.GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
@@ -210,54 +342,45 @@ public class rCore {
             }
         }
 
-        glfwShowWindow(window.handle);
+        time.frameCounter = 0;
+        window.shouldClose = false;
+
+        // Initialize random seed
+        SetRandomSeed((long) time.frame);
     }
 
     /**
      * Close window and unload OpenGL context
      */
-    public void CloseWindow(){
+    public void CloseWindow() {
         if (SUPPORT_MODULE_RTEXT && SUPPORT_DEFAULT_FONT){
             context.text.UnloadFontDefault();        // WARNING: Module required: rtext
         }
+        context.rlgl.rlglClose();                // De-init rlgl
 
-        glfwSetWindowShouldClose(window.handle, true);
-        glfwFreeCallbacks(window.handle);
-        glfwDestroyWindow(window.handle);
-        glfwTerminate();
+        // De-initialize platform
+        //--------------------------------------------------------------
+        platform.ClosePlatform();
+        //--------------------------------------------------------------
 
+        window.ready = false;
         context.tracelog.TRACELOG(LOG_INFO, "Window closed successfully");
     }
 
     /**
      * Check if KEY_ESCAPE pressed or close icon pressed
      *
-     * @return <code>true</code> if the window is ready to close.
+     * @return {@code true} if the window is ready to close.
      * NOTE: Must be inverted for use in a while loop
      */
     public boolean WindowShouldClose(){
-        if (window.isReady()){
-            // While window minimized, stop loop execution
-            while (IsWindowState(FLAG_WINDOW_MINIMIZED) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN)){
-                glfwWaitEvents();
-            }
-
-            window.setShouldClose(glfwWindowShouldClose(window.handle));
-
-            // Reset close status for next frame
-            //glfwSetWindowShouldClose(window.handle, GLFW_FALSE);
-            glfwSetWindowShouldClose(window.handle, false);
-            return window.isShouldClose();
-        }
-        else{
-            return true;
-        }
+        return platform.WindowShouldClose();
     }
 
     /**
      * Check if the window has been initialized successfully
      *
-     * @return <code>true</code> if the window was initialized successfully
+     * @return {@code true} if the window was initialized successfully
      */
     public boolean IsWindowReady(){
         return window.ready;
@@ -266,7 +389,7 @@ public class rCore {
     /**
      * Check if the window is currently fullscreen
      *
-     * @return <code>true</code> if the window is fullscreen
+     * @return {@code true} if the window is fullscreen
      */
     public boolean IsWindowFullscreen(){
         return window.fullscreen;
@@ -275,7 +398,7 @@ public class rCore {
     /**
      * Check if the window is currently hidden
      *
-     * @return <code>true</code> if the window is hidden
+     * @return {@code true} if the window is hidden
      */
     public boolean IsWindowHidden(){
         return ((window.flags & FLAG_WINDOW_HIDDEN) > 0);
@@ -290,7 +413,7 @@ public class rCore {
 
     /**
      * Check if the window has been maximized (only PLATFORM_DESKTOP)
-     * @return <code>true</code> if the window is maximized.
+     * @return {@code true} if the window is maximized.
      */
     public boolean IsWindowMaximized(){
         return ((window.flags & FLAG_WINDOW_MAXIMIZED) > 0);
@@ -298,7 +421,7 @@ public class rCore {
 
     /**
      * Check if the window has the focus
-     * @return <code>true</code> if the window is focused.
+     * @return {@code true} if the window is focused.
      */
     public boolean IsWindowFocused(){
         return ((window.flags & FLAG_WINDOW_UNFOCUSED) == 0);
@@ -306,7 +429,7 @@ public class rCore {
 
     /**
      * Check if the window has been resized since the last frame.
-     * @return <code>true</code> if the window was resized since the last frame.
+     * @return {@code true} if the window was resized since the last frame.
      */
     public boolean IsWindowResized(){
         return window.resizedLastFrame;
@@ -316,7 +439,7 @@ public class rCore {
      * Check if one specific window flag is enabled
      *
      * @param flag Window flag to be checked
-     * @return <code>true</code> if flag is enabled
+     * @return {@code true} if flag is enabled
      */
     public boolean IsWindowState(int flag){
         return ((window.flags & flag) > 0);
@@ -326,350 +449,51 @@ public class rCore {
      * Toggle fullscreen mode (only PLATFORM_DESKTOP)
      */
     public void ToggleFullscreen(){
-        if (!window.fullscreen){
-            // Store previous window position (in case we exit fullscreen)
-            Vector2 windowPositionVector = GetWindowPosition();
-            window.position.setX(windowPositionVector.x);
-            window.position.setY(windowPositionVector.y);
-
-
-            int monitorCount;
-            PointerBuffer monitors = glfwGetMonitors();
-            monitorCount = monitors.sizeof();
-            int monitorIndex = GetCurrentMonitor();
-            long monitor = (monitorIndex < monitorCount) ? monitors.get(monitorIndex) : -1;
-
-            if (monitor < 0){
-                context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to get monitor");
-                window.setFullscreen(false);
-                window.flags &= ~FLAG_FULLSCREEN_MODE;
-
-                glfwSetWindowMonitor(window.handle, GetCurrentMonitor(), 0, 0, window.screen.width,
-                                     window.screen.height, GLFW_DONT_CARE); // NOTE: Resizing not allowed by default!
-                return;
-            }
-            else {
-                window.setFullscreen(true);
-                window.flags |= FLAG_FULLSCREEN_MODE;
-
-                glfwSetWindowMonitor(window.handle, monitor, 0, 0, window.screen.width, window.screen.height, GLFW_DONT_CARE);
-            }
-        }
-        else{
-            window.setFullscreen(false);
-            window.flags &= ~FLAG_FULLSCREEN_MODE;
-
-            glfwSetWindowMonitor(window.handle, 0, (int) window.position.x, (int) window.position.y,
-                                 window.screen.width, window.screen.height, GLFW_DONT_CARE);
-        }
-
-        // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
-        // NOTE: V-Sync can be enabled by graphic driver configuration
-        if ((window.flags & FLAG_VSYNC_HINT) == 1){
-            glfwSwapInterval(1);
-        }
+        platform.ToggleFullscreen();
     }
 
     /**
      * Toggle borderless windowed mode (only PLATFORM_DESKTOP)
      */
     public void ToggleBorderlessWindowed() {
-
-        boolean wasOnFullscreen = false;
-        if (window.fullscreen) {
-            window.previousPosition.setX(window.position.x);
-            window.previousPosition.setY(window.position.y);
-            ToggleFullscreen();
-            wasOnFullscreen = true;
-        }
-
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-        int monitorIndex = GetCurrentMonitor();
-        long monitor = (monitorIndex < monitorCount) ? monitors.get(monitorIndex) : -1;
-
-        if ((monitorIndex >= 0) && (monitorIndex < monitorCount)){
-            GLFWVidMode mode = glfwGetVideoMode(monitor);
-            if (mode != null) {
-                if (!IsWindowState(FLAG_BORDERLESS_WINDOWED_MODE)) {
-                    // Store screen position and size
-                    // NOTE: If it was on fullscreen, screen position was already stored, so skip
-                    // setting it here
-                    if (!wasOnFullscreen) {
-                        Vector2 windowPositionVector = GetWindowPosition();
-                        window.previousPosition.setX(windowPositionVector.x);
-                        window.previousPosition.setY(windowPositionVector.y);
-                    }
-
-                    window.previousScreen.setWidth(window.screen.width);
-                    window.previousScreen.setHeight(window.screen.height);
-
-                    // Set undecorated and topmost modes and flags
-                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
-                    window.flags |= FLAG_WINDOW_UNDECORATED;
-                    glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_TRUE);
-                    window.flags |= FLAG_WINDOW_TOPMOST;
-
-                    // Get monitor position and size
-                    int monitorPosX = 0;
-                    int monitorPosY = 0;
-                    glfwGetMonitorPos(monitor, new int[]{monitorPosX}, new int[]{monitorPosY});
-                    int monitorWidth = mode.width();
-                    int monitorHeight = mode.height();
-
-                    // Set screen position and size
-                    glfwSetWindowPos(window.handle, monitorPosX, monitorPosY);
-                    glfwSetWindowSize(window.handle, monitorWidth, monitorHeight);
-
-                    // Refocus window
-                    glfwFocusWindow(window.handle);
-
-                    window.flags |= FLAG_BORDERLESS_WINDOWED_MODE;
-                } else {
-                    // Remove topmost and undecorated modes and flags
-                    glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_FALSE);
-                    window.flags &= ~FLAG_WINDOW_TOPMOST;
-                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
-                    window.flags &= ~FLAG_WINDOW_UNDECORATED;
-
-                    // Return previous screen size and position
-                    // NOTE: The order matters here, it must set size first, then position, otherwise the screen will be position incorrectly
-                    glfwSetWindowSize(window.handle, window.previousScreen.width, window.previousScreen.height);
-                    glfwSetWindowPos(window.handle, (int) window.previousPosition.x, (int) window.previousPosition.y);
-
-                    // Refocus window
-                    glfwFocusWindow(window.handle);
-
-                    window.flags &= ~FLAG_BORDERLESS_WINDOWED_MODE;
-                }
-            } else {
-                context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
-            }
-        } else {
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
+        platform.ToggleBorderlessWindowed();
     }
 
     /**
      * Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
      */
     public void MaximizeWindow(){
-        if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
-            glfwMaximizeWindow(window.handle);
-            window.flags |= FLAG_WINDOW_MAXIMIZED;
-        }
+        platform.MaximizeWindow();
     }
 
     /**
      * Set window state: minimized (only PLATFORM_DESKTOP)
      */
     public void MinimizeWindow(){
-        // NOTE: Following function launches callback that sets appropriate flag!
-        glfwIconifyWindow(window.handle);
+        platform.MinimizeWindow();
     }
 
     /**
      * Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
      */
     public void RestoreWindow(){
-        if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE){
-            // Restores the specified window if it was previously iconified (minimized) or maximized
-            glfwRestoreWindow(window.handle);
-            window.flags &= ~FLAG_WINDOW_MINIMIZED;
-            window.flags &= ~FLAG_WINDOW_MAXIMIZED;
-        }
+        platform.RestoreWindow();
     }
 
     /**
      * Set the window's configuration state using flags.
-     * @param flags <code>int</code> whose binary value represents the flags to set.
+     * @param flags {@code int} whose binary value represents the flags to set.
      */
     public void SetWindowState(int flags){
-        // Check previous state and requested state to apply required changes
-        // NOTE: In most cases the functions already change the flags internally
-
-        // State change: FLAG_VSYNC_HINT
-        if (((window.flags & FLAG_VSYNC_HINT) != (flags & FLAG_VSYNC_HINT)) && ((flags & FLAG_VSYNC_HINT) > 0)){
-            glfwSwapInterval(1);
-            window.flags |= FLAG_VSYNC_HINT;
-        }
-
-        // State change: FLAG_FULLSCREEN_MODE
-        if ((window.flags & FLAG_FULLSCREEN_MODE) != (flags & FLAG_FULLSCREEN_MODE)){
-            ToggleFullscreen();     // NOTE: window state flag updated inside function
-        }
-
-        // State change: FLAG_WINDOW_RESIZABLE
-        if (((window.flags & FLAG_WINDOW_RESIZABLE) != (flags & FLAG_WINDOW_RESIZABLE)) && ((flags & FLAG_WINDOW_RESIZABLE) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_RESIZABLE, GLFW_TRUE);
-            window.flags |= FLAG_WINDOW_RESIZABLE;
-        }
-
-        // State change: FLAG_WINDOW_UNDECORATED
-        if (((window.flags & FLAG_WINDOW_UNDECORATED) != (flags & FLAG_WINDOW_UNDECORATED)) && (flags & FLAG_WINDOW_UNDECORATED) > 0){
-            glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
-            window.flags |= FLAG_WINDOW_UNDECORATED;
-        }
-
-        // State change: FLAG_WINDOW_HIDDEN
-        if (((window.flags & FLAG_WINDOW_HIDDEN) != (flags & FLAG_WINDOW_HIDDEN)) && ((flags & FLAG_WINDOW_HIDDEN) > 0)){
-            glfwHideWindow(window.handle);
-            window.flags |= FLAG_WINDOW_HIDDEN;
-        }
-
-        // State change: FLAG_WINDOW_MINIMIZED
-        if (((window.flags & FLAG_WINDOW_MINIMIZED) != (flags & FLAG_WINDOW_MINIMIZED)) && ((flags & FLAG_WINDOW_MINIMIZED) > 0)){
-            //GLFW_ICONIFIED
-            MinimizeWindow();       // NOTE: window state flag updated inside function
-        }
-
-        // State change: FLAG_WINDOW_MAXIMIZED
-        if (((window.flags & FLAG_WINDOW_MAXIMIZED) != (flags & FLAG_WINDOW_MAXIMIZED)) && ((flags & FLAG_WINDOW_MAXIMIZED) > 0)){
-            //GLFW_MAXIMIZED
-            MaximizeWindow();       // NOTE: window state flag updated inside function
-        }
-
-        // State change: FLAG_WINDOW_UNFOCUSED
-        if (((window.flags & FLAG_WINDOW_UNFOCUSED) != (flags & FLAG_WINDOW_UNFOCUSED)) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
-            window.flags |= FLAG_WINDOW_UNFOCUSED;
-        }
-
-        // State change: FLAG_WINDOW_TOPMOST
-        if (((window.flags & FLAG_WINDOW_TOPMOST) != (flags & FLAG_WINDOW_TOPMOST)) && ((flags & FLAG_WINDOW_TOPMOST) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_TRUE);
-            window.flags |= FLAG_WINDOW_TOPMOST;
-        }
-
-        // State change: FLAG_WINDOW_ALWAYS_RUN
-        if (((window.flags & FLAG_WINDOW_ALWAYS_RUN) != (flags & FLAG_WINDOW_ALWAYS_RUN)) && ((flags & FLAG_WINDOW_ALWAYS_RUN) > 0)){
-            window.flags |= FLAG_WINDOW_ALWAYS_RUN;
-        }
-
-        // The following states can not be changed after window creation
-
-        // State change: FLAG_WINDOW_TRANSPARENT
-        if (((window.flags & FLAG_WINDOW_TRANSPARENT) != (flags & FLAG_WINDOW_TRANSPARENT)) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window " +
-                    "initialization");
-        }
-
-        // State change: FLAG_WINDOW_HIGHDPI
-        if (((window.flags & FLAG_WINDOW_HIGHDPI) != (flags & FLAG_WINDOW_HIGHDPI)) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
-        }
-
-        // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
-        if (((window.flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) != (flags & FLAG_WINDOW_MOUSE_PASSTHROUGH)) && ((flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
-            window.flags |= FLAG_WINDOW_MOUSE_PASSTHROUGH;
-        }
-
-
-
-        // State change: FLAG_MSAA_4X_HINT
-        if (((window.flags & FLAG_MSAA_4X_HINT) != (flags & FLAG_MSAA_4X_HINT)) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
-        }
-
-        // State change: FLAG_INTERLACED_HINT
-        if (((window.flags & FLAG_INTERLACED_HINT) != (flags & FLAG_INTERLACED_HINT)) && ((flags & FLAG_INTERLACED_HINT) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
-        }
+        platform.SetWindowState(flags);
     }
 
     /**
      * Clear window configuration state flags
-     * @param flags <code>int</code> whose binary value represents the flags to clear.
+     * @param flags {@code int} whose binary value represents the flags to clear.
      */
     public void ClearWindowState(int flags){
-        // Check previous state and requested state to apply required changes
-        // NOTE: In most cases the functions already change the flags internally
-
-        // State change: FLAG_VSYNC_HINT
-        if (((window.flags & FLAG_VSYNC_HINT) > 0) && ((flags & FLAG_VSYNC_HINT) > 0)){
-            glfwSwapInterval(0);
-            window.flags &= ~FLAG_VSYNC_HINT;
-        }
-
-        // State change: FLAG_FULLSCREEN_MODE
-        if (((window.flags & FLAG_FULLSCREEN_MODE) > 0) && ((flags & FLAG_FULLSCREEN_MODE) > 0)){
-            ToggleFullscreen();     // NOTE: window state flag updated inside function
-        }
-
-        // State change: FLAG_WINDOW_RESIZABLE
-        if (((window.flags & FLAG_WINDOW_RESIZABLE) > 0) && ((flags & FLAG_WINDOW_RESIZABLE) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_RESIZABLE, GLFW_FALSE);
-            window.flags &= ~FLAG_WINDOW_RESIZABLE;
-        }
-
-        // State change: FLAG_WINDOW_UNDECORATED
-        if (((window.flags & FLAG_WINDOW_UNDECORATED) > 0) && ((flags & FLAG_WINDOW_UNDECORATED) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
-            window.flags &= ~FLAG_WINDOW_UNDECORATED;
-        }
-
-        // State change: FLAG_WINDOW_HIDDEN
-        if (((window.flags & FLAG_WINDOW_HIDDEN) > 0) && ((flags & FLAG_WINDOW_HIDDEN) > 0)){
-            glfwShowWindow(window.handle);
-            window.flags &= ~FLAG_WINDOW_HIDDEN;
-        }
-
-        // State change: FLAG_WINDOW_MINIMIZED
-        if (((window.flags & FLAG_WINDOW_MINIMIZED) > 0) && ((flags & FLAG_WINDOW_MINIMIZED) > 0)){
-            RestoreWindow();       // NOTE: window state flag updated inside function
-        }
-
-        // State change: FLAG_WINDOW_MAXIMIZED
-        if (((window.flags & FLAG_WINDOW_MAXIMIZED) > 0) && ((flags & FLAG_WINDOW_MAXIMIZED) > 0)){
-            RestoreWindow();       // NOTE: window state flag updated inside function
-        }
-
-        // State change: FLAG_WINDOW_UNFOCUSED
-        if (((window.flags & FLAG_WINDOW_UNFOCUSED) > 0) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
-            window.flags &= ~FLAG_WINDOW_UNFOCUSED;
-        }
-
-        // State change: FLAG_WINDOW_TOPMOST
-        if (((window.flags & FLAG_WINDOW_TOPMOST) > 0) && ((flags & FLAG_WINDOW_TOPMOST) > 0)){
-            glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_FALSE);
-            window.flags &= ~FLAG_WINDOW_TOPMOST;
-        }
-
-        // State change: FLAG_WINDOW_ALWAYS_RUN
-        if (((window.flags & FLAG_WINDOW_ALWAYS_RUN) > 0) && ((flags & FLAG_WINDOW_ALWAYS_RUN) > 0)){
-            window.flags &= ~FLAG_WINDOW_ALWAYS_RUN;
-        }
-
-        // The following states can not be changed after window creation
-
-        // State change: FLAG_WINDOW_TRANSPARENT
-        if (((window.flags & FLAG_WINDOW_TRANSPARENT) > 0) && ((flags & FLAG_WINDOW_TRANSPARENT) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "WINDOW: Framebuffer transparency can only by configured before window initialization");
-        }
-
-        // State change: FLAG_WINDOW_HIGHDPI
-        if (((window.flags & FLAG_WINDOW_HIGHDPI) > 0) && ((flags & FLAG_WINDOW_HIGHDPI) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "WINDOW: High DPI can only by configured before window initialization");
-        }
-
-        // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
-        if (((window.flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0) && ((flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_MOUSE_PASSTHROUGH, GLFW_FALSE);
-            window.flags &= ~FLAG_WINDOW_MOUSE_PASSTHROUGH;
-        }
-
-        // State change: FLAG_MSAA_4X_HINT
-        if (((window.flags & FLAG_MSAA_4X_HINT) > 0) && ((flags & FLAG_MSAA_4X_HINT) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "WINDOW: MSAA can only by configured before window initialization");
-        }
-
-        // State change: FLAG_INTERLACED_HINT
-        if (((window.flags & FLAG_INTERLACED_HINT) > 0) && ((flags & FLAG_INTERLACED_HINT) > 0)){
-            context.tracelog.TRACELOG(LOG_WARNING, "RPI: Interlaced mode can only by configured before window initialization");
-        }
+        platform.ClearWindowState(flags);
     }
 
     /**
@@ -677,26 +501,7 @@ public class rCore {
      * @param image RGBA, 8 bits per channel formatted image
      */
     public void SetWindowIcon(Image image){
-        if (image.getFormat() == PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
-            byte[] imgData = image.getData();
-            GLFWImage.Buffer iconBuffer = GLFWImage.malloc(1);
-            GLFWImage icon = GLFWImage.malloc();
-            ByteBuffer bb = ByteBuffer.allocateDirect(imgData.length);
-            bb.put(imgData).flip();
-            icon.set(image.width, image.height, bb);
-
-            iconBuffer.put(icon);
-            icon.free();
-            iconBuffer.position(0);
-
-            // NOTE 1: We only support one image icon
-            // NOTE 2: The specified image data is copied before this function returns
-            glfwSetWindowIcon(window.handle, iconBuffer);
-            iconBuffer.free();
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: window icon image must be in R8G8B8A8 pixel format");
-        }
+        platform.SetWindowIcon(image);
     }
 
     /**
@@ -704,35 +509,10 @@ public class rCore {
      * The images are used depending on provided sizes<br/>
      * Standard Windows icon sizes: 256, 128, 96, 64, 48, 32, 24, 16
      *
-     * @param images <code>List</code> of RGBA, 8 bits per channel formatted images to set as window icons.
+     * @param images {@code List} of RGBA, 8 bits per channel formatted images to set as window icons.
      */
     public void SetWindowIcons(List<Image> images){
-        int count = images.size();
-
-        if (images.isEmpty()){
-            glfwSetWindowIcon(window.handle, null);
-        } else{
-            GLFWImage.Buffer icons = GLFWImage.malloc(count);
-
-            for (int i = 0; i < count; i++){
-                Image image = images.get(i);
-
-                if (image.getFormat() == PIXELFORMAT_UNCOMPRESSED_R8G8B8A8){
-                    icons.get(i).set(
-                            image.width,
-                            image.height,
-                            ByteBuffer.wrap(image.getData())
-                    );
-                }
-                else{
-                    context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Window icon image must be in R8G8B8A8 pixel format");
-                }
-            }
-            // NOTE: Images data is copied internally before this function returns
-            glfwSetWindowIcon(window.handle, icons);
-
-            icons.free();
-        }
+        platform.SetWindowIcons(images);
     }
 
     /**
@@ -741,8 +521,7 @@ public class rCore {
      * @param title String to be displayed on window title bar
      */
     public void SetWindowTitle(String title){
-        window.title = title;
-        glfwSetWindowTitle(window.handle, title);
+        platform.SetWindowTitle(title);
     }
 
     /**
@@ -751,7 +530,7 @@ public class rCore {
      * @param y position on the y-axis of the screen for the top-left corner of the window
      */
     public void SetWindowPosition(int x, int y){
-        glfwSetWindowPos(window.handle, x, y);
+        platform.SetWindowPosition(x, y);
     }
 
     /**
@@ -759,38 +538,15 @@ public class rCore {
      * @param position x,y coordinate pair for the top-left corner of the window
      */
     public void SetWindowPosition(Vector2 position) {
-        SetWindowPosition((int) position.x, (int) position.y);
+        platform.SetWindowPosition((int) position.x, (int) position.y);
     }
 
     /**
      * Set monitor for the current window (fullscreen mode)
      * @param monitor GLFW monitor handle to display on.
      */
-    public void SetWindowMonitor(long monitor){
-        int monitorCount = 0;
-        PointerBuffer monitors = glfwGetMonitors();
-
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            context.tracelog.TRACELOG(LOG_INFO, "GLFW: Selected fullscreen monitor: [" + monitor + "] " + glfwGetMonitorName(monitor));
-
-            GLFWVidMode mode = glfwGetVideoMode(monitor);
-            glfwSetWindowMonitor(window.handle, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
-    }
-
-    /**
-     * Set the window size limits based on the current screenMin and screenMax
-     */
-    private void UpdateWindowSizeLimits(){
-        int minWidth = window.screenMin.width == 0 ? GLFW_DONT_CARE : window.screenMin.width;
-        int minHeight = window.screenMin.height == 0 ? GLFW_DONT_CARE : window.screenMin.height;
-        int maxWidth = window.screenMax.width == 0 ? GLFW_DONT_CARE : window.screenMax.width;
-        int maxHeight = window.screenMax.height == 0 ? GLFW_DONT_CARE : window.screenMax.height;
-
-        glfwSetWindowSizeLimits(window.handle, minWidth, minHeight, maxWidth, maxHeight);
+    public void SetWindowMonitor(int monitor){
+        platform.SetWindowMonitor(monitor);
     }
 
     /**
@@ -799,10 +555,7 @@ public class rCore {
      * @param height minimum height (in pixels) the window must be
      */
     public void SetWindowMinSize(int width, int height){
-        window.screenMin.width = width;
-        window.screenMin.height = height;
-
-        UpdateWindowSizeLimits();
+        platform.SetWindowMinSize(width, height);
     }
 
     /**
@@ -811,10 +564,7 @@ public class rCore {
      * @param height maximum height (in pixels) the window must be
      */
     public void SetWindowMaxSize(int width, int height){
-        window.screenMax.width = width;
-        window.screenMax.height = height;
-
-        UpdateWindowSizeLimits();
+        platform.SetWindowMaxSize(width, height);
     }
 
     /**
@@ -823,33 +573,24 @@ public class rCore {
      * @param height height (in pixels) the window should be
      */
     public void SetWindowSize(int width, int height){
-        glfwSetWindowSize(window.handle, width, height);
+        platform.SetWindowSize(width, height);
     }
 
     /**
      * Set window opacity
      * @param opacity Normalised (between 0.0 and 1.0) value.<br/>
-     *                <code>1.0f</code> is fully opaque <br/>
-     *                <code>0.0f</code> is fully transparent
+     * 1.0f is fully opaque <br/>
+     * 0.0f is fully transparent
      */
     public void SetWindowOpacity(float opacity) {
-        if(PLATFORM_DESKTOP) {
-            if (opacity >= 1.0f) {
-                opacity = 1.0f;
-            }
-            else if (opacity <= 0.0f) {
-                opacity = 0.0f;
-            }
-
-            glfwSetWindowOpacity(window.handle, opacity);
-        }
+        platform.SetWindowOpacity(opacity);
     }
 
     /**
      * Set window focused (only PLATFORM_DESKTOP)
      */
     public void SetWindowFocused(){
-        glfwFocusWindow(window.handle);
+        platform.SetWindowFocused();
     }
 
     /**
@@ -903,15 +644,7 @@ public class rCore {
      * @return native (GLFW) window handle
      */
     public long GetWindowHandle(){
-        if (__WINDOWS__) {
-            return glfwGetWin32Window(window.handle);
-        }
-        else if (__APPLE__) {
-            return glfwGetCocoaWindow(window.handle);
-        }
-        else {
-            return window.handle;
-        }
+        return platform.GetWindowHandle();
     }
 
     /**
@@ -919,10 +652,7 @@ public class rCore {
      * @return number of monitors detected
      */
     public int GetMonitorCount() {
-        int monitorCount = 0;
-        PointerBuffer pb = glfwGetMonitors();
-        monitorCount = pb.sizeof();
-        return monitorCount;
+        return platform.GetMonitorCount();
     }
 
     /**
@@ -930,45 +660,7 @@ public class rCore {
      * @return monitor the window is rendered on
      */
     public int GetCurrentMonitor() {
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-        long monitor;
-
-        if (monitorCount == 1){
-            return 0;
-        }
-
-        if (IsWindowFullscreen()){
-            monitor = glfwGetWindowMonitor(window.handle);
-            for (int i = 0; i < monitorCount; i++){
-                if (monitors.get(i) == monitor){
-                    return i;
-                }
-            }
-            return 0;
-        }
-        else{
-            int x = 0;
-            int y = 0;
-
-            nglfwGetWindowPos(window.handle, x, y);
-
-            for (int i = 0; i < monitorCount; i++){
-                int mx = 0;
-                int my = 0;
-
-                int width = 0;
-                int height = 0;
-
-                monitor = monitors.get(i);
-                nglfwGetMonitorWorkarea(monitor, mx, my, width, height);
-                if (x >= mx && x <= (mx + width) && y >= my && y <= (my + height)){
-                    return i;
-                }
-            }
-        }
-        return 0;
+        return platform.GetCurrentMonitor();
     }
 
     /**
@@ -977,19 +669,7 @@ public class rCore {
      * @return x,y pair that defines monitor's upper left corner in pixel-space
      */
     public Vector2 GetMonitorPosition(int monitor){
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            IntBuffer x = IntBuffer.allocate(1);
-            IntBuffer y = IntBuffer.allocate(1);
-            glfwGetMonitorPos(monitor, x, y);
-            return new Vector2(x.get(0), y.get(0));
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
-        return null;
+        return platform.GetMonitorPosition(monitor);
     }
 
     /**
@@ -998,25 +678,7 @@ public class rCore {
      * @return monitor width
      */
     public int GetMonitorWidth(int monitor){
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            GLFWVidMode.Buffer modes = glfwGetVideoModes(monitors.get(monitor));
-
-            // We return the maximum resolution available, the last one in the modes array
-            if (modes.sizeof() > 0){
-                return modes.width();
-            }
-            else{
-                context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
-            }
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
-        return 0;
+        return platform.GetMonitorWidth(monitor);
     }
 
     /**
@@ -1025,26 +687,7 @@ public class rCore {
      * @return monitor height
      */
     public int GetMonitorHeight(int monitor){
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            GLFWVidMode.Buffer modes = glfwGetVideoModes(monitors.get(monitor));
-
-            // We return the maximum resolution available, the last one in the modes array
-            if (modes.sizeof() > 0){
-                return modes.height();
-            }
-            else{
-                context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find video mode for selected monitor");
-            }
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-            return 0;
-        }
-        return 0;
+        return platform.GetMonitorHeight(monitor);
     }
 
     /**
@@ -1053,19 +696,7 @@ public class rCore {
      * @return Width in millimeters
      */
     public int GetMonitorPhysicalWidth(int monitor){
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            int physicalWidth = 0;
-            nglfwGetMonitorPhysicalSize(monitor, physicalWidth, 0);
-            return physicalWidth;
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
-        return 0;
+        return platform.GetMonitorPhysicalWidth(monitor);
     }
 
     /**
@@ -1074,19 +705,7 @@ public class rCore {
      * @return Height in millimeters
      */
     public int GetMonitorPhysicalHeight(int monitor){
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            int physicalHeight = 0;
-            nglfwGetMonitorPhysicalSize(monitor, 0, physicalHeight);
-            return physicalHeight;
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
-        return 0;
+        return platform.GetMonitorPhysicalHeight(monitor);
     }
 
     /**
@@ -1095,26 +714,7 @@ public class rCore {
      * @return Refresh rate (in hertz)
      */
     public int GetMonitorRefreshRate(int monitor) {
-        if (PLATFORM_DESKTOP) {
-            PointerBuffer monitors = glfwGetMonitors();
-            int monitorCount = monitors.sizeof();
-
-            if ((monitor >= 0) && (monitor < monitorCount)) {
-                GLFWVidMode vidMode = glfwGetVideoMode(monitors.get(monitor));
-                return vidMode != null ? vidMode.refreshRate() : 0;
-            }
-            else {
-                context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-            }
-        }
-        /*
-        if (PLATFORM_DRM) {
-            if ((CORE.Window.connector) && (CORE.Window.modeIndex >= 0)) {
-                return CORE.Window.connector->modes[CORE.Window.modeIndex].vRefresh;
-            }
-        }
-        */
-        return 0;
+        return platform.GetMonitorRefreshRate(monitor);
     }
 
     /**
@@ -1122,18 +722,7 @@ public class rCore {
      * @return x,y coordinate of window's top left corner
      */
     public Vector2 GetWindowPosition() {
-        // Memory-safe get window position
-        try (MemoryStack stack = stackPush()){
-            IntBuffer xBuffer = stack.mallocInt(1);
-            IntBuffer yBuffer = stack.mallocInt(1);
-            if (PLATFORM_DESKTOP){
-                glfwGetWindowPos(window.handle, xBuffer, yBuffer);
-                return new Vector2(xBuffer.get(0), yBuffer.get(0));
-            }
-            else {
-                return new Vector2();
-            }
-        }
+       return platform.GetWindowPosition();
     }
 
     /**
@@ -1141,40 +730,7 @@ public class rCore {
      * @return DPI scale factor
      */
     public Vector2 GetWindowScaleDPI() {
-        Vector2 scale = new Vector2(1f,1f);
-
-        if(PLATFORM_DESKTOP) {
-            try (MemoryStack stack = stackPush()){
-                FloatBuffer xDpi = stack.mallocFloat(1);
-                FloatBuffer yDpi = stack.mallocFloat(1);
-                Vector2 windowPos = GetWindowPosition();
-
-                PointerBuffer monitors = glfwGetMonitors();
-                int monitorCount = monitors.sizeof();
-
-                // Check window monitor
-                for (int i = 0; i < monitorCount; i++){
-                    glfwGetMonitorContentScale(monitors.get(i), xDpi, yDpi);
-
-                    IntBuffer xPos, yPos, width, height;
-                    xPos = stack.mallocInt(1);
-                    yPos = stack.mallocInt(1);
-                    width = stack.mallocInt(1);
-                    height = stack.mallocInt(1);
-
-                    glfwGetMonitorWorkarea(monitors.get(i), xPos, yPos, width, height);
-
-                    if ((windowPos.x >= xPos.get(0)) && (windowPos.x < xPos.get(0) + width.get(0)) &&
-                            (windowPos.y >= yPos.get(0)) && (windowPos.y < yPos.get(0) + height.get(0))){
-                        scale.x = xDpi.get(i);
-                        scale.y = yDpi.get(i);
-                        break;
-                    }
-                }
-            }
-        }
-
-        return scale;
+        return platform.GetWindowScaleDPI();
     }
 
     /**
@@ -1183,17 +739,7 @@ public class rCore {
      * @return Monitor name
      */
     public String GetMonitorName(int monitor){
-        int monitorCount;
-        PointerBuffer monitors = glfwGetMonitors();
-        monitorCount = monitors.sizeof();
-
-        if ((monitor >= 0) && (monitor < monitorCount)){
-            return glfwGetMonitorName(monitor);
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
-        }
-        return "";
+        return platform.GetMonitorName(monitor);
     }
 
     /**
@@ -1201,7 +747,7 @@ public class rCore {
      * @return clipboard content
      */
     public String GetClipboardText(){
-        return glfwGetClipboardString(window.handle);
+        return platform.GetClipboardText();
     }
 
     /**
@@ -1209,7 +755,7 @@ public class rCore {
      * @param text clipboard content
      */
     public void SetClipboardText(String text){
-        glfwSetClipboardString(window.handle, text);
+        platform.SetClipboardText(text);
     }
 
     /**
@@ -1230,21 +776,19 @@ public class rCore {
      * Show the mouse cursor
      */
     public void ShowCursor(){
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        input.mouse.setCursorHidden(false);
+        platform.ShowCursor();
     }
 
     /**
      * Hide the mouse cursor
      */
     public void HideCursor(){
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-        input.mouse.setCursorHidden(true);
+        platform.HideCursor();
     }
 
     /**
      * Check if mouse cursor is not visible
-     * @return <code>true</code> if cursor is hidden
+     * @return {@code true} if cursor is hidden
      */
     public boolean IsCursorHidden(){
         return input.mouse.isCursorHidden();
@@ -1254,26 +798,28 @@ public class rCore {
      * Enable mouse cursor
      */
     public void EnableCursor(){
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        input.mouse.setCursorHidden(false);
+        platform.EnableCursor();
     }
 
     /**
      * Disable mouse cursor
      */
     public void DisableCursor(){
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        input.mouse.setCursorHidden(true);
+        platform.DisableCursor();
     }
 
     /**
      *  Check if cursor is on the current screen.
      *
-     * @return <code>true</code> if cursor is within window bounds
+     * @return {@code true} if cursor is within window bounds
      */
     public boolean IsCursorOnScreen(){
         return input.mouse.isCursorOnScreen();
     }
+
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Screen Drawing
+    //----------------------------------------------------------------------------------
 
     /**
      * Clear window background
@@ -1301,7 +847,6 @@ public class rCore {
 
         //rlTranslatef(0.375, 0.375, 0);    // HACK to have 2D pixel-perfect drawing on OpenGL 1.1
         // NOTE: Not required with OpenGL 3.3+
-
     }
 
     /**
@@ -1322,16 +867,16 @@ public class rCore {
                 {
                     // Get image data for the current frame (from backbuffer)
                     // NOTE: This process is quite slow... :(
-                    unsigned char *screenData = rlReadScreenPixels(CORE.Window.screen.width, CORE.Window.screen.height);
-                    msf_gif_frame(&gifState, screenData, 10, 16, CORE.Window.screen.width*4);
+                    unsigned char *screenData = rlReadScreenPixels(window.screen.width, window.screen.height);
+                    msf_gif_frame(&gifState, screenData, 10, 16, window.screen.width*4);
 
                     RL_FREE(screenData);    // Free image data
                 }
 
                 if (((gifFrameCounter/15)%2) == 1)
                 {
-                    DrawCircle(30, CORE.Window.screen.height - 20, 10, MAROON);
-                    DrawText("GIF RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);
+                    DrawCircle(30, window.screen.height - 20, 10, MAROON);
+                    DrawText("GIF RECORDING", 50, window.screen.height - 25, 10, RED);
                 }
 
                 rlDrawRenderBatchActive();  // Update and draw internal render batch
@@ -1345,8 +890,8 @@ public class rCore {
                 gifFrameCounter++;
 
                 if (((gifFrameCounter/15)%2) == 1) {
-                    DrawCircle(30, CORE.Window.screen.height - 20, 10, MAROON);
-                    DrawText("EVENTS RECORDING", 50, CORE.Window.screen.height - 25, 10, RED);
+                    DrawCircle(30, window.screen.height - 20, 10, MAROON);
+                    DrawText("EVENTS RECORDING", 50, window.screen.height - 25, 10, RED);
                 }
 
                 rlDrawRenderBatchActive();  // Update and draw internal render batch
@@ -1355,8 +900,8 @@ public class rCore {
                 gifFrameCounter++;
 
                 if (((gifFrameCounter/15)%2) == 1) {
-                    DrawCircle(30, CORE.Window.screen.height - 20, 10, LIME);
-                    DrawText("EVENTS PLAYING", 50, CORE.Window.screen.height - 25, 10, GREEN);
+                    DrawCircle(30, window.screen.height - 20, 10, LIME);
+                    DrawText("EVENTS PLAYING", 50, window.screen.height - 25, 10, GREEN);
                 }
 
                 rlgl.rlDrawRenderBatchActive();  // Update and draw internal render batch
@@ -1387,16 +932,8 @@ public class rCore {
             PollInputEvents();      // Poll user events (before next frame update)
         }
 
-        if(SUPPORT_EVENTS_AUTOMATION) {
-            // Events recording and playing logic
-            if (eventsRecording) {
-                RecordAutomationEvent(time.frameCounter);
-            }
-            else if (eventsPlaying) {
-                // TODO: When should we play? After/before/replace PollInputEvents()?
-                if (time.frameCounter >= eventCount) eventsPlaying = false;
-                PlayAutomationEvent(time.frameCounter);
-            }
+        if (SUPPORT_SCREEN_CAPTURE) {
+            //TODO::
         }
 
         time.frameCounter++;
@@ -1515,6 +1052,7 @@ public class rCore {
         // calculation when using BeginMode3D()
         window.currentFbo.setWidth(target.texture.width);
         window.currentFbo.setHeight(target.texture.height);
+        window.usingFbo = true;
     }
 
     /**
@@ -1531,6 +1069,7 @@ public class rCore {
         // Reset current screen size
         window.currentFbo.width = window.render.width;
         window.currentFbo.height = window.render.height;
+        window.usingFbo = false;
     }
 
     /**
@@ -1578,14 +1117,18 @@ public class rCore {
         context.rlgl.rlEnableScissorTest();
 
         if (__APPLE__) {
-            Vector2 scale = GetWindowScaleDPI();
+            if (!window.usingFbo) {
+                Vector2 scale = GetWindowScaleDPI();
 
-            context.rlgl.rlScissor((int)(x*scale.x), (int)(GetScreenHeight()*scale.y - (((y + height)*scale.y))), (int)(width*scale.x), (int)(height*scale.y));
+                context.rlgl.rlScissor((int) (x * scale.x), (int) (GetScreenHeight() * scale.y - (((y + height) * scale.y))), (int) (width * scale.x), (int) (height * scale.y));
+            }
         }
         else {
-            if ((window.flags & FLAG_WINDOW_HIGHDPI) > 0) {
-                Vector2 scale = GetWindowScaleDPI();
-                context.rlgl.rlScissor((int)(x*scale.x), (int)(window.currentFbo.height - (y + height)*scale.y), (int)(width*scale.x), (int)(height*scale.y));
+            if (!window.usingFbo) {
+                if ((window.flags & FLAG_WINDOW_HIGHDPI) > 0) {
+                    Vector2 scale = GetWindowScaleDPI();
+                    context.rlgl.rlScissor((int) (x * scale.x), (int) (window.currentFbo.height - (y + height) * scale.y), (int) (width * scale.x), (int) (height * scale.y));
+                }
             }
             else {
                 context.rlgl.rlScissor(x, window.currentFbo.height - (y + height), width, height);
@@ -1601,6 +1144,10 @@ public class rCore {
         context.rlgl.rlDrawRenderBatchActive(); // Force drawing elements
         context.rlgl.rlDisableScissorTest();
     }
+
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: VR Stereo Rendering
+    //----------------------------------------------------------------------------------
 
     /**
      * Begin VR drawing configuration
@@ -1630,7 +1177,7 @@ public class rCore {
     public VrStereoConfig LoadVrStereoConfig(VrDeviceInfo device){
         VrStereoConfig config = new VrStereoConfig();
 
-        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2){
+        if (!GRAPHICS_API_OPENGL_11) {
             // Compute aspect ratio
             float aspect = ((float) device.gethResolution() * 0.5f) / (float) device.getvResolution();
 
@@ -1705,8 +1252,12 @@ public class rCore {
      * @param config
      */
     public void UnloadVrStereoConfig(VrStereoConfig config){
-        //...
+        context.tracelog.TRACELOG(LOG_INFO, "UnloadVrStereoConfig not implemented in rcore");
     }
+
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Shaders Management
+    //----------------------------------------------------------------------------------
 
     /**
      * Load shader from files and bind default locations
@@ -1798,7 +1349,7 @@ public class rCore {
     /**
      * Check if a shader is ready
      * @param shader Shader to check
-     * @return <code>true</code> if shader is ready for use
+     * @return {@code true} if shader is ready for use
      */
     public boolean IsShaderReady(Shader shader){
         return shader.getLocs() != null;
@@ -1884,81 +1435,9 @@ public class rCore {
         }
     }
 
-    /**
-     * Get a ray trace from screen position (i.e. mouse)
-     * @param position
-     * @param camera
-     * @return
-     */
-    public Ray GetScreenToWorldRay(Vector2 position, Camera3D camera){
-        return GetScreenToWorldRayEx(position, camera, GetScreenWidth(), GetScreenHeight());
-    }
-
-    /**
-     * Get a ray trace from the screen position (i.e. mouse) within a specific section of the screen
-     * @param position
-     * @param camera
-     * @param width
-     * @param height
-     * @return
-     */
-    public Ray GetScreenToWorldRayEx(Vector2 position, Camera3D camera, int width, int height){
-        Ray ray = new Ray();
-
-        // Calculate normalized device coordinates
-        // NOTE: y value is negative
-        float x = (2.0f * position.x) / (float) width - 1.0f;
-        float y = 1.0f - (2.0f * position.y) / (float) height;
-        float z = 1.0f;
-
-        // Store values in a vector
-        Vector3 deviceCoords = new Vector3(x, y, z);
-
-        // Calculate view matrix from camera look at
-        Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
-
-        Matrix matProj = MatrixIdentity();
-
-        if (camera.projection == CAMERA_PERSPECTIVE){
-            // Calculate projection matrix from perspective
-            matProj = MatrixPerspective(
-                    camera.fovy * DEG2RAD,
-                    ((double) width / (double) height),
-                    RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
-
-        } else if (camera.projection == CAMERA_ORTHOGRAPHIC){
-            double aspect = (double) width / (double) height;
-            double top = camera.fovy / 2.0;
-            double right = top * aspect;
-
-            // Calculate projection matrix from orthographic
-            matProj = MatrixOrtho(-right, right, -top, top, 0.01, 1000.0);
-        }
-
-        // Unproject far/near points
-        Vector3 nearPoint = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, 0.0f), matProj, matView);
-        Vector3 farPoint = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, 1.0f), matProj, matView);
-
-        // Unproject the mouse cursor in the near plane
-        // We need this as the source position because orthographic projects,
-        // compared to perspective doesn't have a convergence point,
-        // meaning that the "eye" of the camera is more like a plane than a point
-        Vector3 cameraPlanePointerPos = Vector3Unproject(new Vector3(deviceCoords.x, deviceCoords.y, -1.0f), matProj, matView);
-
-        // Calculate normalized direction vector
-        Vector3 direction = Vector3Normalize(Vector3Subtract(farPoint, nearPoint));
-
-        if (camera.projection == CAMERA_PERSPECTIVE){
-            ray.position = camera.position;
-        } else if (camera.projection == CAMERA_ORTHOGRAPHIC){
-            ray.position = cameraPlanePointerPos;
-        }
-
-        // Apply calculated vectors to ray
-        ray.direction = direction;
-
-        return ray;
-    }
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Screen-space Queries
+    //----------------------------------------------------------------------------------
 
     /**
      * Returns a ray trace from mouse position
@@ -2073,7 +1552,6 @@ public class rCore {
      * @return
      */
     public Vector2 GetWorldToScreen(Vector3 position, Camera3D camera){
-
         return GetWorldToScreenEx(position, camera, GetScreenWidth(), GetScreenHeight());
     }
 
@@ -2152,6 +1630,10 @@ public class rCore {
         return new Vector2(transform.x, transform.y);
     }
 
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Timming
+    //----------------------------------------------------------------------------------
+
     /**
      * Set target FPS (maximum)
      *
@@ -2174,25 +1656,41 @@ public class rCore {
      *
      * @return Current average frame rate
      */
-    public int GetFPS(){
+    public int GetFPS() {
+        int fps = 0;
 
-        int FPS_CAPTURE_FRAMES_COUNT = 30;      // 30 captures
-        float FPS_AVERAGE_TIME_SECONDS = 0.5f;     // 500 milliseconds
-        float FPS_STEP = (FPS_AVERAGE_TIME_SECONDS / FPS_CAPTURE_FRAMES_COUNT);
+        if(!SUPPORT_CUSTOM_FRAME_CONTROL) {
+            int FPS_CAPTURE_FRAMES_COUNT = 30;      // 30 captures
+            float FPS_AVERAGE_TIME_SECONDS = 0.5f;     // 500 milliseconds
+            float FPS_STEP = (FPS_AVERAGE_TIME_SECONDS / FPS_CAPTURE_FRAMES_COUNT);
 
-        float fpsFrame = GetFrameTime();
+            int index = 0;
+            float[] history = new float[FPS_CAPTURE_FRAMES_COUNT];
+            float average = 0, last = 0;
+            float fpsFrame = GetFrameTime();
 
-        if (fpsFrame == 0) return 0;
+            // if we reset the window, reset the FPS info
+            if (time.frameCounter == 0) {
+                average = 0;
+                last = 0;
+            }
 
-        if ((GetTime() - last) > FPS_STEP){
-            last = (float) GetTime();
-            index = (index + 1) % FPS_CAPTURE_FRAMES_COUNT;
-            average -= history[index];
-            history[index] = fpsFrame / FPS_CAPTURE_FRAMES_COUNT;
-            average += history[index];
+            if (fpsFrame == 0) {
+                return 0;
+            }
+
+            if ((GetTime() - last) > FPS_STEP) {
+                last = (float) GetTime();
+                index = (index + 1) % FPS_CAPTURE_FRAMES_COUNT;
+                average -= history[index];
+                history[index] = fpsFrame / FPS_CAPTURE_FRAMES_COUNT;
+                average += history[index];
+            }
+
+            fps =  Math.round(1.0f / average);
         }
 
-        return Math.round(1.0f / average);
+        return fps;
     }
 
     /**
@@ -2598,6 +2096,11 @@ public class rCore {
         return result;
     }
 
+
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Compression and Encoding
+    //----------------------------------------------------------------------------------
+
     //TODO: 3/20/21
     // CompressData
     // DecompressData
@@ -2627,8 +2130,7 @@ public class rCore {
             return null;
         }
 
-        for (int i = 0, j = 0; i < dataLength;)
-        {
+        for (int i = 0, j = 0; i < dataLength; ) {
             int octetA = (i < dataLength)? data[i++] : 0;
             int octetB = (i < dataLength)? data[i++] : 0;
             int octetC = (i < dataLength)? data[i++] : 0;
@@ -2676,7 +2178,7 @@ public class rCore {
         // Allocate memory to store decoded Base64 data
         byte[] decodedData = new byte[outLength];
 
-        for (int i = 0; i < outLength/3; i++){
+        for (int i = 0; i < outLength/3; i++) {
             byte a = base64decodeTable[data[4*i]];
             byte b = base64decodeTable[data[4*i + 1]];
             byte c = base64decodeTable[data[4*i + 2]];
@@ -2687,15 +2189,13 @@ public class rCore {
             decodedData[3*i + 2] = (byte) ((byte) (c << 6) | d);
         }
 
-        if (outLength%3 == 1)
-        {
+        if (outLength%3 == 1) {
             int n = outLength/3;
             byte a = base64decodeTable[data[4*n]];
             byte b = base64decodeTable[data[4*n + 1]];
             decodedData[outLength - 1] = (byte) ((byte) (a << 2) | (b >> 4));
         }
-        else if (outLength%3 == 2)
-        {
+        else if (outLength%3 == 2) {
             int n = outLength/3;
             byte a = base64decodeTable[data[4*n]];
             byte b = base64decodeTable[data[4*n + 1]];
@@ -2708,48 +2208,12 @@ public class rCore {
         return decodedData;
     }
 
-    /**
-     *
-     * @param url
-     */
     public void OpenURL(String url) {
-        if (url.contains("'")) {
-            context.tracelog.TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid ['] character");
-        }
-        else {
-            if (PLATFORM_DESKTOP) {
-                Runtime rt = Runtime.getRuntime();
-
-                if (__WINDOWS__) {
-                    try {
-                        rt.exec(new String[]{"rundll32 url.dll,FileProtocolHandler " + url});
-                    }
-                    catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                else if (__APPLE__) {
-                    try {
-                        rt.exec(new String[]{"open " + url});
-                    }
-                    catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                else if (__LINUX__) {
-                    try {
-                        rt.exec(new String[]{"xdg-open " + url});
-                    }
-                    catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }
+        platform.OpenURL(url);
     }
 
     //----------------------------------------------------------------------------------
-    // Module Functions Definition - Input (Keyboard, Mouse, Gamepad) Functions
+    // Module Functions Definition: Input Handling: Keyboard
     //----------------------------------------------------------------------------------
 
     // Detect if a key has been pressed once
@@ -2826,6 +2290,10 @@ public class rCore {
     public void SetExitKey(int key){
         input.keyboard.setExitKey(key);
     }
+
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Input Handling: Gamepad
+    //----------------------------------------------------------------------------------
 
     // NOTE: Gamepad support not implemented in emscripten GLFW3 (PLATFORM_WEB)
     // Detect if a gamepad is available
@@ -2928,6 +2396,10 @@ public class rCore {
         return result;
     }
 
+    //----------------------------------------------------------------------------------
+    // Module Functions Definition: Input Handling: Mouse
+    //----------------------------------------------------------------------------------
+
     public boolean IsMouseButtonPressed(Mouse.MouseButton button) {
         return IsMouseButtonPressed(button.GetValue());
     }
@@ -2953,15 +2425,18 @@ public class rCore {
 
     // Detect if a mouse button is being pressed
     public boolean IsMouseButtonDown(int button){
-        boolean down = input.mouse.getCurrentButtonState()[button] == 1;
+        boolean up = false;
 
-        /*
-        TODO: Touch support - MODULE GESTURES
-        Map touches to mouse buttons checking
-        if (input.Touch.currentTouchState[button] == 1) down = true;
-        */
+        if (input.mouse.currentButtonState[button] == 0) {
+            up = true;
+        }
 
-        return down;
+        // NOTE: Touches are considered like mouse buttons
+        if (!input.touch.currentTouchState[button]) {
+            up = true;
+        }
+
+        return up;
     }
 
     public boolean IsMouseButtonReleased(Mouse.MouseButton button) {
@@ -2970,16 +2445,17 @@ public class rCore {
 
     // Detect if a mouse button has been released once
     public boolean IsMouseButtonReleased(int button){
-        boolean released = (input.mouse.getCurrentButtonState()[button] == 0) &&
-                (input.mouse.getPreviousButtonState()[button] == 1);
+        boolean released = false;
 
-        /*
-        TODO: Touch support - MODULE GESTURES
-        Map touches to mouse buttons checking
-        if ((input.Touch.currentTouchState[button] == 0) && (input.Touch.previousTouchState[button] == 1)){
+        if ((input.mouse.getCurrentButtonState()[button] == 0) && (input.mouse.getPreviousButtonState()[button] == 1)) {
             released = true;
         }
-         */
+
+        // Map touches to mouse buttons checking
+        if ((!input.touch.currentTouchState[button]) && (input.touch.previousTouchState[button])){
+            released = true;
+        }
+
         return released;
     }
 
@@ -2994,39 +2470,20 @@ public class rCore {
 
     // Returns mouse position X
     public int GetMouseX(){
-        /* TODO: Touch support - MODULE GESTURES
-        #if defined(PLATFORM_ANDROID)
-            return (int)input.Touch.position[0].x;
-        #else
-        */
         return (int) ((input.mouse.currentPosition.x + input.mouse.offset.x) * input.mouse.scale.x);
-        //#endif
     }
 
     // Returns mouse position Y
     public int GetMouseY(){
-        /* TODO: Touch support - MODULE GESTURES
-        #if defined(PLATFORM_ANDROID)
-            return (int)input.Touch.position[0].y;
-        #else
-        */
         return (int) ((input.mouse.currentPosition.y + input.mouse.offset.y) * input.mouse.scale.y);
-        //#endif
     }
 
     // Returns mouse position XY
     public Vector2 GetMousePosition(){
         Vector2 position = new Vector2();
 
-        /*
-        TODO: Touch support - MODULE GESTURES
-        #if defined(PLATFORM_ANDROID) || defined(PLATFORM_WEB)
-        position = GetTouchPosition(0);
-        #else
-        */
         position.x = ((input.mouse.currentPosition.x + input.mouse.offset.x) * input.mouse.scale.x);
         position.y = ((input.mouse.currentPosition.y + input.mouse.offset.y) * input.mouse.scale.y);
-        //#endif
 
         return position;
     }
@@ -3043,11 +2500,7 @@ public class rCore {
 
     // Set mouse position XY
     public void SetMousePosition(int x, int y){
-        input.mouse.currentPosition = new Vector2(x, y);
-        input.mouse.previousPosition = input.mouse.currentPosition;
-
-        // NOTE: emscripten not implemented
-        glfwSetCursorPos(window.handle, input.mouse.currentPosition.x, input.mouse.currentPosition.y);
+        platform.SetMousePosition(x, y);
     }
 
     // Set mouse offset
@@ -3081,28 +2534,17 @@ public class rCore {
        return input.mouse.currentWheelMove;
     }
 
-    public void SetMouseCursor(Mouse.MouseCursor cursor) {
-        SetMouseCursor(cursor.GetValue());
-    }
-
     // Set mouse cursor
     // NOTE: This is a no-op on platforms other than PLATFORM_DESKTOP
-    public void SetMouseCursor(int cursor){
-        input.mouse.setCursor(cursor);
-        if (cursor == MOUSE_CURSOR_DEFAULT.ordinal()){
-            glfwSetCursor(window.handle, 0);
-        }
-        else{
-            // NOTE: We are relating internal GLFW enum values to our MouseCursor enum values
-            glfwSetCursor(window.handle, glfwCreateStandardCursor(0x00036000 + cursor));
-        }
+    public void SetMouseCursor(Mouse.MouseCursor cursor){
+        platform.SetMouseCursor(cursor);
     }
 
     /* TODO: Touch support - MODULE GESTURES
     // Returns touch position X for touch point 0 (relative to screen size)
     int GetTouchX(void)
     {
-        #if defined(PLATFORM_ANDROID) || defined(PLATFORM_WEB) || defined(PLATFORM_UWP)
+        if(PLATFORM_ANDROID) || defined(PLATFORM_WEB) || defined(PLATFORM_UWP)
             return (int)input.Touch.position[0].x;
         #else   // PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_DRM
             return GetMouseX();
@@ -3112,7 +2554,7 @@ public class rCore {
     // Returns touch position Y for touch point 0 (relative to screen size)
     int GetTouchY(void)
     {
-        #if defined(PLATFORM_ANDROID) || defined(PLATFORM_WEB) || defined(PLATFORM_UWP)
+        if(PLATFORM_ANDROID) || defined(PLATFORM_WEB) || defined(PLATFORM_UWP)
             return (int)input.Touch.position[0].y;
         #else   // PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_DRM
             return GetMouseY();
@@ -3125,28 +2567,28 @@ public class rCore {
     {
         Vector2 position = { -1.0f, -1.0f };
 
-        #if defined(PLATFORM_DESKTOP)
+        if(PLATFORM_DESKTOP)
             // TODO: GLFW does not support multi-touch input just yet
             // https://www.codeproject.com/Articles/668404/Programming-for-Multi-Touch
             // https://docs.microsoft.com/en-us/windows/win32/wintouch/getting-started-with-multi-touch-messages
             if (index == 0) position = GetMousePosition();
         #endif
-        #if defined(PLATFORM_ANDROID)
+        if(PLATFORM_ANDROID)
             if (index < MAX_TOUCH_POINTS) position = input.Touch.position[index];
             else context.logger.logger(LOG_WARNING, "INPUT: Required touch point out of range (Max touch points: %i)", MAX_TOUCH_POINTS);
 
-            if ((CORE.Window.screen.width > CORE.Window.display.width) || (CORE.Window.screen.height > CORE.Window.display.height))
+            if ((window.screen.width > window.display.width) || (window.screen.height > window.display.height))
             {
-                position.x = position.x*((float)CORE.Window.screen.width/(float)(CORE.Window.display.width - CORE.Window.renderOffset.x)) - CORE.Window.renderOffset.x/2;
-                position.y = position.y*((float)CORE.Window.screen.height/(float)(CORE.Window.display.height - CORE.Window.renderOffset.y)) - CORE.Window.renderOffset.y/2;
+                position.x = position.x*((float)window.screen.width/(float)(window.display.width - window.renderOffset.x)) - window.renderOffset.x/2;
+                position.y = position.y*((float)window.screen.height/(float)(window.display.height - window.renderOffset.y)) - window.renderOffset.y/2;
             }
             else
             {
-                position.x = position.x*((float)CORE.Window.render.width/(float)CORE.Window.display.width) - CORE.Window.renderOffset.x/2;
-                position.y = position.y*((float)CORE.Window.render.height/(float)CORE.Window.display.height) - CORE.Window.renderOffset.y/2;
+                position.x = position.x*((float)window.render.width/(float)window.display.width) - window.renderOffset.x/2;
+                position.y = position.y*((float)window.render.height/(float)window.display.height) - window.renderOffset.y/2;
             }
         #endif
-        #if defined(PLATFORM_WEB) || defined(PLATFORM_RPI) || defined(PLATFORM_DRM) || defined(PLATFORM_UWP)
+        if(PLATFORM_WEB) || defined(PLATFORM_RPI) || defined(PLATFORM_DRM) || defined(PLATFORM_UWP)
             if (index < MAX_TOUCH_POINTS) position = input.Touch.position[index];
             else context.logger.logger(LOG_WARNING, "INPUT: Required touch point out of range (Max touch points: %i)", MAX_TOUCH_POINTS);
 
@@ -3158,336 +2600,14 @@ public class rCore {
     */
 
     //----------------------------------------------------------------------------------
-    // Module specific Functions Definition
+    // Module internal Functions Definition
     //----------------------------------------------------------------------------------
 
     /**
-     * Initialize display device and framebuffer <br/>
-     * NOTE: width and height represent the screen (framebuffer) desired size, not actual display size.
-     * If width or height are 0, default display size will be used for framebuffer size <br/>
-     * NOTE: returns false in case graphic device could not be created
-     *
-     * @param width
-     * @param height
-     * @return
+     * Initialize hi-resolution timer
      */
-    protected boolean InitGraphicsDevice(int width, int height){
-        window.screen.setWidth(width);            // User desired width
-        window.screen.setHeight(height);          // User desired height
-        window.setScreenScale(MatrixIdentity());  // No draw scaling required by default
-
-        // NOTE: Framebuffer (render area - window.render.width, window.render.height) could include black bars...
-        // ...in top-down or left-right to match display aspect ratio (no weird scaling)
-
-        glfwSetErrorCallback(callbacks.errorCallback);
-
-        if (!glfwInit()){
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to initialize GLFW");
-            return false;
-        }
-
-        // Find monitor resolution
-        long monitor = glfwGetPrimaryMonitor();
-        if (monitor < 0){
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to get primary monitor");
-            return false;
-        }
-        GLFWVidMode mode = glfwGetVideoMode(monitor);
-
-        window.display.setWidth(mode.width());
-        window.display.setHeight(mode.height());
-
-        // Screen size security check
-        if (window.screen.width == 0){
-            window.screen.setWidth(window.display.width);
-        }
-
-        if (window.screen.height == 0){
-            window.screen.setHeight(window.display.height);
-        }
-
-        glfwDefaultWindowHints();                       // Set default windows hints
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);       // the window will stay hidden after creation
-        //glfwWindowHint(GLFW_RED_BITS, 8);             // Framebuffer red color component bits
-        //glfwWindowHint(GLFW_GREEN_BITS, 8);           // Framebuffer green color component bits
-        //glfwWindowHint(GLFW_BLUE_BITS, 8);            // Framebuffer blue color component bits
-        //glfwWindowHint(GLFW_ALPHA_BITS, 8);           // Framebuffer alpha color component bits
-        //glfwWindowHint(GLFW_DEPTH_BITS, 24);          // Depthbuffer bits
-        //glfwWindowHint(GLFW_REFRESH_RATE, 0);         // Refresh rate for fullscreen window
-        //glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API); // OpenGL API to use. Alternative: GLFW_OPENGL_ES_API
-        //glfwWindowHint(GLFW_AUX_BUFFERS, 0);          // Number of auxiliary buffers
-
-        // Check window creation flags
-        if ((window.getFlags() & FLAG_FULLSCREEN_MODE) > 0){
-            window.fullscreen = true;
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_HIDDEN) > 0){
-            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // Visible window
-        }
-        else{
-            glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);     // Window initially hidden
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_UNDECORATED) > 0){
-            glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Border and buttons on Window
-        }
-        else{
-            glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);   // Decorated window
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_RESIZABLE) > 0){
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // Resizable window
-        }
-        else{
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);  // Avoid window being resizable
-        }
-
-        // Disable FLAG_WINDOW_MINIMIZED, not supported on initialization
-        if ((window.getFlags() & FLAG_WINDOW_MINIMIZED) > 0){
-            window.flags &= ~FLAG_WINDOW_MINIMIZED;
-        }
-
-        // Disable FLAG_WINDOW_MAXIMIZED, not supported on initialization
-        if ((window.getFlags() & FLAG_WINDOW_MAXIMIZED) > 0){
-            window.flags &= ~FLAG_WINDOW_MAXIMIZED;
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_UNFOCUSED) > 0){
-            glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
-        }
-        else{
-            glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_TOPMOST) > 0){
-            glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
-        }
-        else{
-            glfwWindowHint(GLFW_FLOATING, GLFW_FALSE);
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_TRANSPARENT) > 0){
-            glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);     // Transparent framebuffer
-        }
-        else{
-            glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);     // Transparent framebuffer
-        }
-
-        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
-            // Resize window content area based on the monitor content scale.
-            // NOTE: This hint only has an effect on platforms where screen coordinates and pixels always map 1:1 such as Windows and X11.
-            // On platforms like macOS the resolution of the framebuffer is changed independently of the window size.
-            glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);  // Scale content area based on the monitor content scale
-            // where window is placed on
-            if (__APPLE__) {
-                glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
-            }
-        }
-        else{
-            glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
-        }
-
-        // Mouse Passthrough
-        if((window.getFlags() & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0){
-            glfwWindowHint(GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
-        }
-        else {
-            glfwWindowHint(GLFW_MOUSE_PASSTHROUGH, GLFW_FALSE);
-        }
-
-        if ((window.getFlags() & FLAG_MSAA_4X_HINT) > 0){
-            context.tracelog.TRACELOG(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
-            glfwWindowHint(GLFW_SAMPLES, 4);   // Tries to enable multisampling x4 (MSAA), default is 0
-        }
-
-        // NOTE: When asking for an OpenGL context version, most drivers provide highest supported version
-        // with forward compatibility to older OpenGL versions.
-        // For example, if using OpenGL 1.1, driver can provide a 4.3 context forward compatible.
-
-        // Check selection OpenGL version
-
-        if (context.rlgl.rlGetVersion() == rlGlVersion.OPENGL_21){
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);          // Choose OpenGL major version (just hint)
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);          // Choose OpenGL minor version (just hint)
-        }
-        else if (context.rlgl.rlGetVersion() == rlGlVersion.OPENGL_33){
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);          // Choose OpenGL major version (just hint)
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);          // Choose OpenGL minor version (just hint)
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Profiles Hint: Only 3.3 and above!
-            if (__APPLE__){
-                glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-            }
-            else{
-                glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_FALSE);
-            }
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        }
-        else if (context.rlgl.rlGetVersion() == rlGlVersion.OPENGL_ES_20){
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-            if (PLATFORM_DESKTOP){
-                glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-            }
-            else{
-                glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
-            }
-        }
-
-        if (MAX_GAMEPADS > 0){
-            // NOTE: GLFW 3.4+ defers initialization of the Joystick subsystem on the first call to any Joystick related functions.
-            // Forcing this initialization here avoids doing it on `PollInputEvents` called by `EndDrawing` after first frame has been just drawn.
-            // The initialization will still happen and possible delays still occur, but before the window is shown, which is a nicer experience.
-            // REF: https://github.com/raysan5/raylib/issues/1554
-            glfwSetJoystickCallback(null);
-        }
-
-        if (window.fullscreen){
-            // remember center for switching from fullscreen to window
-            if ((window.screen.height == window.display.height) && (window.screen.width == window.display.width)) {
-                // If screen width/height equal to the display, we can't calculate the window pos for toggling fullscreened/windowed.
-                // Toggling fullscreened/windowed with pos(0, 0) can cause problems in some platforms, such as X11.
-                window.position.x = window.display.width/4;
-                window.position.y = window.display.height/4;
-            }
-            else {
-                window.position.x = window.display.width/2 - window.screen.width/2;
-                window.position.y = window.display.height/2 - window.screen.height/2;
-            }
-
-            if (window.position.x < 0){
-                window.position.setX(0);
-            }
-            if (window.position.x < 0){
-                window.position.setY(0);
-            }
-
-            // Obtain recommended window.display.width/window.display.height from a valid videomode for the monitor
-            int count = 0;
-            GLFWVidMode.Buffer modes = glfwGetVideoModes(glfwGetPrimaryMonitor());
-            count = modes != null ? modes.sizeof() : 0;
-            // Get the closest video mode to desired window.screen.width/window.screen.height
-            for (int i = 0; i < count; i++){
-                if (modes.width() >= window.screen.width){
-                    if (modes.height() >= window.screen.height){
-                        window.display.setWidth(modes.width());
-                        window.display.setHeight(modes.height());
-                        break;
-                    }
-                }
-            }
-
-            context.tracelog.TRACELOG(LOG_WARNING, "SYSTEM: Closest fullscreen videomode: " + window.display.width + "x" + window.display.height);
-
-            // NOTE: ISSUE: Closest video mode could not match monitor aspect-ratio, for example,
-            // for a desired screen size of 800x450 (16:9), the closest supported video mode is 800x600 (4:3),
-            // framebuffer is rendered correctly but once displayed on a 16:9 monitor, it gets stretched
-            // by the sides to fit all monitor space...
-
-            // Try to setup the most appropriate fullscreen framebuffer for the requested screenWidth/screenHeight
-            // It considers device display resolution mode and setups a framebuffer with black bars if required (render size/offset)
-            // Modified global variables: window.screen.width/window.screen.height - window.render.width/window.render.height - window.renderOffset.x/window.renderOffset.y - window.screenScale
-            // TODO: It is a quite cumbersome solution to display size vs requested size, it should be reviewed or removed...
-            // HighDPI monitors are properly considered in a following similar function: SetupViewport()
-            SetupFramebuffer(window.display.width, window.display.height);
-
-            window.handle = glfwCreateWindow(window.display.width, window.display.height,
-                                             (window.title != null) ? window.title : " ", glfwGetPrimaryMonitor(), 0);
-
-            // NOTE: Full-screen change, not working properly...
-            //glfwSetWindowMonitor(window.handle, glfwGetPrimaryMonitor(), 0, 0, window.screen.width, window.screen.height, GLFW_DONT_CARE);
-        }
-        else{
-            if (PLATFORM_DESKTOP) {
-                // If we are windowed fullscreen, ensures that window does not minimize when focus is lost
-                if ((window.screen.height == window.display.height) && (window.screen.width == window.display.width)) {
-                    glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
-                }
-            }
-
-            // No-fullscreen window creation
-            window.handle = glfwCreateWindow(window.screen.width, window.screen.height, (window.title != null)
-                    ? window.title : " ", NULL, NULL);
-
-            if (window.handle > 0){
-                window.render.setWidth(window.screen.width);
-                window.render.setHeight(window.screen.height);
-            }
-        }
-
-        if (window.handle <= 0){
-            glfwTerminate();
-            context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to initialize Window");
-            return false;
-        }
-        else{
-            context.tracelog.TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully");
-            context.tracelog.TRACELOG(LOG_INFO,
-                                      "    > Display size: " + window.display.width + " x " + window.display.height);
-            context.tracelog.TRACELOG(LOG_INFO,
-                                      "    > Render size:  " + window.render.width + " x " + window.render.height);
-            context.tracelog.TRACELOG(LOG_INFO,
-                                      "    > Screen size:  " + window.screen.width + " x " + window.screen.height);
-            context.tracelog.TRACELOG(LOG_INFO, "    > Viewport offsets: " + window.renderOffset.x + ", " + window.renderOffset.y);
-        }
-
-        // Set window callback events
-        glfwSetWindowMaximizeCallback(window.handle, callbacks.windowMaximizeCallback);
-        glfwSetWindowSizeCallback(window.handle, callbacks.windowSizeCallback); // NOTE: Resizing not allowed by default!
-
-        glfwSetWindowIconifyCallback(window.handle, callbacks.windowIconifyCallback);
-        glfwSetWindowFocusCallback(window.handle, callbacks.windowFocusCallback);
-        glfwSetDropCallback(window.handle, callbacks.windowDropCallback);
-
-        // Set input callback events
-        // Set up a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window.handle, callbacks.keyCallback);
-        glfwSetCharCallback(window.handle, callbacks.charCallback);
-
-        glfwSetMouseButtonCallback(window.handle, callbacks.mouseButtonCallback);
-        glfwSetCursorPosCallback(window.handle, callbacks.mouseCursorPosCallback);
-
-        // Track mouse position changes
-        glfwSetScrollCallback(window.handle, callbacks.mouseScrollCallback);
-        glfwSetCursorEnterCallback(window.handle, callbacks.cursorEnterCallback);
-
-        glfwMakeContextCurrent(window.handle);
-        GL.createCapabilities();
-
-        // Load OpenGL 3.3 extensions
-        // NOTE: GLFW loader function is passed as parameter
-        //TODO - rlLoadExtensions uses GLAD.
-        //rlLoadExtensions(glfwGetProcAddress());
-        context.rlgl.rlLoadExtensions();
-
-        // Initialize OpenGL context (states and resources)
-        // NOTE: window.screen.width and window.screen.height not used, just stored as globals in rlgl
-        context.rlgl.rlglInit(window.screen.width, window.screen.height);
-
-        int fbWidth = window.render.width;
-        int fbHeight = window.render.height;
-
-        if ((window.getFlags() & FLAG_WINDOW_HIGHDPI) > 0){
-            glfwGetFramebufferSize(window.handle, new int[]{fbWidth}, new int[]{fbHeight});
-
-            // Screen scaling matrix is required in case desired screen area is different from display area
-            window.screenScale = MatrixScale((float) fbWidth / window.screen.width, (float) fbHeight / window.screen.height, 1.0f);
-        }
-
-        // Setup default viewport
-        SetupViewport(fbWidth, fbHeight);
-
-        window.currentFbo.setWidth(window.screen.width);
-        window.currentFbo.setHeight(window.screen.height);
-
-        glfwShowWindow(window.handle);
-
-        if ((window.getFlags() & FLAG_WINDOW_MINIMIZED) > 0){
-            MinimizeWindow();
-        }
-
-        return true;
+    public void InitTimer(){
+        time.setPrevious(GetTime());       // Get time as double
     }
 
     /**
@@ -3596,13 +2716,6 @@ public class rCore {
     }
 
     /**
-     * Initialize hi-resolution timer
-     */
-    public void InitTimer(){
-        time.setPrevious(GetTime());       // Get time as double
-    }
-
-    /**
      * Wait for some time (stop program execution)
      *
      * @param seconds Time to wait in seconds
@@ -3621,147 +2734,6 @@ public class rCore {
                 while (GetTime() < destTime){
                 }
             }
-        }
-    }
-
-    /**
-     * Poll (store) all input events
-     */
-    public void PollInputEvents(){
-        // Reset keys/chars pressed registered
-        input.keyboard.setKeyPressedQueueCount(0);
-        input.keyboard.setCharPressedQueueCount(0);
-
-        // Keyboard/Mouse input polling (automatically managed by GLFW3 through callback)
-
-        // Register previous keys states
-        for (int i = 0; i < MAX_KEYBOARD_KEYS; i++){
-            input.keyboard.getPreviousKeyState()[i] = input.keyboard.getCurrentKeyState()[i];
-            input.keyboard.keyRepeatInFrame[i] = false;
-        }
-
-        // Register previous mouse states
-        for (int i = 0; i < input.mouse.previousButtonState.length; i++) {
-            input.mouse.getPreviousButtonState()[i] = input.mouse.getCurrentButtonState()[i];
-        }
-
-        // Register previous mouse wheel state
-        input.mouse.setPreviousWheelMove(input.mouse.getCurrentWheelMove());
-        input.mouse.setCurrentWheelMove(new Vector2());
-
-        // Register previous mouse position
-        input.mouse.previousPosition = input.mouse.currentPosition;
-
-        // Check if gamepads are ready
-        // NOTE: We do it here in case of disconnection
-        for (int i = 0; i < MAX_GAMEPADS; i++) {
-            input.gamepad.ready[i] = glfwJoystickIsGamepad(i);
-        }
-
-        // Register gamepads buttons events
-        for (int i = 0; i < MAX_GAMEPADS; i++){
-            if (input.gamepad.getReady()[i]) {     // Check if gamepad is available
-                // Register previous gamepad states
-                System.arraycopy(input.gamepad.currentButtonState[i], 0, input.gamepad.previousButtonState[i], 0, input.gamepad.currentButtonState[i].length);
-
-                // Get current gamepad state
-                // NOTE: There is no callback available, so we get it manually
-                // Get remapped buttons
-                GLFWGamepadState state = new GLFWGamepadState(ByteBuffer.allocateDirect(40));
-                glfwGetGamepadState(i, state); // This remaps all gamepads, so they have their buttons mapped like an xbox controller
-
-                ByteBuffer buttons = state.buttons();
-
-                for (int k = 0; (buttons != null) && (k < GLFW_GAMEPAD_BUTTON_DPAD_LEFT + 1) && (k < MAX_GAMEPAD_BUTTONS); k++){
-                    Gamepad.GamepadButton button = null;
-
-                    switch (k) {
-                        case GLFW_GAMEPAD_BUTTON_Y:
-                            button = GAMEPAD_BUTTON_RIGHT_FACE_UP;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_B:
-                            button = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_A:
-                            button = GAMEPAD_BUTTON_RIGHT_FACE_DOWN;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_X:
-                            button = GAMEPAD_BUTTON_RIGHT_FACE_LEFT;
-                            break;
-
-                        case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER:
-                            button = GAMEPAD_BUTTON_LEFT_TRIGGER_1;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER:
-                            button = GAMEPAD_BUTTON_RIGHT_TRIGGER_1;
-                            break;
-
-                        case GLFW_GAMEPAD_BUTTON_BACK:
-                            button = GAMEPAD_BUTTON_MIDDLE_LEFT;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_GUIDE:
-                            button = GAMEPAD_BUTTON_MIDDLE;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_START:
-                            button = GAMEPAD_BUTTON_MIDDLE_RIGHT;
-                            break;
-
-                        case GLFW_GAMEPAD_BUTTON_DPAD_UP:
-                            button = GAMEPAD_BUTTON_LEFT_FACE_UP;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT:
-                            button = GAMEPAD_BUTTON_LEFT_FACE_RIGHT;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_DPAD_DOWN:
-                            button = GAMEPAD_BUTTON_LEFT_FACE_DOWN;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_DPAD_LEFT:
-                            button = GAMEPAD_BUTTON_LEFT_FACE_LEFT;
-                            break;
-
-                        case GLFW_GAMEPAD_BUTTON_LEFT_THUMB:
-                            button = GAMEPAD_BUTTON_LEFT_THUMB;
-                            break;
-                        case GLFW_GAMEPAD_BUTTON_RIGHT_THUMB:
-                            button = GAMEPAD_BUTTON_RIGHT_THUMB;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (button != null) {  // Check for valid button
-                        if (buttons.get(k) == GLFW_PRESS) {
-                            input.gamepad.currentButtonState[i][button.GetValue()] = 1;
-                            input.gamepad.lastButtonPressed = button.GetValue();
-                        }
-                        else {
-                            input.gamepad.currentButtonState[i][button.GetValue()] = 0;
-                        }
-                    }
-                }
-
-                // Get current axis state
-                FloatBuffer axes = state.axes();
-
-                for (int k = 0; (axes != null) && (k < GLFW_GAMEPAD_AXIS_LAST + 1) && (k < MAX_GAMEPAD_AXIS); k++){
-                    input.gamepad.getAxisState()[i][k] = axes.get(k);
-                }
-
-                // Register buttons for 2nd triggers (because GLFW doesn't count these as buttons but rather axis)
-                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2.GetValue()] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_LEFT_TRIGGER.GetValue()] > 0.1 ? 0 : 1);
-                input.gamepad.getCurrentButtonState()[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2.GetValue()] = (byte) (input.gamepad.getAxisState()[i][GAMEPAD_AXIS_RIGHT_TRIGGER.GetValue()] > 0.1 ? 0 : 1);
-
-                input.gamepad.setAxisCount(GLFW_GAMEPAD_AXIS_LAST + 1);
-            }
-        }
-
-        window.setResizedLastFrame(false);
-
-        if (SUPPORT_EVENTS_WAITING){
-            glfwWaitEvents();
-        }
-        else{
-            glfwPollEvents();       // Register keyboard/mouse events (callbacks)... and window events!
         }
     }
 
@@ -3787,45 +2759,15 @@ public class rCore {
      * Swap back buffer with front buffer (screen drawing)
      */
     public void SwapScreenBuffer(){
-        glfwSwapBuffers(window.handle);
+        platform.SwapScreenBuffer();
     }
 
-    //AndroidCommandCallback
-    //AndroidInputCallback
-    //NOTE:No android support currently implemented
-
-    //EmscriptenFullscreenChangeCallback
-    //EmscriptenKeyboardCallback
-    //EmscriptenMouseCallback
-    //EmscriptenTouchCallback
-    //EmscriptenGamepadCallback
-    //EmscriptenWindowResizedCallback
-    //NOTE:No web support currently implemented
-
-    //RPI | DRM
-    //InitKeyboard
-
-    //ProcessKeyboard
-
-    //RestoreKeyboard
-
-    //InitEvdevInput
-
-    //ConfigureEvdevDevice
-
-    //PollKeyboardEvents
-
-    //EventThread
-
-    //InitGamepad
-
-    //GamepadThread
-    //END RPI
-
-    //FindMatching
-    //FindExact
-    //FindNearest
-    //END DRM
+    /**
+     * Poll (store) all input events
+     */
+    public void PollInputEvents() {
+        platform.PollInputEvents();
+    }
 
     // NOTE: Loading happens over AutomationEvent *events
     public void LoadAutomationEvents(String fileName) {

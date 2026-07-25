@@ -24,8 +24,7 @@ public class CharCallback extends GLFWCharCallback {
         // Check if there is space available in the queue
         if (context.core.input.keyboard.getCharPressedQueueCount() < MAX_CHAR_PRESSED_QUEUE){
             // Add character to the queue
-            context.core.input.keyboard.getCharPressedQueue()[context.core.input.keyboard.getCharPressedQueueCount()] =
-                    codepoint;
+            context.core.input.keyboard.getCharPressedQueue()[context.core.input.keyboard.getCharPressedQueueCount()] = codepoint;
             context.core.input.keyboard.setCharPressedQueueCount(context.core.input.keyboard.getCharPressedQueueCount() + 1);
         }
     }

@@ -4,7 +4,7 @@ import com.raylib.java.structs.Matrix;
 import com.raylib.java.structs.Point;
 import com.raylib.java.structs.Size;
 
-public class Window{
+public class Window {
     public long handle;
 
     //EGLDisplay device;                  // Native display device (physical screen connection)
@@ -18,6 +18,7 @@ public class Window{
     protected boolean fullscreen;                     // Check if fullscreen mode is enabled
     protected boolean shouldClose;                    // Check if window set for closing
     protected boolean resizedLastFrame;               // Check if window has been resized last frame
+    protected boolean usingFbo;
 
     protected boolean eventWaiting;               // Wait for events before ending frame
 
@@ -36,7 +37,7 @@ public class Window{
     protected String[] dropFilePaths;               // Store dropped files paths as strings
     protected int dropFilesCount;                   // Count dropped files strings
 
-    public Window(){
+    public Window() {
         handle = 0;
 
         title = "";
@@ -46,7 +47,7 @@ public class Window{
         shouldClose = false;
         resizedLastFrame = false;
 
-        position = new Point(0,0);
+        position = new Point(0, 0);
         previousPosition = new Point(0, 0);
         display = new Size();
         screen = new Size();
@@ -62,123 +63,164 @@ public class Window{
         dropFilesCount = 0;
     }
 
-    public String getTitle(){
+    public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title){
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public int getFlags(){
+    public int getFlags() {
         return flags;
     }
 
-    public void setFlags(int flags){
+    public void setFlags(int flags) {
         this.flags = flags;
     }
 
-    public boolean isReady(){
+    public boolean isReady() {
         return ready;
     }
 
-    public void setReady(boolean ready){
+    public void setReady(boolean ready) {
         this.ready = ready;
     }
 
-    public boolean isFullscreen(){
+    public boolean isFullscreen() {
         return fullscreen;
     }
 
-    public void setFullscreen(boolean fullscreen){
+    public void setFullscreen(boolean fullscreen) {
         this.fullscreen = fullscreen;
     }
 
-    public boolean isShouldClose(){
+    public boolean isShouldClose() {
         return shouldClose;
     }
 
-    public void setShouldClose(boolean shouldClose){
+    public void setShouldClose(boolean shouldClose) {
         this.shouldClose = shouldClose;
     }
 
-    public boolean isResizedLastFrame(){
+    public boolean isResizedLastFrame() {
         return resizedLastFrame;
     }
 
-    public void setResizedLastFrame(boolean resizedLastFrame){
+    public void setResizedLastFrame(boolean resizedLastFrame) {
         this.resizedLastFrame = resizedLastFrame;
     }
 
-    public Point getPosition(){
+    public boolean isEventWaiting() {
+        return eventWaiting;
+    }
+
+    public void setEventWaiting(boolean eventWaiting) {
+        this.eventWaiting = eventWaiting;
+    }
+
+    public Point getPosition() {
         return position;
     }
 
-    public void setPosition(Point position){
+    public void setPosition(Point position) {
         this.position = position;
     }
 
-    public Size getDisplay(){
+    public Point getPreviousPosition() {
+        return previousPosition;
+    }
+
+    public void setPreviousPosition(Point previousPosition) {
+        this.previousPosition = previousPosition;
+    }
+
+    public Size getDisplay() {
         return display;
     }
 
-    public void setDisplay(Size display){
+    public void setDisplay(Size display) {
         this.display = display;
     }
 
-    public Size getScreen(){
+    public Size getScreen() {
         return screen;
     }
 
-    public void setScreen(Size screen){
+    public void setScreen(Size screen) {
         this.screen = screen;
     }
 
-    public Size getCurrentFbo(){
+    public Size getPreviousScreen() {
+        return previousScreen;
+    }
+
+    public void setPreviousScreen(Size previousScreen) {
+        this.previousScreen = previousScreen;
+    }
+
+    public Size getCurrentFbo() {
         return currentFbo;
     }
 
-    public void setCurrentFbo(Size currentFbo){
+    public void setCurrentFbo(Size currentFbo) {
         this.currentFbo = currentFbo;
     }
 
-    public Size getRender(){
+    public Size getRender() {
         return render;
     }
 
-    public void setRender(Size render){
+    public void setRender(Size render) {
         this.render = render;
     }
 
-    public Point getRenderOffset(){
+    public Point getRenderOffset() {
         return renderOffset;
     }
 
-    public void setRenderOffset(Point renderOffset){
+    public void setRenderOffset(Point renderOffset) {
         this.renderOffset = renderOffset;
     }
 
-    public Matrix getScreenScale(){
+    public Size getScreenMin() {
+        return screenMin;
+    }
+
+    public void setScreenMin(Size screenMin) {
+        this.screenMin = screenMin;
+    }
+
+    public Size getScreenMax() {
+        return screenMax;
+    }
+
+    public void setScreenMax(Size screenMax) {
+        this.screenMax = screenMax;
+    }
+
+    public Matrix getScreenScale() {
         return screenScale;
     }
 
-    public void setScreenScale(Matrix screenScale){
+    public void setScreenScale(Matrix screenScale) {
         this.screenScale = screenScale;
     }
 
-    public String[] getDropFilePaths(){
+    public String[] getDropFilePaths() {
         return dropFilePaths;
     }
 
-    public void setDropFilePaths(String[] dropFilesPath){
-        this.dropFilePaths = dropFilesPath;
+    public void setDropFilePaths(String[] dropFilePaths) {
+        this.dropFilePaths = dropFilePaths;
     }
 
-    public int getDropFilesCount(){
+    public int getDropFilesCount() {
         return dropFilesCount;
     }
 
-    public void setDropFilesCount(int dropFilesCount){
+    public void setDropFilesCount(int dropFilesCount) {
         this.dropFilesCount = dropFilesCount;
     }
+
 }

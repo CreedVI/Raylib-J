@@ -319,8 +319,7 @@ public class rShapes {
      * @param segments   number of segments
      * @param color      color to draw circle sector
      */
-    public void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments,
-                                 Color color) {
+    public void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color) {
         if(radius <= 0.0f) {
             radius = 0.1f;  // A public void div by zero
         }

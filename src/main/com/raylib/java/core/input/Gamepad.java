@@ -7,6 +7,7 @@ public class Gamepad{
     public int lastButtonPressed;          // Register last gamepad button pressed
     int axisCount;                  // Register number of available gamepad axis
     public boolean[] ready;// Flag to know if gamepad is ready
+    public String[] name;
     public float[][] axisState;// Gamepad axis state
     public byte[][] currentButtonState;// Current gamepad buttons state
     public byte[][] previousButtonState;// Previous gamepad buttons state
@@ -80,56 +81,65 @@ public class Gamepad{
 
     public Gamepad(){
         ready = new boolean[MAX_GAMEPADS];
+        name = new String[MAX_GAMEPADS];
         axisState = new float[MAX_GAMEPADS][6];
         currentButtonState = new byte[MAX_GAMEPADS][18];
         previousButtonState = new byte[MAX_GAMEPADS][18];
     }
 
-    public int getLastButtonPressed(){
+    public int getLastButtonPressed() {
         return lastButtonPressed;
     }
 
-    public void setLastButtonPressed(int lastButtonPressed){
+    public void setLastButtonPressed(int lastButtonPressed) {
         this.lastButtonPressed = lastButtonPressed;
     }
 
-    public int getAxisCount(){
+    public int getAxisCount() {
         return axisCount;
     }
 
-    public void setAxisCount(int axisCount){
+    public void setAxisCount(int axisCount) {
         this.axisCount = axisCount;
     }
 
-    public boolean[] getReady(){
+    public boolean[] getReady() {
         return ready;
     }
 
-    public void setReady(boolean[] ready){
+    public void setReady(boolean[] ready) {
         this.ready = ready;
     }
 
-    public float[][] getAxisState(){
+    public String getName(int index) {
+        return name[index];
+    }
+
+    public void setName(String name, int index) {
+        this.name[index] = name;
+    }
+
+    public float[][] getAxisState() {
         return axisState;
     }
 
-    public void setAxisState(float[][] axisState){
+    public void setAxisState(float[][] axisState) {
         this.axisState = axisState;
     }
 
-    public byte[][] getCurrentButtonState(){
+    public byte[][] getCurrentButtonState() {
         return currentButtonState;
     }
 
-    public void setCurrentButtonState(byte[][] currentButtonState){
+    public void setCurrentButtonState(byte[][] currentButtonState) {
         this.currentButtonState = currentButtonState;
     }
 
-    public byte[][] getPreviousButtonState(){
+    public byte[][] getPreviousButtonState() {
         return previousButtonState;
     }
 
-    public void setPreviousButtonState(byte[][] previousButtonState){
+    public void setPreviousButtonState(byte[][] previousButtonState) {
         this.previousButtonState = previousButtonState;
     }
 }

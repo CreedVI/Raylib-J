@@ -9,7 +9,7 @@ public class Mouse{
     public Vector2 offset;                 // Mouse offset
     public Vector2 scale;                  // Mouse scaling
 
-    public long cursor;                     // Tracks current mouse cursor
+    public MouseCursor cursor;                     // Tracks current mouse cursor
     public boolean cursorHidden;              // Track if cursor is hidden
     public boolean cursorOnScreen;            // Tracks if cursor is inside client area
 
@@ -111,11 +111,11 @@ public class Mouse{
         this.scale = scale;
     }
 
-    public long getCursor(){
+    public MouseCursor getCursor() {
         return cursor;
     }
 
-    public void setCursor(long cursor){
+    public void setCursor(MouseCursor cursor) {
         this.cursor = cursor;
     }
 
