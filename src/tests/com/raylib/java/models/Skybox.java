@@ -206,9 +206,9 @@ public class Skybox {
         // STEP 1: Setup framebuffer
         //------------------------------------------------------------------------------------------
         int rbo = rlj.rlgl.rlLoadTextureDepth(size, size, true);
-        cubemap.id = rlj.rlgl.rlLoadTextureCubemap(null, size, format);
+        cubemap.id = rlj.rlgl.rlLoadTextureCubemap(null, size, format, 0);
 
-        int fbo = rlj.rlgl.rlLoadFramebuffer(size, size);
+        int fbo = rlj.rlgl.rlLoadFramebuffer();
         rlj.rlgl.rlFramebufferAttach(fbo, rbo, ATTACHMENT_DEPTH, ATTACHMENT_RENDERBUFFER);
         rlj.rlgl.rlFramebufferAttach(fbo, cubemap.id, ATTACHMENT_COLOR_CHANNEL0, ATTACHMENT_CUBEMAP_POSITIVE_X);
 

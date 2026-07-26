@@ -17,6 +17,7 @@ import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
@@ -1301,7 +1302,7 @@ public class rCore {
     public Shader LoadShaderFromMemory(String vsCode, String fsCode){
         Shader shader = new Shader();
 
-        shader.id = context.rlgl.rlLoadShaderCode(vsCode, fsCode);
+        shader.id = context.rlgl.rlLoadShaderProgram(vsCode, fsCode);
 
         // After shader loading, we TRY to set default location names
         if (shader.getId() > 0){
@@ -1799,10 +1800,8 @@ public class rCore {
 
             Vector2 scale = GetWindowScaleDPI();
 
-            short[] imgData = context.rlgl.rlReadScreenPixels((int)((float)window.render.width*scale.x), (int)((float)window.render.height*scale.y));
-            byte[] dataB = new byte[imgData.length];
-            IntStream.range(0, dataB.length).forEach(i -> dataB[i] = (byte) imgData[i]);
-            Image image = new Image(dataB, window.render.width, window.render.height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+            byte[] imgData = context.rlgl.rlReadScreenPixels((int)((float)window.render.width*scale.x), (int)((float)window.render.height*scale.y));
+            Image image = new Image(imgData, window.render.width, window.render.height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
 
             String path = GetWorkingDirectory() + fileName;
 

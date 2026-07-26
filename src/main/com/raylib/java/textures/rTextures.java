@@ -3914,7 +3914,7 @@ public class rTextures {
 
             // NOTE: Cubemap data is expected to be provided as 6 images in a single data array,
             // one after the other (that's a vertical image), following convention: +X, -X, +Y, -Y, +Z, -Z
-            cubemap.id = context.rlgl.rlLoadTextureCubemap(faces.getData(), size, faces.format);
+            cubemap.id = context.rlgl.rlLoadTextureCubemap(faces.getData(), size, faces.format, faces.mipmaps);
             if (cubemap.id == 0) {
                 context.tracelog.TRACELOG(LOG_WARNING, "IMAGE: Failed to load cubemap image");
             }
@@ -3937,7 +3937,7 @@ public class rTextures {
     public RenderTexture LoadRenderTexture(int width, int height) {
         RenderTexture target = new RenderTexture();
 
-        target.id = context.rlgl.rlLoadFramebuffer(width, height);   // Load an empty framebuffer
+        target.id = context.rlgl.rlLoadFramebuffer();   // Load an empty framebuffer
 
         if (target.id > 0) {
             context.rlgl.rlEnableFramebuffer(target.id);

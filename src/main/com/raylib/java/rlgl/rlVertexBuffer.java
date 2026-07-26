@@ -5,6 +5,7 @@ public class rlVertexBuffer{
     int elementCount;          // Number of elements in the buffer (QUADS)
     float[] vertices;            // Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
     float[] texcoords;           // Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
+    float[] normals;            // Vertex normal (XYZ - 3 components per vertex) (shader-location = 2)
     byte[] colors;              // Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
     int[] indices_GL11;      // Vertex indices (in case vertex data comes indexed) (6 indices per quad)
     short[] indices_ES20;    // Vertex indices (in case vertex data comes indexed) (6 indices per quad)
@@ -14,10 +15,11 @@ public class rlVertexBuffer{
     public rlVertexBuffer() {
         vertices = new float[3];
         texcoords = new float[2];
+        normals = new float[3];
         colors = new byte[64];
         indices_GL11 = new int[6];
         indices_ES20 = new short[6];
-        vboId = new int[4];
+        vboId = new int[5];
     }
 
     public int getElementCount() {
@@ -42,6 +44,14 @@ public class rlVertexBuffer{
 
     public void setTexcoords(float[] texcoords){
         this.texcoords = texcoords;
+    }
+
+    public float[] getNormals() {
+        return normals;
+    }
+
+    public void setNormals(float[] normals) {
+        this.normals = normals;
     }
 
     public byte[] getColors(){

@@ -158,7 +158,7 @@ public class HybridRendering {
     private static RenderTexture LoadRenderTextureDepthTex(Raylib context, int width, int height) {
         RenderTexture target = new RenderTexture();
 
-        target.id = context.rlgl.rlLoadFramebuffer(width, height);   // Load an empty framebuffer
+        target.id = context.rlgl.rlLoadFramebuffer();   // Load an empty framebuffer
 
         if (target.id > 0) {
             context.rlgl.rlEnableFramebuffer(target.id);

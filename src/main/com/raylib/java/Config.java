@@ -119,13 +119,13 @@ public class Config{
     // rlgl: Configuration values
     //------------------------------------------------------------------------------------
     public final static boolean SUPPORT_GL_DETAILS_INFO = false;
+    public final static boolean FBO_READ_TEXTURE_AS_RGBA = false;
     public final static int RL_DEFAULT_BATCH_BUFFER_ELEMENTS = 8192;    // Default internal render batch limits
     final static int ES2_DEFAULT_BATCH_BUFFER_ELEMENTS = 2048;    // Default internal render batch limits
 
 
     final static int RL_DEFAULT_BATCH_BUFFERS = 1;      // Default number of batch buffers (multi-buffering)
-    public final static int RL_DEFAULT_BATCH_DRAWCALLS = 256;      // Default number of batch draw calls (by state changes:
-    // mode, texture)
+    public final static int RL_DEFAULT_BATCH_DRAWCALLS = 256;      // Default number of batch draw calls (by state changes: mode, texture)
 
     public final static int RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS = 4; // Maximum number of textures units that can be activated on batch
     // drawing (SetShaderValueTexture())
@@ -135,22 +135,7 @@ public class Config{
     public final static float RL_CULL_DISTANCE_NEAR = 0.01f;      // Default projection matrix near cull distance
     public final static float RL_CULL_DISTANCE_FAR = 1000.0f;      // Default projection matrix far cull distance
 
-    // Default shader vertex attribute names to set location points
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION    = "vertexPosition";   // Binded by default to shader location: 0
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD    = "vertexTexCoord";    // Binded by default to shader location: 1
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL      = "vertexNormal";      // Binded by default to shader location: 2
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR       =  "vertexColor";       // Binded by default to shader location: 3
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT     = "vertexTangent";     // Binded by default to shader location: 4
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2   = "vertexTexCoord2";   // Binded by default to shader location: 5
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_MVP        = "mvp";               // model-view-projection matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW       = "matView";           // view matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION = "matProjection";     // projection matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL      = "matModel";          // model matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL     = "matNormal";         // normal matrix (transpose(inverse(matModelView))
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR      = "colDiffuse";        // color diffuse (base tint color, multiplied by texture color)
-    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0 = "texture0";          // texture0 (texture slot active 0)
-    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1 = "texture1";          // texture1 (texture slot active 1)
-    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2 = "texture2";          // texture2 (texture slot active 2)
+    public boolean RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = false;
 
     //------------------------------------------------------------------------------------
     // Module: rShapes - Configuration Flags

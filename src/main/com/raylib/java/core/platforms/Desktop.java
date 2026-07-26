@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
@@ -1063,6 +1064,7 @@ public class Desktop implements Platform {
         // Initialize graphic device: display/window and graphic context
         //----------------------------------------------------------------------------
         glfwDefaultWindowHints();                       // Set default windows hints
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         //glfwWindowHint(GLFW_RED_BITS, 8);             // Framebuffer red color component bits
         //glfwWindowHint(GLFW_GREEN_BITS, 8);           // Framebuffer green color component bits
         //glfwWindowHint(GLFW_BLUE_BITS, 8);            // Framebuffer blue color component bits
@@ -1308,9 +1310,12 @@ public class Desktop implements Platform {
 
         glfwMakeContextCurrent(window.handle);
         GL.createCapabilities();
+        if (context.config.RLGL_ENABLE_OPENGL_DEBUG_CONTEXT) {
+            GLUtil.setupDebugMessageCallback();
+        }
         result = glfwGetError(errorBuffer);
 
-        // Check context activationi
+        // Check context activation
         if ((result != GLFW_NO_WINDOW_CONTEXT) && (result != GLFW_PLATFORM_ERROR)) {
             window.setReady(true);
 

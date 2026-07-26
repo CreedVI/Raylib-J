@@ -4,7 +4,7 @@ import com.raylib.java.structs.Matrix;
 
 import static com.raylib.java.rlgl.RLGL.*;
 
-public  class State{                    // Renderer state
+public class State{                    // Renderer state
 
     public int vertexCounter;                  // Current active render batch vertex counter (generic, used for all batches)
     public float texcoordx, texcoordy;         // Current active texture coordinate (added on glVertex*())
@@ -21,6 +21,7 @@ public  class State{                    // Renderer state
     public Matrix[] stack;                     // Matrix stack for push/pop
     public int stackCounter;                   // Matrix stack counter
 
+    public int currentTextureId;      // Current texture id to be used on glBegin
     public int defaultTextureId;      // Default texture used on shapes/poly drawing (required by shader)
     public int[] activeTextureId;     // Active texture ids to be enabled on batch drawing (0 active by default)
     public int defaultVShaderId;      // Default vertex shader id (used by default shader program)
@@ -367,5 +368,69 @@ public  class State{                    // Renderer state
 
     public void setFramebufferHeight(int framebufferHeight){
         this.framebufferHeight = framebufferHeight;
+    }
+
+    public int getCurrentTextureId() {
+        return currentTextureId;
+    }
+
+    public void setCurrentTextureId(int currentTextureId) {
+        this.currentTextureId = currentTextureId;
+    }
+
+    public int getGlBlendSrcFactorRGB() {
+        return glBlendSrcFactorRGB;
+    }
+
+    public void setGlBlendSrcFactorRGB(int glBlendSrcFactorRGB) {
+        this.glBlendSrcFactorRGB = glBlendSrcFactorRGB;
+    }
+
+    public int getGlBlendDestFactorRGB() {
+        return glBlendDestFactorRGB;
+    }
+
+    public void setGlBlendDestFactorRGB(int glBlendDestFactorRGB) {
+        this.glBlendDestFactorRGB = glBlendDestFactorRGB;
+    }
+
+    public int getGlBlendSrcFactorAlpha() {
+        return glBlendSrcFactorAlpha;
+    }
+
+    public void setGlBlendSrcFactorAlpha(int glBlendSrcFactorAlpha) {
+        this.glBlendSrcFactorAlpha = glBlendSrcFactorAlpha;
+    }
+
+    public int getGlBlendDestFactorAlpha() {
+        return glBlendDestFactorAlpha;
+    }
+
+    public void setGlBlendDestFactorAlpha(int glBlendDestFactorAlpha) {
+        this.glBlendDestFactorAlpha = glBlendDestFactorAlpha;
+    }
+
+    public int getGlBlendEquationRGB() {
+        return glBlendEquationRGB;
+    }
+
+    public void setGlBlendEquationRGB(int glBlendEquationRGB) {
+        this.glBlendEquationRGB = glBlendEquationRGB;
+    }
+
+    public int getGlBlendEquationAlpha() {
+        return glBlendEquationAlpha;
+    }
+
+    public void setGlBlendEquationAlpha(int glBlendEquationAlpha) {
+        this.glBlendEquationAlpha = glBlendEquationAlpha;
+    }
+
+    public boolean isGlCustomBlendModeModified() {
+        return glCustomBlendModeModified;
+    }
+
+    public void setGlCustomBlendModeModified(boolean glCustomBlendModeModified) {
+        this.glCustomBlendModeModified = glCustomBlendModeModified;
     }
 }

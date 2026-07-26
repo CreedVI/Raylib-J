@@ -25,6 +25,7 @@ public class BasicShapes{
 
     public static void main(String[] args){
         Raylib rlj = new Raylib();
+        // rlj.config.RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = true;
 
         rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib [shapes] example - basic shapes drawing");
         rlj.core.SetTargetFPS(60);
@@ -35,14 +36,11 @@ public class BasicShapes{
             rlj.core.ClearBackground(Color.RAYWHITE);
 
             rlj.text.DrawText("some basic shapes available on raylib", 20, 20, 20, Color.DARKGRAY);
-//---
+
             rlj.shapes.DrawCircle(SCREEN_WIDTH/4, 120, 35, Color.DARKBLUE);
 
             rlj.shapes.DrawRectangle(SCREEN_WIDTH/4*2 - 60, 100, 120, 60, Color.RED);
-            rlj.shapes.DrawRectangleLines(SCREEN_WIDTH/4*2 - 40, 320, 80, 60, Color.ORANGE);  // NOTE: Uses QUADS
-            // internally,
-            // not
-            // lines
+            rlj.shapes.DrawRectangleLines(SCREEN_WIDTH/4*2 - 40, 320, 80, 60, Color.ORANGE);
             rlj.shapes.DrawRectangleGradientH(SCREEN_WIDTH/4*2 - 90, 170, 180, 130, Color.MAROON, Color.GOLD);
 
             rlj.shapes.DrawTriangle(new Vector2(SCREEN_WIDTH/4.0f*3, 80), new Vector2(SCREEN_WIDTH/4.0f*3 - 60, 150), new Vector2(SCREEN_WIDTH/4.0f*3 + 60, 150), Color.VIOLET);
