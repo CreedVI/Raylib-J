@@ -4,7 +4,7 @@ import com.raylib.java.rlgl.RLGL.rlPixelFormat;
 
 import java.nio.ByteBuffer;
 
-public class Image{
+public class Image implements Cloneable{
 
     public ByteBuffer data;               // Image raw data
     public int width;                     // Image base width
@@ -138,5 +138,17 @@ public class Image{
 
     public void setFormat(rlPixelFormat format){
         this.format = format;
+    }
+
+    @Override
+    public Image clone() {
+        try {
+            Image clone = (Image) super.clone();
+            clone.data = data.duplicate();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

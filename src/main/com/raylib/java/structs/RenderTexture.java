@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class RenderTexture{
+public class RenderTexture implements Cloneable {
 
     public int id;
     public Texture2D texture;
@@ -34,5 +34,19 @@ public class RenderTexture{
 
     public void setDepth(Texture2D depth){
         this.depth = depth;
+    }
+
+    @Override
+    public RenderTexture clone() {
+        try {
+            RenderTexture clone = (RenderTexture) super.clone();
+
+            clone.texture = texture.clone();
+            clone.depth = depth.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

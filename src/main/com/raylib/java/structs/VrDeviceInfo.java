@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class VrDeviceInfo{
+public class VrDeviceInfo implements Cloneable{
 
     // Head-Mounted-Display device parameters
 
@@ -98,5 +98,21 @@ public class VrDeviceInfo{
 
     public void setChromaAbCorrection(float[] chromaAbCorrection){
         this.chromaAbCorrection = chromaAbCorrection;
+    }
+
+    @Override
+    public VrDeviceInfo clone() {
+        try {
+            VrDeviceInfo clone = (VrDeviceInfo) super.clone();
+
+            clone.lensDistortionValues = new float[lensDistortionValues.length];
+            System.arraycopy(lensDistortionValues,0, clone.lensDistortionValues, 0, lensDistortionValues.length);
+            clone.chromaAbCorrection = new float[chromaAbCorrection.length];
+            System.arraycopy(chromaAbCorrection, 0, clone.chromaAbCorrection, 0, chromaAbCorrection.length);
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

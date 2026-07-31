@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Quaternion{
+public class Quaternion implements Cloneable {
     public float x, y, z, w;
 
     public Quaternion(){
@@ -47,5 +47,16 @@ public class Quaternion{
 
     public void setW(float w){
         this.w = w;
+    }
+
+    @Override
+    public Quaternion clone() {
+        try {
+            Quaternion clone = (Quaternion) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

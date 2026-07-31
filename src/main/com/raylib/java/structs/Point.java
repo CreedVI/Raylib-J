@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Point{
+public class Point implements Cloneable {
 
     public float x;
     public float y;
@@ -29,5 +29,16 @@ public class Point{
 
     public void setY(float y){
         this.y = y;
+    }
+
+    @Override
+    public Point clone() {
+        try {
+            Point clone = (Point) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class GlyphInfo{
+public class GlyphInfo implements Cloneable{
 
     public int value;              // Character value (Unicode)
     public int offsetX;            // Character offset X when drawing
@@ -54,5 +54,17 @@ public class GlyphInfo{
 
     public void setImage(Image image){
         this.image = image;
+    }
+
+    @Override
+    public GlyphInfo clone() {
+        try {
+            GlyphInfo clone = (GlyphInfo) super.clone();
+            clone.image = image.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

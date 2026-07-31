@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Vector4{
+public class Vector4 implements Cloneable {
     public float x, y, z, w;
 
     public Vector4(){
@@ -54,5 +54,16 @@ public class Vector4{
 
     public void setW(float w){
         this.w = w;
+    }
+
+    @Override
+    public Vector4 clone() {
+        try {
+            Vector4 clone = (Vector4) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

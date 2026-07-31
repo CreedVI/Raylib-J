@@ -1,7 +1,7 @@
 package com.raylib.java.structs;
 
 //OpenGL 4x4 - Right handed, Column Major
-public class Matrix {
+public class Matrix implements Cloneable {
     public float m0, m4, m8, m12;
     public float m1, m5, m9, m13;
     public float m2, m6, m10, m14;
@@ -188,5 +188,16 @@ public class Matrix {
 
     public void setM15(float m15){
         this.m15 = m15;
+    }
+
+    @Override
+    public Matrix clone() {
+        try {
+            Matrix clone = (Matrix) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

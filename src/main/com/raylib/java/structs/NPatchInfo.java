@@ -1,19 +1,28 @@
 package com.raylib.java.structs;
 
-public class NPatchInfo{
+public class NPatchInfo implements Cloneable{
 
     public Rectangle source;   // Region in the texture
     public int left;              // left border offset
     public int top;               // top border offset
     public int right;             // right border offset
     public int bottom;            // bottom border offset
-    public int type;              // layout of the n-patch: 3x3, 1x3 or 3x1
+    public NPatchType type;              // layout of the n-patch: 3x3, 1x3 or 3x1
 
-    public static class NPatchType{
-        public static final int
-                NPATCH_NINE_PATCH = 0,         // Npatch defined by 3x3 tiles
-                NPATCH_THREE_PATCH_VERTICAL = 1,    // Npatch defined by 1x3 tiles
-                NPATCH_THREE_PATCH_HORIZONTAL = 2;   // Npatch defined by 3x1 tiles
+    public enum NPatchType {
+        NPATCH_NINE_PATCH(0),         // Npatch defined by 3x3 tiles
+        NPATCH_THREE_PATCH_VERTICAL(1),    // Npatch defined by 1x3 tiles
+        NPATCH_THREE_PATCH_HORIZONTAL(2);   // Npatch defined by 3x1 tiles
+
+        private final int value;
+
+        NPatchType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     public NPatchInfo() {
@@ -24,7 +33,7 @@ public class NPatchInfo{
         bottom = 0;
     }
 
-    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, int type) {
+    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, NPatchType type) {
         this.source = source;
         this.left = left;
         this.top = top;
@@ -73,11 +82,24 @@ public class NPatchInfo{
         this.bottom = bottom;
     }
 
-    public int getType() {
+    public NPatchType getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(NPatchType type) {
         this.type = type;
+    }
+
+    @Override
+    public NPatchInfo clone() {
+        try {
+            NPatchInfo clone = (NPatchInfo) super.clone();
+
+            clone.source = source.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

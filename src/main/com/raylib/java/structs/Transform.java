@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Transform {
+public class Transform implements Cloneable {
 
     public Vector3 translation;    // Translation
     public Quaternion rotation;    // Rotation
@@ -16,5 +16,20 @@ public class Transform {
         this.translation = translation;
         this.rotation = rotation;
         this.scale = scale;
+    }
+
+    @Override
+    public Transform clone() {
+        try {
+            Transform clone = (Transform) super.clone();
+
+            clone.translation = translation.clone();
+            clone.rotation = rotation.clone();
+            clone.scale = scale.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

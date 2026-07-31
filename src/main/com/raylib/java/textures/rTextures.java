@@ -4396,10 +4396,10 @@ public class rTextures {
             if (nPatchInfo.source.height < 0) {
                 nPatchInfo.source.y -= nPatchInfo.source.height;
             }
-            if (nPatchInfo.getType() == NPATCH_THREE_PATCH_HORIZONTAL) {
+            if (nPatchInfo.type == NPATCH_THREE_PATCH_HORIZONTAL) {
                 patchHeight = nPatchInfo.source.height;
             }
-            if (nPatchInfo.getType() == NPATCH_THREE_PATCH_VERTICAL) {
+            if (nPatchInfo.type == NPATCH_THREE_PATCH_VERTICAL) {
                 patchWidth = nPatchInfo.source.width;
             }
 

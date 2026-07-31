@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Font{
+public class Font implements Cloneable{
 
     public int baseSize;           // Base size (default chars height)
     public int glyphCount;         // Number of characters
@@ -64,5 +64,22 @@ public class Font{
 
     public void setGlyphs(GlyphInfo[] glyphs){
         this.glyphs = glyphs;
+    }
+
+    @Override
+    public Font clone() {
+        try {
+            Font clone = (Font) super.clone();
+
+            clone.texture = texture.clone();
+            clone.recs = new Rectangle[recs.length];
+            System.arraycopy(recs, 0, clone.recs, 0, recs.length);
+            clone.glyphs = new GlyphInfo[glyphs.length];
+            System.arraycopy(glyphs, 0, clone.glyphs, 0, glyphs.length);
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

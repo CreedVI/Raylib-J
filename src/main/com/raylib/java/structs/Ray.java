@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Ray{
+public class Ray implements Cloneable {
 
     public Vector3 position;       // Ray position (origin)
     public Vector3 direction;      // Ray direction
@@ -29,5 +29,19 @@ public class Ray{
 
     public void setDirection(Vector3 direction){
         this.direction = direction;
+    }
+
+    @Override
+    public Ray clone() {
+        try {
+            Ray clone = (Ray) super.clone();
+
+            clone.direction = direction.clone();
+            clone.position = position.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

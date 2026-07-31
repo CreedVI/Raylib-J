@@ -3,7 +3,7 @@ package com.raylib.java.structs;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-public class TextureCubemap{
+public class TextureCubemap implements Cloneable{
 
     public int id;                 // OpenGL texture id
     public int width;              // Texture base width
@@ -58,4 +58,14 @@ public class TextureCubemap{
         this.format = format;
     }
 
+    @Override
+    public TextureCubemap clone() {
+        try {
+            TextureCubemap clone = (TextureCubemap) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

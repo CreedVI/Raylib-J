@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class VrStereoConfig{
+public class VrStereoConfig implements Cloneable {
 
     public Matrix[] projection;           // VR projection matrices (per eye)
     public Matrix[] viewOffset;           // VR view offset matrices (per eye)
@@ -84,5 +84,33 @@ public class VrStereoConfig{
 
     public void setScaleIn(float[] scaleIn){
         this.scaleIn = scaleIn;
+    }
+
+    @Override
+    public VrStereoConfig clone() {
+        try {
+            VrStereoConfig clone = (VrStereoConfig) super.clone();
+
+            clone.projection = new Matrix[projection.length];
+            System.arraycopy(projection, 0, clone.projection, 0, projection.length);
+            clone.viewOffset = new Matrix[viewOffset.length];
+            System.arraycopy(viewOffset, 0, clone.viewOffset, 0, viewOffset.length);
+            clone.leftLensCenter = new float[leftLensCenter.length];
+            System.arraycopy(leftLensCenter, 0, leftLensCenter, 0, leftLensCenter.length);
+            clone.rightLensCenter = new float[rightLensCenter.length];
+            System.arraycopy(rightLensCenter, 0, clone.rightLensCenter, 0, rightLensCenter.length);
+            clone.leftScreenCenter = new float[leftScreenCenter.length];
+            System.arraycopy(leftScreenCenter, 0, clone.leftScreenCenter, 0, leftScreenCenter.length);
+            clone.rightScreenCenter = new float[rightScreenCenter.length];
+            System.arraycopy(rightScreenCenter, 0, clone.rightScreenCenter, 0, rightScreenCenter.length);
+            clone.scale = new float[scale.length];
+            System.arraycopy(scale, 0, clone.scale, 0, scale.length);
+            clone.scaleIn = new float[scaleIn.length];
+            System.arraycopy(scaleIn, 0, clone.scaleIn, 0, scaleIn.length);
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

@@ -68,8 +68,8 @@ public class rShapes {
      */
     int SPLINE_SEGMENT_DIVISIONS = 24;
 
-    private Texture2D texShapes = new Texture2D(1, 1, 1, 1, rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8); // Texture used on rShapes drawing (white pixel loaded by rlgl)
-    private Rectangle texShapesRec = new Rectangle(0f, 0f, 1f, 1f);        // Texture source rectangle used on rShapes drawing
+    private Texture2D texShapes;           // Texture used on rShapes drawing (white pixel loaded by rlgl)
+    private Rectangle texShapesRec;        // Texture source rectangle used on rShapes drawing
 
     final private Raylib context;
 
@@ -874,8 +874,7 @@ public class rShapes {
             context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
             context.rlgl.rlVertex2f(bottomLeft.x, bottomLeft.y);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width,
-                    (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
             context.rlgl.rlVertex2f(bottomRight.x, bottomRight.y);
 
             context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
@@ -952,7 +951,6 @@ public class rShapes {
         context.rlgl.rlColor4ub(col4.r, col4.g, col4.b, col4.a);
         context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
         context.rlgl.rlVertex2f(rec.x + rec.width, rec.y);
-
 
         context.rlgl.rlSetTexture(0);
     }

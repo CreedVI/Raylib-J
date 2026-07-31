@@ -1,7 +1,7 @@
 package com.raylib.java.structs;
 
-public class Float16{
-    public float v[] = new float[16];
+public class Float16 implements Cloneable {
+    public float[] v = new float[16];
 
     public Float16(){
         v[0] = 0;
@@ -50,5 +50,17 @@ public class Float16{
 
     public void setV(float[] v){
         this.v = v;
+    }
+
+    @Override
+    public Float16 clone() {
+        try {
+            Float16 clone = (Float16) super.clone();
+            clone.v = new float[v.length];
+            System.arraycopy(v, 0, clone.v, 0, v.length);
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

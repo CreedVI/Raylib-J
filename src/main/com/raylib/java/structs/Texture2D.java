@@ -3,7 +3,7 @@ package com.raylib.java.structs;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-public class Texture2D{
+public class Texture2D implements Cloneable {
 
     public int id;                 // OpenGL texture id
     public int width;              // Texture base width
@@ -64,5 +64,16 @@ public class Texture2D{
 
     public void setFormat(rlPixelFormat format){
         this.format = format;
+    }
+
+    @Override
+    public Texture2D clone() {
+        try {
+            Texture2D clone = (Texture2D) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

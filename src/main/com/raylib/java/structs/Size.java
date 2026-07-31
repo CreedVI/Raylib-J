@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Size{
+public class Size implements Cloneable {
 
     public int width;
     public int height;
@@ -29,5 +29,16 @@ public class Size{
 
     public void setHeight(int height){
         this.height = height;
+    }
+
+    @Override
+    public Size clone() {
+        try {
+            Size clone = (Size) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Rectangle{
+public class Rectangle implements Cloneable {
 
     public float x;
     public float y;
@@ -58,5 +58,16 @@ public class Rectangle{
 
     public void setHeight(float height){
         this.height = height;
+    }
+
+    @Override
+    public Rectangle clone() {
+        try {
+            Rectangle clone = (Rectangle) super.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

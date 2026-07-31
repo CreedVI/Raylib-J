@@ -1,9 +1,9 @@
 package com.raylib.java.structs;
 
-public class AutomationEvent{
+public class AutomationEvent implements Cloneable {
 
     // Input events
-    public enum AutomationEventType{
+    public enum AutomationEventType {
         EVENT_NONE,
         INPUT_KEY_UP,                   // param[0]: key
         INPUT_KEY_DOWN,                 // param[0]: key
@@ -49,5 +49,19 @@ public class AutomationEvent{
     public AutomationEvent(){
         params = new int[3];
     }
+
+
+    @Override
+    public AutomationEvent clone() {
+        try {
+            AutomationEvent clone = (AutomationEvent) super.clone();
+            clone.params = new int[params.length];
+            System.arraycopy(params, 0, clone.params, 0, params.length);
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
+
 
 }

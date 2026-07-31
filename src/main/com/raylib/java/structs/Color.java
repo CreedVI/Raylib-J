@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Color{
+public class Color implements Cloneable {
 
     public int r, g, b, a;
 
@@ -160,6 +160,17 @@ public class Color{
         result[2] = (byte) color.b;
         result[3] = (byte) color.a;
         return result;
+    }
+
+    @Override
+    public Color clone() {
+        try {
+            Color clone = (Color) super.clone();
+            // TODO: copy mutable state here, so the clone can't change the internals of the original
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
 

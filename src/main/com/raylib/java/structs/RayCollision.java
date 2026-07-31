@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class RayCollision{
+public class RayCollision implements Cloneable {
 
     public boolean hit;            // Did the ray hit something?
     public float distance;         // Distance to nearest hit
@@ -42,5 +42,19 @@ public class RayCollision{
 
     public void setNormal(Vector3 normal){
         this.normal = normal;
+    }
+
+    @Override
+    public RayCollision clone() {
+        try {
+            RayCollision clone = (RayCollision) super.clone();
+
+            clone.point = point.clone();
+            clone.normal = normal.clone();
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

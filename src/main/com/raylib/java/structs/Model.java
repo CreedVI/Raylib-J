@@ -1,6 +1,6 @@
 package com.raylib.java.structs;
 
-public class Model {
+public class Model implements Cloneable {
 
     public Matrix transform;       // Local transform matrix
 
@@ -38,4 +38,28 @@ public class Model {
         }
     }
 
+    @Override
+    public Model clone() {
+        try {
+            Model clone = (Model) super.clone();
+
+            clone.transform = transform.clone();
+
+            clone.meshes = new Mesh[meshes.length];
+            System.arraycopy(meshes, 0, clone.meshes, 0, meshes.length);
+            clone.materials = new Material[materials.length];
+            System.arraycopy(materials, 0, clone.materials, 0, materials.length);
+            clone.meshMaterial = new int[meshMaterial.length];
+            System.arraycopy(meshMaterial, 0, clone.meshMaterial, 0, meshMaterial.length);
+
+            clone.bones = new BoneInfo[bones.length];
+            System.arraycopy(bones, 0, clone.bones, 0, bones.length);
+            clone.bindPose = new Transform[bindPose.length];
+            System.arraycopy(bindPose, 0, clone.bindPose, 0, bindPose.length);
+
+            return clone;
+        } catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }
