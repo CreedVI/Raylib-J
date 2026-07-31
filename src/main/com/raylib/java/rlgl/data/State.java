@@ -4,7 +4,7 @@ import com.raylib.java.structs.Matrix;
 
 import static com.raylib.java.rlgl.RLGL.*;
 
-public class State{                    // Renderer state
+public class State {                    // Renderer state
 
     public int vertexCounter;                  // Current active render batch vertex counter (generic, used for all batches)
     public float texcoordx, texcoordy;         // Current active texture coordinate (added on glVertex*())
@@ -65,17 +65,21 @@ public class State{                    // Renderer state
     }
 
     public void setCurrentMatrix(Matrix currentMatrix){
-        this.currentMatrix = currentMatrix;
+        switch(currentMatrixMode) {
+            case RL_PROJECTION -> {
+                this.projection = currentMatrix;
+                this.currentMatrix = this.projection;
+            }
+            case RL_TRANSFORM -> {
+                this.transform = currentMatrix;
+                this.currentMatrix = this.transform;
+            }
+            case RL_MODELVIEW -> {
+                this.modelview = currentMatrix;
+                this.currentMatrix = this.modelview;
+            }
+        }
 
-        if (currentMatrixMode == RL_MODELVIEW) {
-            modelview = this.currentMatrix;
-        }
-        else if (currentMatrixMode == RL_PROJECTION) {
-            projection = this.currentMatrix;
-        }
-        else if (currentMatrixMode == RLJ_TRANSFORM) {
-            transform = this.currentMatrix;
-        }
     }
 
     public int getVertexCounter(){
@@ -169,7 +173,7 @@ public class State{                    // Renderer state
         else if (this.currentMatrixMode == RL_PROJECTION) {
             projection = currentMatrix;
         }
-        else if (this.currentMatrixMode == RLJ_TRANSFORM) {
+        else if (this.currentMatrixMode == RL_TRANSFORM) {
             transform = currentMatrix;
         }
 
@@ -181,7 +185,7 @@ public class State{                    // Renderer state
         else if (currentMatrixMode == RL_PROJECTION) {
             this.currentMatrix = projection;
         }
-        else if (currentMatrixMode == RLJ_TRANSFORM) {
+        else if (currentMatrixMode == RL_TRANSFORM) {
             this.currentMatrix = transform;
         }
     }

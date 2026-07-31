@@ -227,7 +227,7 @@ public class RLGL {
     public static final int RL_PROJECTION = 0x1701;      // GL_PROJECTION
     public static final int RL_TEXTURE = 0x1702;      // GL_TEXTURE
 
-    public static final int RLJ_TRANSFORM = 0x1703;
+    public static final int RL_TRANSFORM = 0x1703;
 
     // Primitive assembly draw modes
     public static final int RL_LINES = 0x0001;      // GL_LINES
@@ -2222,8 +2222,8 @@ public class RLGL {
 
             // Draw batch vertex buffers (considering VR stereo if required)
             //------------------------------------------------------------------------------------------------------------
-            Matrix matProjection = rlglData.getState().projection;
-            Matrix matModelView = rlglData.getState().modelview;
+            Matrix matProjection = rlglData.getState().getProjection().clone();
+            Matrix matModelView = rlglData.getState().getModelview().clone();
 
             int eyeCount = rlglData.getState().isStereoRender() ? 2 : 1;
 
@@ -2244,25 +2244,25 @@ public class RLGL {
                     glUseProgram(rlglData.getState().currentShaderId);
 
                     // Create modelview-projection matrix and upload to shader
-                    Matrix matMVP = MatrixMultiply(rlglData.getState().modelview, rlglData.getState().projection);
+                    Matrix matMVP = MatrixMultiply(rlglData.getState().getModelview(), rlglData.getState().getProjection());
                     glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_MVP.GetLocation()], false, MatrixToFloat(matMVP));
 
                     if (rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
-                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], false, MatrixToFloat(rlglData.getState().projection));
+                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], false, MatrixToFloat(rlglData.getState().getProjection()));
                     }
 
                     // WARNING: For the following setup of the view, model, and normal matrices, it is expected that transformations and rendering occur between rlPushMatrix() and rlPopMatrix()
 
                     if (rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
-                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_VIEW.GetLocation()], false, MatrixToFloat(rlglData.getState().modelview));
+                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_VIEW.GetLocation()], false, MatrixToFloat(rlglData.getState().getModelview()));
                     }
 
                     if (rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
-                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_MODEL.GetLocation()], false, MatrixToFloat(rlglData.getState().transform));
+                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_MODEL.GetLocation()], false, MatrixToFloat(rlglData.getState().getTransform()));
                     }
 
                     if (rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
-                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], false, MatrixToFloat(MatrixTranspose(MatrixInvert(rlglData.getState().transform))));
+                        glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], false, MatrixToFloat(MatrixTranspose(MatrixInvert(rlglData.getState().getTransform()))));
                     }
 
                     if (rlglData.getExtSupported().vao) {
@@ -2361,8 +2361,8 @@ public class RLGL {
             batch.currentDepth = -1.0f;
 
             // Restore projection/modelview matrices
-            rlglData.getState().projection = matProjection;
-            rlglData.getState().modelview = matModelView;
+            rlglData.getState().setProjection(matProjection);
+            rlglData.getState().setModelview(matModelView);
 
             // Reset RLGL.currentBatch.draws array
             for (int i = 0; i < RL_DEFAULT_BATCH_DRAWCALLS; i++) {
@@ -2450,9 +2450,11 @@ public class RLGL {
             }
         }
         else{
-            if ((!rlglData.getExtSupported().isTexCompDXT()) && ((format == PIXELFORMAT_COMPRESSED_DXT1_RGB) ||
+            if (
+                    (!rlglData.getExtSupported().isTexCompDXT()) && ((format == PIXELFORMAT_COMPRESSED_DXT1_RGB) ||
                     (format == PIXELFORMAT_COMPRESSED_DXT1_RGBA) || (format == PIXELFORMAT_COMPRESSED_DXT3_RGBA) ||
-                    (format == PIXELFORMAT_COMPRESSED_DXT5_RGBA))){
+                    (format == PIXELFORMAT_COMPRESSED_DXT5_RGBA))
+            ){
                 context.tracelog.TRACELOG(LOG_WARNING, "GL: DXT compressed texture format not supported");
                 return id;
             }
@@ -4283,7 +4285,7 @@ public class RLGL {
             matrix.m15 = mat.get(15);
         }
         else{
-            matrix = rlglData.getState().modelview;
+            matrix = rlglData.getState().getModelview();
         }
         return matrix;
     }
@@ -4313,7 +4315,7 @@ public class RLGL {
             return m;
         }
         else{
-            return rlglData.getState().projection;
+            return rlglData.getState().getProjection();
         }
     }
     // Get internal accumulated transform matrix
@@ -4325,7 +4327,7 @@ public class RLGL {
             // Matrix matStackTransform = rlMatrixIdentity();
             // for (int i = RLGL.State.stackCounter; i > 0; i--) matStackTransform = MatrixMultiply(RLGL.State.stack[i], matStackTransform);
 
-            mat = rlglData.getState().transform;
+            mat = rlglData.getState().getTransform();
         }
 
         return mat;
@@ -4661,7 +4663,7 @@ public class RLGL {
             // Set default shader locations: uniform locations
             rlglData.getState().defaultShaderLocs[SHADER_LOC_MATRIX_MVP.GetLocation()]  = glGetUniformLocation(rlglData.getState().defaultShaderId, RL_DEFAULT_SHADER_UNIFORM_NAME_MVP);
             rlglData.getState().defaultShaderLocs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR);
-            rlglData.getState().defaultShaderLocs[SHADER_LOC_MAP_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR);
+            rlglData.getState().defaultShaderLocs[SHADER_LOC_MAP_DIFFUSE.GetLocation()] = glGetUniformLocation(rlglData.getState().defaultShaderId, RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0);
         }
         else{
             context.tracelog.TRACELOG(LOG_WARNING, "SHADER: [ID " + rlglData.getState().getDefaultShaderId() + "] Failed to load default shader");

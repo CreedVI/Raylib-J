@@ -69,9 +69,9 @@ public class GL_33 {
 
         // Transform provided vector if required
         if (rlglData.getState().transformRequired) {
-            tx = rlglData.getState().transform.m0*x + rlglData.getState().transform.m4*y + rlglData.getState().transform.m8*z + rlglData.getState().transform.m12;
-            ty = rlglData.getState().transform.m1*x + rlglData.getState().transform.m5*y + rlglData.getState().transform.m9*z + rlglData.getState().transform.m13;
-            tz = rlglData.getState().transform.m2*x + rlglData.getState().transform.m6*y + rlglData.getState().transform.m10*z + rlglData.getState().transform.m14;
+            tx = rlglData.getState().getTransform().m0*x + rlglData.getState().getTransform().m4*y + rlglData.getState().getTransform().m8*z + rlglData.getState().getTransform().m12;
+            ty = rlglData.getState().getTransform().m1*x + rlglData.getState().getTransform().m5*y + rlglData.getState().getTransform().m9*z + rlglData.getState().getTransform().m13;
+            tz = rlglData.getState().getTransform().m2*x + rlglData.getState().getTransform().m6*y + rlglData.getState().getTransform().m10*z + rlglData.getState().getTransform().m14;
         }
 
         // WARNING: Be careful with primitives breaking when launching a new batch!
@@ -84,10 +84,10 @@ public class GL_33 {
                 // NOTE: Adding +1 vertex to the check for some safety
                 context.rlgl.rlCheckRenderBatchLimit(2 + 1);
             }
-        else if ((rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode == RL_TRIANGLES) && (rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount%3 == 0)) {
+            else if ((rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode == RL_TRIANGLES) && (rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount%3 == 0)) {
                 context.rlgl.rlCheckRenderBatchLimit(3 + 1);
             }
-        else if ((rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode == RL_QUADS) && (rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount%4 == 0)) {
+            else if ((rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode == RL_QUADS) && (rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount%4 == 0)) {
                 context.rlgl.rlCheckRenderBatchLimit(4 + 1);
             }
         }
@@ -141,9 +141,9 @@ public class GL_33 {
         float normalz = z;
 
         if (rlglData.getState().transformRequired) {
-            normalx = rlglData.getState().transform.m0*x + rlglData.getState().transform.m4*y + rlglData.getState().transform.m8*z;
-            normaly = rlglData.getState().transform.m1*x + rlglData.getState().transform.m5*y + rlglData.getState().transform.m9*z;
-            normalz = rlglData.getState().transform.m2*x + rlglData.getState().transform.m6*y + rlglData.getState().transform.m10*z;
+            normalx = rlglData.getState().getTransform().m0*x + rlglData.getState().getTransform().m4*y + rlglData.getState().getTransform().m8*z;
+            normaly = rlglData.getState().getTransform().m1*x + rlglData.getState().getTransform().m5*y + rlglData.getState().getTransform().m9*z;
+            normalz = rlglData.getState().getTransform().m2*x + rlglData.getState().getTransform().m6*y + rlglData.getState().getTransform().m10*z;
         }
 
         // NOTE: Default behavior assumes the normal vector is in the correct space for what the shader expects,
@@ -184,10 +184,10 @@ public class GL_33 {
 
     void rlMatrixMode(int mode) {
         if (mode == RL_PROJECTION) {
-            rlglData.getState().currentMatrix = rlglData.getState().projection;
+            rlglData.getState().currentMatrix = rlglData.getState().getProjection();
         }
         else if (mode == RL_MODELVIEW) {
-            rlglData.getState().currentMatrix = rlglData.getState().modelview;
+            rlglData.getState().currentMatrix = rlglData.getState().getModelview();
         }
         //else if (mode == RL_TEXTURE) // Not supported
 
@@ -203,29 +203,29 @@ public class GL_33 {
 
         if (rlglData.getState().currentMatrixMode == RL_MODELVIEW) {
             rlglData.getState().transformRequired = true;
-            rlglData.getState().currentMatrix = rlglData.getState().transform;
+            rlglData.getState().setCurrentMatrix(rlglData.getState().getTransform());
         }
 
-        rlglData.getState().stack[rlglData.getState().stackCounter] = rlglData.getState().currentMatrix;
+        rlglData.getState().stack[rlglData.getState().stackCounter] = rlglData.getState().getCurrentMatrix().clone();
         rlglData.getState().stackCounter++;
     }
 
     // Pop latest inserted matrix from rlglData.getState().stack
     void rlPopMatrix() {
         if (rlglData.getState().stackCounter > 0) {
-            rlglData.getState().currentMatrix = rlglData.getState().stack[rlglData.getState().stackCounter - 1];
+            rlglData.getState().setCurrentMatrix(rlglData.getState().stack[rlglData.getState().stackCounter - 1]);
             rlglData.getState().stackCounter--;
         }
 
         if ((rlglData.getState().stackCounter == 0) && (rlglData.getState().currentMatrixMode == RL_MODELVIEW)) {
-            rlglData.getState().currentMatrix = rlglData.getState().modelview;
+            rlglData.getState().setCurrentMatrix(rlglData.getState().getModelview());
             rlglData.getState().transformRequired = false;
         }
     }
 
     // Reset current matrix to identity matrix
     void rlLoadIdentity() {
-        rlglData.getState().currentMatrix = MatrixIdentity();
+        rlglData.getState().setCurrentMatrix(MatrixIdentity());
     }
 
     // Multiply the current matrix by a translation matrix
@@ -238,7 +238,7 @@ public class GL_33 {
         matTranslation.m14 = z;
 
         // NOTE: Transposing matrix by multiplication order
-        rlglData.getState().currentMatrix = MatrixMultiply(matTranslation, rlglData.getState().currentMatrix);
+        rlglData.getState().setCurrentMatrix(MatrixMultiply(matTranslation, rlglData.getState().getCurrentMatrix()));
     }
 
     // Multiply the current matrix by a rotation matrix
@@ -282,7 +282,7 @@ public class GL_33 {
         matRotation.m15 = 1.0f;
 
         // NOTE: Transposing matrix by multiplication order
-        rlglData.getState().currentMatrix = MatrixMultiply(matRotation, rlglData.getState().currentMatrix);
+        rlglData.getState().setCurrentMatrix(MatrixMultiply(matRotation, rlglData.getState().getCurrentMatrix()));
     }
 
     // Multiply the current matrix by a scaling matrix
@@ -295,7 +295,7 @@ public class GL_33 {
         matScale.m10 = z;
 
         // NOTE: Transposing matrix by multiplication order
-        rlglData.getState().currentMatrix = MatrixMultiply(matScale, rlglData.getState().currentMatrix);
+        rlglData.getState().setCurrentMatrix(MatrixMultiply(matScale, rlglData.getState().getCurrentMatrix()));
     }
 
     // Multiply the current matrix by another matrix
@@ -307,7 +307,7 @@ public class GL_33 {
                 matf[2], matf[6], matf[10], matf[14],
                 matf[3], matf[7], matf[11], matf[15]);
 
-        rlglData.getState().currentMatrix = MatrixMultiply(mat, rlglData.getState().currentMatrix);
+        rlglData.getState().setCurrentMatrix(MatrixMultiply(mat, rlglData.getState().getCurrentMatrix()));
     }
 
     // Multiply the current matrix by a perspective matrix generated by parameters
@@ -338,7 +338,7 @@ public class GL_33 {
         matFrustum.m14 = -((float)zfar*(float)znear*2.0f)/fn;
         matFrustum.m15 = 0.0f;
 
-        rlglData.getState().currentMatrix = MatrixMultiply(rlglData.getState().currentMatrix, matFrustum);
+        rlglData.getState().setCurrentMatrix(MatrixMultiply(rlglData.getState().getCurrentMatrix(), matFrustum));
     }
 
     // Multiply the current matrix by an orthographic matrix generated by parameters
@@ -368,6 +368,6 @@ public class GL_33 {
         matOrtho.m14 = -((float)zfar + (float)znear)/fn;
         matOrtho.m15 = 1.0f;
 
-        rlglData.getState().currentMatrix = MatrixMultiply(rlglData.getState().currentMatrix, matOrtho);
+        rlglData.getState().setCurrentMatrix(MatrixMultiply(rlglData.getState().getCurrentMatrix(), matOrtho));
     }
 }

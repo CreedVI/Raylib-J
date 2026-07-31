@@ -856,59 +856,6 @@ public class rCore {
     public void EndDrawing(){
         context.rlgl.rlDrawRenderBatchActive();      // Update and draw internal render batch
 
-        if(SUPPORT_GIF_RECORDING) {
-            // Draw record indicator
-            /*TODO
-            if (gifRecording) {
-            #define GIF_RECORD_FRAMERATE    10
-                gifFrameCounter++;
-
-                // NOTE: We record one gif frame every 10 game frames
-                if ((gifFrameCounter%GIF_RECORD_FRAMERATE) == 0)
-                {
-                    // Get image data for the current frame (from backbuffer)
-                    // NOTE: This process is quite slow... :(
-                    unsigned char *screenData = rlReadScreenPixels(window.screen.width, window.screen.height);
-                    msf_gif_frame(&gifState, screenData, 10, 16, window.screen.width*4);
-
-                    RL_FREE(screenData);    // Free image data
-                }
-
-                if (((gifFrameCounter/15)%2) == 1)
-                {
-                    DrawCircle(30, window.screen.height - 20, 10, MAROON);
-                    DrawText("GIF RECORDING", 50, window.screen.height - 25, 10, RED);
-                }
-
-                rlDrawRenderBatchActive();  // Update and draw internal render batch
-            }*/
-        }
-
-        if(SUPPORT_EVENTS_AUTOMATION) {
-            // Draw record/play indicator
-            /* TODO
-            if (eventsRecording) {
-                gifFrameCounter++;
-
-                if (((gifFrameCounter/15)%2) == 1) {
-                    DrawCircle(30, window.screen.height - 20, 10, MAROON);
-                    DrawText("EVENTS RECORDING", 50, window.screen.height - 25, 10, RED);
-                }
-
-                rlDrawRenderBatchActive();  // Update and draw internal render batch
-            }
-            else if (eventsPlaying) {
-                gifFrameCounter++;
-
-                if (((gifFrameCounter/15)%2) == 1) {
-                    DrawCircle(30, window.screen.height - 20, 10, LIME);
-                    DrawText("EVENTS PLAYING", 50, window.screen.height - 25, 10, GREEN);
-                }
-
-                rlgl.rlDrawRenderBatchActive();  // Update and draw internal render batch
-            }*/
-        }
-
         if(!SUPPORT_CUSTOM_FRAME_CONTROL) {
             SwapScreenBuffer();                  // Copy back buffer to front buffer (screen)
 
