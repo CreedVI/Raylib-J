@@ -126,7 +126,7 @@ public class TopDownLights {
 
         // If we are valid, then draw the light radius to the alpha mask
         if (lights[slot].valid) {
-            rlj.shapes.DrawCircleGradient((int)lights[slot].position.x, (int)lights[slot].position.y, lights[slot].outerRadius, rlj.textures.ColorAlpha(WHITE, 0), WHITE);
+            rlj.shapes.DrawCircleGradient(new Vector2((int)lights[slot].position.x, (int)lights[slot].position.y), lights[slot].outerRadius, rlj.textures.ColorAlpha(WHITE, 0), WHITE);
         }
 
         rlj.rlgl.rlDrawRenderBatchActive();

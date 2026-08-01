@@ -5,8 +5,8 @@ import com.raylib.java.structs.*;
 import org.jetbrains.annotations.Contract;
 
 import static com.raylib.java.Config.SUPPORT_QUADS_DRAW_MODE;
-import static com.raylib.java.raymath.Raymath.DEG2RAD;
-import static com.raylib.java.raymath.Raymath.PI;
+import static com.raylib.java.Config.SUPPORT_SPLINE_MITERS;
+import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 
 public class rShapes {
@@ -103,6 +103,22 @@ public class rShapes {
     }
 
     /**
+     * Get texture that is used for shapes drawing
+     * @return shapes texture
+     */
+    public Texture2D GetShapesTexture() {
+        return texShapes;
+    }
+
+    /**
+     * Get texture source rectangle that is used for shapes drawing
+     * @return Bounding rectangle for shapes texture
+     */
+    public Rectangle GetShapesTextureRectangle() {
+        return texShapesRec;
+    }
+
+    /**
      * Draw a pixel
      *
      * @param posX  X coordinate of pixel
@@ -121,23 +137,24 @@ public class rShapes {
      */
     public void DrawPixelV(Vector2 position, Color color) {
         if (SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlSetTexture(texShapes.id);
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
 
             context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-            context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
             context.rlgl.rlVertex2f(position.x, position.y);
 
-            context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
             context.rlgl.rlVertex2f(position.x, position.y + 1);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
             context.rlgl.rlVertex2f(position.x + 1, position.y + 1);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
             context.rlgl.rlVertex2f(position.x + 1, position.y);
 
             context.rlgl.rlEnd();
@@ -179,6 +196,33 @@ public class rShapes {
     }
 
     /**
+     * Draw a line defining thickness
+     *
+     * @param startPos X, Y position to begin drawing line
+     * @param endPos   X, Y position to end drawing line
+     * @param thick    thickness of the line
+     * @param color    color to draw the line
+     */
+    public void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color) {
+        Vector2 delta = new Vector2(endPos.x - startPos.x, endPos.y - startPos.y);
+        float length = (float) Math.sqrt(delta.x*delta.x + delta.y*delta.y);
+
+        if ((length > 0) && (thick > 0)) {
+            float scale = thick/(2*length);
+
+            Vector2 radius = new Vector2(-scale*delta.y, scale*delta.x);
+            Vector2[] strip = {
+                new Vector2(startPos.x - radius.x, startPos.y - radius.y),
+                new Vector2(startPos.x + radius.x, startPos.y + radius.y),
+                new Vector2(endPos.x - radius.x, endPos.y - radius.y),
+                new Vector2(endPos.x + radius.x, endPos.y + radius.y)
+            };
+
+            DrawTriangleStrip(strip , color);
+        }
+    }
+
+    /**
      * Draw a line using gl lines
      *
      * @param startPos X, Y position to begin drawing line
@@ -199,16 +243,18 @@ public class rShapes {
      * @param color color to draw lines
      */
     public void DrawLineStrip(Vector2[] points, Color color) {
-        if (points.length >= 2) {
-            context.rlgl.rlBegin(RL_LINES);
-            context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-
-            for (int i = 0; i < points.length - 1; i++) {
-                context.rlgl.rlVertex2f(points[i].x, points[i].y);
-                context.rlgl.rlVertex2f(points[i + 1].x, points[i + 1].y);
-            }
-            context.rlgl.rlEnd();
+        if (points.length < 2) {
+            return;
         }
+
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+
+        for (int i = 0; i < points.length - 1; i++) {
+            context.rlgl.rlVertex2f(points[i].x, points[i].y);
+            context.rlgl.rlVertex2f(points[i + 1].x, points[i + 1].y);
+        }
+        context.rlgl.rlEnd();
     }
 
     /**
@@ -256,33 +302,49 @@ public class rShapes {
         DrawTriangleStrip(points, color);
     }
 
+    // Draw a dashed line
+    public void DrawLineDashed(Vector2 startPos, Vector2 endPos, int dashSize, int spaceSize, Color color) {
+        // Calculate the vector and length of the line
+        float dx = endPos.x - startPos.x;
+        float dy = endPos.y - startPos.y;
+        float lineLength = (float) Math.sqrt(dx*dx + dy*dy);
 
-
-    /**
-     * Draw a line defining thickness
-     *
-     * @param startPos X, Y position to begin drawing line
-     * @param endPos   X, Y position to end drawing line
-     * @param thick    thickness of the line
-     * @param color    color to draw the line
-     */
-    public void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color) {
-        Vector2 delta = new Vector2(endPos.x - startPos.x, endPos.y - startPos.y);
-        float length = (float) Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-
-        if((length > 0) && (thick > 0)) {
-            float scale = thick / (2 * length);
-
-            Vector2 radius = new Vector2(-scale * delta.y, scale * delta.x);
-            Vector2[] strip = new Vector2[]{
-                    new Vector2(startPos.x - radius.x, startPos.y - radius.y),
-                    new Vector2(startPos.x + radius.x, startPos.y + radius.y),
-                    new Vector2(endPos.x - radius.x, endPos.y - radius.y),
-                    new Vector2(endPos.x + radius.x, endPos.y + radius.y)
-            };
-
-            DrawTriangleStrip(strip, color);
+        // If the line is too short for dashing or dash size is invalid, draw a solid thick line
+        if ((lineLength < (dashSize + spaceSize)) || (dashSize <= 0)) {
+            DrawLineV(startPos, endPos, color);
+            return;
         }
+
+        // Calculate the normalized direction vector of the line
+        float invLineLength = 1.0f/lineLength;
+        float dirX = dx*invLineLength;
+        float dirY = dy*invLineLength;
+
+        Vector2 currentPos = startPos;
+        float distanceTraveled = 0;
+
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+
+        while (distanceTraveled < lineLength) {
+            // Calculate the end of the current dash
+            float dashEndDist = distanceTraveled + dashSize;
+            if (dashEndDist > lineLength) {
+                dashEndDist = lineLength;
+            }
+
+            Vector2 dashEndPos = new Vector2(startPos.x + dashEndDist*dirX, startPos.y + dashEndDist*dirY);
+
+            // Draw the dash segment
+            context.rlgl.rlVertex2f(currentPos.x, currentPos.y);
+            context.rlgl.rlVertex2f(dashEndPos.x, dashEndPos.y);
+
+            // Update the distance traveled and move the current position for the next dash
+            distanceTraveled = dashEndDist + spaceSize;
+            currentPos.x = startPos.x + distanceTraveled*dirX;
+            currentPos.y = startPos.y + distanceTraveled*dirY;
+        }
+        context.rlgl.rlEnd();
     }
 
     /**
@@ -310,6 +372,28 @@ public class rShapes {
     }
 
     /**
+     * Draw a gradient-filled circle
+     * NOTE: Gradient goes from center (inner) to border (outer)
+     *
+     * @param center X, Y coordinate of circle center
+     * @param radius length of circle radius
+     * @param inner color at the beginning of the gradient
+     * @param outer color at the end of the gradient
+     */
+    public void DrawCircleGradient(Vector2 center, float radius, Color inner, Color outer) {
+        context.rlgl.rlBegin(RL_TRIANGLES);
+        for (int i = 0; i < 360; i += 10) {
+            context.rlgl.rlColor4ub(inner.r, inner.g, inner.b, inner.a);
+            context.rlgl.rlVertex2f(center.x, center.y);
+            context.rlgl.rlColor4ub(outer.r, outer.g, outer.b, outer.a);
+            context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(i + 10))*radius), (float) (center.y + Math.sin(DEG2RAD*(i + 10))*radius));
+            context.rlgl.rlColor4ub(outer.r, outer.g, outer.b, outer.a);
+            context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*i)*radius), (float) (center.y + Math.sin(DEG2RAD*i)*radius));
+        }
+        context.rlgl.rlEnd();
+    }
+
+    /**
      * Draw a piece of a circle
      *
      * @param center     X, Y position of circle center
@@ -320,6 +404,10 @@ public class rShapes {
      * @param color      color to draw circle sector
      */
     public void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color) {
+        if (startAngle == endAngle) {
+            return;
+        }
+
         if(radius <= 0.0f) {
             radius = 0.1f;  // A public void div by zero
         }
@@ -348,46 +436,47 @@ public class rShapes {
         float angle = startAngle;
 
         if(SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlCheckRenderBatchLimit(4*segments/2);
-
-            context.rlgl.rlSetTexture(texShapes.getId());
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
+
             // NOTE: Every QUAD actually represents two segments
-            for(int i = 0; i < segments / 2; i++) {
+            for (int i = 0; i < segments/2; i++) {
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
                 context.rlgl.rlVertex2f(center.x, center.y);
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength*2.0f))*radius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength*2.0f))*radius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength))*radius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength))*radius));
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*angle)*radius), (float) (center.y + Math.sin(DEG2RAD*angle)*radius));
 
                 angle += (stepLength*2.0f);
             }
 
-            // NOTE: In case number of segments is odd, we add one last piece to the cake
-            if(segments % 2 == 1) {
+            // NOTE: In case number of segments is odd, adding one last piece to the cake
+            if ((segments%2) == 1) {
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
                 context.rlgl.rlVertex2f(center.x, center.y);
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength))*radius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength))*radius));
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*angle)*radius), (float) (center.y + Math.sin(DEG2RAD*angle)*radius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
                 context.rlgl.rlVertex2f(center.x, center.y);
             }
+
             context.rlgl.rlEnd();
 
             context.rlgl.rlSetTexture(0);
@@ -419,8 +508,11 @@ public class rShapes {
      * @param segments   number of segments
      * @param color      color to draw circle sector
      */
-    public void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float endAngle, int segments,
-                                      Color color) {
+    public void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color) {
+        if (startAngle == endAngle) {
+            return;
+        }
+
         if(radius <= 0.0f) {
             radius = 0.1f;  // Avoid div by zero issue
         }
@@ -483,31 +575,6 @@ public class rShapes {
     }
 
     /**
-     * Draw a gradient-filled circle
-     * NOTE: Gradient goes from center (color1) to border (color2)
-     *
-     * @param centerX X coordinate of circle center
-     * @param centerY Y coordinate of circle center
-     * @param radius  length of circle radius
-     * @param color1  color at the beginning of the gradient
-     * @param color2  color at the end of the gradient
-     */
-    public void DrawCircleGradient(int centerX, int centerY, float radius, Color color1, Color color2) {
-        context.rlgl.rlCheckRenderBatchLimit(3*36);
-
-        context.rlgl.rlBegin(RL_TRIANGLES);
-        for(int i = 0; i < 360; i += 10) {
-            context.rlgl.rlColor4ub(color1.r, color1.g, color1.b, color1.a);
-            context.rlgl.rlVertex2f((float) centerX, (float) centerY);
-            context.rlgl.rlColor4ub(color2.r, color2.g, color2.b, color2.a);
-            context.rlgl.rlVertex2f((float) (centerX + Math.cos(DEG2RAD*(i + 10))*radius), (float) (centerY + Math.sin(DEG2RAD*(i + 10))*radius));
-            context.rlgl.rlColor4ub(color2.r, color2.g, color2.b, color2.a);
-            context.rlgl.rlVertex2f((float) (centerX + Math.cos(DEG2RAD*i)*radius), (float) (centerY + Math.sin(DEG2RAD*i)*radius));
-        }
-        context.rlgl.rlEnd();
-    }
-
-    /**
      * Draw circle outline
      *
      * @param centerX X coordinate of circle center
@@ -550,14 +617,24 @@ public class rShapes {
      * @param color   color to draw ellipse
      */
     public void DrawEllipse(int centerX, int centerY, float radiusH, float radiusV, Color color) {
-        context.rlgl.rlCheckRenderBatchLimit(3*36);
+        DrawEllipseV(new Vector2(centerX, centerY), radiusH, radiusV, color);
+    }
 
+    /**
+     * Draw ellipse
+     *
+     * @param center (x, y) coordinate of ellipse center
+     * @param radiusH length of horizontal radius
+     * @param radiusV length of vertical radius
+     * @param color   color to draw ellipse
+     */
+    public void DrawEllipseV(Vector2 center, float radiusH, float radiusV, Color color) {
         context.rlgl.rlBegin(RL_TRIANGLES);
         for(int i = 0; i < 360; i += 10) {
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlVertex2f((float) centerX, (float) centerY);
-            context.rlgl.rlVertex2f((float) (centerX + Math.cos(DEG2RAD*(i + 10))*radiusH), (float) (centerY + Math.sin(DEG2RAD*(i + 10))*radiusV));
-            context.rlgl.rlVertex2f((float) (centerX + Math.cos(DEG2RAD*i)*radiusH), (float) (centerY + Math.sin(DEG2RAD*i)*radiusV));
+            context.rlgl.rlVertex2f(center.x, center.y);
+            context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(i + 10))*radiusH), (float) (center.y + Math.sin(DEG2RAD*(i + 10))*radiusV));
+            context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*i)*radiusH), (float) (center.y + Math.sin(DEG2RAD*i)*radiusV));
         }
         context.rlgl.rlEnd();
     }
@@ -572,13 +649,23 @@ public class rShapes {
      * @param color   color to draw ellipse
      */
     public void DrawEllipseLines(int centerX, int centerY, float radiusH, float radiusV, Color color) {
-        context.rlgl.rlCheckRenderBatchLimit(2*36);
+        DrawEllipseLinesV(new Vector2(centerX, centerY), radiusH, radiusV, color);
+    }
 
+    /**
+     * Draw ellipse outline
+     *
+     * @param center (x, y) coordinate of ellipse center
+     * @param radiusH length of horizontal radius
+     * @param radiusV length of vertical radius
+     * @param color   color to draw ellipse
+     */
+    public void DrawEllipseLinesV(Vector2 center, float radiusH, float radiusV, Color color) {
         context.rlgl.rlBegin(RL_LINES);
         for(int i = 0; i < 360; i += 10) {
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlVertex2f((float) (centerX + Math.cos(DEG2RAD*(i + 10))*radiusH), (float) (centerY + Math.sin(DEG2RAD*(i + 10))*radiusV));
-            context.rlgl.rlVertex2f((float) (centerX + Math.cos(DEG2RAD*i)*radiusH), (float) (centerY + Math.sin(DEG2RAD*i)*radiusV));
+            context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(i + 10))*radiusH), (float) (center.y + Math.sin(DEG2RAD*(i + 10))*radiusV));
+            context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*i)*radiusH), (float) (center.y + Math.sin(DEG2RAD*i)*radiusV));
         }
         context.rlgl.rlEnd();
     }
@@ -594,8 +681,7 @@ public class rShapes {
      * @param segments    number of segments
      * @param color       color to draw ring
      */
-    public void DrawRing(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle,
-                         int segments, Color color) {
+    public void DrawRing(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, int segments, Color color) {
         if(startAngle == endAngle) {
             return;
         }
@@ -641,24 +727,23 @@ public class rShapes {
         float angle = startAngle;
 
         if(SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlCheckRenderBatchLimit(4*segments);
-
-            context.rlgl.rlSetTexture(texShapes.getId());
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
             for(int i = 0; i < segments; i++) {
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x +  Math.cos(DEG2RAD * angle) * outerRadius), (float) (center.y +  Math.sin(DEG2RAD * angle) * outerRadius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x +  Math.cos(DEG2RAD * (angle + stepLength)) * outerRadius), (float) (center.y +  Math.sin(DEG2RAD * (angle + stepLength)) * outerRadius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x +  Math.cos(DEG2RAD * (angle + stepLength)) * innerRadius), (float) (center.y +  Math.sin(DEG2RAD * (angle + stepLength)) * innerRadius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength))*outerRadius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength))*outerRadius));
 
                 angle += stepLength;
@@ -698,8 +783,7 @@ public class rShapes {
      * @param segments    number of segments
      * @param color       color to draw ring
      */
-    public void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle,
-                              int segments, Color color) {
+    public void DrawRingLines(Vector2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, int segments, Color color) {
         if(startAngle == endAngle) {
             return;
         }
@@ -860,7 +944,8 @@ public class rShapes {
         }
 
         if (SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlCheckRenderBatchLimit(4);
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlSetTexture(texShapes.getId());
             context.rlgl.rlBegin(RL_QUADS);
@@ -868,16 +953,16 @@ public class rShapes {
             context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(topLeft.x, topLeft.y);
 
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(bottomLeft.x, bottomLeft.y);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(bottomRight.x, bottomRight.y);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(topRight.x, topRight.y);
 
             context.rlgl.rlEnd();
@@ -909,11 +994,11 @@ public class rShapes {
      * @param posY   Y coordinate position
      * @param width  width of the rectangle
      * @param height height of the rectangle
-     * @param color1 color at the beginning of the gradient (bottom)
-     * @param color2 color at the end of the gradient (top)
+     * @param top color at the beginning of the gradient (bottom)
+     * @param bottom color at the end of the gradient (top)
      */
-    public void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2) {
-        DrawRectangleGradientEx(new Rectangle((float) posX, (float) posY, (float) width, (float) height), color1, color2, color2, color1);
+    public void DrawRectangleGradientV(int posX, int posY, int width, int height, Color top, Color bottom) {
+        DrawRectangleGradientEx(new Rectangle((float) posX, (float) posY, (float) width, (float) height), top, bottom, bottom, top);
     }
 
     /**
@@ -923,33 +1008,41 @@ public class rShapes {
      * @param posY   Y coordinate position
      * @param width  width of the rectangle
      * @param height height of the rectangle
-     * @param color1 color at the beginning of the gradient (left)
-     * @param color2 color at the end of the gradient (right)
+     * @param left color at the beginning of the gradient (left)
+     * @param right color at the end of the gradient (right)
      */
-    public void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2) {
-        DrawRectangleGradientEx(new Rectangle((float) posX, (float) posY, (float) width, (float) height), color1, color1, color2, color2);
+    public void DrawRectangleGradientH(int posX, int posY, int width, int height, Color left, Color right) {
+        DrawRectangleGradientEx(new Rectangle((float) posX, (float) posY, (float) width, (float) height), left, left, right, right);
     }
 
-    // Draw a gradient-filled rectangle
-    // NOTE: Colors refer to corners, starting at top-lef corner and counter-clockwise
-    public void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4) {
-        context.rlgl.rlCheckRenderBatchLimit(4);
-        context.rlgl.rlSetTexture(texShapes.getId());
+    /**
+     * Draw a gradient-filled rectangle
+     *
+     * @param rec Rectangle to draw
+     * @param topLeft Color of gradient at top left corner
+     * @param bottomLeft Color of gradient at bottom left corner
+     * @param bottomRight Color of gradient at bottom right corner
+     * @param topRight Color of gradient at top right corner
+     */
+    public void DrawRectangleGradientEx(Rectangle rec, Color topLeft, Color bottomLeft, Color bottomRight, Color topRight) {
+        context.rlgl.rlSetTexture(GetShapesTexture().id);
+        Rectangle shapeRect = GetShapesTextureRectangle();
 
         context.rlgl.rlBegin(RL_QUADS);
         context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
+
         // NOTE: Default raylib font character 95 is a white square
-        context.rlgl.rlColor4ub(col1.r, col1.g, col1.b, col1.a);
-        context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+        context.rlgl.rlColor4ub(topLeft.r, topLeft.g, topLeft.b, topLeft.a);
+        context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
         context.rlgl.rlVertex2f(rec.x, rec.y);
-        context.rlgl.rlColor4ub(col2.r, col2.g, col2.b, col2.a);
-        context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+        context.rlgl.rlColor4ub(bottomLeft.r, bottomLeft.g, bottomLeft.b, bottomLeft.a);
+        context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         context.rlgl.rlVertex2f(rec.x, rec.y + rec.height);
-        context.rlgl.rlColor4ub(col3.r, col3.g, col3.b, col3.a);
-        context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+        context.rlgl.rlColor4ub(bottomRight.r, bottomRight.g, bottomRight.b, bottomRight.a);
+        context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         context.rlgl.rlVertex2f(rec.x + rec.width, rec.y + rec.height);
-        context.rlgl.rlColor4ub(col4.r, col4.g, col4.b, col4.a);
-        context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+        context.rlgl.rlColor4ub(topRight.r, topRight.g, topRight.b, topRight.a);
+        context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
         context.rlgl.rlVertex2f(rec.x + rec.width, rec.y);
 
         context.rlgl.rlSetTexture(0);
@@ -957,7 +1050,9 @@ public class rShapes {
 
     /**
      * Draw rectangle outline
-     * NOTE: On OpenGL 3.3 and ES2 we use QUADS to avoid drawing order issues (view rlglDraw)
+     * WARNING: All Draw*Lines() functions use RL_LINES for drawing,
+     * it implies flushing the current batch and changing draw mode to RL_LINES,
+     * but it solves another issue: https://github.com/raysan5/raylib/issues/3884
      *
      * @param posX   X coordinate of rectangle position
      * @param posY   Y coordinate of rectangle position
@@ -966,6 +1061,26 @@ public class rShapes {
      * @param color  Color to draw rectangle
      */
     public void DrawRectangleLines(int posX, int posY, int width, int height, Color color) {
+        Matrix mat = context.rlgl.rlGetMatrixTransform();
+        float xOffset = 0.5f/mat.m0;
+        float yOffset = 0.5f/mat.m5;
+
+        context.rlgl.rlBegin(RL_LINES);
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
+        context.rlgl.rlVertex2f((float)posX + xOffset, (float)posY + yOffset);
+        context.rlgl.rlVertex2f((float)posX + (float)width - xOffset, (float)posY + yOffset);
+
+        context.rlgl.rlVertex2f((float)posX + (float)width - xOffset, (float)posY + yOffset);
+        context.rlgl.rlVertex2f((float)posX + (float)width - xOffset, (float)posY + (float)height - yOffset);
+
+        context.rlgl.rlVertex2f((float)posX + (float)width - xOffset, (float)posY + (float)height - yOffset);
+        context.rlgl.rlVertex2f((float)posX + xOffset, (float)posY + (float)height - yOffset);
+
+        context.rlgl.rlVertex2f((float)posX + xOffset, (float)posY + (float)height - yOffset);
+        context.rlgl.rlVertex2f((float)posX + xOffset, (float)posY + yOffset);
+        context.rlgl.rlEnd();
+
+        /*
         if(SUPPORT_QUADS_DRAW_MODE) {
             DrawRectangle(posX, posY, width, 1, color);
             DrawRectangle(posX + width - 1, posY + 1, 1, height - 2, color);
@@ -988,6 +1103,7 @@ public class rShapes {
             context.rlgl.rlVertex2i(posX + 1, posY + 1);
             context.rlgl.rlEnd();
         }
+         */
     }
 
     /**
@@ -999,10 +1115,10 @@ public class rShapes {
      */
     public void DrawRectangleLinesEx(Rectangle rec, float lineThick, Color color) {
         if(lineThick > rec.width || lineThick > rec.height) {
-            if(rec.width > rec.height) {
+            if(rec.width >= rec.height) {
                 lineThick = rec.height / 2;
             }
-            else if(rec.width < rec.height) {
+            else if(rec.width <= rec.height) {
                 lineThick = rec.width / 2;
             }
         }
@@ -1038,7 +1154,7 @@ public class rShapes {
      */
     public void DrawRectangleRounded(Rectangle rec, float roundness, int segments, Color color) {
         // Not a rounded rectangle
-        if((roundness <= 0.0f) || (rec.width < 1) || (rec.height < 1)) {
+        if(roundness <= 0.0f) {
             DrawRectangleRec(rec, color);
             return;
         }
@@ -1067,7 +1183,7 @@ public class rShapes {
 
         /*
             Quick sketch to make sense of all of this,
-            there are 9 parts to draw, also mark the 12 points we'll use
+            there are 9 parts to draw, also mark the 12 points used
 
                   P0____________________P1
                   /|                    |\
@@ -1106,9 +1222,8 @@ public class rShapes {
         };
 
         if(SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlCheckRenderBatchLimit(16*segments/2 + 5*4);
-
-            context.rlgl.rlSetTexture(texShapes.getId());
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
             // Draw all of the 4 corners: [1] Upper Left Corner, [3] Upper Right Corner, [5] Lower Right Corner, [7] Lower Left Corner
@@ -1120,16 +1235,16 @@ public class rShapes {
                 for(int i = 0; i < segments / 2; i++) {
                     context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-                    context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                    context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                     context.rlgl.rlVertex2f(center.x, center.y);
 
-                    context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                    context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                     context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD * angle) * radius), (float) (center.y + Math.sin(DEG2RAD * angle) * radius));
 
-                    context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                    context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                     context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD * (angle + stepLength)) * radius), (float) (center.y + Math.sin(DEG2RAD * (angle + stepLength)) * radius));
 
-                    context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                    context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                     context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD * (angle + stepLength * 2)) * radius), (float) (center.y + Math.sin(DEG2RAD * (angle + stepLength * 2)) * radius));
 
                     angle += (stepLength * 2);
@@ -1137,73 +1252,73 @@ public class rShapes {
                 // NOTE: In case number of segments is odd, we add one last piece to the cake
                 if(segments % 2 == 1) {
                     context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-                    context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+                    context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
                     context.rlgl.rlVertex2f(center.x, center.y);
 
-                    context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                    context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                     context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength))*radius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength))*radius));
 
-                    context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                    context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                     context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*angle)*radius), (float) (center.y + Math.sin(DEG2RAD*angle)*radius));
 
-                    context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+                    context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
                     context.rlgl.rlVertex2f(center.x, center.y);
                 }
             }
 
             // [2] Upper Rectangle
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[0].x, point[0].y);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[8].x, point[8].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[9].x, point[9].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[1].x, point[1].y);
 
             // [4] Right Rectangle
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[2].x, point[2].y);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[9].x, point[9].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[10].x, point[10].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[3].x, point[3].y);
 
             // [6] Bottom Rectangle
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[11].x, point[11].y);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[5].x, point[5].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[4].x, point[4].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[10].x, point[10].y);
 
             // [8] Left Rectangle
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[7].x, point[7].y);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[6].x, point[6].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[11].x, point[11].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[8].x, point[8].y);
 
             // [9] Middle Rectangle
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[8].x, point[8].y);
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[11].x, point[11].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(point[10].x, point[10].y);
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(point[9].x, point[9].y);
 
             context.rlgl.rlEnd();
@@ -1275,6 +1390,12 @@ public class rShapes {
         }
     }
 
+    // Draw rectangle with rounded edges
+    public void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, Color color) {
+        // NOTE: For line thickness <=1.0f using RL_LINES, otherwise using RL_QUADS/RL_TRIANGLES
+        DrawRectangleRoundedLinesEx(rec, roundness, segments, 1.0f, color);
+    }
+
     /**
      * Draw rectangle outline with rounded edges
      *
@@ -1284,7 +1405,7 @@ public class rShapes {
      * @param lineThick thickness of lines
      * @param color     color to draw rectangle
      */
-    public void DrawRectangleRoundedLines(Rectangle rec, float roundness, int segments, float lineThick, Color color) {
+    public void DrawRectangleRoundedLinesEx(Rectangle rec, float roundness, int segments, float lineThick, Color color) {
         if(lineThick < 0) {
             lineThick = 0;
         }
@@ -1320,7 +1441,7 @@ public class rShapes {
 
         /*
             Quick sketch to make sense of all of this,
-            marks the 16 + 4(corner centers P16-19) points we'll use
+            marks the 16 + 4(corner centers P16-19) points used
 
                    P0 ================== P1
                   // P8                P9 \\
@@ -1334,59 +1455,58 @@ public class rShapes {
                   \\ P13              P12 //
                    P5 ================== P4
         */
-        Vector2[] point = {
-                new Vector2(rec.x + innerRadius, rec.y - lineThick),
-                new Vector2((rec.x + rec.width) - innerRadius, rec.y - lineThick),
-                new Vector2(rec.x + rec.width + lineThick, rec.y + innerRadius), // PO, P1, P2
-                new Vector2(rec.x + rec.width + lineThick, (rec.y + rec.height) - innerRadius),
-                new Vector2((rec.x + rec.width) - innerRadius, rec.y + rec.height + lineThick), // P3, P4
-                new Vector2(rec.x + innerRadius, rec.y + rec.height + lineThick),
-                new Vector2(rec.x - lineThick, (rec.y + rec.height) - innerRadius),
-                new Vector2(rec.x - lineThick, rec.y + innerRadius), // P5, P6, P7
-                new Vector2(rec.x + innerRadius, rec.y),
-                new Vector2((rec.x + rec.width) - innerRadius, rec.y), // P8, P9
-                new Vector2(rec.x + rec.width, rec.y + innerRadius),
-                new Vector2(rec.x + rec.width, (rec.y + rec.height) - innerRadius), // P10, P11
-                new Vector2((rec.x + rec.width) - innerRadius, rec.y + rec.height),
-                new Vector2(rec.x + innerRadius, rec.y + rec.height), // P12, P13
-                new Vector2(rec.x, (rec.y + rec.height) - innerRadius),
-                new Vector2(rec.x, rec.y + innerRadius) // P14, P15
+        Vector2[] point = new Vector2[]{
+                new Vector2(rec.x + innerRadius + 0.5f, rec.y - lineThick + 0.5f),
+                new Vector2((rec.x + rec.width) - innerRadius - 0.5f, rec.y - lineThick + 0.5f),
+                new Vector2(rec.x + rec.width + lineThick - 0.5f, rec.y + innerRadius + 0.5f), // PO, P1, P2
+                new Vector2(rec.x + rec.width + lineThick - 0.5f, (rec.y + rec.height) - innerRadius - 0.5f),
+                new Vector2((rec.x + rec.width) - innerRadius - 0.5f, rec.y + rec.height + lineThick - 0.5f), // P3, P4
+                new Vector2(rec.x + innerRadius + 0.5f, rec.y + rec.height + lineThick - 0.5f),
+                new Vector2(rec.x - lineThick + 0.5f, (rec.y + rec.height) - innerRadius - 0.5f),
+                new Vector2(rec.x - lineThick + 0.5f, rec.y + innerRadius + 0.5f), // P5, P6, P7
+                new Vector2(rec.x + innerRadius + 0.5f, rec.y + 0.5f),
+                new Vector2((rec.x + rec.width) - innerRadius - 0.5f, rec.y + 0.5f), // P8, P9
+                new Vector2(rec.x + rec.width - 0.5f, rec.y + innerRadius + 0.5f),
+                new Vector2(rec.x + rec.width - 0.5f, (rec.y + rec.height) - innerRadius - 0.5f), // P10, P11
+                new Vector2((rec.x + rec.width) - innerRadius - 0.5f, rec.y + rec.height - 0.5f),
+                new Vector2(rec.x + innerRadius + 0.5f, rec.y + rec.height - 0.5f), // P12, P13
+                new Vector2(rec.x + 0.5f, (rec.y + rec.height) - innerRadius - 0.5f),
+                new Vector2(rec.x + 0.5f, rec.y + innerRadius + 0.5f) // P14, P15
         };
 
         Vector2[] centers = {
-                new Vector2(rec.x + innerRadius, rec.y + innerRadius),
-                new Vector2((rec.x + rec.width) - innerRadius, rec.y + innerRadius), // P16, P17
-                new Vector2(rec.x + rec.width - innerRadius, (rec.y + rec.height) - innerRadius),
-                new Vector2(rec.x + innerRadius, (rec.y + rec.height) - innerRadius) // P18, P19
+                new Vector2(rec.x + innerRadius + 0.5f, rec.y + innerRadius + 0.5f),
+                new Vector2((rec.x + rec.width) - innerRadius - 0.5f, rec.y + innerRadius + 0.5f), // P16, P17
+                new Vector2((rec.x + rec.width) - innerRadius - 0.5f, (rec.y + rec.height) - innerRadius - 0.5f),
+                new Vector2(rec.x + innerRadius + 0.5f, (rec.y + rec.height) - innerRadius - 0.5f) // P18, P19
         };
 
         float[] angles = {180.0f, 270.0f, 0.0f, 90.0f};
 
         if(lineThick > 1) {
             if(SUPPORT_QUADS_DRAW_MODE) {
-                context.rlgl.rlCheckRenderBatchLimit(4 * 4 * segments + 4 * 4);
-
-                context.rlgl.rlSetTexture(texShapes.getId());
+                context.rlgl.rlSetTexture(GetShapesTexture().id);;
+                Rectangle shapeRect = GetShapesTextureRectangle();
 
                 context.rlgl.rlBegin(RL_QUADS);
                 // Draw all of the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
-                for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
-                {
+                // Hope the compiler is smart enough to unroll this loop
+                for(int k = 0; k < 4; ++k) {
                     float angle = angles[k];
                     Vector2 center = centers[k];
                     for(int i = 0; i < segments; i++) {
                         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-                        context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, texShapesRec.y/texShapes.height);
+                        context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
                         context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*angle)*innerRadius), (float) (center.y + Math.sin(DEG2RAD*angle)*innerRadius));
 
-                        context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, texShapesRec.y/texShapes.height);
+                        context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
                         context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength))*innerRadius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength))*innerRadius));
 
-                        context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width)/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                        context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                         context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*(angle + stepLength))*outerRadius), (float) (center.y + Math.sin(DEG2RAD*(angle + stepLength))*outerRadius));
 
-                        context.rlgl.rlTexCoord2f(texShapesRec.x/texShapes.width, (texShapesRec.y + texShapesRec.height)/texShapes.height);
+                        context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
                         context.rlgl.rlVertex2f((float) (center.x + Math.cos(DEG2RAD*angle)*outerRadius), (float) (center.y + Math.sin(DEG2RAD*angle)*outerRadius));
 
                         angle += stepLength;
@@ -1395,54 +1515,52 @@ public class rShapes {
 
                 // Upper rectangle
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[0].x, point[0].y);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[8].x, point[8].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[9].x, point[9].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[1].x, point[1].y);
 
                 // Right rectangle
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[2].x, point[2].y);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[10].x, point[10].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[11].x, point[11].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[3].x, point[3].y);
 
                 // Lower rectangle
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[13].x, point[13].y);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[5].x, point[5].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[4].x, point[4].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[12].x, point[12].y);
 
                 // Left rectangle
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[15].x, point[15].y);
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[7].x, point[7].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(point[6].x, point[6].y);
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(point[14].x, point[14].y);
 
                 context.rlgl.rlEnd();
                 context.rlgl.rlSetTexture(0);
             }
             else{
-                context.rlgl.rlCheckRenderBatchLimit(4 * 6 * segments + 4 * 6);
-
                 context.rlgl.rlBegin(RL_TRIANGLES);
 
                 // Draw all of the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
@@ -1504,13 +1622,11 @@ public class rShapes {
         }
         else{
             // Use LINES to draw the outline
-            context.rlgl.rlCheckRenderBatchLimit(8 * segments + 4 * 2);
-
             context.rlgl.rlBegin(RL_LINES);
 
             // Draw all of the 4 corners first: Upper Left Corner, Upper Right Corner, Lower Right Corner, Lower Left Corner
-            for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
-            {
+            // Hope the compiler is smart enough to unroll this loop
+            for(int k = 0; k < 4; ++k) {
                 float angle = angles[k];
                 Vector2 center = centers[k];
 
@@ -1545,23 +1661,23 @@ public class rShapes {
     public void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color) {
 
         if(SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlCheckRenderBatchLimit(4);
-
-            context.rlgl.rlSetTexture(texShapes.getId());
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
+            context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(v1.x, v1.y);
 
-            context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(v2.x, v2.y);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
             context.rlgl.rlVertex2f(v2.x, v2.y);
 
-            context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+            context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(v3.x, v3.y);
             context.rlgl.rlEnd();
 
@@ -1615,23 +1731,23 @@ public class rShapes {
      */
     public void DrawTriangleFan(Vector2[] points, int pointsCount, Color color) {
         if(pointsCount >= 3) {
-            context.rlgl.rlCheckRenderBatchLimit((pointsCount - 2) * 4);
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
-            context.rlgl.rlSetTexture(texShapes.getId());
             context.rlgl.rlBegin(RL_QUADS);
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
             for(int i = 1; i < pointsCount - 1; i++) {
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(points[0].x, points[0].y);
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(points[i].x, points[i].y);
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f(points[i + 1].x, points[i + 1].y);
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(points[i + 1].x, points[i + 1].y);
             }
             context.rlgl.rlEnd();
@@ -1684,23 +1800,24 @@ public class rShapes {
         float angleStep = 360.0f/(float)sides*DEG2RAD;
 
         if(SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlSetTexture(texShapes.id);
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
             for (int i = 0; i < sides; i++) {
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
                 float nextAngle = centralAngle + angleStep;
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(center.x, center.y);
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(centralAngle) * radius), (float) (center.y + Math.sin(centralAngle) * radius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(nextAngle) * radius), (float) (center.y + Math.sin(nextAngle) * radius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(centralAngle) * radius), (float) (center.y + Math.sin(centralAngle) * radius));
 
                 centralAngle = nextAngle;
@@ -1762,29 +1879,33 @@ public class rShapes {
      * @param color    Color to draw polygon
      */
     public void DrawPolyLinesEx(Vector2 center, int sides, float radius, float rotation, float lineThick, Color color) {
-        if (sides < 3) sides = 3;
+        if (sides < 3) {
+            sides = 3;
+        }
+
         float centralAngle = rotation*DEG2RAD;
         float exteriorAngle = 360.0f/(float)sides*DEG2RAD;
         float innerRadius = (float) (radius - (lineThick*Math.cos(DEG2RAD*exteriorAngle/2.0f)));
 
         if (SUPPORT_QUADS_DRAW_MODE) {
-            context.rlgl.rlSetTexture(texShapes.id);
+            context.rlgl.rlSetTexture(GetShapesTexture().id);
+            Rectangle shapeRect = GetShapesTextureRectangle();;
 
             context.rlgl.rlBegin(RL_QUADS);
             for (int i = 0; i < sides; i++) {
                 context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
                 float nextAngle = centralAngle + exteriorAngle;
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(centralAngle) * radius), (float) (center.y + Math.sin(centralAngle) * radius));
 
-                context.rlgl.rlTexCoord2f(texShapesRec.x / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(centralAngle) * innerRadius), (float) (center.y + Math.sin(centralAngle) * innerRadius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, (texShapesRec.y + texShapesRec.height) / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(nextAngle) * innerRadius), (float) (center.y + Math.sin(nextAngle) * innerRadius));
 
-                context.rlgl.rlTexCoord2f((texShapesRec.x + texShapesRec.width) / texShapes.width, texShapesRec.y / texShapes.height);
+                context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f((float) (center.x + Math.cos(nextAngle) * radius), (float) (center.y + Math.sin(nextAngle) * radius));
 
                 centralAngle = nextAngle;
@@ -1823,25 +1944,104 @@ public class rShapes {
      * @param color spline color
      */
     public void DrawSplineLinear(Vector2[] points, float thick, Color color) {
-        Vector2 delta = new Vector2();
-        float length = 0.0f;
-        float scale = 0.0f;
+        if (points.length < 2) {
+            return;
+        }
 
-        for (int i = 0; i < points.length - 1; i++) {
-            delta = new Vector2(points[i + 1].x - points[i].x, points[i + 1].y - points[i].y);
-            length = (float) Math.sqrt(delta.x*delta.x + delta.y*delta.y);
+        if (SUPPORT_SPLINE_MITERS) {
+            Vector2 prevNormal = new Vector2(-(points[1].y - points[0].y), (points[1].x - points[0].x));
+            float prevLength = (float) Math.sqrt(prevNormal.x * prevNormal.x + prevNormal.y * prevNormal.y);
 
-            if (length > 0) scale = thick/(2*length);
+            if (prevLength > 0.0f) {
+                prevNormal.x /= prevLength;
+                prevNormal.y /= prevLength;
+            }
+            else {
+                prevNormal.x = 0.0f;
+                prevNormal.y = 0.0f;
+            }
 
-            Vector2 radius = new Vector2(-scale*delta.y, scale*delta.x);
-            Vector2[] strip = {
-                new Vector2(points[i].x - radius.x, points[i].y - radius.y),
-                new Vector2(points[i].x + radius.x, points[i].y + radius.y),
-                new Vector2(points[i + 1].x - radius.x, points[i + 1].y - radius.y),
-                new Vector2(points[i + 1].x + radius.x, points[i + 1].y + radius.y)
-            };
+            Vector2 prevRadius = new Vector2(0.5f * thick * prevNormal.x, 0.5f * thick * prevNormal.y);
 
-            DrawTriangleStrip(strip, color);
+            for (int i = 0; i < points.length - 1; i++) {
+                Vector2 normal;
+
+                if (i < points.length - 2) {
+                    normal = new Vector2(-(points[i + 2].y - points[i + 1].y), (points[i + 2].x - points[i + 1].x));
+                    float normalLength = (float) Math.sqrt(normal.x * normal.x + normal.y * normal.y);
+
+                    if (normalLength > 0.0f) {
+                        normal.x /= normalLength;
+                        normal.y /= normalLength;
+                    }
+                    else {
+                        normal.x = 0.0f;
+                        normal.y = 0.0f;
+                    }
+                }
+                else {
+                    normal = prevNormal;
+                }
+
+                Vector2 radius = new Vector2(prevNormal.x + normal.x, prevNormal.y + normal.y);
+                float radiusLength = (float) Math.sqrt(radius.x * radius.x + radius.y * radius.y);
+
+                if (radiusLength > 0.0f) {
+                    radius.x /= radiusLength;
+                    radius.y /= radiusLength;
+                }
+                else {
+                    radius.x = 0.0f;
+                    radius.y = 0.0f;
+                }
+
+                float cosTheta = radius.x * normal.x + radius.y * normal.y;
+
+                if (cosTheta != 0.0f) {
+                    radius.x *= (thick * 0.5f / cosTheta);
+                    radius.y *= (thick * 0.5f / cosTheta);
+                }
+                else {
+                    radius.x = 0.0f;
+                    radius.y = 0.0f;
+                }
+
+                Vector2[] strip ={
+                    new Vector2(points[i].x - prevRadius.x, points[i].y - prevRadius.y),
+                    new Vector2(points[i].x + prevRadius.x, points[i].y + prevRadius.y),
+                    new Vector2(points[i + 1].x - radius.x, points[i + 1].y - radius.y),
+                    new Vector2(points[i + 1].x + radius.x, points[i + 1].y + radius.y),
+                };
+
+                DrawTriangleStrip(strip, color);
+
+                prevRadius = radius;
+                prevNormal = normal;
+            }
+        }
+        else {
+            // !SUPPORT_SPLINE_MITERS
+
+            Vector2 delta;
+            float length = 0.0f;
+            float scale = 0.0f;
+
+            for (int i = 0; i < points.length - 1; i++) {
+                delta = new Vector2(points[i + 1].x - points[i].x, points[i + 1].y - points[i].y);
+                length = (float) Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+
+                if (length > 0) scale = thick / (2 * length);
+
+                Vector2 radius = new Vector2(-scale * delta.y, scale * delta.x);
+                Vector2[] strip ={
+                    new Vector2(points[i].x - radius.x, points[i].y - radius.y),
+                    new Vector2(points[i].x + radius.x, points[i].y + radius.y),
+                    new Vector2(points[i + 1].x - radius.x, points[i + 1].y - radius.y),
+                    new Vector2(points[i + 1].x + radius.x, points[i + 1].y + radius.y),
+                };
+
+                DrawTriangleStrip(strip, color);
+            }
         }
     }
 
@@ -1925,7 +2125,8 @@ public class rShapes {
             DrawTriangleStrip(vertices, color);
         }
 
-        DrawCircleV(currentPoint, thick/2.0f, color);   // Draw end line circle-cap
+        // Cap circle drawing at the end of every segment
+        DrawCircleV(currentPoint, thick/2.0f, color);
     }
 
     /**
@@ -1996,7 +2197,8 @@ public class rShapes {
             DrawTriangleStrip(vertices, color);
         }
 
-        DrawCircleV(currentPoint, thick/2.0f, color);   // Draw end line circle-cap
+        // Cap circle drawing at the end of every segment
+        DrawCircleV(currentPoint, thick/2.0f, color);
     }
 
     /**
@@ -2006,10 +2208,15 @@ public class rShapes {
      * @param color
      */
     public void DrawSplineBezierQuadratic(Vector2[] points, float thick, Color color) {
-        if (points.length < 3) return;
+        if (points.length >= 3) {
+            for (int i = 0; i < points.length - 2; i += 2) {
+                DrawSplineSegmentBezierQuadratic(points[i], points[i + 1], points[i + 2], thick, color);
+            }
 
-        for (int i = 0; i < points.length - 2; i++) {
-            DrawSplineSegmentBezierQuadratic(points[i], points[i + 1], points[i + 2], thick, color);
+            // Cap circle drawing at the end of every segment
+            // for (int i = 2; i < points.length - 2; i += 2) {
+            //     DrawCircleV(points[i], thick/2.0f, color);
+            // }
         }
     }
 
@@ -2020,12 +2227,16 @@ public class rShapes {
      * @param color
      */
     public void DrawSplineBezierCubic(Vector2[] points, float thick, Color color) {
-        if (points.length < 4) {
-            return;
-        }
+        if (points.length >= 4)
+        {
+            for (int i = 0; i < points.length - 3; i += 3) {
+                DrawSplineSegmentBezierCubic(points[i], points[i + 1], points[i + 2], points[i + 3], thick, color);
+            }
 
-        for (int i = 0; i < points.length - 3; i++) {
-            DrawSplineSegmentBezierCubic(points[i], points[i + 1], points[i + 2], points[i + 3], thick, color);
+            // Cap circle drawing at the end of every segment
+            // for (int i = 3; i < points.length - 3; i += 3) {
+            //     DrawCircleV(points[i], thick/2.0f, color);
+            // }
         }
     }
 
@@ -2037,7 +2248,7 @@ public class rShapes {
      * @param color
      */
     public void DrawSplineSegmentLinear(Vector2 p1, Vector2 p2, float thick, Color color) {
-        // NOTE: For the linear spline we don't use subdivisions, just a single quad
+        // NOTE: For the linear spline no subdivisions are used, only a single quad
 
         Vector2 delta = new Vector2(p2.x - p1.x, p2.y - p1.y);
         float length = (float) Math.sqrt(delta.x*delta.x + delta.y*delta.y);
@@ -2425,7 +2636,11 @@ public class rShapes {
     public boolean CheckCollisionPointCircle(Vector2 point, Vector2 center, float radius) {
         boolean collision = false;
 
-        collision = CheckCollisionCircles(point, 0, center, radius);
+        float distanceSquared = (point.x - center.x)*(point.x - center.x) + (point.y - center.y)*(point.y - center.y);
+
+        if (distanceSquared <= radius*radius) {
+            collision = true;
+        }
 
         return collision;
     }
@@ -2465,12 +2680,11 @@ public class rShapes {
         boolean collision = false;
 
         if (points.length > 2) {
-            for (int i = 0; i < points.length; i++) {
-                Vector2 vc = points[i];
-                Vector2 vn = points[i + 1];
-
-                if ((((vc.y >= point.y) && (vn.y < point.y)) || ((vc.y < point.y) && (vn.y >= point.y))) &&
-                        (point.x < ((vn.x - vc.x)*(point.y - vc.y)/(vn.y - vc.y) + vc.x))) {
+            for (int i = 0, j = points.length - 1; i < points.length; j = i++) {
+                if (
+                        (points[i].y > point.y) != (points[j].y > point.y) &&
+                        (point.x < (points[j].x - points[i].x)*(point.y - points[i].y)/(points[j].y - points[i].y) + points[i].x)
+                ) {
                     collision = !collision;
                 }
             }
@@ -2512,11 +2726,10 @@ public class rShapes {
         float dx = center2.x - center1.x;      // X distance between centers
         float dy = center2.y - center1.y;      // Y distance between centers
 
-        float distance = (float) Math.sqrt(dx * dx + dy * dy); // Distance between centers
+        float distanceSquared = dx*dx + dy*dy; // Distance between centers squared
+        float radiusSum = radius1 + radius2;
 
-        if(distance <= (radius1 + radius2)) {
-            collision = true;
-        }
+        collision = (distanceSquared <= (radiusSum*radiusSum));
 
         return collision;
     }
@@ -2533,30 +2746,25 @@ public class rShapes {
     public boolean CheckCollisionCircleRec(Vector2 center, float radius, Rectangle rec) {
         boolean collision = false;
 
-        int recCenterX = (int) (rec.x + rec.width / 2.0f);
-        int recCenterY = (int) (rec.y + rec.height / 2.0f);
+        float recCenterX = rec.x + rec.width/2.0f;
+        float recCenterY = rec.y + rec.height/2.0f;
 
-        float dx = Math.abs(center.x - (float) recCenterX);
-        float dy = Math.abs(center.y - (float) recCenterY);
+        float dx = Math.abs(center.x - recCenterX);
+        float dy = Math.abs(center.y - recCenterY);
 
-        if(dx > (rec.width / 2.0f + radius)) {
-            return false;
+        if ((dx <= (rec.width/2.0f + radius)) && (dy <= (rec.height/2.0f + radius))) {
+            if (dx <= (rec.width/2.0f)) {
+                collision = true;
+            }
+            else if (dy <= (rec.height/2.0f)) {
+                collision = true;
+            }
+            else {
+                float cornerDistanceSq = (dx - rec.width/2.0f)*(dx - rec.width/2.0f) + (dy - rec.height/2.0f)*(dy - rec.height/2.0f);
+
+                collision = (cornerDistanceSq <= (radius*radius));
+            }
         }
-        if(dy > (rec.height / 2.0f + radius)) {
-            return false;
-        }
-
-        if(dx <= (rec.width / 2.0f)) {
-            return true;
-        }
-        if(dy <= (rec.height / 2.0f)) {
-            return true;
-        }
-
-        float cornerDistanceSq = (dx - rec.width / 2.0f) * (dx - rec.width / 2.0f) +
-                (dy - rec.height / 2.0f) * (dy - rec.height / 2.0f);
-
-        collision = (cornerDistanceSq <= (radius * radius));
 
         return collision;
     }
@@ -2570,29 +2778,31 @@ public class rShapes {
      * @param endPos2   X, Y coordinate for final endpoint of line 2
      * @param collisionPoint X, Y coordinate for location of collision
      * @return true if lines collide
+     * @see <a href="https://en.wikipedia.org/wiki/Line–line_intersection#Given_two_points_on_each_line_segment">Line intersections</a>
      */
     @Contract(mutates = "collisionPoint")
     public boolean CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2, Vector2 collisionPoint) {
         boolean collision = false;
 
-        float div = (endPos2.y - startPos2.y)*(endPos1.x - startPos1.x) - (endPos2.x - startPos2.x)*(endPos1.y - startPos1.y);
+        float rx = endPos1.x - startPos1.x;
+        float ry = endPos1.y - startPos1.y;
+        float sx = endPos2.x - startPos2.x;
+        float sy = endPos2.y - startPos2.y;
 
-        if (Math.abs(div) >= Float.MIN_VALUE) {
-            collision = true;
+        float div = rx*sy - ry*sx;
 
-            float xi = ((startPos2.x - endPos2.x)*(startPos1.x*endPos1.y - startPos1.y*endPos1.x) - (startPos1.x - endPos1.x)*(startPos2.x*endPos2.y - startPos2.y*endPos2.x))/div;
-            float yi = ((startPos2.y - endPos2.y)*(startPos1.x*endPos1.y - startPos1.y*endPos1.x) - (startPos1.y - endPos1.y)*(startPos2.x*endPos2.y - startPos2.y*endPos2.x))/div;
+        if (Math.abs(div) >= EPSILON) {
+            float s12x = startPos2.x - startPos1.x;
+            float s12y = startPos2.y - startPos1.y;
 
-            if (((Math.abs(startPos1.x - endPos1.x) > Float.MIN_VALUE) && (xi < Math.min(startPos1.x, endPos1.x) || (xi > Math.max(startPos1.x, endPos1.x)))) ||
-                    ((Math.abs(startPos2.x - endPos2.x) > Float.MIN_VALUE) && (xi < Math.min(startPos2.x, endPos2.x) || (xi > Math.max(startPos2.x, endPos2.x)))) ||
-                    ((Math.abs(startPos1.y - endPos1.y) > Float.MIN_VALUE) && (yi < Math.min(startPos1.y, endPos1.y) || (yi > Math.max(startPos1.y, endPos1.y)))) ||
-                    ((Math.abs(startPos2.y - endPos2.y) > Float.MIN_VALUE) && (yi < Math.min(startPos2.y, endPos2.y) || (yi > Math.max(startPos2.y, endPos2.y))))) {
-                collision = false;
-            }
+            float t = (s12x*sy - s12y*sx)/div;
+            float u = (s12x*ry - s12y*rx)/div;
 
-            if (collision && (collisionPoint != null)) {
-                collisionPoint.x = xi;
-                collisionPoint.y = yi;
+            if ((0.0f <= t) && (t <= 1.0f) && (0.0f <= u) && (u <= 1.0f)) {
+                collisionPoint.x = startPos1.x + t*rx;
+                collisionPoint.y = startPos1.y + t*ry;
+
+                collision = true;
             }
         }
 
@@ -2618,6 +2828,48 @@ public class rShapes {
         return collision;
     }
 
+    /**
+     * Check if circle collides with a line created between two points [p1] and [p2]
+     * @param center (x, y) coordinate of the circle center
+     * @param radius circle radius
+     * @param p1 starting point of the line segment
+     * @param p2 ending point of the line segment
+     * @return {@code true} if line intersects circle
+     */
+    public boolean CheckCollisionCircleLine(Vector2 center, float radius, Vector2 p1, Vector2 p2) {
+        boolean collision = false;
+
+        float dx = p1.x - p2.x;
+        float dy = p1.y - p2.y;
+
+        if ((Math.abs(dx) + Math.abs(dy)) <= EPSILON) {
+            collision = CheckCollisionCircles(p1, 0, center, radius);
+        }
+        else {
+            float lengthSQ = ((dx*dx) + (dy*dy));
+            float dotProduct = (((center.x - p1.x)*(p2.x - p1.x)) + ((center.y - p1.y)*(p2.y - p1.y)))/(lengthSQ);
+
+            if (dotProduct > 1.0f) {
+                dotProduct = 1.0f;
+            }
+            else if (dotProduct < 0.0f) {
+                dotProduct = 0.0f;
+            }
+
+            float dx2 = (p1.x - (dotProduct*(dx))) - center.x;
+            float dy2 = (p1.y - (dotProduct*(dy))) - center.y;
+            float distanceSQ = ((dx2*dx2) + (dy2*dy2));
+
+            if (distanceSQ <= radius*radius) {
+                collision = true;
+            }
+        }
+
+        return collision;
+    }
+
+
+
     // Get collision rectangle for two rectangles collision
     public Rectangle GetCollisionRec(Rectangle rec1, Rectangle rec2) {
         Rectangle overlap = new Rectangle();
@@ -2642,7 +2894,7 @@ public class rShapes {
     }
 
     //----------------------------------------------------------------------------------
-    // Module specific Functions Definition
+    // Module Internal Functions Definition
     //----------------------------------------------------------------------------------
 
     // Cubic easing in-out

@@ -1,8 +1,9 @@
 package com.raylib.java.shapes;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.structs.Color;
 import com.raylib.java.structs.Vector2;
+
+import static com.raylib.java.structs.Color.*;
 
 public class BasicShapes{
 
@@ -25,36 +26,64 @@ public class BasicShapes{
 
     public static void main(String[] args){
         Raylib rlj = new Raylib();
-        // rlj.config.RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = true;
+        // rlj.config.setSupportQuadsDrawMode(false);
+
+        float rotation = 0.0f;
 
         rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raylib [shapes] example - basic shapes drawing");
         rlj.core.SetTargetFPS(60);
 
         while(!rlj.core.WindowShouldClose()){
+            // Update
+            //----------------------------------------------------------------------------------
+            rotation += 0.2f;
+            //----------------------------------------------------------------------------------
+
+            // Draw
+            //----------------------------------------------------------------------------------
             rlj.core.BeginDrawing();
 
-            rlj.core.ClearBackground(Color.RAYWHITE);
+            rlj.core.ClearBackground(RAYWHITE);
 
-            rlj.text.DrawText("some basic shapes available on raylib", 20, 20, 20, Color.DARKGRAY);
+            rlj.text.DrawText("some basic shapes available on raylib", 20, 20, 20, DARKGRAY);
 
-            rlj.shapes.DrawCircle(SCREEN_WIDTH/4, 120, 35, Color.DARKBLUE);
+            // Circle shapes and lines
+            rlj.shapes.DrawCircle(SCREEN_WIDTH/5, 120, 35, DARKBLUE);
+            rlj.shapes.DrawCircleGradient(new Vector2(SCREEN_WIDTH/5.0f, 220.0f ), 60, GREEN, SKYBLUE);
+            rlj.shapes.DrawCircleLines(SCREEN_WIDTH/5, 340, 80, DARKBLUE);
+            rlj.shapes.DrawEllipse(SCREEN_WIDTH/5, 120, 25, 20, YELLOW);
+            rlj.shapes.DrawEllipseLines(SCREEN_WIDTH/5, 120, 30, 25, YELLOW);
 
-            rlj.shapes.DrawRectangle(SCREEN_WIDTH/4*2 - 60, 100, 120, 60, Color.RED);
-            rlj.shapes.DrawRectangleLines(SCREEN_WIDTH/4*2 - 40, 320, 80, 60, Color.ORANGE);
-            rlj.shapes.DrawRectangleGradientH(SCREEN_WIDTH/4*2 - 90, 170, 180, 130, Color.MAROON, Color.GOLD);
+            // Rectangle shapes and lines
+            rlj.shapes.DrawRectangle(SCREEN_WIDTH/4*2 - 60, 100, 120, 60, RED);
+            rlj.shapes.DrawRectangleGradientH(SCREEN_WIDTH/4*2 - 90, 170, 180, 130, MAROON, GOLD);
+            rlj.shapes.DrawRectangleLines(SCREEN_WIDTH/4*2 - 40, 320, 80, 60, ORANGE);  // NOTE: Uses QUADS internally, not lines
 
-            rlj.shapes.DrawTriangle(new Vector2(SCREEN_WIDTH/4.0f*3, 80), new Vector2(SCREEN_WIDTH/4.0f*3 - 60, 150), new Vector2(SCREEN_WIDTH/4.0f*3 + 60, 150), Color.VIOLET);
+            // Triangle shapes and lines
+            rlj.shapes.DrawTriangle(
+                    new Vector2(SCREEN_WIDTH/4.0f *3.0f, 80.0f ),
+                    new Vector2(SCREEN_WIDTH/4.0f *3.0f - 60.0f, 150.0f ),
+                    new Vector2(SCREEN_WIDTH/4.0f *3.0f + 60.0f, 150.0f ),
+                    VIOLET
+            );
 
-            rlj.shapes.DrawPoly(new Vector2(SCREEN_WIDTH/4.0f*3, 320), 6, 80, 0, Color.BROWN);
+            rlj.shapes.DrawTriangleLines(
+                    new Vector2(SCREEN_WIDTH/4.0f*3.0f, 160.0f ),
+                    new Vector2(SCREEN_WIDTH/4.0f*3.0f - 20.0f, 230.0f ),
+                    new Vector2(SCREEN_WIDTH/4.0f*3.0f + 20.0f, 230.0f ),
+                    DARKBLUE
+            );
 
-            rlj.shapes.DrawCircleGradient(SCREEN_WIDTH/4, 220, 60, Color.GREEN, Color.SKYBLUE);
+            // Polygon shapes and lines
+            rlj.shapes.DrawPoly(new Vector2(SCREEN_WIDTH/4.0f*3, 330 ), 6, 80, rotation, BROWN);
+            rlj.shapes.DrawPolyLines(new Vector2(SCREEN_WIDTH/4.0f*3, 330 ), 6, 90, rotation, BROWN);
+            rlj.shapes.DrawPolyLinesEx(new Vector2(SCREEN_WIDTH/4.0f*3, 330 ), 6, 85, rotation, 6, BEIGE);
 
             // NOTE: We draw all LINES based shapes together to optimize internal drawing,
             // this way, all LINES are rendered in a single draw pass
-            rlj.shapes.DrawLine(18, 42, SCREEN_WIDTH - 18, 42, Color.BLACK);
-            rlj.shapes.DrawCircleLines(SCREEN_WIDTH/4, 340, 80, Color.DARKBLUE);
-            rlj.shapes.DrawTriangleLines(new Vector2(SCREEN_WIDTH/4.0f*3, 160), new Vector2(SCREEN_WIDTH/4.0f*3 - 20, 230), new Vector2(SCREEN_WIDTH/4.0f*3 + 20, 230), Color.DARKBLUE);
+            rlj.shapes.DrawLine(18, 42, SCREEN_WIDTH - 18, 42, BLACK);
             rlj.core.EndDrawing();
+            //----------------------------------------------------------------------------------
         }
 
         rlj.core.CloseWindow();

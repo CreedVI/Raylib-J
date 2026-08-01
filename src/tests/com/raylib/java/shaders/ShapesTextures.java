@@ -67,7 +67,7 @@ public class ShapesTextures{
             rlj.text.DrawText("USING DEFAULT SHADER", 20, 40, 10, Color.RED);
 
             rlj.shapes.DrawCircle(80, 120, 35, Color.DARKBLUE);
-            rlj.shapes.DrawCircleGradient(80, 220, 60, Color.GREEN, Color.SKYBLUE);
+            rlj.shapes.DrawCircleGradient(new Vector2(80, 220), 60, Color.GREEN, Color.SKYBLUE);
             rlj.shapes.DrawCircleLines(80, 340, 80, Color.DARKBLUE);
 
 

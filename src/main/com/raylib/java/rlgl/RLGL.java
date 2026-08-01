@@ -2016,12 +2016,12 @@ public class RLGL {
                 if(GRAPHICS_API_OPENGL_33){
                     // Indices can be initialized right now
                     for(int j = 0; j < (6 * bufferElements); j += 6){
-                        batch.vertexBuffer[i].getIndices_GL11()[j] = 4 * k;
-                        batch.vertexBuffer[i].getIndices_GL11()[j + 1] = 4 * k + 1;
-                        batch.vertexBuffer[i].getIndices_GL11()[j + 2] = 4 * k + 2;
-                        batch.vertexBuffer[i].getIndices_GL11()[j + 3] = 4 * k;
-                        batch.vertexBuffer[i].getIndices_GL11()[j + 4] = 4 * k + 2;
-                        batch.vertexBuffer[i].getIndices_GL11()[j + 5] = 4 * k + 3;
+                        batch.vertexBuffer[i].indices_GL11[j] = 4 * k;
+                        batch.vertexBuffer[i].indices_GL11[j + 1] = 4 * k + 1;
+                        batch.vertexBuffer[i].indices_GL11[j + 2] = 4 * k + 2;
+                        batch.vertexBuffer[i].indices_GL11[j + 3] = 4 * k;
+                        batch.vertexBuffer[i].indices_GL11[j + 4] = 4 * k + 2;
+                        batch.vertexBuffer[i].indices_GL11[j + 5] = 4 * k + 3;
 
                         k++;
                     }

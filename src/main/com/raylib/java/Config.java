@@ -135,27 +135,35 @@ public class Config{
     public final static float RL_CULL_DISTANCE_NEAR = 0.01f;      // Default projection matrix near cull distance
     public final static float RL_CULL_DISTANCE_FAR = 1000.0f;      // Default projection matrix far cull distance
 
-    public boolean RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = false;
+    public static boolean RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = false;
 
     //------------------------------------------------------------------------------------
     // Module: rShapes - Configuration Flags
     //------------------------------------------------------------------------------------
+
     /**
      * Draw rectangle rShapes using font texture white character instead of default white texture
      * Allows drawing rectangles and text with a single draw call, very useful for GUI systems!
      */
     public static boolean SUPPORT_FONT_TEXTURE = true;
+
     /**
      * Use QUADS instead of TRIANGLES for drawing when possible
      * Some lines-based rShapes could still use lines
+     * WARNING: Quads rendering is currently broken in Raylib-J
      */
-    public static boolean SUPPORT_QUADS_DRAW_MODE = true;
+    public static boolean SUPPORT_QUADS_DRAW_MODE = false;
+
+    /**
+     * Use Miters for spline rendering
+     */
+    public static boolean SUPPORT_SPLINE_MITERS = true;
 
 
     //------------------------------------------------------------------------------------
     // Module: textures - Configuration Flags
     //------------------------------------------------------------------------------------
-    // Select desired fileformats to be supported for image data loading
+    // Select desired file formats to be supported for image data loading
     public static boolean SUPPORT_FILEFORMAT_PNG = true;
     public static boolean SUPPORT_FILEFORMAT_BMP = true;
     public static boolean SUPPORT_FILEFORMAT_TGA = true;

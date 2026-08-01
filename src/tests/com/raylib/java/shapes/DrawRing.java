@@ -50,7 +50,7 @@ public class DrawRing {
                 rlj.shapes.DrawRectangleRounded(rec, roundness, segments, rlj.textures.Fade(MAROON, 0.2f));
             }
             if (drawRoundedLines) {
-                rlj.shapes.DrawRectangleRoundedLines(rec,roundness, segments, (float)lineThick, rlj.textures.Fade(MAROON, 0.4f));
+                rlj.shapes.DrawRectangleRoundedLinesEx(rec, roundness, segments, (float)lineThick, rlj.textures.Fade(MAROON, 0.4f));
             }
 
             // Draw GUI controls
