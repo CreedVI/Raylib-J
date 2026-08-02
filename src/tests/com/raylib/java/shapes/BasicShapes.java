@@ -26,7 +26,8 @@ public class BasicShapes{
 
     public static void main(String[] args){
         Raylib rlj = new Raylib();
-        // rlj.config.setSupportQuadsDrawMode(false);
+        // rlj.config.setSupportQuadsDrawMode(true);
+        rlj.config.setSupportOpenGLDebug(true);
 
         float rotation = 0.0f;
 

@@ -1,5 +1,8 @@
 package com.raylib.java.rlgl;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
 public class rlVertexBuffer{
 
     int elementCount;          // Number of elements in the buffer (QUADS)

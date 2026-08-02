@@ -1,6 +1,7 @@
 package com.raylib.java.core.input;
 
 import static com.raylib.java.Config.MAX_GAMEPADS;
+import static com.raylib.java.Config.MAX_GAMEPAD_BUTTONS;
 
 public class Gamepad{
 
@@ -82,9 +83,9 @@ public class Gamepad{
     public Gamepad(){
         ready = new boolean[MAX_GAMEPADS];
         name = new String[MAX_GAMEPADS];
-        axisState = new float[MAX_GAMEPADS][6];
-        currentButtonState = new byte[MAX_GAMEPADS][18];
-        previousButtonState = new byte[MAX_GAMEPADS][18];
+        axisState = new float[MAX_GAMEPADS][MAX_GAMEPADS];
+        currentButtonState = new byte[MAX_GAMEPADS][MAX_GAMEPAD_BUTTONS];
+        previousButtonState = new byte[MAX_GAMEPADS][MAX_GAMEPAD_BUTTONS];
     }
 
     public int getLastButtonPressed() {

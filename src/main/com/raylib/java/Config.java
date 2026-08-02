@@ -100,7 +100,7 @@ public class Config{
     public final static int MAX_MOUSE_BUTTONS = 8;                  // Maximum number of mouse buttons supported
     public final static int MAX_GAMEPADS = 16;                       // Max number of gamepads supported
     public final static int MAX_GAMEPAD_AXIS = 8;                   // Max number of axis supported (per gamepad)
-    public final static int MAX_GAMEPAD_BUTTONS = 32;               // Max number of buttons supported (per gamepad)
+    public final static int MAX_GAMEPAD_BUTTONS = 64;               // Max number of buttons supported (per gamepad)
     public final static int MAX_TOUCH_POINTS = 10;                  // Maximum number of touch points supported
     public final static int MAX_KEY_PRESSED_QUEUE = 16;             // Max number of keys in the key input queue
     public final static int MAX_CHAR_PRESSED_QUEUE = 16;            // Max number of characters in the char input queue
@@ -670,5 +670,13 @@ public class Config{
      */
     public void setSupportTracelogDebug(boolean supportTracelogDebug){
         SUPPORT_TRACELOG_DEBUG = supportTracelogDebug;
+    }
+
+    /**
+     * Define support for OpenGL debug messages
+     * @param supportOpenGLDebug flag for support
+     */
+    public void setSupportOpenGLDebug(boolean supportOpenGLDebug) {
+        RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = supportOpenGLDebug;
     }
 }

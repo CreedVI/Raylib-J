@@ -158,7 +158,6 @@ public class rShapes {
             context.rlgl.rlVertex2f(position.x + 1, position.y);
 
             context.rlgl.rlEnd();
-
             context.rlgl.rlSetTexture(0);
         }
         else {
@@ -231,9 +230,11 @@ public class rShapes {
      */
     public void DrawLineV(Vector2 startPos, Vector2 endPos, Color color) {
         context.rlgl.rlBegin(RL_LINES);
+
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
         context.rlgl.rlVertex2f(startPos.x, startPos.y);
         context.rlgl.rlVertex2f(endPos.x, endPos.y);
+
         context.rlgl.rlEnd();
     }
 
@@ -248,8 +249,8 @@ public class rShapes {
         }
 
         context.rlgl.rlBegin(RL_LINES);
-        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
+        context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
         for (int i = 0; i < points.length - 1; i++) {
             context.rlgl.rlVertex2f(points[i].x, points[i].y);
             context.rlgl.rlVertex2f(points[i + 1].x, points[i + 1].y);
@@ -749,7 +750,6 @@ public class rShapes {
                 angle += stepLength;
             }
             context.rlgl.rlEnd();
-
             context.rlgl.rlSetTexture(0);
         }
         else{
@@ -947,7 +947,6 @@ public class rShapes {
             context.rlgl.rlSetTexture(GetShapesTexture().id);
             Rectangle shapeRect = GetShapesTextureRectangle();
 
-            context.rlgl.rlSetTexture(texShapes.getId());
             context.rlgl.rlBegin(RL_QUADS);
 
             context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
@@ -1029,8 +1028,8 @@ public class rShapes {
         Rectangle shapeRect = GetShapesTextureRectangle();
 
         context.rlgl.rlBegin(RL_QUADS);
-        context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
 
+        context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
         // NOTE: Default raylib font character 95 is a white square
         context.rlgl.rlColor4ub(topLeft.r, topLeft.g, topLeft.b, topLeft.a);
         context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
@@ -1045,6 +1044,7 @@ public class rShapes {
         context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
         context.rlgl.rlVertex2f(rec.x + rec.width, rec.y);
 
+        context.rlgl.rlEnd();
         context.rlgl.rlSetTexture(0);
     }
 
@@ -1227,8 +1227,8 @@ public class rShapes {
 
             context.rlgl.rlBegin(RL_QUADS);
             // Draw all of the 4 corners: [1] Upper Left Corner, [3] Upper Right Corner, [5] Lower Right Corner, [7] Lower Left Corner
-            for(int k = 0; k < 4; ++k) // Hope the compiler is smart enough to unroll this loop
-            {
+            // Hope the compiler is smart enough to unroll this loop
+            for(int k = 0; k < 4; ++k) {
                 float angle = angles[k];
                 Vector2 center = centers[k];
                 // NOTE: Every QUAD actually represents two segments
@@ -1665,6 +1665,7 @@ public class rShapes {
             Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
+
             context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
@@ -1679,18 +1680,20 @@ public class rShapes {
 
             context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
             context.rlgl.rlVertex2f(v3.x, v3.y);
-            context.rlgl.rlEnd();
 
+            context.rlgl.rlEnd();
             context.rlgl.rlSetTexture(0);
         }
         else{
             context.rlgl.rlCheckRenderBatchLimit(3);
 
             context.rlgl.rlBegin(RL_TRIANGLES);
+
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
             context.rlgl.rlVertex2f(v1.x, v1.y);
             context.rlgl.rlVertex2f(v2.x, v2.y);
             context.rlgl.rlVertex2f(v3.x, v3.y);
+
             context.rlgl.rlEnd();
         }
     }
@@ -1735,8 +1738,8 @@ public class rShapes {
             Rectangle shapeRect = GetShapesTextureRectangle();
 
             context.rlgl.rlBegin(RL_QUADS);
-            context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
+            context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
             for(int i = 1; i < pointsCount - 1; i++) {
                 context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(points[0].x, points[0].y);
@@ -1805,8 +1808,8 @@ public class rShapes {
 
             context.rlgl.rlBegin(RL_QUADS);
             for (int i = 0; i < sides; i++) {
-                context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
                 float nextAngle = centralAngle + angleStep;
+                context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
                 context.rlgl.rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
                 context.rlgl.rlVertex2f(center.x, center.y);

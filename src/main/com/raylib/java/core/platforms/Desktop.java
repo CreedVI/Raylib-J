@@ -1497,11 +1497,11 @@ public class Desktop implements Platform {
 
                 // Get current gamepad state
                 // NOTE: There is no callback available, so we get it manually
-                ByteBuffer stateBuffer = ByteBuffer.allocateDirect(MAX_GAMEPADS);
+                ByteBuffer stateBuffer = ByteBuffer.allocateDirect(MAX_GAMEPAD_BUTTONS);
                 GLFWGamepadState state = new GLFWGamepadState(stateBuffer);
                 glfwGetGamepadState(i, state); // This remapps all gamepads so they have their buttons mapped like an xbox controller
 
-                byte[] buttons = new byte[16];
+                byte[] buttons = new byte[state.buttons().capacity()];
                 state.buttons().get(buttons);
 
                 for (int k = 0; (buttons != null) && (k < GLFW_GAMEPAD_BUTTON_DPAD_LEFT + 1) && (k < MAX_GAMEPAD_BUTTONS); k++) {

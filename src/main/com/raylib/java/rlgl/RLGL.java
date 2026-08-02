@@ -1994,16 +1994,16 @@ public class RLGL {
             for(int i = 0; i < numBuffers; i++){
                 batch.vertexBuffer[i].elementCount = bufferElements;
 
-                batch.vertexBuffer[i].setVertices(new float[bufferElements * 3 * 4 * Float.BYTES]); // 3 float by vertex, 4 vertex by quad
-                batch.vertexBuffer[i].setTexcoords(new float[bufferElements * 2 * 4 * Float.BYTES]); // 2 float by texcoord, 4 texcoord by quad
-                batch.vertexBuffer[i].setNormals(new float[bufferElements * 3 * 4 * Float.BYTES]); // 3 float by vertex, 4 vertex by quad
-                batch.vertexBuffer[i].setColors(new byte[bufferElements * 4 * 4 * Byte.BYTES]); // 4 float by color, 4 colors by quad
+                batch.vertexBuffer[i].setVertices(new float[bufferElements * 3 * 4]); // 3 float by vertex, 4 vertex by quad
+                batch.vertexBuffer[i].setTexcoords(new float[bufferElements * 2 * 4]); // 2 float by texcoord, 4 texcoord by quad
+                batch.vertexBuffer[i].setNormals(new float[bufferElements * 3 * 4]); // 3 float by vertex, 4 vertex by quad
+                batch.vertexBuffer[i].setColors(new byte[bufferElements * 4 * 4]); // 4 float by color, 4 colors by quad
 
                 if(GRAPHICS_API_OPENGL_33){
-                    batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6 * Integer.BYTES]); // 6 int by quad (indices)
+                    batch.getVertexBuffer()[i].setIndices_GL11(new int[bufferElements * 6]); // 6 int by quad (indices)
                 }
                 else if(GRAPHICS_API_OPENGL_ES2){
-                    batch.vertexBuffer[i].setIndices_ES20(new short[bufferElements * 6 * Short.SIZE]); // 6 int by quad (indices)
+                    batch.vertexBuffer[i].setIndices_ES20(new short[bufferElements * 6]); // 6 int by quad (indices)
                 }
 
                 Arrays.fill(batch.vertexBuffer[i].vertices, 0.0f);
@@ -2015,7 +2015,7 @@ public class RLGL {
 
                 if(GRAPHICS_API_OPENGL_33){
                     // Indices can be initialized right now
-                    for(int j = 0; j < (6 * bufferElements); j += 6){
+                    for(int j = 0; j < (bufferElements * 6); j += 6) {
                         batch.vertexBuffer[i].indices_GL11[j] = 4 * k;
                         batch.vertexBuffer[i].indices_GL11[j + 1] = 4 * k + 1;
                         batch.vertexBuffer[i].indices_GL11[j + 2] = 4 * k + 2;
@@ -2029,7 +2029,7 @@ public class RLGL {
 
                 if(GRAPHICS_API_OPENGL_ES2){
                     // Indices can be initialized right now
-                    for(int j = 0; j < (6 * bufferElements); j += 6){
+                    for(int j = 0; j < (bufferElements * 6); j += 6){
                         batch.vertexBuffer[i].getIndices_ES20()[j] = (short) (4 * k);
                         batch.vertexBuffer[i].getIndices_ES20()[j + 1] = (short) (4 * k + 1);
                         batch.vertexBuffer[i].getIndices_ES20()[j + 2] = (short) (4 * k + 2);
@@ -2265,7 +2265,7 @@ public class RLGL {
                         glUniformMatrix4fv(rlglData.getState().currentShaderLocs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], false, MatrixToFloat(MatrixTranspose(MatrixInvert(rlglData.getState().getTransform()))));
                     }
 
-                    if (rlglData.getExtSupported().vao) {
+                    if (rlglData.getExtSupported().isVao()) {
                         glBindVertexArray(batch.vertexBuffer[batch.currentBuffer].vaoId);
                     }
                     else {
@@ -2321,10 +2321,10 @@ public class RLGL {
                                 // The number of indices to be processed needs to be defined: elementCount*6
                                 // NOTE: The final parameter tells the GPU the offset in bytes from the
                                 // start of the index buffer to the location of the first index to process
-                                glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, (vertexOffset/4*6L*Integer.BYTES));
+                                glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_INT, 0);
                             }
                             if (GRAPHICS_API_OPENGL_ES2) {
-                                glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT, (vertexOffset/4*6L*Short.BYTES));
+                                glDrawElements(GL_TRIANGLES, batch.draws[i].vertexCount / 4 * 6, GL_UNSIGNED_SHORT, 0);
                             }
                         }
 
