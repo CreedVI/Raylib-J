@@ -150,9 +150,8 @@ public class Config{
     /**
      * Use QUADS instead of TRIANGLES for drawing when possible
      * Some lines-based rShapes could still use lines
-     * WARNING: Quads rendering is currently broken in Raylib-J
      */
-    public static boolean SUPPORT_QUADS_DRAW_MODE = false;
+    public static boolean SUPPORT_QUADS_DRAW_MODE = true;
 
     /**
      * Use Miters for spline rendering

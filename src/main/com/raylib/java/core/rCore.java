@@ -315,7 +315,7 @@ public class rCore {
             if (SUPPORT_MODULE_RSHAPES) {
                 // Set font white rectangle for shapes drawing, so shapes and text can be batched together
                 // WARNING: rshapes module is required, if not available, default internal white rectangle is used
-                Rectangle rec = context.text.GetFontDefault().recs[0];
+                Rectangle rec = context.text.GetFontDefault().recs[95];
                 if ((window.flags & FLAG_MSAA_4X_HINT) != 0) {
                     // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
                     context.shapes.SetShapesTexture(context.text.GetFontDefault().texture, new Rectangle(rec.x + 2, rec.y + 2, 1, 1));

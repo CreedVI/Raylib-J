@@ -4,6 +4,8 @@ import com.raylib.java.Raylib;
 import com.raylib.java.structs.Vector2;
 
 import static com.raylib.java.structs.Color.*;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.glDisable;
 
 public class BasicShapes{
 
@@ -26,8 +28,6 @@ public class BasicShapes{
 
     public static void main(String[] args){
         Raylib rlj = new Raylib();
-        // rlj.config.setSupportQuadsDrawMode(true);
-        rlj.config.setSupportOpenGLDebug(true);
 
         float rotation = 0.0f;
 

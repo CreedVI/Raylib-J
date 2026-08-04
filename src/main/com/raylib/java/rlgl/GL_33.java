@@ -80,7 +80,7 @@ public class GL_33 {
         if (rlglData.getState().vertexCounter > (rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].elementCount*4 - 4)) {
             if ((rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].mode == RL_LINES) && (rlglData.getCurrentBatch().draws[rlglData.getCurrentBatch().drawCounter - 1].vertexCount%2 == 0)) {
                 // Reached the maximum number of vertices for RL_LINES drawing
-                // Launch a draw call but keep current state for next vertices comming
+                // Launch a draw call but keep current state for next vertices coming
                 // NOTE: Adding +1 vertex to the check for some safety
                 context.rlgl.rlCheckRenderBatchLimit(2 + 1);
             }
@@ -98,8 +98,8 @@ public class GL_33 {
         rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].vertices[3*rlglData.getState().vertexCounter + 2] = tz;
 
         // Add current texcoord
-        rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].texcoords[2*rlglData.getState().vertexCounter] = rlglData.getState().texcoordx;
-        rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].texcoords[2*rlglData.getState().vertexCounter + 1] = rlglData.getState().texcoordy;
+        rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].texcoords[2*rlglData.getState().vertexCounter] = rlglData.getState().getTexcoordx();
+        rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].texcoords[2*rlglData.getState().vertexCounter + 1] = rlglData.getState().getTexcoordy();
 
         // Add current normal
         rlglData.getCurrentBatch().getVertexBuffer()[rlglData.getCurrentBatch().currentBuffer].normals[3*rlglData.getState().vertexCounter] = rlglData.getState().normalx;
@@ -129,8 +129,8 @@ public class GL_33 {
     // Define one vertex (texture coordinate)
     // NOTE: Texture coordinates are limited to QUADS only
     void rlTexCoord2f(float x, float y) {
-        rlglData.getState().texcoordx = x;
-        rlglData.getState().texcoordy = y;
+        rlglData.getState().setTexcoordx(x);
+        rlglData.getState().setTexcoordy(y);
     }
 
     // Define one vertex (normal)
@@ -147,12 +147,11 @@ public class GL_33 {
         }
 
         // NOTE: Default behavior assumes the normal vector is in the correct space for what the shader expects,
-        // it could be not normalized to 0.0f..1.0f, magnitud can be useed for some effects
+        // it could be not normalized to 0.0f..1.0f, magnitude can be used for some effects
         /*
         // WARNING: Vector normalization if required
         float length = sqrtf(normalx*normalx + normaly*normaly + normalz*normalz);
-        if (length != 0.0f)
-        {
+        if (length != 0.0f) {
             float ilength = 1.0f/length;
             normalx *= ilength;
             normaly *= ilength;

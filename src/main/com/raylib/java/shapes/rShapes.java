@@ -885,8 +885,7 @@ public class rShapes {
      * @param color    color to draw rectangle
      */
     public void DrawRectangleV(Vector2 position, Vector2 size, Color color) {
-        DrawRectanglePro(new Rectangle(position.x, position.y, size.x, size.y),
-                new Vector2(0.0f, 0.0f), 0.0f, color);
+        DrawRectanglePro(new Rectangle(position.x, position.y, size.x, size.y), new Vector2(0.0f, 0.0f), 0.0f, color);
     }
 
     /**
@@ -1030,16 +1029,20 @@ public class rShapes {
         context.rlgl.rlBegin(RL_QUADS);
 
         context.rlgl.rlNormal3f(0.0f, 0.0f, 1.0f);
+
         // NOTE: Default raylib font character 95 is a white square
         context.rlgl.rlColor4ub(topLeft.r, topLeft.g, topLeft.b, topLeft.a);
         context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
         context.rlgl.rlVertex2f(rec.x, rec.y);
+
         context.rlgl.rlColor4ub(bottomLeft.r, bottomLeft.g, bottomLeft.b, bottomLeft.a);
         context.rlgl.rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         context.rlgl.rlVertex2f(rec.x, rec.y + rec.height);
+
         context.rlgl.rlColor4ub(bottomRight.r, bottomRight.g, bottomRight.b, bottomRight.a);
         context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         context.rlgl.rlVertex2f(rec.x + rec.width, rec.y + rec.height);
+
         context.rlgl.rlColor4ub(topRight.r, topRight.g, topRight.b, topRight.a);
         context.rlgl.rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
         context.rlgl.rlVertex2f(rec.x + rec.width, rec.y);
