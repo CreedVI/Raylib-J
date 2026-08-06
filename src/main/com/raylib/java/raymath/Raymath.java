@@ -1443,7 +1443,12 @@ public class Raymath {
         return result;
     }
 
-    // Add two vectors
+    /**
+     * Add two vectors
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static Vector4 Vector4Add(Vector4 v1, Vector4 v2) {
         Vector4 result = new Vector4(
                 v1.x + v2.x,
@@ -1455,7 +1460,12 @@ public class Raymath {
         return result;
     }
 
-    // Add value to vector components
+    /**
+     * Add value to vector components
+     * @param v
+     * @param add
+     * @return
+     */
     public static Vector4 Vector4AddValue(Vector4 v, float add) {
         Vector4 result = new Vector4(
                 v.x + add,
@@ -1467,7 +1477,12 @@ public class Raymath {
         return result;
     }
 
-    // Substract vectors
+    /**
+     * Subtract vectors
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static Vector4 Vector4Subtract(Vector4 v1, Vector4 v2) {
         Vector4 result = new Vector4(
                 v1.x - v2.x,
@@ -1479,7 +1494,12 @@ public class Raymath {
         return result;
     }
 
-    // Substract value from vector components
+    /**
+     * Subtract value from vector components
+     * @param v
+     * @param add
+     * @return
+     */
     public static Vector4 Vector4SubtractValue(Vector4 v, float add) {
         Vector4 result = new Vector4(
                 v.x - add,
@@ -1491,25 +1511,43 @@ public class Raymath {
         return result;
     }
 
-    // Vector length
+    /**
+     * Vector length
+     * @param v
+     * @return
+     */
     public static float Vector4Length(Vector4 v) {
         float result = (float) Math.sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z) + (v.w * v.w));
         return result;
     }
 
-    // Vector square length
+    /**
+     * Vector square length
+     * @param v
+     * @return
+     */
     public static float Vector4LengthSqr(Vector4 v) {
         float result = (v.x * v.x) + (v.y * v.y) + (v.z * v.z) + (v.w * v.w);
         return result;
     }
 
-    // Vectors dot product
+    /**
+     * Vectors dot product
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static float Vector4DotProduct(Vector4 v1, Vector4 v2) {
         float result = (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w);
         return result;
     }
 
-    // Calculate distance between two vectors
+    /**
+     * Calculate distance between two vectors
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static float Vector4Distance(Vector4 v1, Vector4 v2) {
         float result = (float) Math.sqrt(
                 (v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y) +
@@ -1517,7 +1555,12 @@ public class Raymath {
         return result;
     }
 
-    // Calculate square distance between two vectors
+    /**
+     * Calculate square distance between two vectors
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static float Vector4DistanceSqr(Vector4 v1, Vector4 v2) {
         float result =
                 (v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y) +
@@ -1526,31 +1569,54 @@ public class Raymath {
         return result;
     }
 
-    // Scale vector components by value (multiply)
+    /**
+     * Scale vector components by value (multiply)
+     * @param v
+     * @param scale
+     * @return
+     */
     public static Vector4 Vector4Scale(Vector4 v, float scale) {
         Vector4 result = new Vector4(v.x * scale, v.y * scale, v.z * scale, v.w * scale);
         return result;
     }
 
-    // Multiply vector by vector
+    /**
+     * Multiply vector by vector
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static Vector4 Vector4Multiply(Vector4 v1, Vector4 v2) {
         Vector4 result = new Vector4(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w);
         return result;
     }
 
-    // Negate vector
+    /**
+     * Negate vector
+     * @param v
+     * @return
+     */
     public static Vector4 Vector4Negate(Vector4 v) {
         Vector4 result = new Vector4(-v.x, -v.y, -v.z, -v.w);
         return result;
     }
 
-    // Divide vector by vector
+    /**
+     * Divide vector by vector
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static Vector4 Vector4Divide(Vector4 v1, Vector4 v2) {
         Vector4 result = new Vector4(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z, v1.w / v2.w);
         return result;
     }
 
-    // Normalize provided vector
+    /**
+     * Normalize provided vector
+     * @param v
+     * @return
+     */
     public static Vector4 Vector4Normalize(Vector4 v) {
         Vector4 result = new Vector4();
         float length = (float) Math.sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z) + (v.w * v.w));
@@ -1566,7 +1632,12 @@ public class Raymath {
         return result;
     }
 
-    // Get min value for each pair of components
+    /**
+     * Get min value for each pair of components
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static Vector4 Vector4Min(Vector4 v1, Vector4 v2) {
         Vector4 result = new Vector4();
 
@@ -1578,7 +1649,12 @@ public class Raymath {
         return result;
     }
 
-    // Get max value for each pair of components
+    /**
+     * Get max value for each pair of components
+     * @param v1
+     * @param v2
+     * @return
+     */
     public static Vector4 Vector4Max(Vector4 v1, Vector4 v2) {
         Vector4 result = new Vector4();
 
@@ -1590,7 +1666,13 @@ public class Raymath {
         return result;
     }
 
-    // Calculate linear interpolation between two vectors
+    /**
+     * Calculate linear interpolation between two vectors
+     * @param v1
+     * @param v2
+     * @param amount
+     * @return
+     */
     public static Vector4 Vector4Lerp(Vector4 v1, Vector4 v2, float amount) {
         Vector4 result = new Vector4();
 
@@ -1602,7 +1684,13 @@ public class Raymath {
         return result;
     }
 
-    // Move Vector towards target
+    /**
+     * Move Vector towards target
+     * @param v
+     * @param target
+     * @param maxDistance
+     * @return
+     */
     public static Vector4 Vector4MoveTowards(Vector4 v, Vector4 target, float maxDistance) {
         Vector4 result = new Vector4();
 
@@ -1626,13 +1714,22 @@ public class Raymath {
         return result;
     }
 
-    // Invert the given vector
+    /**
+     * Invert the given vector
+     * @param v
+     * @return
+     */
     public static Vector4 Vector4Invert(Vector4 v) {
         Vector4 result = new Vector4(1.0f / v.x, 1.0f / v.y, 1.0f / v.z, 1.0f / v.w);
         return result;
     }
 
-    // Check whether two given vectors are almost equal
+    /**
+     * Check whether two given vectors are almost equal
+     * @param p
+     * @param q
+     * @return
+     */
     public static boolean Vector4Equals(Vector4 p, Vector4 q) {
         boolean result = ((Math.abs(p.x - q.x)) <= (EPSILON * Math.max(1.0f, Math.max(Math.abs(p.x), Math.abs(q.x))))) &&
                 ((Math.abs(p.y - q.y)) <= (EPSILON * Math.max(1.0f, Math.max(Math.abs(p.y), Math.abs(q.y))))) &&
@@ -1645,6 +1742,11 @@ public class Raymath {
     // Module Functions Definition - Enter the Matrix (math)
     //----------------------------------------------------------------------------------
 
+    /**
+     * Compute matrix determinant
+     * @param mat
+     * @return
+     */
     public static float MatrixDeterminant(Matrix mat) {
         float result = 0.0f;
 
