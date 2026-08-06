@@ -1445,6 +1445,7 @@ public class Raymath {
 
     /**
      * Add two vectors
+     *
      * @param v1
      * @param v2
      * @return
@@ -1462,6 +1463,7 @@ public class Raymath {
 
     /**
      * Add value to vector components
+     *
      * @param v
      * @param add
      * @return
@@ -1479,6 +1481,7 @@ public class Raymath {
 
     /**
      * Subtract vectors
+     *
      * @param v1
      * @param v2
      * @return
@@ -1496,6 +1499,7 @@ public class Raymath {
 
     /**
      * Subtract value from vector components
+     *
      * @param v
      * @param add
      * @return
@@ -1513,6 +1517,7 @@ public class Raymath {
 
     /**
      * Vector length
+     *
      * @param v
      * @return
      */
@@ -1523,6 +1528,7 @@ public class Raymath {
 
     /**
      * Vector square length
+     *
      * @param v
      * @return
      */
@@ -1533,6 +1539,7 @@ public class Raymath {
 
     /**
      * Vectors dot product
+     *
      * @param v1
      * @param v2
      * @return
@@ -1544,6 +1551,7 @@ public class Raymath {
 
     /**
      * Calculate distance between two vectors
+     *
      * @param v1
      * @param v2
      * @return
@@ -1557,6 +1565,7 @@ public class Raymath {
 
     /**
      * Calculate square distance between two vectors
+     *
      * @param v1
      * @param v2
      * @return
@@ -1571,6 +1580,7 @@ public class Raymath {
 
     /**
      * Scale vector components by value (multiply)
+     *
      * @param v
      * @param scale
      * @return
@@ -1582,6 +1592,7 @@ public class Raymath {
 
     /**
      * Multiply vector by vector
+     *
      * @param v1
      * @param v2
      * @return
@@ -1593,6 +1604,7 @@ public class Raymath {
 
     /**
      * Negate vector
+     *
      * @param v
      * @return
      */
@@ -1603,6 +1615,7 @@ public class Raymath {
 
     /**
      * Divide vector by vector
+     *
      * @param v1
      * @param v2
      * @return
@@ -1614,6 +1627,7 @@ public class Raymath {
 
     /**
      * Normalize provided vector
+     *
      * @param v
      * @return
      */
@@ -1634,6 +1648,7 @@ public class Raymath {
 
     /**
      * Get min value for each pair of components
+     *
      * @param v1
      * @param v2
      * @return
@@ -1651,6 +1666,7 @@ public class Raymath {
 
     /**
      * Get max value for each pair of components
+     *
      * @param v1
      * @param v2
      * @return
@@ -1668,6 +1684,7 @@ public class Raymath {
 
     /**
      * Calculate linear interpolation between two vectors
+     *
      * @param v1
      * @param v2
      * @param amount
@@ -1686,6 +1703,7 @@ public class Raymath {
 
     /**
      * Move Vector towards target
+     *
      * @param v
      * @param target
      * @param maxDistance
@@ -1716,6 +1734,7 @@ public class Raymath {
 
     /**
      * Invert the given vector
+     *
      * @param v
      * @return
      */
@@ -1726,6 +1745,7 @@ public class Raymath {
 
     /**
      * Check whether two given vectors are almost equal
+     *
      * @param p
      * @param q
      * @return
@@ -1744,6 +1764,7 @@ public class Raymath {
 
     /**
      * Compute matrix determinant
+     *
      * @param mat
      * @return
      */
@@ -1775,16 +1796,17 @@ public class Raymath {
         float m8 = mat.m8, m9 = mat.m9, m10 = mat.m10, m11 = mat.m11;
         float m12 = mat.m12, m13 = mat.m13, m14 = mat.m14, m15 = mat.m15;
 
-        result = (m0*((m5*(m10*m15 - m11*m14) - m9*(m6*m15 - m7*m14) + m13*(m6*m11 - m7*m10))) -
-                m4*((m1*(m10*m15 - m11*m14) - m9*(m2*m15 - m3*m14) + m13*(m2*m11 - m3*m10))) +
-                m8*((m1*(m6*m15 - m7*m14) - m5*(m2*m15 - m3*m14) + m13*(m2*m7 - m3*m6))) -
-                m12*((m1*(m6*m11 - m7*m10) - m5*(m2*m11 - m3*m10) + m9*(m2*m7 - m3*m6))));
+        result = (m0 * ((m5 * (m10 * m15 - m11 * m14) - m9 * (m6 * m15 - m7 * m14) + m13 * (m6 * m11 - m7 * m10))) -
+                m4 * ((m1 * (m10 * m15 - m11 * m14) - m9 * (m2 * m15 - m3 * m14) + m13 * (m2 * m11 - m3 * m10))) +
+                m8 * ((m1 * (m6 * m15 - m7 * m14) - m5 * (m2 * m15 - m3 * m14) + m13 * (m2 * m7 - m3 * m6))) -
+                m12 * ((m1 * (m6 * m11 - m7 * m10) - m5 * (m2 * m11 - m3 * m10) + m9 * (m2 * m7 - m3 * m6))));
 
         return result;
     }
 
     /**
      * Get the trace of the matrix (sum of the values along the diagonal)
+     *
      * @param m
      * @return
      */
@@ -1794,6 +1816,7 @@ public class Raymath {
 
     /**
      * Transposes provided matrix
+     *
      * @param mat
      * @return
      */
@@ -1822,6 +1845,7 @@ public class Raymath {
 
     /**
      * Invert provided matrix
+     *
      * @param mat
      * @return
      */
@@ -1872,6 +1896,7 @@ public class Raymath {
 
     /**
      * Get identity matrix
+     *
      * @return
      */
     public static Matrix MatrixIdentity() {
@@ -1884,6 +1909,7 @@ public class Raymath {
 
     /**
      * Add two matrices
+     *
      * @param left
      * @param right
      * @return
@@ -1913,6 +1939,7 @@ public class Raymath {
 
     /**
      * Subtract two matrices (left - right)
+     *
      * @param left
      * @param right
      * @return
@@ -1943,6 +1970,7 @@ public class Raymath {
     /**
      * Get two matrix multiplication </br>
      * NOTE: When multiplying matrices... the order matters!
+     *
      * @param left
      * @param right
      * @return
@@ -1972,16 +2000,17 @@ public class Raymath {
 
     /**
      * Multiply matrix components by value
+     *
      * @param left
      * @param value
      * @return
      */
     public static Matrix MatrixMultiplyValue(Matrix left, float value) {
         Matrix result = new Matrix(
-                left.m0*value, left.m4*value, left.m8*value, left.m12*value,
-                left.m1*value, left.m5*value, left.m9*value, left.m13*value,
-                left.m2*value, left.m6*value, left.m10*value, left.m14*value,
-                left.m3*value, left.m7*value, left.m11*value, left.m15*value
+                left.m0 * value, left.m4 * value, left.m8 * value, left.m12 * value,
+                left.m1 * value, left.m5 * value, left.m9 * value, left.m13 * value,
+                left.m2 * value, left.m6 * value, left.m10 * value, left.m14 * value,
+                left.m3 * value, left.m7 * value, left.m11 * value, left.m15 * value
         );
 
         return result;
@@ -1989,6 +2018,7 @@ public class Raymath {
 
     /**
      * Get translation matrix
+     *
      * @param x
      * @param y
      * @param z
@@ -2006,6 +2036,7 @@ public class Raymath {
     /**
      * Create rotation matrix from axis and angle </br>
      * NOTE: Angle should be provided in radians
+     *
      * @param axis
      * @param angle
      * @return
@@ -2054,6 +2085,7 @@ public class Raymath {
 
     /**
      * Get x-rotation matrix
+     *
      * @param angle Angle provided in radians
      * @return
      */
@@ -2075,6 +2107,7 @@ public class Raymath {
 
     /**
      * Get y-rotation matrix
+     *
      * @param angle Angle provided in radians
      * @return
      */
@@ -2096,6 +2129,7 @@ public class Raymath {
 
     /**
      * Get z-rotation matrix
+     *
      * @param angle Angle provided in radians
      * @return
      */
@@ -2117,6 +2151,7 @@ public class Raymath {
 
     /**
      * Get xyz-rotation matrix
+     *
      * @param angle Angle provided in radians
      * @return
      */
@@ -2147,6 +2182,7 @@ public class Raymath {
 
     /**
      * Get zyx-rotation matrix
+     *
      * @param angle Angle provided in radians
      * @return
      */
@@ -2185,6 +2221,7 @@ public class Raymath {
 
     /**
      * Get scaling matrix
+     *
      * @param x
      * @param y
      * @param z
@@ -2200,6 +2237,7 @@ public class Raymath {
 
     /**
      * Get perspective projection matrix
+     *
      * @param left
      * @param right
      * @param bottom
@@ -2241,6 +2279,7 @@ public class Raymath {
     /**
      * Get perspective projection matrix </br>
      * NOTE: Fovy angle must be provided in radian
+     *
      * @param fovy
      * @param aspect
      * @param near
@@ -2274,6 +2313,7 @@ public class Raymath {
     /**
      * Get perspective projection matrix </br>
      * NOTE: Fovy angle must be provided in radian
+     *
      * @param left
      * @param right
      * @param bottom
@@ -2311,6 +2351,7 @@ public class Raymath {
 
     /**
      * Get camera look-at matrix (view matrix)
+     *
      * @param eye
      * @param target
      * @param up
@@ -2375,6 +2416,7 @@ public class Raymath {
 
     /**
      * Get float array of matrix data
+     *
      * @param mat
      * @return
      */
@@ -2403,6 +2445,7 @@ public class Raymath {
 
     /**
      * Get float array of matrix data
+     *
      * @param mat
      * @return
      */
@@ -2416,6 +2459,7 @@ public class Raymath {
 
     /**
      * Add two quaternions
+     *
      * @param q1
      * @param q2
      * @return
@@ -2428,6 +2472,7 @@ public class Raymath {
 
     /**
      * Add a quaternion and a float value
+     *
      * @param q
      * @param add
      * @return
@@ -2440,6 +2485,7 @@ public class Raymath {
 
     /**
      * Subtract two quaternions
+     *
      * @param q1
      * @param q2
      * @return
@@ -2452,6 +2498,7 @@ public class Raymath {
 
     /**
      * Subtract a value from a quaternion
+     *
      * @param q
      * @param sub
      * @return
@@ -2464,6 +2511,7 @@ public class Raymath {
 
     /**
      * Get identity quaternion
+     *
      * @return
      */
     public static Quaternion QuaternionIdentity() {
@@ -2474,6 +2522,7 @@ public class Raymath {
 
     /**
      * Compute the length of a quaternion
+     *
      * @param q
      * @return
      */
@@ -2485,6 +2534,7 @@ public class Raymath {
 
     /**
      * Normalise the provided quaternion
+     *
      * @param q
      * @return
      */
@@ -2508,6 +2558,7 @@ public class Raymath {
 
     /**
      * Invert the provided quaternion
+     *
      * @param q
      * @return
      */
@@ -2530,6 +2581,7 @@ public class Raymath {
 
     /**
      * Multiply two quaternions
+     *
      * @param q1
      * @param q2
      * @return
@@ -2550,6 +2602,7 @@ public class Raymath {
 
     /**
      * Scale a quaternion by a float value
+     *
      * @param q
      * @param mul
      * @return
@@ -2567,6 +2620,7 @@ public class Raymath {
 
     /**
      * Divide two quaternions
+     *
      * @param q1
      * @param q2
      * @return
@@ -2577,6 +2631,7 @@ public class Raymath {
 
     /**
      * Calculate linear interpolation between two quaternions
+     *
      * @param q1
      * @param q2
      * @param amount
@@ -2595,6 +2650,7 @@ public class Raymath {
 
     /**
      * Calculate slerp-optimized interpolation between two quaternions
+     *
      * @param q1
      * @param q2
      * @param amount
@@ -2627,6 +2683,7 @@ public class Raymath {
 
     /**
      * Calculates spherical linear interpolation between two quaternions
+     *
      * @param q1
      * @param q2
      * @param amount
@@ -2686,11 +2743,11 @@ public class Raymath {
      * @see <a href="https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic">GLTF 2.0 Cubic Hermite specification</a>
      */
     public static Quaternion QuaternionCubicHermiteSpline(Quaternion q1, Quaternion outTangent1, Quaternion q2, Quaternion inTangent2, float t) {
-        float t2 = t*t;
-        float t3 = t2*t;
-        float h00 = 2*t3 - 3*t2 + 1;
-        float h10 = t3 - 2*t2 + t;
-        float h01 = -2*t3 + 3*t2;
+        float t2 = t * t;
+        float t3 = t2 * t;
+        float h00 = 2 * t3 - 3 * t2 + 1;
+        float h10 = t3 - 2 * t2 + t;
+        float h01 = -2 * t3 + 3 * t2;
         float h11 = t3 - t2;
 
         Quaternion p0 = QuaternionScale(q1, h00);
@@ -2710,6 +2767,7 @@ public class Raymath {
 
     /**
      * Calculate quaternion based on the rotation from one vector to another
+     *
      * @param from
      * @param to
      * @return
@@ -2736,6 +2794,7 @@ public class Raymath {
 
     /**
      * Get a quaternion for a given rotation matrix
+     *
      * @param mat
      * @return
      */
@@ -2800,6 +2859,7 @@ public class Raymath {
 
     /**
      * Get a matrix for a given quaternion
+     *
      * @param q
      * @return
      */
@@ -2833,6 +2893,7 @@ public class Raymath {
 
     /**
      * Get rotation quaternion for an angle and axis
+     *
      * @param axis
      * @param angle Angle provided in radians
      * @return
@@ -2883,6 +2944,7 @@ public class Raymath {
 
     /**
      * Returns the rotation angle and axis for a given quaternion
+     *
      * @param q
      * @param outAxis
      * @param outAngle
@@ -2913,6 +2975,7 @@ public class Raymath {
 
     /**
      * Returns the quaternion equivalent to Euler angles
+     *
      * @param roll
      * @param pitch
      * @param yaw
@@ -2938,6 +3001,7 @@ public class Raymath {
 
     /**
      * Get the Euler angles equivalent to quaternion (roll, pitch, yaw)
+     *
      * @param q
      * @return
      */
@@ -2965,6 +3029,7 @@ public class Raymath {
 
     /**
      * Transform a quaternion given a transformation matrix
+     *
      * @param q
      * @param mat
      * @return
@@ -2982,6 +3047,7 @@ public class Raymath {
 
     /**
      * Check whether two given quaternions are almost equal
+     *
      * @param p
      * @param q
      * @return
@@ -3000,6 +3066,7 @@ public class Raymath {
 
     /**
      * Compose a transformation matrix from rotational, translational and scaling components
+     *
      * @param translation
      * @param rotation
      * @param scale
@@ -3015,7 +3082,7 @@ public class Raymath {
         // Scale vectors
         right = Vector3Scale(right, scale.x);
         up = Vector3Scale(up, scale.y);
-        forward = Vector3Scale(forward , scale.z);
+        forward = Vector3Scale(forward, scale.z);
 
         // Rotate vectors
         right = Vector3RotateByQuaternion(right, rotation);
@@ -3035,10 +3102,11 @@ public class Raymath {
 
     /**
      * Decompose a transformation matrix into its rotational, translational and scaling components
-     * @param mat Matrix to decompose
+     *
+     * @param mat         Matrix to decompose
      * @param translation {@code Vector3} mutated to translation values from {@code mat}
-     * @param rotation {@code Vector3} mutated to rotation values from {@code mat}
-     * @param scale {@code Vector3} mutated to scale values from {@code mat}
+     * @param rotation    {@code Vector3} mutated to rotation values from {@code mat}
+     * @param scale       {@code Vector3} mutated to scale values from {@code mat}
      */
     @Contract(mutates = "param2, param3, param4")
     public static void MatrixDecompose(Matrix mat, Vector3 translation, Quaternion rotation, Vector3 scale) {
