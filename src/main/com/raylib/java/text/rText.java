@@ -326,12 +326,12 @@ public class rText{
         Font font = null;
 
         if (SUPPORT_FILEFORMAT_TTF) {
-            if (context.core.IsFileExtension(fileName, ".ttf") || context.core.IsFileExtension(fileName, ".otf")) {
+            if (context.files.IsFileExtension(fileName, ".ttf") || context.files.IsFileExtension(fileName, ".otf")) {
                 font = LoadFontEx(fileName, FONT_TTF_DEFAULT_SIZE, null, FONT_TTF_DEFAULT_NUMCHARS);
             }
         }
         if (SUPPORT_FILEFORMAT_FNT) {
-            if (context.core.IsFileExtension(fileName, ".fnt")) {
+            if (context.files.IsFileExtension(fileName, ".fnt")) {
                 font = LoadBMFont(fileName);
             }
         }
@@ -371,7 +371,7 @@ public class rText{
 
         if (fileData != null) {
             // Loading font from memory data
-            font = LoadFontFromMemory(context.core.GetFileExtension(fileName), fileData, fontSize, codepoints, codepointCount);
+            font = LoadFontFromMemory(context.files.GetFileExtension(fileName), fileData, fontSize, codepoints, codepointCount);
         }
         else{
             font = GetFontDefault();
@@ -915,7 +915,7 @@ public class rText{
         int MAX_FONT_DATA_SIZE = 1024*1024;
 
         // Get file name from path
-        String fileNamePascal = TextToPascal(context.core.GetFileNameWithoutExt(fileName));
+        String fileNamePascal = TextToPascal(context.files.GetFileNameWithoutExt(fileName));
 
         // NOTE: Text data buffer size is estimated considering image data size in bytes
         // and requiring 6 char bytes for every byte: "0x00, "

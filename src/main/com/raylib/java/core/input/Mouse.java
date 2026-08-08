@@ -1,17 +1,20 @@
 package com.raylib.java.core.input;
 
 import com.raylib.java.structs.Vector2;
+import com.raylib.java.structs.Vector3;
 
 public class Mouse{
 
     public Vector2 currentPosition;               // Mouse position on screen
     public Vector2 previousPosition;               // last mouse position on screen
+    public Vector2 lockedPosition;         // Mouse Position when locked
     public Vector2 offset;                 // Mouse offset
     public Vector2 scale;                  // Mouse scaling
 
     public MouseCursor cursor;                     // Tracks current mouse cursor
     public boolean cursorHidden;              // Track if cursor is hidden
     public boolean cursorOnScreen;            // Tracks if cursor is inside client area
+    public boolean cursorLocked;              // Track if cursor is locked (disabled)
 
     public int[] currentButtonState;     // Registers current mouse button state
     public int[] previousButtonState;    // Registers previous mouse button state

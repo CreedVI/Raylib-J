@@ -1067,19 +1067,19 @@ public class rModels {
 
         Model model = new Model();
 
-        if (SUPPORT_FILEFORMAT_OBJ && context.core.IsFileExtension(fileName, ".obj")) {
+        if (SUPPORT_FILEFORMAT_OBJ && context.files.IsFileExtension(fileName, ".obj")) {
             model = LoadOBJ(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_IQM && context.core.IsFileExtension(fileName, ".iqm")) {
+        else if (SUPPORT_FILEFORMAT_IQM && context.files.IsFileExtension(fileName, ".iqm")) {
             model = LoadIQM(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_M3D && (context.core.IsFileExtension(fileName, ".m3d") || context.core.IsFileExtension(fileName, ".a3d"))) {
+        else if (SUPPORT_FILEFORMAT_M3D && (context.files.IsFileExtension(fileName, ".m3d") || context.files.IsFileExtension(fileName, ".a3d"))) {
             model = LoadM3D(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_GLTF && ((context.core.IsFileExtension(fileName, ".gltf") || context.core.IsFileExtension(fileName, ".glb"))))  {
+        else if (SUPPORT_FILEFORMAT_GLTF && ((context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb"))))  {
             model = LoadGLTF(fileName);
         }
-        else if(SUPPORT_FILEFORMAT_VOX && context.core.IsFileExtension(fileName, ".vox")) {
+        else if(SUPPORT_FILEFORMAT_VOX && context.files.IsFileExtension(fileName, ".vox")) {
             model = LoadVOX(fileName);
         }
 
@@ -1872,7 +1872,7 @@ public class rModels {
     public boolean ExportMesh(Mesh mesh, String fileName) {
         boolean success = false;
 
-        if (context.core.IsFileExtension(fileName, ".obj")) {
+        if (context.files.IsFileExtension(fileName, ".obj")) {
             // Estimated data size, it should be enough...
             int dataSize = mesh.vertexCount * ("v 0000.00f 0000.00f 0000.00f").length() +
                     (mesh.vertexCount * ("vt 0.000f 0.00f").length()) +
@@ -1934,7 +1934,7 @@ public class rModels {
                 throw new RuntimeException(e);
             }
         }
-        else if (context.core.IsFileExtension(fileName, ".raw")) {
+        else if (context.files.IsFileExtension(fileName, ".raw")) {
             // TODO: Support additional file formats to export mesh vertex data
         }
 
@@ -2107,7 +2107,7 @@ public class rModels {
         // TODO: Support IQM and GLTF for materials parsing
 
         if(SUPPORT_FILEFORMAT_MTL) {
-            if (context.core.IsFileExtension(fileName, ".mtl")) {
+            if (context.files.IsFileExtension(fileName, ".mtl")) {
                 OBJLoader loader = new OBJLoader();
                 String fileText;
                 try {
@@ -2211,17 +2211,17 @@ public class rModels {
         ModelAnimation[] animations = null;
 
         if(SUPPORT_FILEFORMAT_IQM) {
-            if (context.core.IsFileExtension(fileName, ".iqm")) {
+            if (context.files.IsFileExtension(fileName, ".iqm")) {
                 animations = LoadModelAnimationsIQM(fileName);
             }
         }
         if (SUPPORT_FILEFORMAT_M3D) {
-            if (context.core.IsFileExtension(fileName, ".m3d")) {
+            if (context.files.IsFileExtension(fileName, ".m3d")) {
                 animations = LoadModelAnimationsM3D(fileName);
             }
         }
         if(SUPPORT_FILEFORMAT_GLTF) {
-            if (context.core.IsFileExtension(fileName, ".gltf;.glb")) {
+            if (context.files.IsFileExtension(fileName, ".gltf;.glb")) {
                 animations = LoadModelAnimationsGLTF(fileName);
             }
         }
@@ -5467,10 +5467,10 @@ public class rModels {
             return model;
         }
 
-        if (context.core.GetFileExtension(fileName).equalsIgnoreCase(".glb")) {
+        if (context.files.GetFileExtension(fileName).equalsIgnoreCase(".glb")) {
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
         }
-        else if (context.core.GetFileExtension(fileName).equalsIgnoreCase(".gltf")) {
+        else if (context.files.GetFileExtension(fileName).equalsIgnoreCase(".gltf")) {
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
         }
 
@@ -5506,7 +5506,7 @@ public class rModels {
         //----------------------------------------------------------------------------------------------------
         for (int i = 0, j = 1; i < gltf.getMaterialModels().size(); i++, j++) {
             model.materials[j] = LoadMaterialDefault();
-            String texPath = context.core.GetDirectoryPath(fileName);
+            String texPath = context.files.GetDirectoryPath(fileName);
             MaterialModelV2 material = (MaterialModelV2) gltf.getMaterialModels().get(i);
 
             // Check glTF material flow: PBR metallic/roughness flow

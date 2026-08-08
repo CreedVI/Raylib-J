@@ -216,7 +216,7 @@ public class rTextures {
 
         if (SUPPORT_FILEFORMAT_SVG) {
             String fileText = "";
-            if (context.core.FileExists(fileNameOrString)) {
+            if (context.files.FileExists(fileNameOrString)) {
                 try {
                     fileText = context.files.LoadFileText(fileNameOrString);
                     isSvgStringValid = true;
@@ -286,7 +286,7 @@ public class rTextures {
         int framesCount = 1;
 
         if (SUPPORT_FILEFORMAT_GIF) {
-            if (context.core.IsFileExtension(fileName, ".gif")) {
+            if (context.files.IsFileExtension(fileName, ".gif")) {
                 byte[] fileData = null;
                 try{
                     fileData = context.files.LoadFileData(fileName);
@@ -531,23 +531,23 @@ public class rTextures {
             imgBuffer.put(imgData).flip();
 
             if (SUPPORT_FILEFORMAT_PNG) {
-                if (context.core.IsFileExtension(fileName, ".png")) {
+                if (context.files.IsFileExtension(fileName, ".png")) {
                     result = STBImageWrite.stbi_write_png(fileName, image.width, image.height,
                                                            channels, imgBuffer, image.width*channels);
                 }
             }
             if (SUPPORT_FILEFORMAT_BMP) {
-                if (context.core.IsFileExtension(fileName, ".bmp")) {
+                if (context.files.IsFileExtension(fileName, ".bmp")) {
                     result = STBImageWrite.stbi_write_bmp(fileName, image.width, image.height, channels, imgBuffer);
                 }
             }
             if (SUPPORT_FILEFORMAT_TGA) {
-                if (context.core.IsFileExtension(fileName, ".tga")) {
+                if (context.files.IsFileExtension(fileName, ".tga")) {
                     result = STBImageWrite.stbi_write_tga(fileName, image.width, image.height, channels, imgBuffer);
                 }
             }
             if (SUPPORT_FILEFORMAT_JPG) {
-                if (context.core.IsFileExtension(fileName, ".jpeg")) {
+                if (context.files.IsFileExtension(fileName, ".jpeg")) {
                     result = STBImageWrite.stbi_write_jpg(fileName, image.width, image.height, channels, imgBuffer, 90);  // JPG quality: between 1 and 100
                 }
             }
@@ -560,7 +560,7 @@ public class rTextures {
                 * PVR
                 * ASTC
             */
-            else if (context.core.IsFileExtension(fileName, ".raw")) {
+            else if (context.files.IsFileExtension(fileName, ".raw")) {
                 // Export raw pixel data (without header)
                 // NOTE: It's up to the user to track image parameters
                 try{

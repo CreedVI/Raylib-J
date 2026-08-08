@@ -7,26 +7,20 @@ import com.raylib.java.structs.Size;
 public class Window {
     public long handle;
 
-    //EGLDisplay device;                  // Native display device (physical screen connection)
-    //EGLSurface surface;                 // Surface to draw on, framebuffers (connected to context)
-    //EGLContext context;                 // Graphic context, mode in which drawing can be done
-    //EGLConfig config;                   // Graphic config
-
     protected String title;                           // window text title const pointer
-    public int flags;                       // Configuration flags (bit based), keeps window state
+    public int flags;                                 // Configuration flags (bit based), keeps window state
     protected boolean ready;                          // Check if window has been initialized successfully
-    protected boolean fullscreen;                     // Check if fullscreen mode is enabled
     protected boolean shouldClose;                    // Check if window set for closing
     protected boolean resizedLastFrame;               // Check if window has been resized last frame
     protected boolean usingFbo;
 
     protected boolean eventWaiting;               // Wait for events before ending frame
 
-    protected Point position;                     // window position on screen (required on fullscreen toggle)
-    protected Point previousPosition;             // Window previous position (required on borderless windowed toggle)
     protected Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
     protected Size screen;                        // Screen width and height (used render area)
+    protected Point position;                     // window position on screen (required on fullscreen toggle)
     protected Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
+    protected Point previousPosition;             // Window previous position (required on borderless windowed toggle)
     protected Size currentFbo;                    // Current render width and height, it could change on BeginTextureMode()
     protected Size render;                        // Framebuffer width and height (render area, including black bars if required)
     protected Point renderOffset;                 // Offset from render area (must be divided by 2)
@@ -43,15 +37,14 @@ public class Window {
         title = "";
         flags = 0;
         ready = false;
-        fullscreen = false;
         shouldClose = false;
         resizedLastFrame = false;
 
-        position = new Point(0, 0);
-        previousPosition = new Point(0, 0);
         display = new Size();
         screen = new Size();
+        position = new Point(0, 0);
         previousScreen = new Size();
+        previousPosition = new Point(0, 0);
         currentFbo = new Size();
         render = new Size();
         renderOffset = new Point();
@@ -61,6 +54,14 @@ public class Window {
 
         dropFilePaths = new String[512];
         dropFilesCount = 0;
+    }
+
+    public long getHandle() {
+        return handle;
+    }
+
+    public void setHandle(long handle) {
+        this.handle = handle;
     }
 
     public String getTitle() {
@@ -87,14 +88,6 @@ public class Window {
         this.ready = ready;
     }
 
-    public boolean isFullscreen() {
-        return fullscreen;
-    }
-
-    public void setFullscreen(boolean fullscreen) {
-        this.fullscreen = fullscreen;
-    }
-
     public boolean isShouldClose() {
         return shouldClose;
     }
@@ -109,6 +102,14 @@ public class Window {
 
     public void setResizedLastFrame(boolean resizedLastFrame) {
         this.resizedLastFrame = resizedLastFrame;
+    }
+
+    public boolean isUsingFbo() {
+        return usingFbo;
+    }
+
+    public void setUsingFbo(boolean usingFbo) {
+        this.usingFbo = usingFbo;
     }
 
     public boolean isEventWaiting() {
@@ -222,5 +223,4 @@ public class Window {
     public void setDropFilesCount(int dropFilesCount) {
         this.dropFilesCount = dropFilesCount;
     }
-
 }

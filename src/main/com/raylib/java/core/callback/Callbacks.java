@@ -4,8 +4,6 @@ import com.raylib.java.Raylib;
 
 public class Callbacks{
 
-    private final Raylib context;
-
     public TraceLogCallback traceLogCallback;
 
     public final ErrorCallback errorCallback;
@@ -21,10 +19,12 @@ public class Callbacks{
     public final MouseScrollCallback mouseScrollCallback;
     public final CursorEnterCallback cursorEnterCallback;
     public final JoystickCallback joystickCallback;
+    public final FrameBufferSizeCallback frameBufferSizeCallback;
+    public final WindowPositionCallback windowPositionCallback;
+    public final WindowContentScaleCallback windowContentScaleCallback;
 
 
     public Callbacks(Raylib context) {
-        this.context = context;
         traceLogCallback = new TraceLogCallback();
         errorCallback = new ErrorCallback();
         windowMaximizeCallback = new WindowMaximizeCallback(context);
@@ -39,6 +39,9 @@ public class Callbacks{
         mouseScrollCallback = new MouseScrollCallback(context);
         cursorEnterCallback = new CursorEnterCallback(context);
         joystickCallback = new JoystickCallback(context);
+        frameBufferSizeCallback = new FrameBufferSizeCallback(context);
+        windowPositionCallback = new WindowPositionCallback(context);
+        windowContentScaleCallback = new WindowContentScaleCallback(context);
     }
 
 }

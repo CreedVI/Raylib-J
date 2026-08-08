@@ -10,13 +10,12 @@ public class WindowDropCallback extends GLFWDropCallback {
     private final Raylib context;
     public WindowDropCallback(Raylib context) {
         this.context = context;
-
     }
 
     @Override
     public void invoke(long window, int count, long names){
         context.tracelog.TRACELOG(LOG_DEBUG, "Drop Callback Triggered");
-        context.core.UnloadDroppedFiles();
+        // context.files.UnloadDroppedFiles();
         String[] paths = new String[(int) count];
 
         for (int j = 0; j < count; j++){

@@ -133,21 +133,21 @@ public class DrawText3D {
             camera.Update(camera_mode);
 
             // Handle font files dropped
-            if (rlj.core.IsFileDropped()) {
-                FilePathList droppedFiles = rlj.core.LoadDroppedFiles();
+            if (rlj.files.IsFileDropped()) {
+                FilePathList droppedFiles = rlj.files.LoadDroppedFiles();
 
                 // NOTE: We only support first ttf file dropped
-                if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".ttf")) {
+                if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".ttf")) {
                     rlj.text.UnloadFont(font);
                     font = rlj.text.LoadFontEx(droppedFiles.paths[0], (int)fontSize, null, 0);
                 }
-                else if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".fnt")) {
+                else if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".fnt")) {
                     rlj.text.UnloadFont(font);
                     font = rlj.text.LoadFont(droppedFiles.paths[0]);
                     fontSize = (float)font.baseSize;
                 }
 
-                rlj.core.UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
+                rlj.files.UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
             }
 
             // Handle Events
@@ -179,7 +179,7 @@ public class DrawText3D {
 
             // Handle clicking the cube
             if (rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                Ray ray = rlj.core.GetMouseRay(rlj.core.GetMousePosition(), camera);
+                Ray ray = rlj.core.GetScreenToWorldRay(rlj.core.GetMousePosition(), camera);
 
                 // Check collision between ray and box
                 RayCollision collision = rlj.models.GetRayCollisionBox(

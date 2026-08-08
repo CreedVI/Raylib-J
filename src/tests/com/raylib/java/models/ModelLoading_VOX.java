@@ -131,7 +131,7 @@ public class ModelLoading_VOX {
             rlj.shapes.DrawRectangle(10, 400, 310, 30, rlj.textures.Fade(SKYBLUE, 0.5f));
             rlj.shapes.DrawRectangleLines(10, 400, 310, 30, rlj.textures.Fade(DARKBLUE, 0.5f));
             rlj.text.DrawText("MOUSE LEFT BUTTON to CYCLE VOX MODELS", 40, 410, 10, BLUE);
-            rlj.text.DrawText(rlj.text.TextFormat("File: %s", rlj.core.GetFileName(voxFileNames[currentModel])), 10, 10, 20, GRAY);
+            rlj.text.DrawText(rlj.text.TextFormat("File: %s", rlj.files.GetFileName(voxFileNames[currentModel])), 10, 10, 20, GRAY);
 
             rlj.core.EndDrawing();
             //----------------------------------------------------------------------------------

@@ -124,11 +124,11 @@ public class Skybox {
             camera.Update(CAMERA_FIRST_PERSON);
 
             // Load new cubemap texture on drag&drop
-            if (rlj.core.IsFileDropped()) {
-                FilePathList droppedFiles = rlj.core.LoadDroppedFiles();
+            if (rlj.files.IsFileDropped()) {
+                FilePathList droppedFiles = rlj.files.LoadDroppedFiles();
 
                 if (droppedFiles.count == 1) {         // Only support one file dropped
-                    if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".png;.jpg;.hdr;.bmp;.tga")) {
+                    if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".png;.jpg;.hdr;.bmp;.tga")) {
                         // Unload current cubemap texture and load new one
                         rlj.textures.UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP.GetIndex()].texture);
                         if (useHDR) {
@@ -148,7 +148,7 @@ public class Skybox {
                     }
                 }
 
-                rlj.core.UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
+                rlj.files.UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
             }
             //----------------------------------------------------------------------------------
 
@@ -174,10 +174,10 @@ public class Skybox {
             //DrawTextureEx(panorama, (Vector2){ 0, 0 }, 0.0f, 0.5f, WHITE);
 
             if (useHDR) {
-                rlj.text.DrawText(rlj.text.TextFormat("Panorama image from hdrihaven.com: %s", rlj.core.GetFileName(skyboxFileName)), 10, rlj.core.GetScreenHeight() - 20, 10, BLACK);
+                rlj.text.DrawText(rlj.text.TextFormat("Panorama image from hdrihaven.com: %s", rlj.files.GetFileName(skyboxFileName)), 10, rlj.core.GetScreenHeight() - 20, 10, BLACK);
             }
             else {
-                rlj.text.DrawText(rlj.text.TextFormat(": %s", rlj.core.GetFileName(skyboxFileName)), 10, rlj.core.GetScreenHeight() - 20, 10, BLACK);
+                rlj.text.DrawText(rlj.text.TextFormat(": %s", rlj.files.GetFileName(skyboxFileName)), 10, rlj.core.GetScreenHeight() - 20, 10, BLACK);
             }
 
             rlj.text.DrawFPS(10, 10);

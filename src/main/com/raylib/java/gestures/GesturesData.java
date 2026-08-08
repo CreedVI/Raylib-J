@@ -5,7 +5,7 @@ public class GesturesData {
     /**
      * Current detected gesture
      */
-    GestureEvent.Gesture current;
+    public GestureEvent.Gesture current;
 
     /**
      * Enabled gestures flags

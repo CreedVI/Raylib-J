@@ -26,11 +26,11 @@ public class rGestures {
     //----------------------------------------------------------------------------------
 
     private final Raylib context;
-    final GesturesData gestures;
+    public final GesturesData gesturesData;
 
     public rGestures(Raylib context) {
         this.context = context;
-        this.gestures = new GesturesData();
+        this.gesturesData = new GesturesData();
     }
 
     //----------------------------------------------------------------------------------
@@ -39,160 +39,160 @@ public class rGestures {
 
     // Enable only desired gestures to be detected
     void SetGesturesEnabled(int flags) {
-        gestures.enabledFlags = flags;
+        gesturesData.enabledFlags = flags;
     }
 
     // Check if a gesture have been detected
     boolean IsGestureDetected(int gesture) {
-        return (gestures.enabledFlags & gestures.current.getFlag()) == gesture;
+        return (gesturesData.enabledFlags & gesturesData.current.getFlag()) == gesture;
     }
 
     // Process gesture event and translate it into gestures
     void ProcessGestureEvent(GestureEvent event) {
         // Reset required variables
-        gestures.touch.pointCount = event.pointCount;      // Required on UpdateGestures()
+        gesturesData.touch.pointCount = event.pointCount;      // Required on UpdateGestures()
 
-        if (gestures.touch.pointCount == 1)     // One touch point
+        if (gesturesData.touch.pointCount == 1)     // One touch point
         {
             if (event.touchAction == TOUCH_ACTION_DOWN) {
-                gestures.touch.tapCounter++;    // Tap counter
+                gesturesData.touch.tapCounter++;    // Tap counter
 
                 // Detect GESTURE_DOUBLE_TAP
-                if ((gestures.current == GESTURE_NONE) && (gestures.touch.tapCounter >= 2) && ((rgGetCurrentTime() - gestures.touch.eventTime) < TAP_TIMEOUT) && (rgVector2Distance(gestures.touch.downPositionA, event.position[0]) < DOUBLETAP_RANGE)) {
-                    gestures.current = GESTURE_DOUBLETAP;
-                    gestures.touch.tapCounter = 0;
+                if ((gesturesData.current == GESTURE_NONE) && (gesturesData.touch.tapCounter >= 2) && ((rgGetCurrentTime() - gesturesData.touch.eventTime) < TAP_TIMEOUT) && (rgVector2Distance(gesturesData.touch.downPositionA, event.position[0]) < DOUBLETAP_RANGE)) {
+                    gesturesData.current = GESTURE_DOUBLETAP;
+                    gesturesData.touch.tapCounter = 0;
                 }
                 else    // Detect GESTURE_TAP
                 {
-                    gestures.touch.tapCounter = 1;
-                    gestures.current = GESTURE_TAP;
+                    gesturesData.touch.tapCounter = 1;
+                    gesturesData.current = GESTURE_TAP;
                 }
 
-                gestures.touch.downPositionA = event.position[0];
-                gestures.touch.downDragPosition = event.position[0];
+                gesturesData.touch.downPositionA = event.position[0];
+                gesturesData.touch.downDragPosition = event.position[0];
 
-                gestures.touch.upPosition = gestures.touch.downPositionA;
-                gestures.touch.eventTime = rgGetCurrentTime();
+                gesturesData.touch.upPosition = gesturesData.touch.downPositionA;
+                gesturesData.touch.eventTime = rgGetCurrentTime();
 
-                gestures.swipe.startTime = rgGetCurrentTime();
+                gesturesData.swipe.startTime = rgGetCurrentTime();
 
-                gestures.drag.vector = new Vector2();
+                gesturesData.drag.vector = new Vector2();
             }
             else if (event.touchAction == TOUCH_ACTION_UP) {
                 // A swipe can happen while the current gesture is drag, but (especially for web) also hold, so set upPosition for both cases
-                if (gestures.current == GESTURE_DRAG || gestures.current == GESTURE_HOLD) {
-                    gestures.touch.upPosition = event.position[0];
+                if (gesturesData.current == GESTURE_DRAG || gesturesData.current == GESTURE_HOLD) {
+                    gesturesData.touch.upPosition = event.position[0];
                 }
 
                 // NOTE: gestures.drag.intensity is dependent on the resolution of the screen
-                gestures.drag.distance = rgVector2Distance(gestures.touch.downPositionA, gestures.touch.upPosition);
-                gestures.drag.intensity = gestures.drag.distance / (float) ((rgGetCurrentTime() - gestures.swipe.startTime));
+                gesturesData.drag.distance = rgVector2Distance(gesturesData.touch.downPositionA, gesturesData.touch.upPosition);
+                gesturesData.drag.intensity = gesturesData.drag.distance / (float) ((rgGetCurrentTime() - gesturesData.swipe.startTime));
 
                 // Detect GESTURE_SWIPE
-                if ((gestures.drag.intensity > FORCE_TO_SWIPE) && (gestures.current != GESTURE_DRAG)) {
+                if ((gesturesData.drag.intensity > FORCE_TO_SWIPE) && (gesturesData.current != GESTURE_DRAG)) {
                     // NOTE: Angle should be inverted in Y
-                    gestures.drag.angle = 360.0f - rgVector2Angle(gestures.touch.downPositionA, gestures.touch.upPosition);
+                    gesturesData.drag.angle = 360.0f - rgVector2Angle(gesturesData.touch.downPositionA, gesturesData.touch.upPosition);
 
-                    if ((gestures.drag.angle < 30) || (gestures.drag.angle > 330)) {
-                        gestures.current = GESTURE_SWIPE_RIGHT;          // Right
+                    if ((gesturesData.drag.angle < 30) || (gesturesData.drag.angle > 330)) {
+                        gesturesData.current = GESTURE_SWIPE_RIGHT;          // Right
                     }
-                    else if ((gestures.drag.angle >= 30) && (gestures.drag.angle <= 150)) {
-                        gestures.current = GESTURE_SWIPE_UP;      // Up
+                    else if ((gesturesData.drag.angle >= 30) && (gesturesData.drag.angle <= 150)) {
+                        gesturesData.current = GESTURE_SWIPE_UP;      // Up
                     }
-                    else if ((gestures.drag.angle > 150) && (gestures.drag.angle < 210)) {
-                        gestures.current = GESTURE_SWIPE_LEFT;     // Left
+                    else if ((gesturesData.drag.angle > 150) && (gesturesData.drag.angle < 210)) {
+                        gesturesData.current = GESTURE_SWIPE_LEFT;     // Left
                     }
-                    else if ((gestures.drag.angle >= 210) && (gestures.drag.angle <= 330)) {
-                        gestures.current = GESTURE_SWIPE_DOWN;   // Down
+                    else if ((gesturesData.drag.angle >= 210) && (gesturesData.drag.angle <= 330)) {
+                        gesturesData.current = GESTURE_SWIPE_DOWN;   // Down
                     }
                     else {
-                        gestures.current = GESTURE_NONE;
+                        gesturesData.current = GESTURE_NONE;
                     }
                 }
                 else {
-                    gestures.drag.distance = 0.0f;
-                    gestures.drag.intensity = 0.0f;
-                    gestures.drag.angle = 0.0f;
+                    gesturesData.drag.distance = 0.0f;
+                    gesturesData.drag.intensity = 0.0f;
+                    gesturesData.drag.angle = 0.0f;
 
-                    gestures.current = GESTURE_NONE;
+                    gesturesData.current = GESTURE_NONE;
                 }
 
-                gestures.touch.downDragPosition = new Vector2();
-                gestures.touch.pointCount = 0;
+                gesturesData.touch.downDragPosition = new Vector2();
+                gesturesData.touch.pointCount = 0;
             }
             else if (event.touchAction == TOUCH_ACTION_MOVE) {
-                gestures.touch.moveDownPositionA = event.position[0];
+                gesturesData.touch.moveDownPositionA = event.position[0];
 
-                if (gestures.current == GESTURE_HOLD) {
-                    if (gestures.hold.resetRequired) {
-                        gestures.touch.downPositionA = event.position[0];
+                if (gesturesData.current == GESTURE_HOLD) {
+                    if (gesturesData.hold.resetRequired) {
+                        gesturesData.touch.downPositionA = event.position[0];
                     }
 
-                    gestures.hold.resetRequired = false;
+                    gesturesData.hold.resetRequired = false;
 
                     // Detect GESTURE_DRAG
-                    if ((rgGetCurrentTime() - gestures.touch.eventTime) > DRAG_TIMEOUT) {
-                        gestures.touch.eventTime = rgGetCurrentTime();
-                        gestures.current = GESTURE_DRAG;
+                    if ((rgGetCurrentTime() - gesturesData.touch.eventTime) > DRAG_TIMEOUT) {
+                        gesturesData.touch.eventTime = rgGetCurrentTime();
+                        gesturesData.current = GESTURE_DRAG;
                     }
                 }
 
-                gestures.drag.vector.x = gestures.touch.moveDownPositionA.x - gestures.touch.downDragPosition.x;
-                gestures.drag.vector.y = gestures.touch.moveDownPositionA.y - gestures.touch.downDragPosition.y;
+                gesturesData.drag.vector.x = gesturesData.touch.moveDownPositionA.x - gesturesData.touch.downDragPosition.x;
+                gesturesData.drag.vector.y = gesturesData.touch.moveDownPositionA.y - gesturesData.touch.downDragPosition.y;
             }
         }
-        else if (gestures.touch.pointCount == 2)    // Two touch points
+        else if (gesturesData.touch.pointCount == 2)    // Two touch points
         {
             if (event.touchAction == TOUCH_ACTION_DOWN) {
-                gestures.touch.downPositionA = event.position[0];
-                gestures.touch.downPositionB = event.position[1];
+                gesturesData.touch.downPositionA = event.position[0];
+                gesturesData.touch.downPositionB = event.position[1];
 
-                gestures.touch.previousPositionA = gestures.touch.downPositionA;
-                gestures.touch.previousPositionB = gestures.touch.downPositionB;
+                gesturesData.touch.previousPositionA = gesturesData.touch.downPositionA;
+                gesturesData.touch.previousPositionB = gesturesData.touch.downPositionB;
 
                 //gestures.pinch.distance = rgVector2Distance(gestures.touch.downPositionA, gestures.touch.downPositionB);
 
-                gestures.pinch.vector.x = gestures.touch.downPositionB.x - gestures.touch.downPositionA.x;
-                gestures.pinch.vector.y = gestures.touch.downPositionB.y - gestures.touch.downPositionA.y;
+                gesturesData.pinch.vector.x = gesturesData.touch.downPositionB.x - gesturesData.touch.downPositionA.x;
+                gesturesData.pinch.vector.y = gesturesData.touch.downPositionB.y - gesturesData.touch.downPositionA.y;
 
-                gestures.current = GESTURE_HOLD;
-                gestures.hold.timeDuration = rgGetCurrentTime();
+                gesturesData.current = GESTURE_HOLD;
+                gesturesData.hold.timeDuration = rgGetCurrentTime();
             }
             else if (event.touchAction == TOUCH_ACTION_MOVE) {
-                gestures.pinch.distance = rgVector2Distance(gestures.touch.moveDownPositionA, gestures.touch.moveDownPositionB);
+                gesturesData.pinch.distance = rgVector2Distance(gesturesData.touch.moveDownPositionA, gesturesData.touch.moveDownPositionB);
 
-                gestures.touch.moveDownPositionA = event.position[0];
-                gestures.touch.moveDownPositionB = event.position[1];
+                gesturesData.touch.moveDownPositionA = event.position[0];
+                gesturesData.touch.moveDownPositionB = event.position[1];
 
-                gestures.pinch.vector.x = gestures.touch.moveDownPositionB.x - gestures.touch.moveDownPositionA.x;
-                gestures.pinch.vector.y = gestures.touch.moveDownPositionB.y - gestures.touch.moveDownPositionA.y;
+                gesturesData.pinch.vector.x = gesturesData.touch.moveDownPositionB.x - gesturesData.touch.moveDownPositionA.x;
+                gesturesData.pinch.vector.y = gesturesData.touch.moveDownPositionB.y - gesturesData.touch.moveDownPositionA.y;
 
-                if ((rgVector2Distance(gestures.touch.previousPositionA, gestures.touch.moveDownPositionA) >= MINIMUM_PINCH) || (rgVector2Distance(gestures.touch.previousPositionB, gestures.touch.moveDownPositionB) >= MINIMUM_PINCH)) {
-                    if (rgVector2Distance(gestures.touch.previousPositionA, gestures.touch.previousPositionB) > rgVector2Distance(gestures.touch.moveDownPositionA, gestures.touch.moveDownPositionB)) {
-                        gestures.current = GESTURE_PINCH_IN;
+                if ((rgVector2Distance(gesturesData.touch.previousPositionA, gesturesData.touch.moveDownPositionA) >= MINIMUM_PINCH) || (rgVector2Distance(gesturesData.touch.previousPositionB, gesturesData.touch.moveDownPositionB) >= MINIMUM_PINCH)) {
+                    if (rgVector2Distance(gesturesData.touch.previousPositionA, gesturesData.touch.previousPositionB) > rgVector2Distance(gesturesData.touch.moveDownPositionA, gesturesData.touch.moveDownPositionB)) {
+                        gesturesData.current = GESTURE_PINCH_IN;
                     }
                     else {
-                        gestures.current = GESTURE_PINCH_OUT;
+                        gesturesData.current = GESTURE_PINCH_OUT;
                     }
                 }
                 else {
-                    gestures.current = GESTURE_HOLD;
-                    gestures.hold.timeDuration = rgGetCurrentTime();
+                    gesturesData.current = GESTURE_HOLD;
+                    gesturesData.hold.timeDuration = rgGetCurrentTime();
                 }
 
                 // NOTE: Angle should be inverted in Y
-                gestures.pinch.angle = 360.0f - rgVector2Angle(gestures.touch.moveDownPositionA, gestures.touch.moveDownPositionB);
+                gesturesData.pinch.angle = 360.0f - rgVector2Angle(gesturesData.touch.moveDownPositionA, gesturesData.touch.moveDownPositionB);
             }
             else if (event.touchAction == TOUCH_ACTION_UP) {
-                gestures.pinch.distance = 0.0f;
-                gestures.pinch.angle = 0.0f;
-                gestures.pinch.vector = new Vector2();
-                gestures.touch.pointCount = 0;
+                gesturesData.pinch.distance = 0.0f;
+                gesturesData.pinch.angle = 0.0f;
+                gesturesData.pinch.vector = new Vector2();
+                gesturesData.touch.pointCount = 0;
 
-                gestures.current = GESTURE_NONE;
+                gesturesData.current = GESTURE_NONE;
             }
         }
-        else if (gestures.touch.pointCount > 2)     // More than two touch points
+        else if (gesturesData.touch.pointCount > 2)     // More than two touch points
         {
             // TODO: Process gesture events for more than two points
         }
@@ -203,21 +203,21 @@ public class rGestures {
         // NOTE: Gestures are processed through system callbacks on touch events
 
         // Detect GESTURE_HOLD
-        if (((gestures.current == GESTURE_TAP) || (gestures.current == GESTURE_DOUBLETAP)) && (gestures.touch.pointCount < 2)) {
-            gestures.current = GESTURE_HOLD;
-            gestures.hold.timeDuration = rgGetCurrentTime();
+        if (((gesturesData.current == GESTURE_TAP) || (gesturesData.current == GESTURE_DOUBLETAP)) && (gesturesData.touch.pointCount < 2)) {
+            gesturesData.current = GESTURE_HOLD;
+            gesturesData.hold.timeDuration = rgGetCurrentTime();
         }
 
         // Detect GESTURE_NONE
-        if ((gestures.current == GESTURE_SWIPE_RIGHT) || (gestures.current == GESTURE_SWIPE_UP) || (gestures.current == GESTURE_SWIPE_LEFT) || (gestures.current == GESTURE_SWIPE_DOWN)) {
-            gestures.current = GESTURE_NONE;
+        if ((gesturesData.current == GESTURE_SWIPE_RIGHT) || (gesturesData.current == GESTURE_SWIPE_UP) || (gesturesData.current == GESTURE_SWIPE_LEFT) || (gesturesData.current == GESTURE_SWIPE_DOWN)) {
+            gesturesData.current = GESTURE_NONE;
         }
     }
 
     // Get latest detected gesture
     int GetGestureDetected() {
         // Get current gesture only if enabled
-        return (gestures.enabledFlags & gestures.current.getFlag());
+        return (gesturesData.enabledFlags & gesturesData.current.getFlag());
     }
 
     // hold time measured in seconds
@@ -226,8 +226,8 @@ public class rGestures {
 
         double time = 0.0;
 
-        if (gestures.current == GESTURE_HOLD) {
-            time = rgGetCurrentTime() - gestures.hold.timeDuration;
+        if (gesturesData.current == GESTURE_HOLD) {
+            time = rgGetCurrentTime() - gesturesData.hold.timeDuration;
         }
 
         return (float) time;
@@ -237,7 +237,7 @@ public class rGestures {
     Vector2 GetGestureDragVector() {
         // NOTE: drag vector is calculated on one touch points TOUCH_ACTION_MOVE
 
-        return gestures.drag.vector;
+        return gesturesData.drag.vector;
     }
 
     // Get drag angle
@@ -245,14 +245,14 @@ public class rGestures {
     float GetGestureDragAngle() {
         // NOTE: drag angle is calculated on one touch points TOUCH_ACTION_UP
 
-        return gestures.drag.angle;
+        return gesturesData.drag.angle;
     }
 
     // Get distance between two pinch points
     Vector2 GetGesturePinchVector() {
         // NOTE: pinch distance is calculated on two touch points TOUCH_ACTION_MOVE
 
-        return gestures.pinch.vector;
+        return gesturesData.pinch.vector;
     }
 
     // Get angle between two pinch points
@@ -260,7 +260,7 @@ public class rGestures {
     float GetGesturePinchAngle() {
         // NOTE: pinch angle is calculated on two touch points TOUCH_ACTION_MOVE
 
-        return gestures.pinch.angle;
+        return gesturesData.pinch.angle;
     }
 
     //----------------------------------------------------------------------------------

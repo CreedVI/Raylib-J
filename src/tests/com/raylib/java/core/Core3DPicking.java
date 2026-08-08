@@ -63,7 +63,7 @@ public class Core3DPicking {
 
             if (rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 if (!collision.hit) {
-                    ray = rlj.core.GetMouseRay(rlj.core.GetMousePosition(), camera);
+                    ray = rlj.core.GetScreenToWorldRay(rlj.core.GetMousePosition(), camera);
 
                     // Check collision between ray and box
                     collision = rlj.models.GetRayCollisionBox(

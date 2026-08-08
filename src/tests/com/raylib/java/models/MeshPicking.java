@@ -99,7 +99,7 @@ public class MeshPicking {
             Color cursorColor = Color.WHITE;
 
             // Get ray and test against objects
-            ray = rlj.core.GetMouseRay(rlj.core.GetMousePosition(), camera);
+            ray = rlj.core.GetScreenToWorldRay(rlj.core.GetMousePosition(), camera);
 
             // Check ray collision against ground quad
             RayCollision groundHitInfo = rlj.models.GetRayCollisionQuad(ray, g0, g1, g2, g3);

@@ -467,7 +467,11 @@ public class RLGL {
         SHADER_LOC_MAP_CUBEMAP(22), // Shader location: samplerCube texture: cubemap
         SHADER_LOC_MAP_IRRADIANCE(23), // Shader location: samplerCube texture: irradiance
         SHADER_LOC_MAP_PREFILTER(24), // Shader location: samplerCube texture: prefilter
-        SHADER_LOC_MAP_BRDF(25); // Shader location: sampler2d texture: brdf
+        SHADER_LOC_MAP_BRDF(25), // Shader location: sampler2d texture: brdf
+        SHADER_LOC_VERTEX_BONEIDS(26),      // Shader location: vertex attribute: bone indices
+        SHADER_LOC_VERTEX_BONEWEIGHTS(27),  // Shader location: vertex attribute: bone weights
+        SHADER_LOC_MATRIX_BONETRANSFORMS(28), // Shader location: matrix attribute: bone transforms (animation)
+        SHADER_LOC_VERTEX_INSTANCETRANSFORM(29); // Shader location: vertex attribute: instance transforms
 
         private final int location;
 

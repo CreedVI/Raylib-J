@@ -43,9 +43,9 @@ public class DropFiles{
         while (!rlj.core.WindowShouldClose()){    // Detect window close button or ESC key
             // Update
             //----------------------------------------------------------------------------------
-            if (rlj.core.IsFileDropped()){
-                droppedFiles = rlj.core.LoadDroppedFiles();
-                count = rlj.core.GetDroppedFilesCount();
+            if (rlj.files.IsFileDropped()){
+                droppedFiles = rlj.files.LoadDroppedFiles();
+                count = rlj.files.GetDroppedFilesCount();
             }
             //----------------------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ public class DropFiles{
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
-        rlj.core.UnloadDroppedFiles(droppedFiles);    // Clear internal buffers
+        rlj.files.UnloadDroppedFiles(droppedFiles);    // Clear internal buffers
         rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------
     }

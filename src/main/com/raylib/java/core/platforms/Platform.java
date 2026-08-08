@@ -62,4 +62,9 @@ public interface Platform {
     void PollInputEvents();
 
     void OpenURL(String url);
+
+    default void FLAG_SET(int n, int f) { n = ((n) |= (f)); }
+    default void FLAG_CLEAR(int n, int f) { n = ((n) &= ~(f)); }
+    default void FLAG_TOGGLE(int n, int f) { n =((n) ^= (f)); }
+    default boolean FLAG_IS_SET(int n, int f) { return (((n) & (f)) == (f)); }
 }

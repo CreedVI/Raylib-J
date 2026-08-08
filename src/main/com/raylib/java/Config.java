@@ -26,6 +26,8 @@ public class Config{
     public static boolean __APPLE__ = (OS.contains("mac"));
     public static boolean __LINUX__ = (OS.contains("nix") || OS.contains("nux") || OS.contains("aix"));
     public static boolean PLATFORM_DESKTOP = (__WINDOWS__ || __APPLE__ || __LINUX__);
+    public static boolean _GLFW_WAYLAND = false;
+    public static boolean _GLFW_X11 = true;
 
     /**
      * rCamera module is included (core.camera.java) and multiple predefined cameras are available: free, 1st/3rd
@@ -51,11 +53,11 @@ public class Config{
     /**
      * Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
      */
-    public static boolean SUPPORT_WINMM_HIGHRES_TIMER = false;
+    public static boolean SUPPORT_BUSY_WAIT_LOOP = false;
     /**
      * Use a half-busy wait loop, in this case frame sleeps for some time and runs a busy-wait-loop at the end
      */
-    public static boolean SUPPORT_HALFBUSY_WAIT_LOOP = true;
+    public static boolean SUPPORT_PARTIALBUSY_WAIT_LOOP = true;
     /**
      * Wait for events passively (sleeping while no events) instead of polling them actively every frame
      */
@@ -82,7 +84,7 @@ public class Config{
     public static boolean SUPPORT_STANDARD_FILEIO = true;
 
     // Support automatic generated events, loading and recording of those events when required
-    public static boolean SUPPORT_EVENTS_AUTOMATION = false;
+    public static boolean SUPPORT_AUTOMATION_EVENTS = false;
 
     // Support custom frame control, only for advance users
     // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timming + PollInputEvents()
@@ -396,7 +398,7 @@ public class Config{
      * @param supportBusyWaitLoop flag for support
      */
     public void setSupportBusyWaitLoop(boolean supportBusyWaitLoop){
-        SUPPORT_WINMM_HIGHRES_TIMER = supportBusyWaitLoop;
+        SUPPORT_BUSY_WAIT_LOOP = supportBusyWaitLoop;
     }
 
     /**
@@ -404,7 +406,7 @@ public class Config{
      * @param supportHalfbusyWaitLoop flag for support
      */
    public void setSupportHalfbusyWaitLoop(boolean supportHalfbusyWaitLoop){
-        SUPPORT_HALFBUSY_WAIT_LOOP = supportHalfbusyWaitLoop;
+        SUPPORT_PARTIALBUSY_WAIT_LOOP = supportHalfbusyWaitLoop;
     }
 
     /**

@@ -92,14 +92,14 @@ public class FontFilters{
             }
 
             // Load a dropped TTF file dynamically (at current fontSize)
-            if (rlj.core.IsFileDropped()) {
-                FilePathList droppedFiles = rlj.core.LoadDroppedFiles();
+            if (rlj.files.IsFileDropped()) {
+                FilePathList droppedFiles = rlj.files.LoadDroppedFiles();
 
                 // NOTE: We only support first ttf file dropped
-                if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".ttf")) {
+                if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".ttf")) {
                     rlj.text.UnloadFont(font);
                     font = rlj.text.LoadFontEx(droppedFiles.paths[0], (int)fontSize, null, 0);
-                    rlj.core.UnloadDroppedFiles(droppedFiles);
+                    rlj.files.UnloadDroppedFiles(droppedFiles);
                 }
             }
             //----------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ public class FontFilters{
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
-        rlj.core.UnloadDroppedFiles();        // Clear internal buffers
+        rlj.files.UnloadDroppedFiles();        // Clear internal buffers
         rlj.text.UnloadFont(font);           // Font unloading
         rlj.core.CloseWindow();
         //--------------------------------------------------------------------------------------

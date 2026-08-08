@@ -84,17 +84,17 @@ public class ModelLoading {
             camera.Update(CAMERA_FIRST_PERSON);
 
             // Load new models/textures on drag&drop
-            if (rlj.core.IsFileDropped()) {
-                FilePathList droppedFiles = rlj.core.LoadDroppedFiles();
+            if (rlj.files.IsFileDropped()) {
+                FilePathList droppedFiles = rlj.files.LoadDroppedFiles();
 
                 // Only support one file dropped
                 if (droppedFiles.count == 1) {
-                    if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".obj") ||
-                            rlj.core.IsFileExtension(droppedFiles.paths[0], ".gltf") ||
-                            rlj.core.IsFileExtension(droppedFiles.paths[0], ".glb") ||
-                            rlj.core.IsFileExtension(droppedFiles.paths[0], ".vox") ||
-                            rlj.core.IsFileExtension(droppedFiles.paths[0], ".iqm") ||
-                            rlj.core.IsFileExtension(droppedFiles.paths[0], ".m3d"))       // Model file formats supported
+                    if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".obj") ||
+                            rlj.files.IsFileExtension(droppedFiles.paths[0], ".gltf") ||
+                            rlj.files.IsFileExtension(droppedFiles.paths[0], ".glb") ||
+                            rlj.files.IsFileExtension(droppedFiles.paths[0], ".vox") ||
+                            rlj.files.IsFileExtension(droppedFiles.paths[0], ".iqm") ||
+                            rlj.files.IsFileExtension(droppedFiles.paths[0], ".m3d"))       // Model file formats supported
                     {
                         rlj.models.UnloadModel(model);                         // Unload previous model
                         model = rlj.models.LoadModel(droppedFiles.paths[0]);   // Load new model
@@ -105,7 +105,7 @@ public class ModelLoading {
                         // TODO: Move camera position from target enough distance to visualize model properly
                     }
                     // Texture file formats supported
-                    else if (rlj.core.IsFileExtension(droppedFiles.paths[0], ".png")) {
+                    else if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".png")) {
                         // Unload current model texture and load new one
                         rlj.textures.UnloadTexture(texture);
                         texture = rlj.textures.LoadTexture(droppedFiles.paths[0]);
@@ -113,13 +113,13 @@ public class ModelLoading {
                     }
                 }
 
-                rlj.core.UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
+                rlj.files.UnloadDroppedFiles(droppedFiles);    // Unload filepaths from memory
             }
 
             // Select model on mouse click
             if (rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 // Check collision between ray and box
-                if (rlj.models.GetRayCollisionBox(rlj.core.GetMouseRay(rlj.core.GetMousePosition(), camera), bounds).hit) {
+                if (rlj.models.GetRayCollisionBox(rlj.core.GetScreenToWorldRay(rlj.core.GetMousePosition(), camera), bounds).hit) {
                     selected = !selected;
                 }
                 else {

@@ -37,7 +37,7 @@ public class HotReloading{
         Raylib rlj = new Raylib(screenWidth, screenHeight, "raylib [shaders] example - hot reloading");
 
         String fragShaderFileName = "src/tests/resources/shaders/shaders/glsl330/reload.fs";
-        long fragShaderFileModTime = rlj.core.GetFileModTime(fragShaderFileName);
+        long fragShaderFileModTime = rlj.files.GetFileModTime(fragShaderFileName);
 
         // Load raymarching shader
         // NOTE: Defining 0 (NULL) for vertex shader forces usage of internal default vertex shader
@@ -72,7 +72,7 @@ public class HotReloading{
 
             // Hot shader reloading
             if (shaderAutoReloading || (rlj.core.IsMouseButtonPressed(Mouse.MouseButton.MOUSE_BUTTON_LEFT))){
-                long currentFragShaderModTime = rlj.core.GetFileModTime(fragShaderFileName);
+                long currentFragShaderModTime = rlj.files.GetFileModTime(fragShaderFileName);
 
                 // Check if shader file has been modified
                 if (currentFragShaderModTime != fragShaderFileModTime){
