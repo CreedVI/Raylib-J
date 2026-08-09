@@ -6,6 +6,7 @@ import com.raylib.java.core.callback.Callbacks;
 import com.raylib.java.core.callback.ErrorCallback;
 import com.raylib.java.core.input.*;
 import com.raylib.java.structs.Image;
+import com.raylib.java.structs.Point;
 import com.raylib.java.structs.Size;
 import com.raylib.java.structs.Vector2;
 import org.lwjgl.PointerBuffer;
@@ -129,12 +130,11 @@ public class Desktop implements Platform {
 
     // Toggle fullscreen mode
     public void ToggleFullscreen() {
-        if (!((context.core.window.flags & FLAG_FULLSCREEN_MODE) > 0)) {
+        if (!FLAG_IS_SET(window.flags, FLAG_FULLSCREEN_MODE)) {
             // Store previous window position (in case we exit fullscreen)
             Vector2 windowPositionVector = GetWindowPosition();
             window.getPosition().setX(windowPositionVector.x);
             window.getPosition().setY(windowPositionVector.y);
-
 
             int monitorCount;
             PointerBuffer monitors = glfwGetMonitors();
@@ -143,6 +143,31 @@ public class Desktop implements Platform {
             long monitor = (monitorIndex < monitorCount) ? monitors.get(monitorIndex) : -1;
 
             if (monitor >= 0) {
+                GLFWVidMode mode = glfwGetVideoMode(monitor);
+                window.getDisplay().width = mode.width();
+                window.getDisplay().height = mode.height();
+
+                window.setPosition(new Point());
+                window.setScreen(window.getDisplay());
+
+
+                // Set fullscreen flag to be processed on FramebufferSizeCallback() accordingly
+                FLAG_SET(window.flags, FLAG_FULLSCREEN_MODE);
+
+                if (_GLFW_X11 || _GLFW_WAYLAND) {
+                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
+                    FLAG_SET(window.flags, FLAG_WINDOW_UNDECORATED);
+                }
+
+                glfwSetWindowMonitor(
+                        window.handle,
+                        monitor,
+                        0,
+                        0,
+                        window.getScreen().getWidth(),
+                        window.getScreen().getHeight(),
+                        GLFW_DONT_CARE
+                );
             }
             else {
                 context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to get monitor");
@@ -150,43 +175,53 @@ public class Desktop implements Platform {
         }
         else {
 
-            // Make sure to restore render size considering HighDPI scaling
-            // NOTE: On Wayland, GLFW_SCALE_FRAMEBUFFER handles scaling, skip manual resize
-            if ((context.core.window.flags & FLAG_WINDOW_HIGHDPI) > 0) {
-                Vector2 scaleDpi = GetWindowScaleDPI();
-                context.core.window.getScreen().width = (int) (context.core.window.getScreen().width * scaleDpi.x);
-                context.core.window.getScreen().height = (int) (context.core.window.getScreen().height * scaleDpi.y);
-            }
+            window.setPosition(window.getPreviousPosition());
+            window.setScreen(window.getPreviousScreen());
 
+            FLAG_CLEAR(window.flags, FLAG_FULLSCREEN_MODE);
+
+            if (!__APPLE__ && !_GLFW_WAYLAND) {
+                // Make sure to restore render size considering HighDPI scaling
+                // NOTE: On Wayland, GLFW_SCALE_FRAMEBUFFER handles scaling, skip manual resize
+                if ((window.flags & FLAG_WINDOW_HIGHDPI) > 0) {
+                    Vector2 scaleDpi = GetWindowScaleDPI();
+                    window.getScreen().width = (int) (window.getScreen().width * scaleDpi.x);
+                    window.getScreen().height = (int) (window.getScreen().height * scaleDpi.y);
+                }
+            }
 
             // WARNING: This function launches FramebufferSizeCallback()
             glfwSetWindowMonitor(
                     context.core.GetPlatform().GetWindowHandle(),
                     0L,
-                    (int) context.core.window.getPosition().x,
-                    (int) context.core.window.getPosition().y,
-                    context.core.window.getScreen().width,
-                    context.core.window.getScreen().height,
+                    (int) window.getPosition().x,
+                    (int) window.getPosition().y,
+                    window.getScreen().width,
+                    window.getScreen().height,
                     GLFW_DONT_CARE
             );
+
+            if (_GLFW_X11 || _GLFW_WAYLAND) {
+                // NOTE: X11 requires restoring the decorated window after switching from
+                // fullscreen to avoid issues with framebuffer scaling
+                glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
+                FLAG_CLEAR(window.flags, FLAG_WINDOW_UNDECORATED);
+            }
         }
 
         // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
         // NOTE: V-Sync can be enabled by graphic driver configuration
-        if ((window.flags & FLAG_VSYNC_HINT) == 1) {
+        if (FLAG_IS_SET(window.flags, FLAG_VSYNC_HINT)) {
             glfwSwapInterval(1);
         }
     }
 
     // Toggle borderless windowed mode
     public void ToggleBorderlessWindowed() {
-        // Leave fullscreen before attempting to set borderless windowed mode and get screen position from it
-        boolean wasOnFullscreen = false;
-        if (!((context.core.window.flags & FLAG_FULLSCREEN_MODE) > 0)) {
-            window.getPosition().setX(window.getPosition().x);
-            window.getPosition().setY(window.getPosition().y);
+        // Leave fullscreen before attempting to set borderless windowed mode
+        // NOTE: Fullscreen already saves the previous position so it does not need to be set again later
+        if (FLAG_IS_SET(window.flags, FLAG_FULLSCREEN_MODE)) {
             ToggleFullscreen();
-            wasOnFullscreen = true;
         }
 
         int monitorCount;
@@ -195,60 +230,62 @@ public class Desktop implements Platform {
         int monitorIndex = GetCurrentMonitor();
         long monitor = (monitorIndex < monitorCount) ? monitors.get(monitorIndex) : -1;
 
-        if ((monitorIndex >= 0) && (monitorIndex < monitorCount)) {
+        if ((monitor >= 0) && (monitor < monitorCount)) {
             GLFWVidMode mode = glfwGetVideoMode(monitor);
+
             if (mode != null) {
-                if (!context.core.IsWindowState(FLAG_BORDERLESS_WINDOWED_MODE)) {
+                if (!FLAG_IS_SET(window.flags, FLAG_BORDERLESS_WINDOWED_MODE)) {
                     // Store screen position and size
-                    // NOTE: If it was on fullscreen, screen position was already stored, so skip
-                    // setting it here
-                    if (!wasOnFullscreen) {
-                        Vector2 windowPositionVector = GetWindowPosition();
-                        window.getPreviousPosition().setX(windowPositionVector.x);
-                        window.getPreviousPosition().setY(windowPositionVector.y);
-                    }
+                    // NOTE: If it was on fullscreen, screen position was already stored, so skip setting it here
+                    window.setPreviousPosition(window.getPosition());
+                    window.setPreviousScreen(window.getScreen());
 
-                    window.getPreviousScreen().setWidth(window.getScreen().width);
-                    window.getPreviousScreen().setHeight(window.getScreen().height);
-
-                    // Set undecorated and topmost modes and flags
+                    // Set undecorated flag
                     glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
-                    window.flags |= FLAG_WINDOW_UNDECORATED;
-                    glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_TRUE);
-                    window.flags |= FLAG_WINDOW_TOPMOST;
+                    FLAG_SET(window.flags, FLAG_WINDOW_UNDECORATED);
 
                     // Get monitor position and size
-                    int monitorPosX = 0;
-                    int monitorPosY = 0;
-                    glfwGetMonitorPos(monitor, new int[]{monitorPosX}, new int[]{monitorPosY});
-                    int monitorWidth = mode.width();
-                    int monitorHeight = mode.height();
+                    IntBuffer x = IntBuffer.allocate(1);
+                    IntBuffer y = IntBuffer.allocate(1);
+                    glfwGetMonitorPos(monitor, x, y);
+                    window.setPosition(new Point(x.get(0), y.get(0)));
+                    window.setScreen(new Size(mode.width(), mode.height()));
 
                     // Set screen position and size
-                    glfwSetWindowPos(window.handle, monitorPosX, monitorPosY);
-                    glfwSetWindowSize(window.handle, monitorWidth, monitorHeight);
+                    glfwSetWindowMonitor(window.handle, monitor, (int) window.getPosition().x, (int) window.getPosition().y, window.getScreen().width, window.getScreen().height, mode.refreshRate());
 
                     // Refocus window
                     glfwFocusWindow(window.handle);
 
-                    window.flags |= FLAG_BORDERLESS_WINDOWED_MODE;
+                    FLAG_SET(window.flags, FLAG_BORDERLESS_WINDOWED_MODE);
                 }
                 else {
-                    // Remove topmost and undecorated modes and flags
-                    glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_FALSE);
-                    window.flags &= ~FLAG_WINDOW_TOPMOST;
-                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
-                    window.flags &= ~FLAG_WINDOW_UNDECORATED;
+                    // Restore previous screen values
+                    window.setPosition(window.getPreviousPosition());
+                    window.setScreen(window.getPreviousScreen());
 
-                    // Return previous screen size and position
-                    // NOTE: The order matters here, it must set size first, then position, otherwise the screen will be position incorrectly
-                    glfwSetWindowSize(window.handle, window.getPreviousScreen().width, window.getPreviousScreen().height);
-                    glfwSetWindowPos(window.handle, (int) window.getPreviousPosition().x, (int) window.getPreviousPosition().y);
+                    // Remove undecorated flag
+                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
+                    FLAG_CLEAR(window.flags, FLAG_WINDOW_UNDECORATED);
+
+                    if (!__APPLE__ && !_GLFW_WAYLAND) {
+                        // Make sure to restore size considering HighDPI scaling
+                        // NOTE: On Wayland, GLFW_SCALE_FRAMEBUFFER handles scaling, skip manual resize
+                        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_HIGHDPI)) {
+                            Vector2 scaleDpi = GetWindowScaleDPI();
+                            window.getScreen().width = (int) (window.getScreen().width * scaleDpi.x);
+                            window.getScreen().height = (int) (window.getScreen().height * scaleDpi.y);
+                        }
+                    }
+
+                    // Return to previous screen size and position
+                    glfwSetWindowMonitor(window.handle, 0L, (int) window.getPosition().x, (int) window.getPosition().y,
+                                         window.getScreen().width, window.getScreen().height, mode.refreshRate());
 
                     // Refocus window
                     glfwFocusWindow(window.handle);
 
-                    window.flags &= ~FLAG_BORDERLESS_WINDOWED_MODE;
+                    FLAG_CLEAR(window.flags, FLAG_BORDERLESS_WINDOWED_MODE);
                 }
             }
             else {
@@ -1050,11 +1087,22 @@ public class Desktop implements Platform {
         glfwSetErrorCallback(callbacks.errorCallback);
 
         // GLFWAllocator allocator = new GLFWAllocator(ByteBuffer.allocateDirect(2048));
-
         // glfwInitAllocator(allocator);
 
         if (__APPLE__) {
             glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
+        }
+
+        if (__LINUX__) {
+            String session = System.getenv("XDG_SESSION_TYPE");
+            if (session != null && session.equalsIgnoreCase("wayland")) {
+                _GLFW_WAYLAND = true;
+                _GLFW_X11 = false;
+            }
+            else {
+                _GLFW_WAYLAND = false;
+                _GLFW_X11 = true;
+            }
         }
 
         // Initialize GLFW internal global state
@@ -1082,24 +1130,24 @@ public class Desktop implements Platform {
         glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
 
         // Window flags requested before initialization to be applied after initialization
-        int requestedWindowFlags = context.core.window.flags;
+        int requestedWindowFlags = window.flags;
 
         // Check window creation flags
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_HIDDEN)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_HIDDEN)) {
             glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // Visible window
         }
         else {
             glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);     // Window initially hidden
         }
 
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_UNDECORATED)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_UNDECORATED)) {
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // Border and buttons on Window
         }
         else {
             glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);   // Decorated window
         }
 
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_RESIZABLE)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_RESIZABLE)) {
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // Resizable window
         }
         else {
@@ -1107,23 +1155,23 @@ public class Desktop implements Platform {
         }
 
         // Disable FLAG_WINDOW_MINIMIZED, not supported on initialization
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_MINIMIZED)) {
-            FLAG_CLEAR(context.core.window.flags, FLAG_WINDOW_MINIMIZED);
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_MINIMIZED)) {
+            FLAG_CLEAR(window.flags, FLAG_WINDOW_MINIMIZED);
         }
 
         // Disable FLAG_WINDOW_MAXIMIZED, not supported on initialization
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_MAXIMIZED)) {
-            FLAG_CLEAR(context.core.window.flags, FLAG_WINDOW_MAXIMIZED);
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_MAXIMIZED)) {
+            FLAG_CLEAR(window.flags, FLAG_WINDOW_MAXIMIZED);
         }
 
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_UNFOCUSED)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_UNFOCUSED)) {
             glfwWindowHint(GLFW_FOCUSED, GLFW_FALSE);
         }
         else {
             glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
         }
 
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_TOPMOST)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_TOPMOST)) {
             glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
         }
         else {
@@ -1131,14 +1179,14 @@ public class Desktop implements Platform {
         }
 
         // NOTE: Some GLFW flags are not supported on HTML5
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_TRANSPARENT)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_TRANSPARENT)) {
             glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);     // Transparent framebuffer
         }
         else {
             glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);  // Opaque framebuffer
         }
 
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_HIGHDPI)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_HIGHDPI)) {
             if (__APPLE__) {
                 glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
             }
@@ -1167,14 +1215,14 @@ public class Desktop implements Platform {
         }
 
         // Mouse passthrough
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_MOUSE_PASSTHROUGH)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_MOUSE_PASSTHROUGH)) {
             glfwWindowHint(GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
         }
         else {
             glfwWindowHint(GLFW_MOUSE_PASSTHROUGH, GLFW_FALSE);
         }
 
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_MSAA_4X_HINT)) {
+        if (FLAG_IS_SET(window.flags, FLAG_MSAA_4X_HINT)) {
             // NOTE: MSAA is only enabled for main framebuffer, not user-created FBOs
             context.tracelog.TRACELOG(LOG_INFO, "DISPLAY: Trying to enable MSAA x4");
             glfwWindowHint(GLFW_SAMPLES, 4);   // Tries to enable multisampling x4 (MSAA), default is 0
@@ -1233,13 +1281,13 @@ public class Desktop implements Platform {
         // REF: https://github.com/raysan5/raylib/issues/1554
         glfwSetJoystickCallback(null);
 
-        if ((context.core.window.getScreen().width == 0) || (context.core.window.getScreen().height == 0)) {
-            FLAG_SET(context.core.window.flags, FLAG_FULLSCREEN_MODE);
+        if ((window.getScreen().width == 0) || (window.getScreen().height == 0)) {
+            FLAG_SET(window.flags, FLAG_FULLSCREEN_MODE);
         }
 
         // Init window in fullscreen mode if requested
         // NOTE: Keeping original screen size for toggle
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_FULLSCREEN_MODE)) {
+        if (FLAG_IS_SET(window.flags, FLAG_FULLSCREEN_MODE)) {
             // NOTE: Fullscreen applications default to the primary monitor
             long monitor = glfwGetPrimaryMonitor();
             if (monitor < 0) {
@@ -1251,34 +1299,34 @@ public class Desktop implements Platform {
             GLFWVidMode mode = glfwGetVideoMode(monitor);
 
             // Default display resolution to that of the current mode
-            context.core.window.getDisplay().width = mode.width();
-            context.core.window.getDisplay().height = mode.height();
+            window.getDisplay().width = mode.width();
+            window.getDisplay().height = mode.height();
 
             // Check if user requested some screen size
-            if ((context.core.window.getScreen().width == 0) || (context.core.window.getScreen().height == 0)) {
+            if ((window.getScreen().width == 0) || (window.getScreen().height == 0)) {
                 // Set some default screen size in case user decides to exit fullscreen mode
-                context.core.window.getPreviousScreen().width = 800;
-                context.core.window.getPreviousScreen().height = 450;
-                context.core.window.getPreviousPosition().x = (float) context.core.window.getDisplay().width / 2 - (float) 800 / 2;
-                context.core.window.getPreviousPosition().y = (float) context.core.window.getDisplay().height / 2 - (float) 450 / 2;
+                window.getPreviousScreen().width = 800;
+                window.getPreviousScreen().height = 450;
+                window.getPreviousPosition().x = (float) window.getDisplay().width / 2 - (float) 800 / 2;
+                window.getPreviousPosition().y = (float) window.getDisplay().height / 2 - (float) 450 / 2;
 
                 // Set screen width/height to the display width/height
-                if (context.core.window.getScreen().width == 0) {
-                    context.core.window.getScreen().width = context.core.window.getDisplay().width;
+                if (window.getScreen().width == 0) {
+                    window.getScreen().width = window.getDisplay().width;
                 }
-                if (context.core.window.getScreen().height == 0) {
-                    context.core.window.getScreen().height = context.core.window.getDisplay().height;
+                if (window.getScreen().height == 0) {
+                    window.getScreen().height = window.getDisplay().height;
                 }
             }
             else {
-                context.core.window.setPreviousScreen(context.core.window.getScreen());
-                context.core.window.setScreen(context.core.window.getDisplay());
+                window.setPreviousScreen(window.getScreen());
+                window.setScreen(window.getDisplay());
             }
 
             window.handle = glfwCreateWindow(
-                    context.core.window.getScreen().width,
-                    context.core.window.getScreen().height,
-                    (context.core.window.getTitle() != null) ? context.core.window.getTitle() : " ",
+                    window.getScreen().width,
+                    window.getScreen().height,
+                    (window.getTitle() != null) ? window.getTitle() : " ",
                     monitor,
                     0L
             );
@@ -1291,17 +1339,17 @@ public class Desktop implements Platform {
         }
         else {
             // Default to at least one pixel in size, as creation with a zero dimension is not allowed
-            if (context.core.window.getScreen().width == 0) {
-                context.core.window.getScreen().width = 1;
+            if (window.getScreen().width == 0) {
+                window.getScreen().width = 1;
             }
-            if (context.core.window.getScreen().height == 0) {
-                context.core.window.getScreen().height = 1;
+            if (window.getScreen().height == 0) {
+                window.getScreen().height = 1;
             }
 
             window.handle = glfwCreateWindow(
-                    context.core.window.getScreen().width,
-                    context.core.window.getScreen().height,
-                    (context.core.window.getTitle() != null) ? context.core.window.getTitle() : " ",
+                    window.getScreen().width,
+                    window.getScreen().height,
+                    (window.getTitle() != null) ? window.getTitle() : " ",
                     0,
                     0
             );
@@ -1324,18 +1372,18 @@ public class Desktop implements Platform {
                 GLFWVidMode mode = glfwGetVideoMode(monitor);
 
                 // Default display resolution to that of the current mode
-                context.core.window.getDisplay().width = mode.width();
-                context.core.window.getDisplay().height = mode.height();
+                window.getDisplay().width = mode.width();
+                window.getDisplay().height = mode.height();
 
                 // Set screen width/height to the display width/height if they are 0
-                if (context.core.window.getScreen().width == 0) {
-                    context.core.window.getScreen().width = context.core.window.getDisplay().width;
+                if (window.getScreen().width == 0) {
+                    window.getScreen().width = window.getDisplay().width;
                 }
-                if (context.core.window.getScreen().height == 0) {
-                    context.core.window.getScreen().height = context.core.window.getDisplay().height;
+                if (window.getScreen().height == 0) {
+                    window.getScreen().height = window.getDisplay().height;
                 }
 
-                glfwSetWindowSize(window.handle, context.core.window.getScreen().width, context.core.window.getScreen().height);
+                glfwSetWindowSize(window.handle, window.getScreen().width, window.getScreen().height);
             }
             else {
                 // The monitor for the window-manager-created window can not be determined, so it can not be centered
@@ -1350,13 +1398,13 @@ public class Desktop implements Platform {
                 IntBuffer windowHeight = IntBuffer.allocate(1);
                 glfwGetWindowSize(window.handle, windowWidth, windowHeight);
                 if ((windowWidth.get(0) > 0) && (windowHeight.get(0) > 0)) {
-                    context.core.window.setScreen(new Size(windowWidth.get(0), windowHeight.get(0)));
+                    window.setScreen(new Size(windowWidth.get(0), windowHeight.get(0)));
                 }
             }
 
             // NOTE: Not considering scale factor now, considered below
-            context.core.window.getRender().width = context.core.window.getScreen().width;
-            context.core.window.getRender().height = context.core.window.getScreen().height;
+            window.getRender().width = window.getScreen().width;
+            window.getRender().height = window.getScreen().height;
         }
 
 
@@ -1364,10 +1412,10 @@ public class Desktop implements Platform {
         GL.createCapabilities();
         result = glfwGetError(null);
         if ((result != GLFW_NO_WINDOW_CONTEXT) && (result != GLFW_PLATFORM_ERROR)) {
-            context.core.window.setReady(true); // Checking context activation
+            window.setReady(true); // Checking context activation
         }
 
-        if (context.core.window.isReady()) {
+        if (window.isReady()) {
             // Setup additional windows configs and register required window size info
 
             glfwSwapInterval(0); // No V-Sync by default
@@ -1375,21 +1423,21 @@ public class Desktop implements Platform {
             // Try to enable GPU V-Sync, so frames are limited to screen refresh rate (60Hz -> 60 FPS)
             // NOTE: V-Sync can be enabled by graphic driver configuration, it doesn't need
             // to be activated on web platforms since VSync is enforced there
-            if (FLAG_IS_SET(context.core.window.flags, FLAG_VSYNC_HINT)) {
+            if (FLAG_IS_SET(window.flags, FLAG_VSYNC_HINT)) {
                 // WARNING: It seems to hit a critical render path in Intel HD Graphics
                 glfwSwapInterval(1);
                 context.tracelog.TRACELOG(LOG_INFO, "DISPLAY: Trying to enable VSYNC");
             }
 
-            if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_HIGHDPI)) {
+            if (FLAG_IS_SET(window.flags, FLAG_WINDOW_HIGHDPI)) {
                 // Set screen size to logical pixel size, considering content scaling
                 Vector2 scaleDpi = GetWindowScaleDPI();
-                context.core.window.getRender().width = (int) (context.core.window.getScreen().width * scaleDpi.x);
-                context.core.window.getRender().height = (int) (context.core.window.getScreen().height * scaleDpi.y);
+                window.getRender().width = (int) (window.getScreen().width * scaleDpi.x);
+                window.getRender().height = (int) (window.getScreen().height * scaleDpi.y);
                 //TRACELOG(LOG_INFO, "DPI SCALING: %.2f, %.2f", scaleDpi.x, scaleDpi.y);
 
                 // Screen scaling matrix is required in case desired screen area is different from display area
-                context.core.window.setScreenScale(MatrixScale(scaleDpi.x, scaleDpi.y, 1.0f));
+                window.setScreenScale(MatrixScale(scaleDpi.x, scaleDpi.y, 1.0f));
 
                 // NOTE: On APPLE platforms system manage window and input scaling
                 // Framebuffer scaling is activated with: glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_TRUE);
@@ -1402,30 +1450,30 @@ public class Desktop implements Platform {
                         IntBuffer fbHeight = IntBuffer.allocate(1);
                         glfwGetFramebufferSize(window.handle, fbWidth, fbHeight);
 
-                        context.core.window.getRender().width = fbWidth.get(0);
-                        context.core.window.getRender().height = fbHeight.get(0);
+                        window.getRender().width = fbWidth.get(0);
+                        window.getRender().height = fbHeight.get(0);
                     }
                     else {
                         // Mouse input scaling for the new screen size
                         context.core.SetMouseScale(1.0f / scaleDpi.x, 1.0f / scaleDpi.y);
 
                         // Force window size (and framebuffer) refresh
-                        glfwSetWindowSize(window.handle, context.core.window.getRender().width, context.core.window.getRender().height);
+                        glfwSetWindowSize(window.handle, window.getRender().width, window.getRender().height);
                     }
                 }
             }
             else {
-                context.core.window.setRender(context.core.window.getScreen().clone());
+                window.setRender(window.getScreen().clone());
             }
 
             // Current active framebuffer size is main framebuffer size
-            context.core.window.setCurrentFbo(context.core.window.getRender().clone());
+            window.setCurrentFbo(window.getRender().clone());
 
-            context.tracelog.TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully %s", FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_HIGHDPI) ? "(HighDPI)" : "");
-            context.tracelog.TRACELOG(LOG_INFO, "    > Display size: %d x %d", context.core.window.getDisplay().width, context.core.window.getDisplay().height);
-            context.tracelog.TRACELOG(LOG_INFO, "    > Screen size:  %d x %d", context.core.window.getScreen().width, context.core.window.getScreen().height);
-            context.tracelog.TRACELOG(LOG_INFO, "    > Render size:  %d x %d", context.core.window.getRender().width, context.core.window.getRender().height);
-            context.tracelog.TRACELOG(LOG_INFO, "    > Viewport offsets: %02f, %02f", context.core.window.getRenderOffset().x, context.core.window.getRenderOffset().y);
+            context.tracelog.TRACELOG(LOG_INFO, "DISPLAY: Device initialized successfully %s", FLAG_IS_SET(window.flags, FLAG_WINDOW_HIGHDPI) ? "(HighDPI)" : "");
+            context.tracelog.TRACELOG(LOG_INFO, "    > Display size: %d x %d", window.getDisplay().width, window.getDisplay().height);
+            context.tracelog.TRACELOG(LOG_INFO, "    > Screen size:  %d x %d", window.getScreen().width, window.getScreen().height);
+            context.tracelog.TRACELOG(LOG_INFO, "    > Render size:  %d x %d", window.getRender().width, window.getRender().height);
+            context.tracelog.TRACELOG(LOG_INFO, "    > Viewport offsets: %02f, %02f", window.getRenderOffset().x, window.getRenderOffset().y);
             //TRACELOG(LOG_INFO, "    > Content Scaling: %.2f, %.2f", scaleDpi.x, scaleDpi.y);
 
             // Try to center window on screen but avoiding window-bar outside of screen
@@ -1444,16 +1492,16 @@ public class Desktop implements Platform {
 
             // Center window into current monitor
             if (__APPLE__) {
-                context.core.window.getPosition().x = monitorX.get(0) + ((float) (monitorWidth.get(0) - context.core.window.getScreen().width) / 2);
-                context.core.window.getPosition().y = monitorY.get(0) + ((float) (monitorHeight.get(0) - context.core.window.getScreen().height) / 2);
+                window.getPosition().x = monitorX.get(0) + ((float) (monitorWidth.get(0) - window.getScreen().width) / 2);
+                window.getPosition().y = monitorY.get(0) + ((float) (monitorHeight.get(0) - window.getScreen().height) / 2);
             }
             else {
-                context.core.window.getPosition().x = monitorX.get(0) + (float) (monitorWidth.get(0) - context.core.window.getRender().width) / 2;
-                context.core.window.getPosition().y = monitorY.get(0) + (float) (monitorHeight.get(0) - context.core.window.getRender().height) / 2;
+                window.getPosition().x = monitorX.get(0) + (float) (monitorWidth.get(0) - window.getRender().width) / 2;
+                window.getPosition().y = monitorY.get(0) + (float) (monitorHeight.get(0) - window.getRender().height) / 2;
             }
-            SetWindowPosition((int) context.core.window.getPosition().x, (int) context.core.window.getPosition().y);
+            SetWindowPosition((int) window.getPosition().x, (int) window.getPosition().y);
 
-            if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_MINIMIZED)) {
+            if (FLAG_IS_SET(window.flags, FLAG_WINDOW_MINIMIZED)) {
                 MinimizeWindow();
             }
         }
@@ -1480,7 +1528,7 @@ public class Desktop implements Platform {
         glfwSetWindowIconifyCallback(window.handle, callbacks.windowIconifyCallback);
         glfwSetWindowFocusCallback(window.handle, callbacks.windowFocusCallback);
         glfwSetDropCallback(window.handle, callbacks.windowDropCallback);
-        if (FLAG_IS_SET(context.core.window.flags, FLAG_WINDOW_HIGHDPI)) {
+        if (FLAG_IS_SET(window.flags, FLAG_WINDOW_HIGHDPI)) {
             glfwSetWindowContentScaleCallback(window.handle, callbacks.windowContentScaleCallback);
         }
 

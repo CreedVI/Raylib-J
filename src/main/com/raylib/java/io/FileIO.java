@@ -4,9 +4,9 @@ import com.raylib.java.Raylib;
 import com.raylib.java.structs.FilePathList;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static com.raylib.java.Config.SUPPORT_STANDARD_FILEIO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
@@ -33,8 +33,11 @@ public class FileIO {
 
     private final Raylib context;
 
+    public String basePath;
+
     public FileIO(Raylib context) {
         this.context = context;
+        basePath = GetWorkingDirectory();
     }
 
     /**
@@ -50,12 +53,12 @@ public class FileIO {
 
         if (fileName != null) {
             if (SUPPORT_STANDARD_FILEIO) {
-                Path filePath = Path.of(fileName);
+                Path filePath = Path.of(basePath + fileName);
                 try {
                     fileData = Files.readAllBytes(filePath);
                 }
                 catch (IOException e) {
-                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to load file: " + fileName);
+                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to load file: " + filePath);
                 }
             }
             else {
@@ -83,7 +86,7 @@ public class FileIO {
 
         if (fileName != null) {
             if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Path.of(fileName);
+                Path path = Path.of(basePath + fileName);
 
                 if (!path.toFile().exists()) {
                     try {
@@ -126,11 +129,11 @@ public class FileIO {
      * @throws IOException If file fails to load form disk
      */
     public String LoadFileText(String fileName) throws IOException {
-        String text = new String();
+        String text = "";
 
         if (fileName != null) {
             if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Path.of(fileName);
+                Path path = Path.of(basePath + fileName);
 
                 try {
                     text = Files.readString(path);
@@ -165,7 +168,7 @@ public class FileIO {
 
         if (fileName != null) {
             if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Path.of(fileName);
+                Path path = Path.of(basePath + fileName);
 
                 if (!path.toFile().exists()) {
                     try {
@@ -358,18 +361,26 @@ public class FileIO {
     /**
      * Get current working directory
      *
-     * @return Current working directory
+     * @return Location from where the application was initialised
      */
     public String GetWorkingDirectory() {
-        return Paths.get("").toAbsolutePath() + "/";
+        return System.getProperty("user.dir") + "/";
     }
 
     /**
+     * Get the location of the running .jar
      *
-     * @return
+     * @return Location of the .jar, or {@code null} if an exception occurs.
      */
     public String GetApplicationDirectory() {
-        return System.getProperty("user.dir");
+        try {
+            File jarFile = new File(Raylib.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            return jarFile.getParent();
+        }
+        catch (URISyntaxException e) {
+            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to locate executing jar.");
+            return null;
+        }
     }
 
     /**

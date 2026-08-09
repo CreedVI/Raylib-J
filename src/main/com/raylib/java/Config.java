@@ -27,7 +27,7 @@ public class Config{
     public static boolean __LINUX__ = (OS.contains("nix") || OS.contains("nux") || OS.contains("aix"));
     public static boolean PLATFORM_DESKTOP = (__WINDOWS__ || __APPLE__ || __LINUX__);
     public static boolean _GLFW_WAYLAND = false;
-    public static boolean _GLFW_X11 = true;
+    public static boolean _GLFW_X11 = false;
 
     /**
      * rCamera module is included (core.camera.java) and multiple predefined cameras are available: free, 1st/3rd
