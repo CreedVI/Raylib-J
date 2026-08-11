@@ -45,7 +45,7 @@ public class WorldScreen {
             camera.Update(CAMERA_THIRD_PERSON);
 
             // Calculate cube screen space position (with a little offset to be in top)
-            cubeScreenPosition = rlj.core.GetWorldToScreen(new Vector3(cubePosition.x, cubePosition.y + 2.5f, cubePosition.z), camera);
+            // cubeScreenPosition = rlj.core.GetWorldToScreen(new Vector3(cubePosition.x, cubePosition.y + 2.5f, cubePosition.z), camera);
             //----------------------------------------------------------------------------------
 
             // Draw
@@ -63,7 +63,7 @@ public class WorldScreen {
 
             rlj.core.EndMode3D();
 
-            rlj.text.DrawText("Enemy: 100 / 100", (int)cubeScreenPosition.x - rlj.text.MeasureText("Enemy: 100/100", 20)/2, (int)cubeScreenPosition.y, 20, BLACK);
+            // rlj.text.DrawText("Enemy: 100 / 100", (int)cubeScreenPosition.x - rlj.text.MeasureText("Enemy: 100/100", 20)/2, (int)cubeScreenPosition.y, 20, BLACK);
 
             rlj.text.DrawText(rlj.text.TextFormat("Cube position in screen space coordinates: [%d, %d]", (int)cubeScreenPosition.x, (int)cubeScreenPosition.y), 10, 10, 20, LIME);
             rlj.text.DrawText("Text 2d should be always on top of the cube", 10, 40, 20, GRAY);

@@ -13,7 +13,6 @@ public class State {                    // Renderer state
 
     public int currentMatrixMode;              // Current matrix mode
 
-    public Matrix currentMatrix;
     public Matrix modelview;                   // Default modelview matrix
     public Matrix projection;                  // Default projection matrix
     public Matrix transform;                   // Transform matrix to be used with rlTranslate, rlRotate, rlScale
@@ -50,327 +49,317 @@ public class State {                    // Renderer state
     public int framebufferWidth;               // Current framebuffer width
     public int framebufferHeight;              // Current framebuffer height
 
-    public State(){
+    public State() {
         stack = new Matrix[MAX_MATRIX_STACK_SIZE];
         activeTextureId = new int[MAX_BATCH_ACTIVE_TEXTURES];
         projectionStereo = new Matrix[2];
         viewOffsetStereo = new Matrix[2];
-        currentMatrix = new Matrix();
         modelview = new Matrix();
         projection = new Matrix();
+        transform = new Matrix();
+        currentMatrixMode = RL_MODELVIEW;
     }
 
-    public Matrix getCurrentMatrix(){
-        return currentMatrix;
+    public Matrix getCurrentMatrix() {
+        switch (currentMatrixMode) {
+            case RL_PROJECTION -> {
+                return this.projection;
+            }
+            case RL_TRANSFORM -> {
+                return this.transform;
+            }
+            case RL_MODELVIEW -> {
+                return this.modelview;
+            }
+            default -> {
+                return null;
+            }
+        }
     }
 
-    public void setCurrentMatrix(Matrix currentMatrix){
-        switch(currentMatrixMode) {
+    public void setCurrentMatrix(Matrix currentMatrix) {
+        switch (currentMatrixMode) {
             case RL_PROJECTION -> {
                 this.projection = currentMatrix;
-                this.currentMatrix = this.projection;
             }
             case RL_TRANSFORM -> {
                 this.transform = currentMatrix;
-                this.currentMatrix = this.transform;
             }
             case RL_MODELVIEW -> {
                 this.modelview = currentMatrix;
-                this.currentMatrix = this.modelview;
             }
         }
-
     }
 
-    public int getVertexCounter(){
+    public int getVertexCounter() {
         return vertexCounter;
     }
 
-    public void setVertexCounter(int vertexCounter){
+    public void setVertexCounter(int vertexCounter) {
         this.vertexCounter = vertexCounter;
     }
 
-    public float getTexcoordx(){
+    public float getTexcoordx() {
         return texcoordx;
     }
 
-    public void setTexcoordx(float texcoordx){
+    public void setTexcoordx(float texcoordx) {
         this.texcoordx = texcoordx;
     }
 
-    public float getTexcoordy(){
+    public float getTexcoordy() {
         return texcoordy;
     }
 
-    public void setTexcoordy(float texcoordy){
+    public void setTexcoordy(float texcoordy) {
         this.texcoordy = texcoordy;
     }
 
-    public float getNormalx(){
+    public float getNormalx() {
         return normalx;
     }
 
-    public void setNormalx(float normalx){
+    public void setNormalx(float normalx) {
         this.normalx = normalx;
     }
 
-    public float getNormaly(){
+    public float getNormaly() {
         return normaly;
     }
 
-    public void setNormaly(float normaly){
+    public void setNormaly(float normaly) {
         this.normaly = normaly;
     }
 
-    public float getNormalz(){
+    public float getNormalz() {
         return normalz;
     }
 
-    public void setNormalz(float normalz){
+    public void setNormalz(float normalz) {
         this.normalz = normalz;
     }
 
-    public int getColorr(){
+    public int getColorr() {
         return colorr;
     }
 
-    public void setColorr(byte colorr){
+    public void setColorr(byte colorr) {
         this.colorr = colorr;
     }
 
-    public int getColorg(){
+    public int getColorg() {
         return colorg;
     }
 
-    public void setColorg(byte colorg){
+    public void setColorg(byte colorg) {
         this.colorg = colorg;
     }
 
-    public int getColorb(){
+    public int getColorb() {
         return colorb;
     }
 
-    public void setColorb(byte colorb){
+    public void setColorb(byte colorb) {
         this.colorb = colorb;
     }
 
-    public int getColora(){
+    public int getColora() {
         return colora;
     }
 
-    public void setColora(byte colora){
+    public void setColora(byte colora) {
         this.colora = colora;
     }
 
-    public int getCurrentMatrixMode(){
+    public int getCurrentMatrixMode() {
         return currentMatrixMode;
     }
 
     public void setCurrentMatrixMode(int currentMatrixMode){
-        if (this.currentMatrixMode == RL_MODELVIEW) {
-            modelview = currentMatrix;
-        }
-        else if (this.currentMatrixMode == RL_PROJECTION) {
-            projection = currentMatrix;
-        }
-        else if (this.currentMatrixMode == RL_TRANSFORM) {
-            transform = currentMatrix;
-        }
-
         this.currentMatrixMode = currentMatrixMode;
-
-        if (currentMatrixMode == RL_MODELVIEW) {
-            this.currentMatrix = modelview;
-        }
-        else if (currentMatrixMode == RL_PROJECTION) {
-            this.currentMatrix = projection;
-        }
-        else if (currentMatrixMode == RL_TRANSFORM) {
-            this.currentMatrix = transform;
-        }
     }
 
-    public Matrix getModelview(){
+    public Matrix getModelview() {
         return modelview;
     }
 
-    public void setModelview(Matrix modelview){
+    public void setModelview(Matrix modelview) {
         this.modelview = modelview;
     }
 
-    public Matrix getProjection(){
+    public Matrix getProjection() {
         return projection;
     }
 
-    public void setProjection(Matrix projection){
+    public void setProjection(Matrix projection) {
         this.projection = projection;
     }
 
-    public Matrix getTransform(){
+    public Matrix getTransform() {
         return transform;
     }
 
-    public void setTransform(Matrix transform){
+    public void setTransform(Matrix transform) {
         this.transform = transform;
     }
 
-    public boolean isTransformRequired(){
+    public boolean isTransformRequired() {
         return transformRequired;
     }
 
-    public void setTransformRequired(boolean transformRequired){
+    public void setTransformRequired(boolean transformRequired) {
         this.transformRequired = transformRequired;
     }
 
-    public Matrix[] getStack(){
+    public Matrix[] getStack() {
         return stack;
     }
 
-    public void setStack(Matrix[] stack){
+    public void setStack(Matrix[] stack) {
         this.stack = stack;
     }
 
-    public int getStackCounter(){
+    public int getStackCounter() {
         return stackCounter;
     }
 
-    public void setStackCounter(int stackCounter){
+    public void setStackCounter(int stackCounter) {
         this.stackCounter = stackCounter;
     }
 
-    public int getDefaultTextureId(){
+    public int getDefaultTextureId() {
         return defaultTextureId;
     }
 
-    public void setDefaultTextureId(int defaultTextureId){
+    public void setDefaultTextureId(int defaultTextureId) {
         this.defaultTextureId = defaultTextureId;
     }
 
-    public int[] getActiveTextureId(){
+    public int[] getActiveTextureId() {
         return activeTextureId;
     }
 
-    public void setActiveTextureId(int[] activeTextureId){
+    public void setActiveTextureId(int[] activeTextureId) {
         this.activeTextureId = activeTextureId;
     }
 
-    public int getDefaultVShaderId(){
+    public int getDefaultVShaderId() {
         return defaultVShaderId;
     }
 
-    public void setDefaultVShaderId(int defaultVShaderId){
+    public void setDefaultVShaderId(int defaultVShaderId) {
         this.defaultVShaderId = defaultVShaderId;
     }
 
-    public int getDefaultFShaderId(){
+    public int getDefaultFShaderId() {
         return defaultFShaderId;
     }
 
-    public void setDefaultFShaderId(int defaultFShaderId){
+    public void setDefaultFShaderId(int defaultFShaderId) {
         this.defaultFShaderId = defaultFShaderId;
     }
 
-    public int getDefaultShaderId(){
+    public int getDefaultShaderId() {
         return defaultShaderId;
     }
 
-    public void setDefaultShaderId(int defaultShaderId){
+    public void setDefaultShaderId(int defaultShaderId) {
         this.defaultShaderId = defaultShaderId;
     }
 
-    public int[] getDefaultShaderLocs(){
+    public int[] getDefaultShaderLocs() {
         return defaultShaderLocs;
     }
 
-    public void setDefaultShaderLocs(int[] defaultShaderLocs){
+    public void setDefaultShaderLocs(int[] defaultShaderLocs) {
         this.defaultShaderLocs = defaultShaderLocs;
     }
 
-    public int getCurrentShaderId(){
+    public int getCurrentShaderId() {
         return currentShaderId;
     }
 
-    public void setCurrentShaderId(int currentShaderId){
+    public void setCurrentShaderId(int currentShaderId) {
         this.currentShaderId = currentShaderId;
     }
 
-    public int[] getCurrentShaderLocs(){
+    public int[] getCurrentShaderLocs() {
         return currentShaderLocs;
     }
 
-    public void setCurrentShaderLocs(int[] currentShaderLocs){
+    public void setCurrentShaderLocs(int[] currentShaderLocs) {
         this.currentShaderLocs = currentShaderLocs;
     }
 
-    public boolean isStereoRender(){
+    public boolean isStereoRender() {
         return stereoRender;
     }
 
-    public void setStereoRender(boolean stereoRender){
+    public void setStereoRender(boolean stereoRender) {
         this.stereoRender = stereoRender;
     }
 
-    public Matrix[] getProjectionStereo(){
+    public Matrix[] getProjectionStereo() {
         return projectionStereo;
     }
 
-    public void setProjectionStereo(Matrix[] projectionStereo){
+    public void setProjectionStereo(Matrix[] projectionStereo) {
         this.projectionStereo = projectionStereo;
     }
 
-    public Matrix[] getViewOffsetStereo(){
+    public Matrix[] getViewOffsetStereo() {
         return viewOffsetStereo;
     }
 
-    public void setViewOffsetStereo(Matrix[] viewOffsetStereo){
+    public void setViewOffsetStereo(Matrix[] viewOffsetStereo) {
         this.viewOffsetStereo = viewOffsetStereo;
     }
 
-    public int getCurrentBlendMode(){
+    public int getCurrentBlendMode() {
         return currentBlendMode;
     }
 
-    public void setCurrentBlendMode(int currentBlendMode){
+    public void setCurrentBlendMode(int currentBlendMode) {
         this.currentBlendMode = currentBlendMode;
     }
 
-    public int getGlBlendSrcFactor(){
+    public int getGlBlendSrcFactor() {
         return glBlendSrcFactor;
     }
 
-    public void setGlBlendSrcFactor(int glBlendSrcFactor){
+    public void setGlBlendSrcFactor(int glBlendSrcFactor) {
         this.glBlendSrcFactor = glBlendSrcFactor;
     }
 
-    public int getGlBlendDstFactor(){
+    public int getGlBlendDstFactor() {
         return glBlendDstFactor;
     }
 
-    public void setGlBlendDstFactor(int glBlendDstFactor){
+    public void setGlBlendDstFactor(int glBlendDstFactor) {
         this.glBlendDstFactor = glBlendDstFactor;
     }
 
-    public int getGlBlendEquation(){
+    public int getGlBlendEquation() {
         return glBlendEquation;
     }
 
-    public void setGlBlendEquation(int glBlendEquation){
+    public void setGlBlendEquation(int glBlendEquation) {
         this.glBlendEquation = glBlendEquation;
     }
 
-    public int getFramebufferWidth(){
+    public int getFramebufferWidth() {
         return framebufferWidth;
     }
 
-    public void setFramebufferWidth(int framebufferWidth){
+    public void setFramebufferWidth(int framebufferWidth) {
         this.framebufferWidth = framebufferWidth;
     }
 
-    public int getFramebufferHeight(){
+    public int getFramebufferHeight() {
         return framebufferHeight;
     }
 
-    public void setFramebufferHeight(int framebufferHeight){
+    public void setFramebufferHeight(int framebufferHeight) {
         this.framebufferHeight = framebufferHeight;
     }
 

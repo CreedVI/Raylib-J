@@ -978,7 +978,6 @@ public class rCore {
             double right = top * aspect;
 
             context.rlgl.rlFrustum(-right, right, -top, top, context.rlgl.rlGetCullDistanceNear(), context.rlgl.rlGetCullDistanceFar());
-
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC) {
             // Setup orthographic projection

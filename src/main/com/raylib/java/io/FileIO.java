@@ -40,6 +40,14 @@ public class FileIO {
         basePath = GetWorkingDirectory();
     }
 
+    public String GetBasePath() {
+        return basePath;
+    }
+
+    public void SetBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
     /**
      * Load data from file into a buffer. <br/>
      * Files are located using path relative to the application's current directory.
@@ -375,7 +383,7 @@ public class FileIO {
     public String GetApplicationDirectory() {
         try {
             File jarFile = new File(Raylib.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            return jarFile.getParent();
+            return jarFile.getParent() + "/";
         }
         catch (URISyntaxException e) {
             context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to locate executing jar.");

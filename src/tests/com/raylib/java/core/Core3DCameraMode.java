@@ -4,6 +4,7 @@ import com.raylib.java.Raylib;
 import com.raylib.java.core.rcamera.Camera3D;
 import com.raylib.java.structs.Vector3;
 
+import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_ORTHOGRAPHIC;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
 import static com.raylib.java.structs.Color.*;
 

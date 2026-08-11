@@ -182,15 +182,7 @@ public class GL_33 {
     }
 
     void rlMatrixMode(int mode) {
-        if (mode == RL_PROJECTION) {
-            rlglData.getState().currentMatrix = rlglData.getState().getProjection();
-        }
-        else if (mode == RL_MODELVIEW) {
-            rlglData.getState().currentMatrix = rlglData.getState().getModelview();
-        }
-        //else if (mode == RL_TEXTURE) // Not supported
-
-        rlglData.getState().currentMatrixMode = mode;
+        rlglData.getState().setCurrentMatrixMode(mode);
     }
 
     // Push the current matrix into rlglData.getState().stack
@@ -200,19 +192,20 @@ public class GL_33 {
             return;
         }
 
+        rlglData.getState().stack[rlglData.getState().stackCounter] = rlglData.getState().getCurrentMatrix().clone();
+        rlglData.getState().stackCounter++;
+
         if (rlglData.getState().currentMatrixMode == RL_MODELVIEW) {
             rlglData.getState().transformRequired = true;
             rlglData.getState().setCurrentMatrix(rlglData.getState().getTransform());
         }
-
-        rlglData.getState().stack[rlglData.getState().stackCounter] = rlglData.getState().getCurrentMatrix().clone();
-        rlglData.getState().stackCounter++;
     }
 
     // Pop latest inserted matrix from rlglData.getState().stack
     void rlPopMatrix() {
         if (rlglData.getState().stackCounter > 0) {
-            rlglData.getState().setCurrentMatrix(rlglData.getState().stack[rlglData.getState().stackCounter - 1]);
+            Matrix mat = rlglData.getState().getStack()[rlglData.getState().getStackCounter() - 1];
+            rlglData.getState().setCurrentMatrix(mat);
             rlglData.getState().stackCounter--;
         }
 
@@ -301,10 +294,12 @@ public class GL_33 {
     void rlMultMatrixf(float[] matf) {
         // Matrix creation from array
         // Conversion from column-major to row-major memory order
-        Matrix mat = new Matrix(matf[0], matf[4], matf[8], matf[12],
+        Matrix mat = new Matrix(
+                matf[0], matf[4], matf[8], matf[12],
                 matf[1], matf[5], matf[9], matf[13],
                 matf[2], matf[6], matf[10], matf[14],
-                matf[3], matf[7], matf[11], matf[15]);
+                matf[3], matf[7], matf[11], matf[15]
+        );
 
         rlglData.getState().setCurrentMatrix(MatrixMultiply(mat, rlglData.getState().getCurrentMatrix()));
     }

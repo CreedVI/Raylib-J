@@ -2226,8 +2226,8 @@ public class RLGL {
 
             // Draw batch vertex buffers (considering VR stereo if required)
             //------------------------------------------------------------------------------------------------------------
-            Matrix matProjection = rlglData.getState().getProjection();
-            Matrix matModelView = rlglData.getState().getModelview();
+            Matrix matProjection = rlglData.getState().getProjection().clone();
+            Matrix matModelView = rlglData.getState().getModelview().clone();
 
             int eyeCount = rlglData.getState().isStereoRender() ? 2 : 1;
 
