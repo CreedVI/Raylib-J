@@ -1,5 +1,5 @@
 # reference material
-#mtllib cube.mtl
+mtllib cube.mtl
 
 # object box
 
@@ -51,7 +51,7 @@ vt 0    1    0
 g box
 
 # reference material
-#usemtl mat01
+usemtl CubeMaterial
 
 # faces
 f 1/9/1 3/10/1 4/11/1 

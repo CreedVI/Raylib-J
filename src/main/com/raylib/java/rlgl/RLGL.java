@@ -2510,20 +2510,25 @@ public class RLGL {
             context.tracelog.TRACELOG(LOG_DEBUG, "TEXTURE: Load mipmap level " + i + " (" + mipWidth + " x " + mipHeight + "), size: " + mipSize + ", offset: " + mipOffset);
 
             if (glInternalFormat != 0) {
-                byte[] buffer = new byte[mipSize];
-                System.arraycopy(data, mipOffset, buffer, 0, mipSize);
-                ByteBuffer dataBuffer = ByteBuffer.allocateDirect(mipSize);
-                dataBuffer.put(buffer);
-                dataBuffer.flip();
+                if (data != null) {
+                    byte[] buffer = new byte[mipSize];
+                    System.arraycopy(data, mipOffset, buffer, 0, mipSize);
+                    ByteBuffer dataBuffer = ByteBuffer.allocateDirect(mipSize);
+                    dataBuffer.put(buffer);
+                    dataBuffer.flip();
 
-                if (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
-                    // Todo: HDR breaks here
-                    glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, dataBuffer);
+                    if (format.GetFormat() < PIXELFORMAT_COMPRESSED_DXT1_RGB.GetFormat()) {
+                        // Todo: HDR breaks here
+                        glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, dataBuffer);
+                    }
+                    else {
+                        if (!GRAPHICS_API_OPENGL_11) {
+                            glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, dataBuffer);
+                        }
+                    }
                 }
                 else {
-                    if (!GRAPHICS_API_OPENGL_11) {
-                        glCompressedTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, dataBuffer);
-                    }
+                    glTexImage2D(GL_TEXTURE_2D, i, glInternalFormat, mipWidth, mipHeight, 0, glFormat, glType, (ByteBuffer) null);
                 }
 
                 int[] swizzleMask = new int[4];

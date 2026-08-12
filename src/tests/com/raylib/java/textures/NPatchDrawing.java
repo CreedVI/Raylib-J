@@ -3,7 +3,7 @@ package com.raylib.java.textures;
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.*;
 
-public class NPatchDrawing{
+public class NPatchDrawing {
 
     /*******************************************************************************************
      *
@@ -21,7 +21,7 @@ public class NPatchDrawing{
      *
      ********************************************************************************************/
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         // Initialization
         //--------------------------------------------------------------------------------------
@@ -33,28 +33,24 @@ public class NPatchDrawing{
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
         Texture2D nPatchTexture = rlj.textures.LoadTexture("src/tests/resources/textures/ninepatch_button.png");
 
-        Vector2 mousePosition = new Vector2();
+        Vector2 mousePosition;
         Vector2 origin = new Vector2();
 
         // Position and size of the n-patches
         Rectangle dstRec1 = new Rectangle(480.0f, 160.0f, 32.0f, 32.0f);
         Rectangle dstRec2 = new Rectangle(160.0f, 160.0f, 32.0f, 32.0f);
-        Rectangle dstRecH = new Rectangle( 160.0f, 93.0f, 32.0f, 32.0f);
-        Rectangle dstRecV = new Rectangle( 92.0f, 160.0f, 32.0f, 32.0f);
+        Rectangle dstRecH = new Rectangle(160.0f, 93.0f, 32.0f, 32.0f);
+        Rectangle dstRecV = new Rectangle(92.0f, 160.0f, 32.0f, 32.0f);
 
         // A 9-patch (NPATCH_NINE_PATCH) changes its sizes in both axis
-        NPatchInfo ninePatchInfo1 = new NPatchInfo(new Rectangle(0.0f, 0.0f, 64.0f, 64.0f ), 12, 40, 12, 12,
-                                                   NPatchInfo.NPatchType.NPATCH_NINE_PATCH);
-        NPatchInfo ninePatchInfo2 = new NPatchInfo(new Rectangle(0.0f, 128.0f, 64.0f, 64.0f ), 16, 16, 16, 16,
-                                                   NPatchInfo.NPatchType.NPATCH_NINE_PATCH);
+        NPatchInfo ninePatchInfo1 = new NPatchInfo(new Rectangle(0.0f, 0.0f, 64.0f, 64.0f), 12, 40, 12, 12, NPatchInfo.NPatchType.NPATCH_NINE_PATCH);
+        NPatchInfo ninePatchInfo2 = new NPatchInfo(new Rectangle(0.0f, 128.0f, 64.0f, 64.0f), 16, 16, 16, 16, NPatchInfo.NPatchType.NPATCH_NINE_PATCH);
 
         // A horizontal 3-patch (NPATCH_THREE_PATCH_HORIZONTAL) changes its sizes along the x axis only
-        NPatchInfo h3PatchInfo = new NPatchInfo(new Rectangle( 0.0f,  64.0f, 64.0f, 64.0f ), 8, 8, 8, 8,
-                                                NPatchInfo.NPatchType.NPATCH_THREE_PATCH_HORIZONTAL);
+        NPatchInfo h3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 64.0f, 64.0f, 64.0f), 8, 8, 8, 8, NPatchInfo.NPatchType.NPATCH_THREE_PATCH_HORIZONTAL);
 
         // A vertical 3-patch (NPATCH_THREE_PATCH_VERTICAL) changes its sizes along the y axis only
-        NPatchInfo v3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 192.0f, 64.0f, 64.0f), 6, 6, 6, 6,
-                                                NPatchInfo.NPatchType.NPATCH_THREE_PATCH_VERTICAL);
+        NPatchInfo v3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 192.0f, 64.0f, 64.0f), 6, 6, 6, 6, NPatchInfo.NPatchType.NPATCH_THREE_PATCH_VERTICAL);
 
         rlj.core.SetTargetFPS(60);
         //---------------------------------------------------------------------------------------
@@ -75,14 +71,30 @@ public class NPatchDrawing{
             dstRecV.height = mousePosition.y - dstRecV.y;
 
             // Set a minimum width and/or height
-            if (dstRec1.width < 1.0f) dstRec1.width = 1.0f;
-            if (dstRec1.width > 300.0f) dstRec1.width = 300.0f;
-            if (dstRec1.height < 1.0f) dstRec1.height = 1.0f;
-            if (dstRec2.width < 1.0f) dstRec2.width = 1.0f;
-            if (dstRec2.width > 300.0f) dstRec2.width = 300.0f;
-            if (dstRec2.height < 1.0f) dstRec2.height = 1.0f;
-            if (dstRecH.width < 1.0f) dstRecH.width = 1.0f;
-            if (dstRecV.height < 1.0f) dstRecV.height = 1.0f;
+            if (dstRec1.width < 1.0f) {
+                dstRec1.width = 1.0f;
+            }
+            if (dstRec1.width > 300.0f) {
+                dstRec1.width = 300.0f;
+            }
+            if (dstRec1.height < 1.0f) {
+                dstRec1.height = 1.0f;
+            }
+            if (dstRec2.width < 1.0f) {
+                dstRec2.width = 1.0f;
+            }
+            if (dstRec2.width > 300.0f) {
+                dstRec2.width = 300.0f;
+            }
+            if (dstRec2.height < 1.0f) {
+                dstRec2.height = 1.0f;
+            }
+            if (dstRecH.width < 1.0f) {
+                dstRecH.width = 1.0f;
+            }
+            if (dstRecV.height < 1.0f) {
+                dstRecV.height = 1.0f;
+            }
             //----------------------------------------------------------------------------------
 
             // Draw

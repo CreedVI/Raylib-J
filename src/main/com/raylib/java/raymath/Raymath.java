@@ -287,7 +287,7 @@ public class Raymath {
     }
 
     /**
-     * Calculate the signed angle from v1 to v2, relative to the origin (0, 0) </br>
+     * Calculate the signed angle from v1 to v2, relative to the origin (0, 0) <br/>
      * NOTE: Coordinate system convention: positive X right, positive Y down
      * positive angles appear clockwise, and negative angles appear counterclockwise
      *
@@ -302,7 +302,7 @@ public class Raymath {
     }
 
     /**
-     * Calculate angle defined by a two vectors line </br>
+     * Calculate angle defined by a two vectors line <br/>
      * NOTE: Parameters need to be normalized.
      * Current implementation should be aligned with glm::angle
      *
@@ -917,8 +917,8 @@ public class Raymath {
     }
 
     /**
-     * Orthonormalize provided vectors. </br>
-     * Gram-Schmidt function implementation. Makes vectors normalized and orthogonal to each other. </br>
+     * Orthonormalize provided vectors. <br/>
+     * Gram-Schmidt function implementation. Makes vectors normalized and orthogonal to each other. <br/>
      * WARNING: Mutates {@code v1} and {@code v2}
      *
      * @param v1
@@ -1183,7 +1183,7 @@ public class Raymath {
     }
 
     /**
-     * Compute barycenter coordinates (u, v, w) for point p with respect to triangle (a, b, c) </br>
+     * Compute barycenter coordinates (u, v, w) for point p with respect to triangle (a, b, c) <br/>
      * NOTE: Assumes P is on the plane of the triangle
      *
      * @param p Point for calculation
@@ -1216,7 +1216,7 @@ public class Raymath {
     }
 
     /**
-     * Projects a Vector3 from screen space into object space </br>
+     * Projects a Vector3 from screen space into object space <br/>
      * NOTE: Self-contained function, no other raymath functions are called
      *
      * @param source
@@ -1969,7 +1969,7 @@ public class Raymath {
     }
 
     /**
-     * Get two matrix multiplication </br>
+     * Get two matrix multiplication <br/>
      * NOTE: When multiplying matrices... the order matters!
      *
      * @param left
@@ -2035,7 +2035,7 @@ public class Raymath {
     }
 
     /**
-     * Create rotation matrix from axis and angle </br>
+     * Create rotation matrix from axis and angle <br/>
      * NOTE: Angle should be provided in radians
      *
      * @param axis
@@ -2278,7 +2278,7 @@ public class Raymath {
     }
 
     /**
-     * Get perspective projection matrix </br>
+     * Get perspective projection matrix <br/>
      * NOTE: Fovy angle must be provided in radian
      *
      * @param fovy
@@ -2312,7 +2312,7 @@ public class Raymath {
     }
 
     /**
-     * Get perspective projection matrix </br>
+     * Get perspective projection matrix <br/>
      * NOTE: Fovy angle must be provided in radian
      *
      * @param left

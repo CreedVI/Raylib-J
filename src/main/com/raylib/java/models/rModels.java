@@ -2038,7 +2038,7 @@ public class rModels {
             materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
             if (loader.mtlInfo.materials[m].diffuse_texname != null) {
-                materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
+                materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTexture(path + loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
             }
             else {
                 materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = new Color(
@@ -4251,7 +4251,7 @@ public class rModels {
                 }
             }
 
-            String path = fileName.substring(fileName.lastIndexOf("/") + 1);
+            String path = fileName.substring(0, fileName.lastIndexOf("/") + 1);
             model.materials = ProcessMaterialsOBJ(loader, path);
 
         }

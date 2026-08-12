@@ -8,7 +8,7 @@ import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_LEFT;
 import static com.raylib.java.core.input.Mouse.MouseButton.MOUSE_BUTTON_RIGHT;
 import static com.raylib.java.structs.Color.*;
 
-public class MousePainting{
+public class MousePainting {
 
     /*******************************************************************************************
      *
@@ -28,7 +28,7 @@ public class MousePainting{
 
     final static int MAX_COLORS_COUNT = 23;          // Number of colors available
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         // Initialization
         //--------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class MousePainting{
         // Define colorsRecs data (for every rectangle)
         Rectangle[] colorsRecs = new Rectangle[MAX_COLORS_COUNT];
 
-        for (int i = 0; i < MAX_COLORS_COUNT; i++){
+        for (int i = 0; i < MAX_COLORS_COUNT; i++) {
             colorsRecs[i] = new Rectangle();
             colorsRecs[i].x = 10 + 30.0f * i + 2 * i;
             colorsRecs[i].y = 10;
@@ -85,57 +85,65 @@ public class MousePainting{
             Vector2 mousePos = rlj.core.GetMousePosition();
 
             // Move between colors with keys
-            if (rlj.core.IsKeyPressed(KEY_RIGHT)){
+            if (rlj.core.IsKeyPressed(KEY_RIGHT)) {
                 colorSelected++;
             }
-            else if (rlj.core.IsKeyPressed(KEY_LEFT)) colorSelected--;
+            else if (rlj.core.IsKeyPressed(KEY_LEFT)) {
+                colorSelected--;
+            }
 
-            if (colorSelected >= MAX_COLORS_COUNT){
+            if (colorSelected >= MAX_COLORS_COUNT) {
                 colorSelected = MAX_COLORS_COUNT - 1;
             }
-            else if (colorSelected < 0) colorSelected = 0;
+            else if (colorSelected < 0) {
+                colorSelected = 0;
+            }
 
             // Choose color with mouse
-            for (int i = 0; i < MAX_COLORS_COUNT; i++){
-                if (rlj.shapes.CheckCollisionPointRec(mousePos, colorsRecs[i])){
+            for (int i = 0; i < MAX_COLORS_COUNT; i++) {
+                if (rlj.shapes.CheckCollisionPointRec(mousePos, colorsRecs[i])) {
                     colorMouseHover = i;
                     break;
                 }
-                else{
+                else {
                     colorMouseHover = -1;
                 }
             }
 
-            if ((colorMouseHover >= 0) && rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+            if ((colorMouseHover >= 0) && rlj.core.IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 colorSelected = colorMouseHover;
                 colorSelectedPrev = colorSelected;
             }
 
             // Change brush size
             brushSize += rlj.core.GetMouseWheelMove() * 5;
-            if (brushSize < 2) brushSize = 2;
-            if (brushSize > 50) brushSize = 50;
+            if (brushSize < 2) {
+                brushSize = 2;
+            }
+            if (brushSize > 50) {
+                brushSize = 50;
+            }
 
-            if (rlj.core.IsKeyPressed(KEY_C)){
+            if (rlj.core.IsKeyPressed(KEY_C)) {
                 // Clear render texture to clear color
                 rlj.core.BeginTextureMode(target);
                 rlj.core.ClearBackground(colors[0]);
                 rlj.core.EndTextureMode();
             }
 
-            if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+            if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
                 // Paint circle into render texture
                 // NOTE: To avoid discontinuous circles, we could store
                 // previous-next mouse points and just draw a line using brush size
                 rlj.core.BeginTextureMode(target);
-                if (mousePos.y > 50){
+                if (mousePos.y > 50) {
                     rlj.shapes.DrawCircle((int) mousePos.x, (int) mousePos.y, brushSize, colors[colorSelected]);
                 }
                 rlj.core.EndTextureMode();
             }
 
-            if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
-                if (!mouseWasPressed){
+            if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+                if (!mouseWasPressed) {
                     colorSelectedPrev = colorSelected;
                     colorSelected = 0;
                 }
@@ -144,12 +152,12 @@ public class MousePainting{
 
                 // Erase circle from render texture
                 rlj.core.BeginTextureMode(target);
-                if (mousePos.y > 50){
+                if (mousePos.y > 50) {
                     rlj.shapes.DrawCircle((int) mousePos.x, (int) mousePos.y, brushSize, colors[0]);
                 }
                 rlj.core.EndTextureMode();
             }
-            else if (rlj.core.IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && mouseWasPressed){
+            else if (rlj.core.IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && mouseWasPressed) {
                 colorSelected = colorSelectedPrev;
                 mouseWasPressed = false;
             }
@@ -159,7 +167,7 @@ public class MousePainting{
 
             // Image saving logic
             // NOTE: Saving painted texture to a default named image
-            if ((btnSaveMouseHover && rlj.core.IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) || rlj.core.IsKeyPressed(KEY_S)){
+            if ((btnSaveMouseHover && rlj.core.IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) || rlj.core.IsKeyPressed(KEY_S)) {
                 Image image = rlj.textures.LoadImageFromTexture(target.texture);
                 rlj.textures.ImageFlipVertical(image);
                 rlj.textures.ExportImage(image, "my_amazing_texture_painting.png");
@@ -167,10 +175,10 @@ public class MousePainting{
                 showSaveMessage = true;
             }
 
-            if (showSaveMessage){
+            if (showSaveMessage) {
                 // On saving, show a full screen message for 2 seconds
                 saveMessageCounter++;
-                if (saveMessageCounter > 240){
+                if (saveMessageCounter > 240) {
                     showSaveMessage = false;
                     saveMessageCounter = 0;
                 }
@@ -188,11 +196,11 @@ public class MousePainting{
                                                                       (float) -target.texture.height), new Vector2(), WHITE);
 
             // Draw drawing circle for reference
-            if (mousePos.y > 50){
-                if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_RIGHT)){
+            if (mousePos.y > 50) {
+                if (rlj.core.IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
                     rlj.shapes.DrawCircleLines((int) mousePos.x, (int) mousePos.y, brushSize, GRAY);
                 }
-                else{
+                else {
                     rlj.shapes.DrawCircle(rlj.core.GetMouseX(), rlj.core.GetMouseY(), brushSize, colors[colorSelected]);
                 }
             }
@@ -202,12 +210,12 @@ public class MousePainting{
             rlj.shapes.DrawLine(0, 50, rlj.core.GetScreenWidth(), 50, LIGHTGRAY);
 
             // Draw color selection rectangles
-            for (int i = 0; i < MAX_COLORS_COUNT; i++){
+            for (int i = 0; i < MAX_COLORS_COUNT; i++) {
                 rlj.shapes.DrawRectangleRec(colorsRecs[i], colors[i]);
             }
             rlj.shapes.DrawRectangleLines(10, 10, 30, 30, LIGHTGRAY);
 
-            if (colorMouseHover >= 0){
+            if (colorMouseHover >= 0) {
                 rlj.shapes.DrawRectangleRec(colorsRecs[colorMouseHover], rlj.textures.Fade(WHITE, 0.6f));
             }
 
@@ -220,7 +228,7 @@ public class MousePainting{
             rlj.text.DrawText("SAVE!", 755, 20, 10, btnSaveMouseHover ? RED : BLACK);
 
             // Draw save image message
-            if (showSaveMessage){
+            if (showSaveMessage) {
                 rlj.shapes.DrawRectangle(0, 0, rlj.core.GetScreenWidth(), rlj.core.GetScreenHeight(),
                                          rlj.textures.Fade(RAYWHITE, 0.8f));
                 rlj.shapes.DrawRectangle(0, 150, rlj.core.GetScreenWidth(), 80, BLACK);

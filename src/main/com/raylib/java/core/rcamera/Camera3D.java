@@ -111,7 +111,7 @@ public class Camera3D {
     }
 
     /**
-     * Returns the camera's up vector (normalised) </br>
+     * Returns the camera's up vector (normalised) <br/>
      * NOTE: The up vector might not be perpendicular to the forward vector.
      *
      * @return normalised up vector
@@ -233,7 +233,7 @@ public class Camera3D {
     }
 
     /**
-     * Rotates the camera around its up vector </br>
+     * Rotates the camera around its up vector <br/>
      * Yaw is "looking left and right"
      *
      * @param angle              angle of rotation in radians
@@ -261,7 +261,7 @@ public class Camera3D {
     }
 
     /**
-     * Rotates the camera around its right vector</br>
+     * Rotates the camera around its right vector<br/>
      * Pitch is "looking up or down."
      *
      * @param angle              angle of rotation in radians
@@ -319,7 +319,7 @@ public class Camera3D {
     }
 
     /**
-     * Rotates the camera around its forward vector</br>
+     * Rotates the camera around its forward vector<br/>
      * Roll is tilting to the left or right
      *
      * @param angle angle of roll in radians

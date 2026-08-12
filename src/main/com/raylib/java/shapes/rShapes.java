@@ -2784,7 +2784,7 @@ public class rShapes {
      * @param endPos2   X, Y coordinate for final endpoint of line 2
      * @param collisionPoint X, Y coordinate for location of collision
      * @return true if lines collide
-     * @see <a href="https://en.wikipedia.org/wiki/Line–line_intersection#Given_two_points_on_each_line_segment">Line intersections</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Line-line_intersection#Given_two_points_on_each_line_segment">Line intersections</a>
      */
     @Contract(mutates = "collisionPoint")
     public boolean CheckCollisionLines(Vector2 startPos1, Vector2 endPos1, Vector2 startPos2, Vector2 endPos2, Vector2 collisionPoint) {

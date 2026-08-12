@@ -24,7 +24,6 @@ public class Core3DCameraFirstPerson {
         Raylib rlj = new Raylib();
         rlj.core.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raylib-J [core] example -- 3D Camera: First Person");
 
-
         // Define the camera to look into our 3d world (position, target, up vector)
         Camera3D camera = new Camera3D(rlj);
         camera.position = new Vector3(0.0f, 2.0f, 4.0f);   // Camera position

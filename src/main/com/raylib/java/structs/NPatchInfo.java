@@ -7,7 +7,7 @@ public class NPatchInfo implements Cloneable{
     public int top;               // top border offset
     public int right;             // right border offset
     public int bottom;            // bottom border offset
-    public NPatchType type;              // layout of the n-patch: 3x3, 1x3 or 3x1
+    public NPatchType layout;              // layout of the n-patch: 3x3, 1x3 or 3x1
 
     public enum NPatchType {
         NPATCH_NINE_PATCH(0),         // Npatch defined by 3x3 tiles
@@ -39,7 +39,7 @@ public class NPatchInfo implements Cloneable{
         this.top = top;
         this.right = right;
         this.bottom = bottom;
-        this.type = type;
+        this.layout = type;
     }
 
     public Rectangle getSource() {
@@ -82,12 +82,12 @@ public class NPatchInfo implements Cloneable{
         this.bottom = bottom;
     }
 
-    public NPatchType getType() {
-        return type;
+    public NPatchType getLayout() {
+        return layout;
     }
 
-    public void setType(NPatchType type) {
-        this.type = type;
+    public void setLayout(NPatchType layout) {
+        this.layout = layout;
     }
 
     @Override

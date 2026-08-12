@@ -192,13 +192,14 @@ public class GL_33 {
             return;
         }
 
-        rlglData.getState().stack[rlglData.getState().stackCounter] = rlglData.getState().getCurrentMatrix().clone();
-        rlglData.getState().stackCounter++;
-
         if (rlglData.getState().currentMatrixMode == RL_MODELVIEW) {
             rlglData.getState().transformRequired = true;
+            rlglData.getState().setCurrentMatrixMode(RL_TRANSFORM);
             rlglData.getState().setCurrentMatrix(rlglData.getState().getTransform());
         }
+
+        rlglData.getState().stack[rlglData.getState().stackCounter] = rlglData.getState().getCurrentMatrix();
+        rlglData.getState().stackCounter++;
     }
 
     // Pop latest inserted matrix from rlglData.getState().stack

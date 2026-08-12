@@ -58,9 +58,9 @@ public class ModelLoading {
         camera.fovy = 45.0f;                                // Camera field-of-view Y
         camera.projection = CAMERA_PERSPECTIVE;                   // Camera mode type
 
-        Model model = rlj.models.LoadModel("src/tests/resources/models/models/obj/castle.obj");                 // Load model
-        Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/models/obj/castle_diffuse.png"); // Load model texture
-        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;            // Set map diffuse texture
+        Model model = rlj.models.LoadModel("src/tests/resources/models/models/obj/cube.obj");                 // Load model
+        // Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/models/obj/castle_diffuse.png"); // Load model texture
+        // model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;            // Set map diffuse texture
 
         Vector3 position = new Vector3();                    // Set model position
 
@@ -98,7 +98,7 @@ public class ModelLoading {
                     {
                         rlj.models.UnloadModel(model);                         // Unload previous model
                         model = rlj.models.LoadModel(droppedFiles.paths[0]);   // Load new model
-                        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture; // Set current map diffuse texture
+                        // model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture; // Set current map diffuse texture
 
                         bounds = rlj.models.GetMeshBoundingBox(model.meshes[0]);
 
@@ -107,9 +107,9 @@ public class ModelLoading {
                     // Texture file formats supported
                     else if (rlj.files.IsFileExtension(droppedFiles.paths[0], ".png")) {
                         // Unload current model texture and load new one
-                        rlj.textures.UnloadTexture(texture);
-                        texture = rlj.textures.LoadTexture(droppedFiles.paths[0]);
-                        model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;
+                        // rlj.textures.UnloadTexture(texture);
+                        // texture = rlj.textures.LoadTexture(droppedFiles.paths[0]);
+                        // model.materials[0].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = texture;
                     }
                 }
 
@@ -161,7 +161,7 @@ public class ModelLoading {
 
         // De-Initialization
         //--------------------------------------------------------------------------------------
-        rlj.textures.UnloadTexture(texture);     // Unload texture
+        // rlj.textures.UnloadTexture(texture);     // Unload texture
         rlj.models.UnloadModel(model);         // Unload model
 
         rlj.core.CloseWindow();              // Close window and OpenGL context
