@@ -2,6 +2,7 @@ package com.raylib.java.io;
 
 import com.raylib.java.Raylib;
 import com.raylib.java.structs.FilePathList;
+import org.jetbrains.annotations.Contract;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -13,7 +14,7 @@ import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
 import static com.raylib.java.io.FileIO.FileFilter.FILE_FILTER_TAG_ALL;
 
-public class FileIO {
+public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadFileTextCallback, SaveFileTextCallback {
 
     public enum FileFilter {
         FILE_FILTER_TAG_ALL("."),
@@ -35,6 +36,11 @@ public class FileIO {
 
     public String basePath;
 
+    private LoadFileDataCallback loadFileDataCustomCallback;
+    private LoadFileTextCallback loadFileTextCustomCallback;
+    private SaveFileDataCallback saveFileDataCustomCallback;
+    private SaveFileTextCallback saveFileTextCustomCallback;
+
     public FileIO(Raylib context) {
         this.context = context;
         basePath = GetWorkingDirectory();
@@ -49,6 +55,16 @@ public class FileIO {
     }
 
     /**
+     * Set custom file binary data loader.
+     * WARNING: Custom implementations will always take priority over default functions. To restore default file io functionality, set the callback to {@code null}
+     *
+     * @param fileDataCallback Implementation of {@code LoadFileDataCallback}
+     */
+    public void SetLoadFileDataCallback(LoadFileDataCallback fileDataCallback) {
+        this.loadFileDataCustomCallback = fileDataCallback;
+    }
+
+    /**
      * Load data from file into a buffer. <br/>
      * Files are located using path relative to the application's current directory.
      *
@@ -56,28 +72,53 @@ public class FileIO {
      * @return byte array of data loaded from file
      * @throws IOException If file fails to load form disk
      */
+    @Override
     public byte[] LoadFileData(String fileName) throws IOException {
-        byte[] fileData = null;
+        if (loadFileDataCustomCallback != null) {
+            return loadFileDataCustomCallback.LoadFileData(fileName);
+        }
+        else {
+            byte[] fileData = null;
 
-        if (fileName != null) {
-            if (SUPPORT_STANDARD_FILEIO) {
-                Path filePath = Path.of(basePath + fileName);
-                try {
-                    fileData = Files.readAllBytes(filePath);
+            if (fileName != null) {
+                if (SUPPORT_STANDARD_FILEIO) {
+                    Path filePath = Path.of(basePath + fileName);
+                    try {
+                        fileData = Files.readAllBytes(filePath);
+                    }
+                    catch (IOException e) {
+                        context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to load file: " + filePath);
+                    }
                 }
-                catch (IOException e) {
-                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to load file: " + filePath);
+                else {
+                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
                 }
             }
             else {
-                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
             }
-        }
-        else {
-            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
-        }
 
-        return fileData;
+            return fileData;
+        }
+    }
+
+    /**
+     * Unload file data allocated by LoadFileData()
+     * @param data data buffer to unload
+     */
+    @Contract(mutates = "param")
+    public void UnloadFileData(byte[] data) {
+        data = new byte[0];
+    }
+
+    /**
+     * Set custom file binary data saver.
+     * WARNING: Custom implementations will always take priority over default functions. To restore default file io functionality, set the callback to {@code null}
+     *
+     * @param fileDataCallback Implementation of {@code SaveFileDataCallback}
+     */
+    public void SetSaveFileDataCallback(SaveFileDataCallback fileDataCallback) {
+        this.saveFileDataCustomCallback = fileDataCallback;
     }
 
     /**
@@ -89,44 +130,60 @@ public class FileIO {
      * @return Success status of operation
      * @throws IOException If file fails to write to disk
      */
+    @Override
     public boolean SaveFileData(String fileName, byte[] data) throws IOException {
-        boolean success = false;
+        if (saveFileDataCustomCallback != null) {
+            return saveFileDataCustomCallback.SaveFileData(fileName, data);
+        }
+        else {
+            boolean success = false;
 
-        if (fileName != null) {
-            if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Path.of(basePath + fileName);
+            if (fileName != null) {
+                if (SUPPORT_STANDARD_FILEIO) {
+                    Path path = Path.of(basePath + fileName);
 
-                if (!path.toFile().exists()) {
-                    try {
-                        Files.write(path, data);
-                        success = true;
+                    if (!path.toFile().exists()) {
+                        try {
+                            Files.write(path, data);
+                            success = true;
+                        }
+                        catch (IOException exception) {
+                            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
+                            throw exception;
+                        }
                     }
-                    catch (IOException exception) {
-                        context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
-                        throw exception;
+                    else {
+                        context.tracelog.TRACELOG(LOG_INFO, "FILE IO: Overwriting file: " + path);
+                        try {
+                            Files.write(path, data);
+                            success = true;
+                        }
+                        catch (IOException exception) {
+                            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
+                            throw exception;
+                        }
                     }
                 }
                 else {
-                    context.tracelog.TRACELOG(LOG_INFO, "FILE IO: Overwriting file: " + path);
-                    try {
-                        Files.write(path, data);
-                        success = true;
-                    }
-                    catch (IOException exception) {
-                        context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
-                        throw exception;
-                    }
+                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
                 }
             }
             else {
-                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
             }
-        }
-        else {
-            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
-        }
 
-        return success;
+            return success;
+        }
+    }
+
+    /**
+     * Set custom file text data loader.
+     * WARNING: Custom implementations will always take priority over default functions. To restore default file io functionality, set the callback to {@code null}
+     *
+     * @param fileTextCallback Implementation of {@code LoadFileTextCallback}
+     */
+    public void SetLoadFileTextCallback(LoadFileTextCallback fileTextCallback) {
+        this.loadFileTextCustomCallback = fileTextCallback;
     }
 
     /**
@@ -136,29 +193,45 @@ public class FileIO {
      * @param fileName name and extension of file to be loaded
      * @throws IOException If file fails to load form disk
      */
+    @Override
     public String LoadFileText(String fileName) throws IOException {
-        String text = "";
+        if (loadFileTextCustomCallback != null) {
+            return loadFileTextCustomCallback.LoadFileText(fileName);
+        }
+        else {
+            String text = "";
 
-        if (fileName != null) {
-            if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Path.of(basePath + fileName);
+            if (fileName != null) {
+                if (SUPPORT_STANDARD_FILEIO) {
+                    Path path = Path.of(basePath + fileName);
 
-                try {
-                    text = Files.readString(path);
+                    try {
+                        text = Files.readString(path);
+                    }
+                    catch (IOException exception) {
+                        context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + path);
+                        throw exception;
+                    }
                 }
-                catch (IOException exception) {
-                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to read file: " + path);
-                    throw exception;
+                else {
+                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
                 }
             }
             else {
-                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
             }
+            return text;
         }
-        else {
-            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
-        }
-        return text;
+    }
+
+    /**
+     * Set custom file text data saver. </br>
+     * WARNING: Custom implementations will always take priority over default functions. To restore default file io functionality, set the callback to {@code null}
+     *
+     * @param fileTextCallback Implementation of {@code LoadFileTextCallback}
+     */
+    public void SetSaveFileTextCallback(SaveFileTextCallback fileTextCallback) {
+        this.saveFileTextCustomCallback = fileTextCallback;
     }
 
     /**
@@ -171,44 +244,50 @@ public class FileIO {
      * @return Returns `true` on successful file write
      * @throws IOException If file fails to write to disk
      */
+    @Override
     public boolean SaveFileText(String fileName, String text) throws IOException {
-        boolean success = false;
+        if (saveFileTextCustomCallback != null) {
+            return saveFileTextCustomCallback.SaveFileText(fileName, text);
+        }
+        else {
+            boolean success = false;
 
-        if (fileName != null) {
-            if (SUPPORT_STANDARD_FILEIO) {
-                Path path = Path.of(basePath + fileName);
+            if (fileName != null) {
+                if (SUPPORT_STANDARD_FILEIO) {
+                    Path path = Path.of(basePath + fileName);
 
-                if (!path.toFile().exists()) {
-                    try {
-                        Files.writeString(path, text);
-                        success = true;
+                    if (!path.toFile().exists()) {
+                        try {
+                            Files.writeString(path, text);
+                            success = true;
+                        }
+                        catch (IOException exception) {
+                            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
+                            throw exception;
+                        }
                     }
-                    catch (IOException exception) {
-                        context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
-                        throw exception;
+                    else {
+                        context.tracelog.TRACELOG(LOG_INFO, "FILE IO: Overwriting file: " + path);
+                        try {
+                            Files.writeString(path, text);
+                            success = true;
+                        }
+                        catch (IOException exception) {
+                            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
+                            throw exception;
+                        }
                     }
                 }
                 else {
-                    context.tracelog.TRACELOG(LOG_INFO, "FILE IO: Overwriting file: " + path);
-                    try {
-                        Files.writeString(path, text);
-                        success = true;
-                    }
-                    catch (IOException exception) {
-                        context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to write file: " + path);
-                        throw exception;
-                    }
+                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
                 }
             }
             else {
-                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Standard file io not supported, use custom file callback");
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
             }
-        }
-        else {
-            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: File name provided is not valid");
-        }
 
-        return success;
+            return success;
+        }
     }
 
     /**
