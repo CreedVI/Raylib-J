@@ -8,7 +8,9 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
+import static com.raylib.java.Config.SUPPORT_MODULE_RTEXT;
 import static com.raylib.java.Config.SUPPORT_STANDARD_FILEIO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
@@ -46,6 +48,10 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
         basePath = GetWorkingDirectory();
     }
 
+    /**
+     * Get the base path for all file operations
+     * @return {@code String} base path of file operations
+     */
     public String GetBasePath() {
         return basePath;
     }
@@ -69,7 +75,7 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
      * Files are located using path relative to the application's current directory.
      *
      * @param fileName Path and extension of file to read
-     * @return byte array of data loaded from file
+     * @return {@code byte[]} of data loaded from file
      * @throws IOException If file fails to load form disk
      */
     @Override
@@ -127,7 +133,7 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
      *
      * @param fileName Path and extension of where the file should be created
      * @param data     Buffer of bytes to be written
-     * @return Success status of operation
+     * @return {@code true} on successful file write
      * @throws IOException If file fails to write to disk
      */
     @Override
@@ -191,6 +197,7 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
      * Files are located using path relative to the application's current directory.
      *
      * @param fileName name and extension of file to be loaded
+     * @return {@code String} of text loaded from file
      * @throws IOException If file fails to load form disk
      */
     @Override
@@ -241,7 +248,7 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
      *
      * @param fileName Name and extension of the file to be saved.
      * @param text     String to be written to file
-     * @return Returns `true` on successful file write
+     * @return {@code true} on successful file write
      * @throws IOException If file fails to write to disk
      */
     @Override
@@ -291,13 +298,158 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
     }
 
     /**
+     * Rename file
+     * @param fileName Original name of the file
+     * @param fileRename Name the file should be set to
+     * @return {@code true} if file operation is successful
+     */
+    public boolean FileRename(String fileName, String fileRename) {
+        boolean result = false;
+
+        if (FileExists(fileName)) {
+            File file = new File(basePath + fileName);
+            result = file.renameTo(new File(basePath + fileRename));
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file: %s", basePath + fileName);
+        }
+
+        return result;
+    }
+
+    /**
+     * Delete file
+     *
+     * @param fileName Name of file to delete
+     * @return {@code true} if file is successfully deleted
+     */
+    public boolean FileRemove(String fileName) {
+        boolean result = false;
+
+        if (FileExists(fileName)) {
+            File file = new File(basePath + fileName);
+            result = file.delete();
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file: %s", basePath + fileName);
+        }
+
+        return result;
+    }
+
+    /**
+     * Copy file from one path to another
+     * @param srcPath Source path of file to copy
+     * @param dstPath Destination to paste source file
+     * @return {@code true} if file operation is successful
+     */
+    public boolean FileCopy(String srcPath, String dstPath) {
+        boolean result = false;
+
+        if (FileExists(srcPath)) {
+            Path source = Path.of(basePath + srcPath);
+            Path target = Path.of(basePath + dstPath);
+
+            try {
+                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                result = true;
+            }
+            catch (IOException e) {
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to copy file:\n%s", e.getMessage());
+            }
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file: %s", basePath + srcPath);
+        }
+
+        return result;
+    }
+
+    /**
+     * Move file from one path to another
+     *
+     * @param srcPath Source path of file to move
+     * @param dstPath Destination of the source file
+     * @return {@code true} if file operation is successful
+     */
+    public boolean FileMove(String srcPath, String dstPath) {
+        boolean result = false;
+
+        if (FileExists(srcPath)) {
+            Path source = Path.of(basePath + srcPath);
+            Path target = Path.of(basePath + dstPath);
+
+            try {
+                Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+                result = true;
+            }
+            catch (IOException e) {
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to move file:\n%s", e.getMessage());
+            }
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file: %s", basePath + srcPath);
+        }
+
+        return result;
+    }
+
+    /**
+     * Replace text in an existing file
+     * @param fileName File to replace text in
+     * @param search String of text to replace
+     * @param replacement String of text to replace {@code search}
+     * @return {@code true} if file operation is successful
+     */
+    public boolean FileTextReplace(String fileName, String search, String replacement) {
+        boolean result = false;
+
+        if (SUPPORT_MODULE_RTEXT) {
+            if (FileExists(fileName)) {
+                try {
+                    String fileText = LoadFileText(fileName);
+                    String fileTextUpdated = context.text.TextReplace(fileText, search, replacement);
+                    result = SaveFileText(fileName, fileTextUpdated);
+                }
+                catch (IOException e) {
+                    context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to update file text:\n%s", e.getMessage());
+                }
+            }
+            else {
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file: %s", basePath + fileName);
+            }
+        }
+
+        return result;
+    }
+
+    public int FileTextFindIndex(String fileName, String search) {
+        int result = -1;
+
+        if (FileExists(fileName)) {
+            try {
+                String fileText = LoadFileText(fileName);
+                result = fileText.indexOf(search);
+            }
+            catch (IOException e) {
+                context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file text:\n%s", e.getMessage());
+            }
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "FILE IO: Failed to find file: %s", basePath + fileName);
+        }
+
+        return result;
+    }
+
+    /**
      * Check if the file exists
      *
      * @param fileName
      * @return
      */
     public boolean FileExists(String fileName) {
-        File file = new File(fileName);
+        File file = new File(basePath + fileName);
 
         return file.exists();
     }
@@ -531,6 +683,17 @@ public class FileIO implements LoadFileDataCallback, SaveFileDataCallback, LoadF
     }
 
     // ChangeDirectory
+    public boolean ChangeDirectory(String dirPath) {
+        if (DirectoryExists(dirPath)) {
+            this.basePath = dirPath;
+            context.tracelog.TRACELOG(LOG_INFO, "SYSTEM: Working Directory: %s", dirPath);
+            return true;
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_WARNING, "SYSTEM: Failed to change to directory: %s", dirPath);
+            return false;
+        }
+    }
 
     /**
      * Check if a file has been dropped into window
