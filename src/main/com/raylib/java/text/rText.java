@@ -2092,7 +2092,7 @@ public class rText {
     }
 
     /**
-     * Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found</bvr>
+     * Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found<br/>
      * <br/>
      * NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
      *
