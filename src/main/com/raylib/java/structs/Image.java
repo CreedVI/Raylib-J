@@ -36,10 +36,12 @@ public class Image implements Cloneable{
         this.mipmaps = mipmaps;
     }
 
-    public Image(byte[] data, int width, int height, rlPixelFormat pixelFormat, int mipmaps){
-        this.data = ByteBuffer.allocateDirect(data.length);
-        this.data.put(data);
-        this.data.flip();
+    public Image(byte[] data, int width, int height, rlPixelFormat pixelFormat, int mipmaps) {
+        if (data != null) {
+            this.data = ByteBuffer.allocateDirect(data.length);
+            this.data.put(data);
+            this.data.flip();
+        }
         this.width = width;
         this.height = height;
         this.format = pixelFormat;

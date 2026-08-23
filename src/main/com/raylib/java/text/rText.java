@@ -140,7 +140,13 @@ public class rText {
         return ((a) & (1L << (b))) == (long) Math.pow(2, b);
     }
 
-    //Check if col1 is equal in RGBA value to col2
+    /**
+     * Check if col1 is equal in RGBA value to col2
+     *
+     * @param col1
+     * @param col2
+     * @return
+     */
     private boolean ColorEqual(Color col1, Color col2) {
         return ((col1.r == col2.r) && (col1.g == col2.g) && (col1.b == col2.b) && (col1.a == col2.a));
     }
@@ -659,173 +665,175 @@ public class rText {
             // Load font data (including pixel data) from TTF memory file
             // NOTE: Loaded information should be enough to generate font image atlas, using any packaging method
             if (fileData != null) {
-                ByteBuffer dataBuffer = ByteBuffer.allocateDirect(fileData.length);
-                dataBuffer.put(fileData).flip();
-                boolean genFontChars = false;
-                STBTTFontinfo fontInfo = STBTTFontinfo.create();
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    ByteBuffer dataBuffer = ByteBuffer.allocateDirect(fileData.length);
+                    dataBuffer.put(fileData).flip();
+                    boolean genFontChars = false;
+                    STBTTFontinfo fontInfo = STBTTFontinfo.create();
 
-                // TODO: Should a shallow copy be created to avoid "dealing" with a const user array?
-                int[] requiredCodepoints = codepoints;
+                    // TODO: Should a shallow copy be created to avoid "dealing" with a const user array?
+                    int[] requiredCodepoints = codepoints;
 
-                // Initialize font for data reading
-                if (stbtt_InitFont(fontInfo, dataBuffer, 0)) {
-                    // Calculate font scale factor
-                    float scaleFactor = stbtt_ScaleForPixelHeight(fontInfo, (float) fontSize);
+                    // Initialize font for data reading
+                    if (stbtt_InitFont(fontInfo, dataBuffer, 0)) {
+                        // Calculate font scale factor
+                        float scaleFactor = stbtt_ScaleForPixelHeight(fontInfo, (float) fontSize);
 
-                    // Calculate font basic metrics
-                    // NOTE: ascent is equivalent to font baseline
-                    IntBuffer ascent = IntBuffer.allocate(1);
-                    IntBuffer descent = IntBuffer.allocate(1);
-                    IntBuffer lineGap = IntBuffer.allocate(1);
-                    stbtt_GetFontVMetrics(fontInfo, ascent, descent, lineGap);
+                        // Calculate font basic metrics
+                        // NOTE: ascent is equivalent to font baseline
+                        IntBuffer ascent = stack.callocInt(1);
+                        IntBuffer descent = stack.callocInt(1);
+                        IntBuffer lineGap = stack.callocInt(1);
+                        stbtt_GetFontVMetrics(fontInfo, ascent, descent, lineGap);
 
-                    // In case no chars count provided, default to 95
-                    codepointCount = (codepointCount > 0) ? codepointCount : 95;
+                        // In case no chars count provided, default to 95
+                        codepointCount = (codepointCount > 0) ? codepointCount : 95;
 
-                    // Fill fontChars in case not provided externally
-                    // NOTE: By default filling glyphCount consecutively, starting at 32 (Space)
-                    if (requiredCodepoints == null) {
-                        requiredCodepoints = new int[codepointCount];
+                        // Fill fontChars in case not provided externally
+                        // NOTE: By default filling glyphCount consecutively, starting at 32 (Space)
+                        if (requiredCodepoints == null) {
+                            requiredCodepoints = new int[codepointCount];
+                            for (int i = 0; i < codepointCount; i++) {
+                                requiredCodepoints[i] = i + 32;
+                            }
+                            genFontChars = true;
+                        }
+
+                        // Check available glyphs on provided font before loading them
+                        for (int i = 0, index; i < codepointCount; i++) {
+                            index = stbtt_FindGlyphIndex(fontInfo, requiredCodepoints[i]);
+                            if (index > 0) {
+                                glyphCounter++;
+                            }
+                        }
+
+                        // WARNING: Allocating space for maximum number of codepoints
+                        glyphs = new GlyphInfo[glyphCounter];
+                        for (int i = 0; i < glyphs.length; i++) {
+                            glyphs[i] = new GlyphInfo();
+                        }
+                        glyphCounter = 0; // Reset to reuse
+
+                        int k = 0;
                         for (int i = 0; i < codepointCount; i++) {
-                            requiredCodepoints[i] = i + 32;
-                        }
-                        genFontChars = true;
-                    }
+                            IntBuffer widthBuffer = stack.callocInt(1);
+                            IntBuffer heightBuffer = stack.callocInt(1);
+                            IntBuffer xOffsetBuffer = stack.callocInt(1);
+                            IntBuffer yOffsetBuffer = stack.callocInt(1);
+                            int cpWidth = 0, cpHeight = 0;   // Codepoint width and height (on generation)
+                            int cp = requiredCodepoints[i];  // Codepoint value to get info for
 
-                    // Check available glyphs on provided font before loading them
-                    for (int i = 0, index; i < codepointCount; i++) {
-                        index = stbtt_FindGlyphIndex(fontInfo, requiredCodepoints[i]);
-                        if (index > 0) {
-                            glyphCounter++;
-                        }
-                    }
+                            //  Render a unicode codepoint to a bitmap
+                            //      stbtt_GetCodepointBitmap()           -- allocates and returns a bitmap
+                            //      stbtt_GetCodepointBitmapBox()        -- how big the bitmap must be
+                            //      stbtt_MakeCodepointBitmap()          -- renders into a provided bitmap
 
-                    // WARNING: Allocating space for maximum number of codepoints
-                    glyphs = new GlyphInfo[glyphCounter];
-                    for (int i = 0; i < glyphs.length; i++) {
-                        glyphs[i] = new GlyphInfo();
-                    }
-                    glyphCounter = 0; // Reset to reuse
+                            // Check if a glyph is available in the font
+                            // WARNING: if (index == 0), glyph not found, it could fallback to default .notdef glyph (if defined in font)
+                            int index = stbtt_FindGlyphIndex(fontInfo, cp);
 
-                    int k = 0;
-                    for (int i = 0; i < codepointCount; i++) {
-                        IntBuffer widthBuffer = IntBuffer.allocate(1);
-                        IntBuffer heightBuffer = IntBuffer.allocate(1);
-                        IntBuffer xOffsetBuffer = IntBuffer.allocate(1);
-                        IntBuffer yOffsetBuffer = IntBuffer.allocate(1);
-                        int cpWidth = 0, cpHeight = 0;   // Codepoint width and height (on generation)
-                        int cp = requiredCodepoints[i];  // Codepoint value to get info for
+                            if (index > 0) {
+                                // NOTE: Only storing glyphs for codepoints found in the font
+                                glyphs[k].value = cp;
 
-                        //  Render a unicode codepoint to a bitmap
-                        //      stbtt_GetCodepointBitmap()           -- allocates and returns a bitmap
-                        //      stbtt_GetCodepointBitmapBox()        -- how big the bitmap must be
-                        //      stbtt_MakeCodepointBitmap()          -- renders into a provided bitmap
-
-                        // Check if a glyph is available in the font
-                        // WARNING: if (index == 0), glyph not found, it could fallback to default .notdef glyph (if defined in font)
-                        int index = stbtt_FindGlyphIndex(fontInfo, cp);
-
-                        if (index > 0) {
-                            // NOTE: Only storing glyphs for codepoints found in the font
-                            glyphs[k].value = cp;
-
-                            switch (type) {
-                                case FONT_DEFAULT:
-                                case FONT_BITMAP: {
-                                    glyphs[k].image.data = stbtt_GetCodepointBitmap(fontInfo, scaleFactor, scaleFactor, cp, widthBuffer, heightBuffer, xOffsetBuffer, yOffsetBuffer);
-                                    cpWidth = widthBuffer.get(0);
-                                    cpHeight = heightBuffer.get(0);
-                                    glyphs[k].offsetX = xOffsetBuffer.get(0);
-                                    glyphs[k].offsetY = yOffsetBuffer.get(0);
-                                }
-                                break;
-                                case FONT_SDF: {
-                                    if (cp != 32) {
-                                        glyphs[k].image.data = stbtt_GetCodepointSDF(fontInfo, scaleFactor, cp, FONT_SDF_CHAR_PADDING, FONT_SDF_ON_EDGE_VALUE, FONT_SDF_PIXEL_DIST_SCALE, widthBuffer, heightBuffer, xOffsetBuffer, yOffsetBuffer);
+                                switch (type) {
+                                    case FONT_DEFAULT:
+                                    case FONT_BITMAP: {
+                                        glyphs[k].image.data = stbtt_GetCodepointBitmap(fontInfo, scaleFactor, scaleFactor, cp, widthBuffer, heightBuffer, xOffsetBuffer, yOffsetBuffer);
                                         cpWidth = widthBuffer.get(0);
                                         cpHeight = heightBuffer.get(0);
                                         glyphs[k].offsetX = xOffsetBuffer.get(0);
                                         glyphs[k].offsetY = yOffsetBuffer.get(0);
                                     }
-                                }
-                                break;
-                                //case FONT_MSDF:
-                                default:
                                     break;
-                            }
-
-                            // Glyph data has been found in the font
-                            if (glyphs[k].image.data != null) {
-                                IntBuffer xAdvanceBuffer = IntBuffer.allocate(1);
-                                stbtt_GetCodepointHMetrics(fontInfo, cp, xAdvanceBuffer, null);
-                                glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get() * scaleFactor);
-
-                                // WARNING: If requested SDF font, sdf-glyph height is definitely bigger than fontSize due to FONT_SDF_CHAR_PADDING
-                                if ((type != FONT_SDF) && (cpHeight > fontSize)) {
-                                    context.tracelog.TRACELOG(LOG_WARNING, "FONT: [0x%04x] Glyph height is bigger than requested font size: %i > %i", cp, cpHeight, (int) fontSize);
+                                    case FONT_SDF: {
+                                        if (cp != 32) {
+                                            glyphs[k].image.data = stbtt_GetCodepointSDF(fontInfo, scaleFactor, cp, FONT_SDF_CHAR_PADDING, FONT_SDF_ON_EDGE_VALUE, FONT_SDF_PIXEL_DIST_SCALE, widthBuffer, heightBuffer, xOffsetBuffer, yOffsetBuffer);
+                                            cpWidth = widthBuffer.get(0);
+                                            cpHeight = heightBuffer.get(0);
+                                            glyphs[k].offsetX = xOffsetBuffer.get(0);
+                                            glyphs[k].offsetY = yOffsetBuffer.get(0);
+                                        }
+                                    }
+                                    break;
+                                    //case FONT_MSDF:
+                                    default:
+                                        break;
                                 }
 
-                                // Load glyph image
-                                glyphs[k].image.width = cpWidth;
-                                glyphs[k].image.height = cpHeight;
-                                glyphs[k].image.mipmaps = 1;
-                                glyphs[k].image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+                                // Glyph data has been found in the font
+                                if (glyphs[k].image.data != null) {
+                                    IntBuffer xAdvanceBuffer = stack.callocInt(1);
+                                    stbtt_GetCodepointHMetrics(fontInfo, cp, xAdvanceBuffer, null);
+                                    glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get() * scaleFactor);
 
-                                glyphs[k].offsetY += (int) ((float) ascent.get(0) * scaleFactor);
-                            }
-                            //else TRACELOG(LOG_WARNING, "FONT: Glyph [0x%08x] has no image data available", cp); // Only reported for 0x20 and 0x3000
+                                    // WARNING: If requested SDF font, sdf-glyph height is definitely bigger than fontSize due to FONT_SDF_CHAR_PADDING
+                                    if ((type != FONT_SDF) && (cpHeight > fontSize)) {
+                                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: [0x%04x] Glyph height is bigger than requested font size: %i > %i", cp, cpHeight, (int) fontSize);
+                                    }
 
-                            // Create an empty image for Space character (0x20), useful for sprite font generation
-                            // NOTE: Another space to consider: 0x3000 (CJK - Ideographic Space)
-                            if ((cp == 0x20) || (cp == 0x3000)) {
-                                IntBuffer xAdvanceBuffer = IntBuffer.allocate(1);
-                                stbtt_GetCodepointHMetrics(fontInfo, cp, xAdvanceBuffer, null);
-                                glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get(0) * scaleFactor);
+                                    // Load glyph image
+                                    glyphs[k].image.width = cpWidth;
+                                    glyphs[k].image.height = cpHeight;
+                                    glyphs[k].image.mipmaps = 1;
+                                    glyphs[k].image.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 
-                                Image imSpace = new Image((byte[]) null, glyphs[k].advanceX, fontSize, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE, 1);
-
-                                // Only allocate space image if required
-                                if (glyphs[k].advanceX > 0) {
-                                    imSpace.setData(new byte[glyphs[k].advanceX * fontSize]);
+                                    glyphs[k].offsetY += (int) ((float) ascent.get(0) * scaleFactor);
                                 }
-                                else {
-                                    glyphs[k].advanceX = 0;
-                                }
+                                //else TRACELOG(LOG_WARNING, "FONT: Glyph [0x%08x] has no image data available", cp); // Only reported for 0x20 and 0x3000
 
-                                glyphs[k].image = imSpace;
-                            }
+                                // Create an empty image for Space character (0x20), useful for sprite font generation
+                                // NOTE: Another space to consider: 0x3000 (CJK - Ideographic Space)
+                                if ((cp == 0x20) || (cp == 0x3000)) {
+                                    IntBuffer xAdvanceBuffer = stack.callocInt(1);
+                                    stbtt_GetCodepointHMetrics(fontInfo, cp, xAdvanceBuffer, null);
+                                    glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get(0) * scaleFactor);
 
-                            if (type == FONT_BITMAP) {
-                                // Aliased bitmap (black & white) font generation, avoiding anti-aliasing
-                                // NOTE: For optimum results, bitmap font should be generated at base pixel size
-                                for (int p = 0; p < cpWidth * cpHeight; p++) {
-                                    if (glyphs[k].image.data.get(p) < FONT_BITMAP_ALPHA_THRESHOLD) {
-                                        glyphs[k].image.data.put(p, (byte) 0);
+                                    Image imSpace = new Image((byte[]) null, glyphs[k].advanceX, fontSize, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE, 1);
+
+                                    // Only allocate space image if required
+                                    if (glyphs[k].advanceX > 0) {
+                                        imSpace.setData(new byte[glyphs[k].advanceX * fontSize]);
                                     }
                                     else {
-                                        glyphs[k].image.data.put(p, (byte) 255);
+                                        glyphs[k].advanceX = 0;
+                                    }
+
+                                    glyphs[k].image = imSpace;
+                                }
+
+                                if (type == FONT_BITMAP) {
+                                    // Aliased bitmap (black & white) font generation, avoiding anti-aliasing
+                                    // NOTE: For optimum results, bitmap font should be generated at base pixel size
+                                    for (int p = 0; p < cpWidth * cpHeight; p++) {
+                                        if (glyphs[k].image.data.get(p) < FONT_BITMAP_ALPHA_THRESHOLD) {
+                                            glyphs[k].image.data.put(p, (byte) 0);
+                                        }
+                                        else {
+                                            glyphs[k].image.data.put(p, (byte) 255);
+                                        }
                                     }
                                 }
+
+                                k++;
+                                glyphCounter++;
                             }
-
-                            k++;
-                            glyphCounter++;
+                            else {
+                                // WARNING: Glyph not found on font, optionally use a fallback glyph
+                            }
                         }
-                        else {
-                            // WARNING: Glyph not found on font, optionally use a fallback glyph
+
+                        if (glyphCounter < codepointCount) {
+                            context.tracelog.TRACELOG(LOG_WARNING, "FONT: Requested codepoints glyphs found: [%i/%i]", k, codepointCount);
                         }
                     }
-
-                    if (glyphCounter < codepointCount) {
-                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: Requested codepoints glyphs found: [%i/%i]", k, codepointCount);
+                    else {
+                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to process TTF font data");
                     }
-                }
-                else {
-                    context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to process TTF font data");
-                }
 
-                if (genFontChars) {
-                    requiredCodepoints = null;
+                    if (genFontChars) {
+                        requiredCodepoints = null;
+                    }
                 }
             }
         }
@@ -864,8 +872,8 @@ public class rText {
 
         // NOTE: Rectangles memory is loaded here!
         Rectangle[] recs = new Rectangle[glyphCount];
-        for (Rectangle r : recs) {
-            r = new Rectangle();
+        for (int i = 0; i < recs.length; i++) {
+            recs[i] = new Rectangle();
         }
 
         // Calculate image size based on total glyph width and glyph row count
