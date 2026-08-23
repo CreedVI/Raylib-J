@@ -15,7 +15,7 @@ public class Font implements Cloneable{
         glyphPadding = 0;
         texture = new Texture2D();
         recs = new Rectangle[256];
-        glyphs = new GlyphInfo[256];
+        glyphs = null;
     }
 
     public int getBaseSize(){

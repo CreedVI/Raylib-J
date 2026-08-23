@@ -211,6 +211,10 @@ public class Config{
      * Selected .ttf to be supported for loading
      */
     public static boolean SUPPORT_FILEFORMAT_TTF = true;
+    /**
+     * Selected .bdf to be supported for loading
+     */
+    public static boolean SUPPORT_FILEFORMAT_BDF = true;
 
     /**
      * Support text management functions

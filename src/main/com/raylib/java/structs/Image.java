@@ -19,7 +19,7 @@ public class Image implements Cloneable{
         format = null;
     }
 
-    public Image(Color[] pixels, int width, int height, rlPixelFormat pixForInt, int mipmaps){
+    public Image(Color[] pixels, int width, int height, rlPixelFormat pixelFormat, int mipmaps){
         byte[] dataB = new byte[pixels.length*4];
         for(int i = 0, j = 0; j < pixels.length; i+=4, j++){
             dataB[i] = (byte) pixels[j].getR();
@@ -32,17 +32,17 @@ public class Image implements Cloneable{
         this.data.flip();
         this.width = width;
         this.height = height;
-        this.format = pixForInt;
+        this.format = pixelFormat;
         this.mipmaps = mipmaps;
     }
 
-    public Image(byte[] data, int width, int height, rlPixelFormat pixForInt, int mipmaps){
+    public Image(byte[] data, int width, int height, rlPixelFormat pixelFormat, int mipmaps){
         this.data = ByteBuffer.allocateDirect(data.length);
         this.data.put(data);
         this.data.flip();
         this.width = width;
         this.height = height;
-        this.format = pixForInt;
+        this.format = pixelFormat;
         this.mipmaps = mipmaps;
     }
 
