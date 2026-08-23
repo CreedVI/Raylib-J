@@ -18,12 +18,12 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import static com.raylib.java.Config.*;
-import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
-import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
+import static com.raylib.java.core.tracelog.TraceLog.TracelogType.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlTextureFilterMode.TEXTURE_FILTER_POINT;
 import static com.raylib.java.text.rText.FontType.*;
 import static org.lwjgl.stb.STBTruetype.*;
+import static org.lwjgl.system.libc.LibCString.memcpy;
 
 public class rText {
 
@@ -83,9 +83,18 @@ public class rText {
      */
     public enum FontType {
 
-        FONT_DEFAULT(0), // Default font generation, anti-aliased
-        FONT_BITMAP(1), // Bitmap font generation, no anti-aliasing
-        FONT_SDF(2);  // SDF font generation, requires external shader
+        /**
+         * Default font generation, anti-aliased
+         */
+        FONT_DEFAULT(0),
+        /**
+         * Bitmap font generation, no anti-aliasing
+         */
+        FONT_BITMAP(1),
+        /**
+         * SDF font generation, requires external shader
+         */
+        FONT_SDF(2);
 
         private final int value;
 
@@ -408,8 +417,16 @@ public class rText {
         return font;
     }
 
-    // Load an Image font file (XNA style)
+    /**
+     * Load an Image font file (XNA style)
+     *
+     * @param image     Image containing font characters
+     * @param key       Color used to exclude pixels from glyph images
+     * @param firstChar codepoint of the fist glyph in the image
+     * @return {@code Font} from pixel data
+     */
     public Font LoadFontFromImage(Image image, Color key, int firstChar) {
+        Font font = GetFontDefault();
 
         int charSpacing;
         int lineSpacing;
@@ -417,8 +434,8 @@ public class rText {
         int x = 0;
         int y;
 
-        // We allocate a temporal arrays for chars data measures,
-        // once we get the actual number of chars, we copy data to a sized arrays
+        // Allocate a temporal arrays for glyphs data measures,
+        // once the actual number of glyphs is obtained, copy data to a sized array
         int[] tempCharValues = new int[MAX_GLYPHS_FROM_IMAGE];
         Rectangle[] tempCharRecs = new Rectangle[MAX_GLYPHS_FROM_IMAGE];
         for (int i = 0; i < MAX_GLYPHS_FROM_IMAGE; i++) {
@@ -440,13 +457,17 @@ public class rText {
             }
         }
 
+        if ((x == 0) || (y == 0)) {
+            return font; // Security check
+        }
+
         charSpacing = x;
         lineSpacing = y;
 
         int charHeight;
         int j = 0;
 
-        while (!ColorEqual(pixels[(lineSpacing + j) * image.getWidth() + charSpacing], key)) {
+        while (((lineSpacing + j) < image.height) && !ColorEqual(pixels[(lineSpacing + j) * image.width + charSpacing], key)) {
             j++;
         }
 
@@ -470,7 +491,7 @@ public class rText {
 
                 int charWidth = 0;
 
-                while (!ColorEqual(pixels[(lineSpacing + (charHeight + lineSpacing) * lineToRead) * image.getWidth() + xPosToRead + charWidth], key)) {
+                while (((xPosToRead + charWidth) < image.width) && !ColorEqual(pixels[(lineSpacing + (charHeight + lineSpacing) * lineToRead) * image.width + xPosToRead + charWidth], key)) {
                     charWidth++;
                 }
 
@@ -485,27 +506,24 @@ public class rText {
             xPosToRead = charSpacing;
         }
 
-        // NOTE: We need to remove key color borders from image to avoid weird
+        // NOTE: Key color borders need to be removed from image to avoid weird
         // artifacts on texture scaling when using TEXTURE_FILTER_BILINEAR or TEXTURE_FILTER_TRILINEAR
         for (int i = 0; i < image.getHeight() * image.getWidth(); i++) {
             if (ColorEqual(pixels[i], key)) {
-                pixels[i] =
-                        Color.BLANK;
+                pixels[i] = Color.BLANK;
             }
         }
 
         // Create a new image with the processed color data (key color replaced by BLANK)
         Image fontClear = new Image(pixels, image.getWidth(), image.getHeight(), PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
 
-        // Create spritefont with all data parsed from image
-        Font font = new Font();
-
+        // Set font with all data parsed from image
         font.texture = context.textures.LoadTextureFromImage(fontClear); // Convert processed image to OpenGL texture
         font.glyphCount = index;
         font.glyphPadding = 0;
 
-        // We got tempCharValues and tempCharsRecs populated with chars data
-        // Now we move temp data to sized charValues and charRecs arrays
+        // Populate tempCharValues and tempCharsRecs with glyphs data
+        // Move temp data to sized charValues and charRecs arrays
         font.glyphs = new GlyphInfo[font.glyphCount];
         for (int i = 0; i < font.glyphs.length; i++) {
             font.glyphs[i] = new GlyphInfo();
@@ -537,7 +555,16 @@ public class rText {
         return font;
     }
 
-    // Load font from memory buffer, fileType refers to extension: i.e. ".ttf"
+    /**
+     * Load font from memory buffer
+     *
+     * @param fileType       File extension, used to determine data structure.
+     * @param fileData       Buffer containing file data.
+     * @param fontSize       Base size of the font, in pixels.
+     * @param codepoints     Array of codepoints to be loaded from the font, pass {@code null} to load default codepoints.
+     * @param codepointCount Number of codepoints to load, should be either {@code codepoints.length}, or {@code 0} if loading default codepoints.
+     * @return {@code Font} from memory buffer.
+     */
     public Font LoadFontFromMemory(String fileType, byte[] fileData, int fontSize, int[] codepoints, int codepointCount) {
         Font font = new Font();
 
@@ -564,7 +591,7 @@ public class rText {
             if (font.glyphs != null) {
                 font.glyphPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
 
-                Image atlas = GenImageFontAtlas(font, 0);
+                Image atlas = GenImageFontAtlas(font, 0, 0);
                 font.texture = context.textures.LoadTextureFromImage(atlas);
 
                 // Update glyphs[i].image to use alpha, required to be used on ImageDrawText()
@@ -588,8 +615,13 @@ public class rText {
         return font;
     }
 
-    // Check if a font is valid (font data loaded)
-    // WARNING: GPU texture not checked
+    /**
+     * Check if a font is valid (font data loaded) </br>
+     * WARNING: GPU texture not checked
+     *
+     * @param font Font to be evaluated.
+     * @return {@code true} if {@code font} is valid for use
+     */
     public boolean IsFontValid(Font font) {
         return ((font.baseSize > 0) &&      // Validate font size
                 (font.glyphCount > 0) &&    // Validate font contains some glyph
@@ -599,8 +631,18 @@ public class rText {
         // NOTE: Further validations could be done to verify if recs and glyphs contain valid data (glyphs values, metrics...)
     }
 
-    // Load font data for further use
-    // NOTE: Requires TTF font memory data and can generate SDF data
+    /**
+     * Load font data for further use </br>
+     * NOTE: Requires TTF font memory data and can generate SDF data
+     *
+     * @param fileData       Buffer containing font data
+     * @param fontSize       Base size of the font, in pixels
+     * @param codepoints     Array of codepoints to be loaded from the font, pass {@code null} to load default codepoints.
+     * @param codepointCount Number of codepoints to load, should be either {@code codepoints.length}, or {@code 0} if loading default codepoints.
+     * @param type           {@code FontType} to define data loading
+     * @return {@code GlyphInfo[]} defining glyphs for each value of {@code codepoints}
+     * @see FontType
+     */
     public GlyphInfo[] LoadFontData(byte[] fileData, int fontSize, int[] codepoints, int codepointCount, FontType type) {
         // NOTE: Using some SDF generation default values,
         // trades off precision with ability to handle *smaller* sizes
@@ -625,8 +667,8 @@ public class rText {
                 // TODO: Should a shallow copy be created to avoid "dealing" with a const user array?
                 int[] requiredCodepoints = codepoints;
 
-                if (stbtt_InitFont(fontInfo, dataBuffer, 0)) // Initialize font for data reading
-                {
+                // Initialize font for data reading
+                if (stbtt_InitFont(fontInfo, dataBuffer, 0)) {
                     // Calculate font scale factor
                     float scaleFactor = stbtt_ScaleForPixelHeight(fontInfo, (float) fontSize);
 
@@ -712,8 +754,8 @@ public class rText {
                                     break;
                             }
 
-                            if (glyphs[k].image.data != null)    // Glyph data has been found in the font
-                            {
+                            // Glyph data has been found in the font
+                            if (glyphs[k].image.data != null) {
                                 IntBuffer xAdvanceBuffer = IntBuffer.allocate(1);
                                 stbtt_GetCodepointHMetrics(fontInfo, cp, xAdvanceBuffer, null);
                                 glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get() * scaleFactor);
@@ -791,186 +833,254 @@ public class rText {
         return glyphs;
     }
 
-    // Generate image font atlas using chars info
-    // NOTE: Packing method: 0-Default, 1-Skyline
-    public Image GenImageFontAtlas(Font font, int packMethod) {
+    //
+    // NOTE: Packing method
+
+    /**
+     * Generate image font atlas using chars info
+     *
+     * @param font       {@code Font} to be used to generate atlas
+     * @param padding    Pixels between glyphs
+     * @param packMethod Packing method to use, either {@code 0} for Default, or {@code 1} for Skyline
+     * @return {@code Image} containing an atlas of all loaded glyphs
+     */
+    public Image GenImageFontAtlas(Font font, int padding, int packMethod) {
         Image atlas = new Image();
-        if (SUPPORT_FILEFORMAT_TTF || SUPPORT_FILEFORMAT_BDF) {
-            if (font.glyphs == null) {
-                context.tracelog.TRACELOG(LOG_WARNING, "FONT: Provided glyphs info not valid, returning empty image atlas");
-                return atlas;
+
+        int fontSize = font.baseSize;
+        Rectangle[] glyphRecs;
+        int glyphCount = font.glyphCount;
+        GlyphInfo[] glyphs = font.glyphs;
+
+        if (font.glyphs == null) {
+            context.tracelog.TRACELOG(LOG_WARNING, "FONT: Provided glyphs info not valid, returning empty image atlas");
+            return atlas;
+        }
+
+        glyphRecs = null;
+
+        // In case no chars count provided, suppose default of 95
+        glyphCount = (glyphCount > 0) ? glyphCount : 95;
+
+        // NOTE: Rectangles memory is loaded here!
+        Rectangle[] recs = new Rectangle[glyphCount];
+        for (Rectangle r : recs) {
+            r = new Rectangle();
+        }
+
+        // Calculate image size based on total glyph width and glyph row count
+        int totalWidth = 0;
+        int maxGlyphWidth = 0;
+
+        for (int i = 0; i < glyphCount; i++) {
+            if (glyphs[i].image.width > maxGlyphWidth) {
+                maxGlyphWidth = glyphs[i].image.width;
             }
+            totalWidth += glyphs[i].image.width + 2 * padding;
+        }
 
-            font.recs = null;
+        int paddedFontSize = fontSize + 2 * padding;
 
-            // In case no chars count provided, suppose default of 95
-            font.glyphCount = (font.glyphCount > 0) ? font.glyphCount : 95;
+        // Estimate image atlas size from available data
+        // NOTE: Multiplying total expected area by 1.2f scale factor but in case
+        // some glyphs do not fit, the atlas height is scaled x2 to fit them
+        float totalArea = totalWidth * paddedFontSize * 1.2f;
+        float imageMinSize = (float) Math.sqrt(totalArea);
+        int imageSize = (int) Math.pow(2, Math.ceil(Math.log(imageMinSize) / Math.log(2)));
 
-            // NOTE: Rectangles memory is loaded here!
-            Rectangle[] recs = new Rectangle[font.glyphCount];
-            for (int i = 0; i < recs.length; i++) {
-                recs[i] = new Rectangle();
+        if (totalArea < ((imageSize * imageSize) / 2)) {
+            atlas.width = imageSize;    // Atlas bitmap width
+            atlas.height = imageSize / 2; // Atlas bitmap height
+        }
+        else {
+            atlas.width = imageSize;   // Atlas bitmap width
+            atlas.height = imageSize;  // Atlas bitmap height
+        }
+
+        int atlasDataSize = atlas.width * atlas.height; // Save total size for bounds checking
+        byte[] atlasData = new byte[atlasDataSize]; // Create a bitmap to store characters (8 bpp)
+        atlas.format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+        atlas.mipmaps = 1;
+
+        // DEBUG: View padding in the generated image setting a gray background...
+        //for (int i = 0; i < atlas.width*atlas.height; i++) ((unsigned char *)atlas.data)[i] = 100;
+
+        // Use basic packing algorithm
+        if (packMethod == 0) {
+            int offsetX = padding;
+            int offsetY = padding;
+
+            // NOTE: Using simple packaging, one char after another
+            for (int i = 0; i < glyphCount; i++) {
+                // Check remaining space for glyph
+                if (offsetX >= (atlas.width - glyphs[i].image.width - 2 * padding)) {
+                    offsetX = padding;
+
+                    // NOTE: Be careful on offsetY for SDF fonts, by default SDF
+                    // use an internal padding of 4 pixels, it means char rectangle
+                    // height is bigger than fontSize, it could be up to (fontSize + 8)
+                    offsetY += (fontSize + 2 * padding);
+
+                    if (offsetY > (atlas.height - fontSize - padding)) {
+                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: Updating atlas size to fit all characters");
+
+                        // Update atlas size to fit all characters
+                        int updatedAtlasHeight = atlas.height * 2;
+                        int updatedAtlasDataSize = atlas.width * updatedAtlasHeight;
+                        byte[] updatedAtlasData = new byte[updatedAtlasDataSize];
+                        Arrays.fill(updatedAtlasData, (byte) 1);
+
+                        System.arraycopy(atlasData, 0, updatedAtlasData, 0, atlasData.length);
+                        atlasData = updatedAtlasData;
+                        atlas.height = updatedAtlasHeight;
+                        atlasDataSize = updatedAtlasDataSize;
+                    }
+                }
+
+                // Copy pixel data from glyph image to atlas
+                for (int y = 0; y < glyphs[i].image.height; y++) {
+                    for (int x = 0; x < glyphs[i].image.width; x++) {
+                        int destX = offsetX + x;
+                        int destY = offsetY + y;
+
+                        // Security: check both lower and upper bounds
+                        if ((destX >= 0) && (destX < atlas.width) && (destY >= 0) && (destY < atlas.height)) {
+                            atlasData[destY * atlas.width + destX] = glyphs[i].image.data.get(y * glyphs[i].image.width + x);
+                        }
+                    }
+                }
+
+                // Fill chars rectangles in atlas info
+                recs[i].x = (float) offsetX;
+                recs[i].y = (float) offsetY;
+                recs[i].width = (float) glyphs[i].image.width;
+                recs[i].height = (float) glyphs[i].image.height;
+
+                // Move atlas position X for next character drawing
+                offsetX += (glyphs[i].image.width + 2 * padding);
             }
+        }
+        // Use Skyline rect packing algorithm (stb_pack_rect)
+        else if (packMethod == 1) {
+            STBRPContext stbrpContext = STBRPContext.create();
 
-            // Calculate image size based on required pixel area
-            // NOTE 1: Image is forced to be squared and POT... very conservative!
-            // NOTE 2: SDF font characters already contain an internal padding,
-            // so image size would result bigger than default font type
-            float requiredArea = 0;
+            ByteBuffer nBB = ByteBuffer.allocateDirect(font.glyphCount * STBRPNode.SIZEOF);
+            STBRPNode.Buffer nodes = new STBRPNode.Buffer(nBB);
+
             for (int i = 0; i < font.glyphCount; i++) {
-                requiredArea += ((font.glyphs[i].image.width + 2 * font.glyphPadding) * (font.baseSize + 2 * font.glyphPadding));
+                nodes.put(i, STBRPNode.create());
             }
-            float guessSize = (float) (Math.sqrt(requiredArea) * 1.4f);
-            int imageSize = (int) Math.pow(2, Math.ceil(Math.log(guessSize) / Math.log(2)));  // Calculate next POT
 
-            atlas.setWidth(imageSize);  // Atlas bitmap width
-            atlas.setHeight(imageSize);  // Atlas bitmap height
-            int atlasDataSize = atlas.width * atlas.height;
-            byte[] atlasData = new byte[atlasDataSize];
-            // Create a bitmap to store characters (8 bpp)
-            atlas.setFormat(PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
-            atlas.setMipmaps(1);
+            STBRectPack.stbrp_init_target(stbrpContext, atlas.width, atlas.height, nodes);
 
-            // DEBUG: view padding in the generated image setting a gray background...
-            //byte[] greyBG = new byte[atlas.width*atlas.height];
-            //for (int i = 0; i < atlas.width*atlas.height; i++) greyBG[i] = 100;
-            //atlas.setData(greyBG);
+            ByteBuffer rBB = ByteBuffer.allocateDirect(font.glyphCount * STBRPRect.SIZEOF);
+            STBRPRect.Buffer rects = new STBRPRect.Buffer(rBB);
 
-            if (packMethod == 0) {  // Use basic packing algorythm
+            for (int i = 0; i < font.glyphCount; i++) {
+                rects.put(i, STBRPRect.create());
+            }
 
-                int offsetX = font.glyphPadding;
-                int offsetY = font.glyphPadding;
+            // Fill rectangles for packaging
+            for (int i = 0; i < font.glyphCount; i++) {
+                rects.get(i).id(i);
+                rects.get(i).w((short) (font.glyphs[i].image.width + 2 * font.glyphPadding));
+                rects.get(i).h((short) (font.glyphs[i].image.height + 2 * font.glyphPadding));
+            }
 
-                // NOTE: Using simple packaging, one char after another
-                for (int i = 0; i < font.glyphCount; i++) {
+            // Package rectangles into atlas
+            STBRectPack.stbrp_pack_rects(stbrpContext, rects);
+
+            for (int i = 0; i < font.glyphCount; i++) {
+                // It returns char rectangles in atlas
+                recs[i].x = rects.get(i).x() + font.glyphPadding;
+                recs[i].y = rects.get(i).y() + font.glyphPadding;
+                recs[i].width = font.glyphs[i].image.width;
+                recs[i].height = font.glyphs[i].image.height;
+
+                if (rects.get(i).was_packed()) {
                     byte[] fcData = font.glyphs[i].image.getData();
                     // Copy pixel data from fc.data to atlas
                     for (int y = 0; y < font.glyphs[i].image.height; y++) {
                         for (int x = 0; x < font.glyphs[i].image.width; x++) {
-                            atlasData[(offsetY + y) * atlas.width + (offsetX + x)] = fcData[y * font.glyphs[i].image.width + x];
-                        }
-                    }
-
-                    // Fill chars rectangles in atlas info
-                    recs[i].x = (float) offsetX;
-                    recs[i].y = (float) offsetY;
-                    recs[i].width = (float) font.glyphs[i].image.width;
-                    recs[i].height = (float) font.glyphs[i].image.height;
-
-                    // Move atlas position X for next character drawing
-                    offsetX += (font.glyphs[i].image.getWidth() + 2 * font.glyphPadding);
-
-                    if (offsetX >= (atlas.getWidth() - font.glyphs[i].image.getWidth() - 2 * font.glyphPadding)) {
-                        offsetX = font.glyphPadding;
-
-                        // NOTE: Be careful on offsetY for SDF fonts, by default SDF
-                        // use an internal padding of 4 pixels, it means char rectangle
-                        // height is bigger than fontSize, it could be up to (fontSize + 8)
-                        offsetY += (font.baseSize + 2 * font.glyphPadding);
-
-                        if (offsetY > (atlas.height - font.baseSize - font.glyphPadding)) {
-                            context.tracelog.TRACELOG(LOG_WARNING, "FONT: Updating atlas size to fit all characters");
-
-                            // Update atlas size to fit all characters
-                            int updatedAtlasHeight = atlas.height * 2;
-                            int updatedAtlasDataSize = atlas.width * updatedAtlasHeight;
-                            byte[] updatedAtlasData = new byte[updatedAtlasDataSize];
-
-                            Arrays.fill(updatedAtlasData, (byte) 1);
-                            System.arraycopy(atlas.getData(), 0, updatedAtlasData, 0, atlasDataSize);
-
-                            atlas.setData(updatedAtlasData);
-                            atlas.height = updatedAtlasHeight;
-                            atlasDataSize = updatedAtlasDataSize;
+                            atlasData[(rects.get(i).y() + font.glyphPadding + y) * atlas.width + (rects.get(i).x() + font.glyphPadding + x)] =
+                                    fcData[y * font.glyphs[i].image.width + x];
                         }
                     }
                 }
-            }
-            else if (packMethod == 1) { // Use Skyline rect packing algorithm (stb_pack_rect)
-                STBRPContext STB_context = STBRPContext.create();
-
-                ByteBuffer nBB = ByteBuffer.allocateDirect(font.glyphCount * STBRPNode.SIZEOF);
-                STBRPNode.Buffer nodes = new STBRPNode.Buffer(nBB);
-
-                for (int i = 0; i < font.glyphCount; i++) {
-                    nodes.put(i, STBRPNode.create());
-                }
-
-                STBRectPack.stbrp_init_target(STB_context, atlas.width, atlas.height, nodes);
-
-                ByteBuffer rBB = ByteBuffer.allocateDirect(font.glyphCount * STBRPRect.SIZEOF);
-                STBRPRect.Buffer rects = new STBRPRect.Buffer(rBB);
-
-                for (int i = 0; i < font.glyphCount; i++) {
-                    rects.put(i, STBRPRect.create());
-                }
-
-                // Fill rectangles for packaging
-                for (int i = 0; i < font.glyphCount; i++) {
-                    rects.get(i).id(i);
-                    rects.get(i).w((short) (font.glyphs[i].image.width + 2 * font.glyphPadding));
-                    rects.get(i).h((short) (font.glyphs[i].image.height + 2 * font.glyphPadding));
-                }
-
-                // Package rectangles into atlas
-                STBRectPack.stbrp_pack_rects(STB_context, rects);
-
-                for (int i = 0; i < font.glyphCount; i++) {
-                    // It return char rectangles in atlas
-                    recs[i].x = rects.get(i).x() + font.glyphPadding;
-                    recs[i].y = rects.get(i).y() + font.glyphPadding;
-                    recs[i].width = font.glyphs[i].image.width;
-                    recs[i].height = font.glyphs[i].image.height;
-
-                    if (rects.get(i).was_packed()) {
-                        byte[] fcData = font.glyphs[i].image.getData();
-                        // Copy pixel data from fc.data to atlas
-                        for (int y = 0; y < font.glyphs[i].image.height; y++) {
-                            for (int x = 0; x < font.glyphs[i].image.width; x++) {
-                                atlasData[(rects.get(i).y() + font.glyphPadding + y) * atlas.width + (rects.get(i).x() + font.glyphPadding + x)] =
-                                        fcData[y * font.glyphs[i].image.width + x];
-                            }
-                        }
-                    }
-                    else {
-                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + i + ")");
-                    }
+                else {
+                    context.tracelog.TRACELOG(LOG_WARNING, "FONT: Failed to package character (" + i + ")");
                 }
             }
-
-            // Convert image data from GRAYSCALE to GRAY_ALPHA
-            byte[] dataGrayAlpha = new byte[atlas.width * atlas.height * 2]; // Two channels
-            for (int i = 0, k = 0; i < atlas.width * atlas.height; i++, k += 2) {
-                dataGrayAlpha[k] = (byte) 255;
-                dataGrayAlpha[k + 1] = atlasData[i];
-            }
-
-            atlas.setData(dataGrayAlpha);
-            atlas.setFormat(PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA);
-
-            font.recs = recs;
         }
+
+        // Add a 3x3 white rectangle at the bottom-right corner of the generated atlas,
+        // useful to use as the white texture to draw shapes with raylib
+        // Security: ensure the atlas is large enough to hold a 3x3 rectangle
+        if ((FONT_ATLAS_CORNER_REC_SIZE > 0) && (atlas.width >= 3) && (atlas.height >= 3)) {
+            for (int i = 0, k = atlas.width * atlas.height - 1; i < FONT_ATLAS_CORNER_REC_SIZE; i++) {
+                atlasData[k - 0] = (byte) 255;
+                atlasData[k - 1] = (byte) 255;
+                atlasData[k - 2] = (byte) 255;
+                k -= atlas.width;
+            }
+        }
+
+        // Convert image data from GRAYSCALE to GRAY_ALPHA
+        byte[] dataGrayAlpha = new byte[atlas.width * atlas.height * 2]; // Two channels
+
+        for (int i = 0, k = 0; i < atlas.width * atlas.height; i++, k += 2) {
+            dataGrayAlpha[k] = (byte) 255;
+            dataGrayAlpha[k + 1] = atlasData[i];
+        }
+
+        atlas.setData(dataGrayAlpha);
+        atlas.format = PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
+
+        font.recs = recs;
 
         return atlas;
     }
 
-    // Unload font chars info data (RAM)
-    public void UnloadFontData(GlyphInfo[] glyphs, int codepointCount) {
+    /**
+     * Unload font glyphs info data (RAM)
+     *
+     * @param glyphs Glyph data to unload
+     */
+    @Contract(mutates = "param")
+    public void UnloadFontData(GlyphInfo[] glyphs) {
         if (glyphs != null) {
-            for (int i = 0; i < codepointCount; i++) {
+            for (int i = 0; i < glyphs.length; i++) {
                 context.textures.UnloadImage(glyphs[i].image);
             }
+            glyphs = null;
         }
     }
 
-    // Unload Font from GPU memory (VRAM)
-    public void UnloadFont(Font f) {
-        f = null;
+    /**
+     * Unload Font from GPU memory (VRAM)
+     *
+     * @param font {@code Font} to unload
+     */
+    public void UnloadFont(Font font) {
+        // NOTE: Make sure font is not default font (fallback)
+        if (font.texture.id != GetFontDefault().texture.id) {
+            UnloadFontData(font.glyphs);
+            context.textures.UnloadTexture(font.texture);
+            font.recs = null;
+
+            context.tracelog.TRACELOG(LOG_DEBUG, "FONT: Unloaded font data from RAM and VRAM");
+        }
     }
 
-    // Export font as code file, returns true on success
+    /**
+     * Export font as code file
+     *
+     * @param font     Font to export
+     * @param fileName Location to save file data
+     * @return {@code true} on successful file operation
+     */
     public boolean ExportFontAsCode(Font font, String fileName) {
-        boolean success = false;
+        boolean result = false;
 
         int TEXT_BYTES_PER_LINE = 20;
         int MAX_FONT_DATA_SIZE = 1024 * 1024;
@@ -978,8 +1088,14 @@ public class rText {
         // Get file name from path
         String fileNamePascal = TextToPascal(context.files.GetFileNameWithoutExt(fileName));
 
-        // NOTE: Text data buffer size is estimated considering image data size in bytes
-        // and requiring 6 char bytes for every byte: "0x00, "
+        // Get font atlas image and size, required to estimate code file size
+        // NOTE: This mechanism is highly coupled to raylib
+        Image image = context.textures.LoadImageFromTexture(font.texture);
+        if (image.format != PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
+            context.tracelog.TRACELOG(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
+        }
+        int imageDataSize = context.textures.GetPixelDataSize(image.width, image.height, image.format);
+
         StringBuilder txtData = new StringBuilder(MAX_FONT_DATA_SIZE);
 
         int byteCount = 0;
@@ -990,7 +1106,7 @@ public class rText {
         txtData.append("// more info and bugs-report:  github.com/raysan5/raylib                              //\n");
         txtData.append("// feedback and support:       ray[at]raylib.com                                      //\n");
         txtData.append("//                                                                                    //\n");
-        txtData.append("// Copyright (c) 2018-2022 Ramon Santamaria (@raysan5)                                //\n");
+        txtData.append("// Copyright (c) 2018-2026 Ramon Santamaria (@raysan5)                                //\n");
         txtData.append("//                                                                                    //\n");
         txtData.append("// ---------------------------------------------------------------------------------- //\n");
         txtData.append("//                                                                                    //\n");
@@ -1003,17 +1119,6 @@ public class rText {
         txtData.append("////////////////////////////////////////////////////////////////////////////////////////\n\n");
         byteCount = txtData.length();
 
-        // Support font export and initialization
-        // NOTE: This mechanism is highly coupled to raylib
-        Image image = context.textures.LoadImageFromTexture(font.texture);
-        if (image.format != PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA) {
-            context.tracelog.TRACELOG(LOG_WARNING, "Font export as code: Font image format is not GRAY+ALPHA!");
-        }
-        int imageDataSize = context.textures.GetPixelDataSize(image.width, image.height, image.format);
-
-        // Image data is usually GRAYSCALE + ALPHA and can be reduced to GRAYSCALE
-        //ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
-
         boolean SUPPORT_COMPRESSED_FONT_ATLAS = true;
 
         if (SUPPORT_COMPRESSED_FONT_ATLAS) {
@@ -1023,9 +1128,7 @@ public class rText {
 
             // Compress font image data
             int compDataSize = 0;
-            // TODO: 11/14/23 context.core CompressData
-            //    byte[] compData = context.core.CompressData(image.getData(), imageDataSize);
-            byte[] compData = new byte[0];
+            byte[] compData = context.core.CompressData(image.getData());
 
             // Save font image data (compressed)
             txtData.append("#define COMPRESSED_DATA_SIZE_FONT_" + TextToUpper(fileNamePascal) + " compDataSize" + "\n\n");
@@ -1125,19 +1228,23 @@ public class rText {
 
         // NOTE: Text data size exported is determined by '\0' (NULL) character
         try {
-            success = context.files.SaveFileText(fileName, txtData.toString());
+            result = context.files.SaveFileText(fileName, txtData.toString());
             context.tracelog.TRACELOG(LOG_INFO, "FILEIO: [" + fileName + "] Font as code exported successfully");
         }
         catch (IOException e) {
-            success = false;
+            result = false;
             context.tracelog.TRACELOG(LOG_WARNING, "FILEIO: [" + fileName + "] Failed to export font as code");
         }
 
-        return success;
+        return result;
     }
 
-    // Draw current FPS
-    // NOTE: Uses default font
+    /**
+     * Draw current FPS using default font
+     *
+     * @param posX X position to draw text, with respect to the upper-left-hand corner
+     * @param posY Y position to draw text, with respect to the upper-left-hand corner
+     */
     public void DrawFPS(int posX, int posY) {
         Color color = Color.LIME; // Good fps
         int fps = context.core.GetFPS();
@@ -1152,15 +1259,27 @@ public class rText {
         DrawText(TextFormat("%2d FPS", fps), posX, posY, 20, color);
     }
 
-    // Draw current FPS
-    // NOTE: Uses default font and custom colour
+    /**
+     * Draw current FPS using default font
+     *
+     * @param posX      X position to draw text, with respect to the upper-left-hand corner
+     * @param posY      Y position to draw text, with respect to the upper-left-hand corner
+     * @param textColor Color to draw text
+     */
     public void DrawFPS(int posX, int posY, Color textColor) {
-        DrawText((context.core.GetFPS() + " FPS"), posX, posY, 20, textColor);
+        int fps = context.core.GetFPS();
+        DrawText(TextFormat("%2d FPS", fps), posX, posY, 20, textColor);
     }
 
-    // Draw text (using default font)
-    // NOTE: fontSize work like in any drawing program but if fontSize is lower than font-base-size, then font-base-size is used
-    // NOTE: chars spacing is proportional to fontSize
+    /**
+     * Draw text using the default font
+     *
+     * @param text     String to draw
+     * @param posX     X position to draw text, with respect to the upper-left-hand corner
+     * @param posY     Y position to draw text, with respect to the upper-left-hand corner
+     * @param fontSize Size to draw text in pixels. If {@code fontSize} is less than the default font's {@code baseSize} then {@code baseSize} is used.
+     * @param color    Color to draw text
+     */
     public void DrawText(String text, int posX, int posY, int fontSize, Color color) {
         // Check if default font has been loaded
         if (GetFontDefault().texture.getId() != 0) {
@@ -1176,8 +1295,16 @@ public class rText {
         }
     }
 
-    // Draw text using Font
-    // NOTE: chars spacing is NOT proportional to fontSize
+    /**
+     * Draw text using a specified font
+     *
+     * @param font     Font to use when drawing text
+     * @param text     String to draw
+     * @param position (x, y) coordinate pair where text is to be drawn, with respect to the upper-left-hand corner
+     * @param fontSize Size to draw text in pixels. If {@code fontSize} is less than the default font's {@code baseSize} then {@code baseSize} is used.
+     * @param spacing  Space between characters
+     * @param tint     Color to draw text
+     */
     public void DrawTextEx(Font font, String text, Vector2 position, float fontSize, float spacing, Color tint) {
 
         if (font.texture.id == 0) {
@@ -1186,7 +1313,7 @@ public class rText {
 
         int length = TextLength(text);
 
-        int textOffsetY = 0;            // Offset between lines (on line break '\n')
+        float textOffsetY = 0;            // Offset between lines (on line break '\n')
         float textOffsetX = 0.0f;       // Offset X to next character to draw
 
         float scaleFactor = fontSize / font.baseSize;     // Character quad scaling factor
@@ -1198,8 +1325,8 @@ public class rText {
             int index = GetGlyphIndex(font, codepoint);
 
             if (codepoint == '\n') {
-                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textOffsetY += textLineSpacing;
+                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to set up
+                textOffsetY += (fontSize + textLineSpacing);
                 textOffsetX = 0.0f;
             }
             else {
@@ -1220,7 +1347,18 @@ public class rText {
         }
     }
 
-    // Draw text using Font and pro parameters (rotation)
+    /**
+     * Draw text using pro parameters
+     *
+     * @param font     Font to use when drawing text
+     * @param text     String to draw
+     * @param position (x, y) coordinate pair where text is to be drawn, with respect to the upper-left-hand corner
+     * @param origin   (x, y) coordinate pair defining the center point of the text
+     * @param rotation Degrees to rotate about {@code center}
+     * @param fontSize Size to draw text in pixels. If {@code fontSize} is less than the default font's {@code baseSize} then {@code baseSize} is used.
+     * @param spacing  Space between characters
+     * @param tint     Color to draw text
+     */
     public void DrawTextPro(Font font, String text, Vector2 position, Vector2 origin, float rotation, float fontSize,
                             float spacing, Color tint) {
         context.rlgl.rlPushMatrix();
@@ -1234,7 +1372,15 @@ public class rText {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw one character (codepoint)
+    /**
+     * Draw one character (i.e. codepoint)
+     *
+     * @param font      Font to use when drawing codepoint
+     * @param codepoint codepoint to draw
+     * @param position  (x, y) coordinate pair where codepoint is to be drawn, with respect to the upper-left-hand corner
+     * @param fontSize  Size to draw codepoint in pixels. If {@code fontSize} is less than the default font's {@code baseSize} then {@code baseSize} is used.
+     * @param tint      Color to draw codepoint
+     */
     public void DrawTextCodepoint(Font font, int codepoint, Vector2 position, float fontSize, Color tint) {
         // Character index position in sprite font
         // NOTE: In case a codepoint is not available in the font, index returned points to '?'
@@ -1242,7 +1388,7 @@ public class rText {
         float scaleFactor = fontSize / font.baseSize;     // Character quad scaling factor
 
         // Character destination rectangle on screen
-        // NOTE: We consider charsPadding on drawing
+        // NOTE: Considering glyph padding on drawing
         Rectangle dstRec = new Rectangle(
                 position.getX() + font.glyphs[index].offsetX * scaleFactor - (float) font.glyphPadding * scaleFactor,
                 position.getY() + font.glyphs[index].offsetY * scaleFactor - (float) font.glyphPadding * scaleFactor,
@@ -1250,7 +1396,7 @@ public class rText {
                 (font.recs[index].getHeight() + 2.0f * font.glyphPadding) * scaleFactor);
 
         // Character source rectangle from font texture atlas
-        // NOTE: We consider chars padding when drawing, it could be required for outline/glow shader effects
+        // NOTE: Considering glyphs padding when drawing, it could be required for outline/glow shader effects
         Rectangle srcRec = new Rectangle(
                 font.recs[index].getX() - (float) font.glyphPadding,
                 font.recs[index].getY() - (float) font.glyphPadding,
@@ -1261,9 +1407,18 @@ public class rText {
         context.textures.DrawTexturePro(font.texture, srcRec, dstRec, new Vector2(), 0.0f, tint);
     }
 
-    // Draw multiple characters (codepoints)
+    /**
+     * Draw multiple characters (i.e. codepoints)
+     *
+     * @param font       Font to use when drawing codepoints
+     * @param codepoints Array of codepoints to draw
+     * @param position   (x, y) coordinate pair where codepoint is to be drawn, with respect to the upper-left-hand corner
+     * @param fontSize   Size to draw codepoint in pixels. If {@code fontSize} is less than the default font's {@code baseSize} then {@code baseSize} is used.
+     * @param spacing    Space between codepoints
+     * @param tint       Color to draw codepoint
+     */
     public void DrawTextCodepoints(Font font, int[] codepoints, Vector2 position, float fontSize, float spacing, Color tint) {
-        int textOffsetY = 0;            // Offset between lines (on line break '\n')
+        float textOffsetY = 0;            // Offset between lines (on line break '\n')
         float textOffsetX = 0.0f;       // Offset X to next character to draw
         float scaleFactor = fontSize / font.baseSize;         // Character quad scaling factor
 
@@ -1271,7 +1426,7 @@ public class rText {
             int index = GetGlyphIndex(font, codepoints[i]);
             if (codepoints[i] == '\n') {
                 // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textOffsetY += textLineSpacing;
+                textOffsetY += (fontSize + textLineSpacing);
                 textOffsetX = 0.0f;
             }
             else {
@@ -1289,18 +1444,28 @@ public class rText {
         }
     }
 
-    // Set vertical line spacing when drawing with line-breaks
+    /**
+     * Set vertical line spacing when drawing with line-breaks
+     *
+     * @param spacing Space between lines, in pixels
+     */
     public void SetTextLineSpacing(int spacing) {
         textLineSpacing = spacing;
     }
 
-    // Measure string width for default font
+    /**
+     * Measure string width for default font
+     *
+     * @param text     String to measure
+     * @param fontSize Size of characters
+     * @return Length of {@code text} in pixels
+     */
     public int MeasureText(String text, int fontSize) {
         Vector2 vec = new Vector2();
 
         // Check if default font has been loaded
         if (GetFontDefault().texture.getId() != 0) {
-            int defaultFontSize = 10;   // Default Font chars height in pixel
+            int defaultFontSize = 10;   // Default Font glyph height in pixels
             if (fontSize < defaultFontSize) {
                 fontSize = defaultFontSize;
             }
@@ -1313,10 +1478,21 @@ public class rText {
     }
 
     // Measure string size for Font
+
+    /**
+     * Measure string size
+     *
+     * @param font     Font to use when measuring characters
+     * @param text     String to measure
+     * @param fontSize Size of characters
+     * @param spacing  Space between characters
+     * @return (Width, Height) pair as (X, Y) of a {@code Vector2}
+     */
     public Vector2 MeasureTextEx(Font font, String text, float fontSize, float spacing) {
         Vector2 textSize = new Vector2();
 
-        if ((font.texture.id == 0) || (text == null)) {
+        // Security check
+        if ((font.texture.id == 0) || (text == null) || text.isEmpty()) {
             return textSize;
         }
 
@@ -1327,7 +1503,7 @@ public class rText {
         float textWidth = 0.0f;
         float tempTextWidth = 0.0f;     // Used to count longer text line width
 
-        float textHeight = (float) font.baseSize;
+        float textHeight = fontSize;
         float scaleFactor = fontSize / (float) font.baseSize;
 
         int letter = 0;                 // Current character
@@ -1336,16 +1512,14 @@ public class rText {
         for (int i = 0; i < size; ) {
             byteCounter++;
 
-            int next = 0;
+            int codepointByteCount = GetCodePointByteCount(text.charAt(i));
             letter = GetCodepointNext(text, i);
             index = GetGlyphIndex(font, letter);
-            next = GetCodePointByteCount(letter);
 
-
-            i += next;
+            i += codepointByteCount;
 
             if (letter != '\n') {
-                if (font.glyphs[index].advanceX != 0) {
+                if (font.glyphs[index].advanceX > 0) {
                     textWidth += font.glyphs[index].advanceX;
                 }
                 else {
@@ -1358,8 +1532,9 @@ public class rText {
                 }
                 byteCounter = 0;
                 textWidth = 0;
+
                 // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textHeight += (float) textLineSpacing;
+                textHeight += (fontSize + textLineSpacing);
             }
 
             if (tempByteCounter < byteCounter) {
@@ -1372,16 +1547,99 @@ public class rText {
         }
 
         textSize.x = tempTextWidth * scaleFactor + ((tempByteCounter - 1) * spacing);
-        textSize.y = textHeight * scaleFactor;
+        textSize.y = textHeight;
 
         return textSize;
     }
 
-    // Returns index position for a Unicode character on spritefont
-    public int GetGlyphIndex(Font font, int codepoint) {
-        // Support charsets with any characters order
+    /**
+     * Measure string size for an array of codepoints
+     *
+     * @param font       Font to use when measuring codepoints
+     * @param codepoints array of codepoints to measure
+     * @param fontSize   size of characters
+     * @param spacing    space between characters
+     * @return (Width, Height) pair as (X, Y) of a {@code Vector2}
+     */
+    public Vector2 MeasureTextCodepoints(Font font, int[] codepoints, float fontSize, float spacing) {
+        Vector2 textSize = new Vector2();
+
+        // Security check
+        if ((font.texture.id == 0) || (codepoints == null) || (codepoints.length == 0)) {
+            return textSize;
+        }
+
+        float textWidth = 0.0f;
+        // Used to count longer text line width
+        float tempTextWidth = 0.0f;
+
+        // Used to count longer text line num chars
+        int tempGlyphCounter = 0;
+        int glyphCounter = 0;
+
+        float textHeight = fontSize;
+        float scaleFactor = fontSize / (float) font.baseSize;
+
+        // Current character
+        int letter = 0;
+        // Index position in sprite font
         int index = 0;
-        int fallbackIndex = 0;
+
+        for (int i = 0; i < codepoints.length; i++) {
+            letter = codepoints[i];
+            index = GetGlyphIndex(font, letter);
+
+            if (letter != '\n') {
+                glyphCounter++;
+
+                if (font.glyphs[index].advanceX > 0) {
+                    textWidth += font.glyphs[index].advanceX;
+                }
+                else {
+                    textWidth += (font.recs[index].width + font.glyphs[index].offsetX);
+                }
+            }
+            else {
+                if (tempTextWidth < textWidth) {
+                    tempTextWidth = textWidth;
+                }
+
+                textWidth = 0;
+                glyphCounter = 0;
+
+                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
+                textHeight += (fontSize + textLineSpacing);
+            }
+
+            if (tempGlyphCounter < glyphCounter) {
+                tempGlyphCounter = glyphCounter;
+            }
+        }
+
+        if (tempTextWidth < textWidth) {
+            tempTextWidth = textWidth;
+        }
+
+        textSize.x = tempTextWidth * scaleFactor + (float) ((tempGlyphCounter - 1) * spacing);
+        textSize.y = textHeight;
+
+        return textSize;
+    }
+
+    /**
+     * Returns index position for a Unicode character in spritefont
+     *
+     * @param font      Font to query
+     * @param codepoint codepoint to locate
+     * @return index of {@code codepoint} in {@code font}
+     */
+    public int GetGlyphIndex(Font font, int codepoint) {
+        int index = 0;
+        int fallbackIndex = 0;      // Get index of fallback glyph '?'
+
+        if (!IsFontValid(font)) {
+            return index;
+        }
 
         // Look for character index in the unordered charset
         for (int i = 0; i < font.glyphCount; i++) {
@@ -1402,17 +1660,32 @@ public class rText {
         return index;
     }
 
-    // Get glyph font info data for a codepoint (unicode character)
-    // NOTE: If codepoint is not found in the font it fallbacks to '?'
+    /**
+     * Get glyph font info data for a codepoint (unicode character)
+     *
+     * @param font      Font to query
+     * @param codepoint codepoint to locate
+     * @return {@code GlyphInfo} for {@code codepoint}. If codepoint is not found in the font it fallbacks to '?'
+     */
     GlyphInfo GetGlyphInfo(Font font, int codepoint) {
         return font.glyphs[GetGlyphIndex(font, codepoint)];
     }
 
-    // Get glyph rectangle in font atlas for a codepoint (unicode character)
-    // NOTE: If codepoint is not found in the font it fallbacks to '?'
+    /**
+     * Get glyph rectangle in font atlas for a codepoint (unicode character)
+     *
+     * @param font      Font to query
+     * @param codepoint codepoint to locate
+     * @return {@code Rectangle} defining {@code codepoint}. If codepoint is not found in the font it fallbacks to '?'
+     */
     Rectangle GetGlyphAtlasRec(Font font, int codepoint) {
         return font.recs[GetGlyphIndex(font, codepoint)];
     }
+
+    //----------------------------------------------------------------------------------
+    // Text strings management functions
+    //----------------------------------------------------------------------------------
+
 
     /**
      * Get text length in bytes
@@ -1424,13 +1697,25 @@ public class rText {
         return text.getBytes().length;
     }
 
-    // Formatting of text with variables to 'embed'
-    // Note: Calls String.format()
+    /**
+     * Formatting of text with variables to 'embed'
+     *
+     * @param format a format string
+     * @param args   arguments referenced by {@code format}
+     * @return Formatted text
+     * @see String#format(String, Object...)
+     */
     public String TextFormat(String format, Object... args) {
         return String.format(format, args);
     }
 
-    // Get integer value from text
+    /**
+     * Get integer value from text
+     *
+     * @param text String representation of an {@code int}
+     * @return {@code int} defined by {@code String}
+     * @see Integer#parseInt(String)
+     */
     public int TextToInteger(String text) {
         return Integer.parseInt(text);
     }
@@ -1438,12 +1723,27 @@ public class rText {
     //TextCopy
     //can't really copy from one memory address to another...
 
-    // Check if two text string are equal
+    /**
+     * Check if two text string are equal
+     *
+     * @param text1
+     * @param text2
+     * @return {true} if {@code text1} equals {@code text2}
+     * @see String#equals(Object)
+     */
     public boolean TextIsEqual(String text1, String text2) {
         return text1.equals(text2);
     }
 
-    // Get a piece of a text string
+    /**
+     * Get a piece of a text string
+     *
+     * @param text
+     * @param position
+     * @param length
+     * @return
+     * @see String#substring(int, int)
+     */
     public String TextSubtext(String text, int position, int length) {
         if (length < text.length()) {
             return text.substring(position, length);
@@ -1453,12 +1753,27 @@ public class rText {
         }
     }
 
-    // Replace text string
+    /**
+     * Replace text string
+     *
+     * @param text
+     * @param replace
+     * @param by
+     * @return
+     * @see String#replace(CharSequence, CharSequence)
+     */
     public String TextReplace(String text, String replace, String by) {
         return text.replace(replace, by);
     }
 
-    // Insert text in a specific position, moves all text forward
+    /**
+     * Insert text in a specific position and move remaining text forward
+     *
+     * @param text
+     * @param insert
+     * @param position
+     * @return
+     */
     public String TextInsert(String text, String insert, int position) {
         String result;
 
@@ -1469,8 +1784,14 @@ public class rText {
         return result;
     }
 
-    // Join text strings with delimiter
-    public String TextJoin(String[] text, char delimiter) {
+    /**
+     * Join text strings with a delimiter
+     *
+     * @param text      {@code String[]} array to join
+     * @param delimiter Character used to separate strings
+     * @return Strings of {@code text} spliced with {@code delimiter}
+     */
+    public String TextJoin(String[] text, String delimiter) {
         StringBuilder result = new StringBuilder();
 
         for (String s : text) {
@@ -1481,43 +1802,69 @@ public class rText {
         return result.toString();
     }
 
-    // Split string into multiple strings
-    public String[] TextSplit(String text, char delimiter) {
-        String[] result = new String[MAX_TEXTSPLIT_COUNT];
-
-        for (int i = 0, j = 0; i < text.length(); i++) {
-            if (text.charAt(i) != delimiter) {
-                result[j] += text.charAt(i);
-            }
-            else {
-                j++;
-            }
-        }
-
-        return result;
+    /**
+     * Split String into multiple Strings
+     *
+     * @param text
+     * @param delimiter
+     * @return
+     * @see String#split(String)
+     */
+    public String[] TextSplit(String text, String delimiter) {
+        return text.split(delimiter);
     }
 
-    // Append text at specific position
+    /**
+     * Append text to the end of a string.
+     *
+     * @param text
+     * @param append
+     * @return
+     */
     public String TextAppend(String text, String append) {
         return text + append;
     }
 
-    // Find first text occurrence within a string
+    /**
+     * Find first text occurrence within a string
+     *
+     * @param text
+     * @param find
+     * @return
+     * @see String#indexOf(int)
+     */
     public int TextFindIndex(String text, String find) {
         return text.indexOf(find);
     }
 
-    //Get upper case version of provided string
+    /**
+     * Get upper case version of provided string
+     *
+     * @param text
+     * @return {@code text} AS AN UPPERCASED STRING
+     * @see String#toUpperCase()
+     */
     public String TextToUpper(String text) {
         return text.toUpperCase();
     }
 
-    //Get lower case version of provided string
+    /**
+     * Get lower case version of provided string
+     *
+     * @param text
+     * @return {@code text} as a lowercased string
+     * @see String#toLowerCase()
+     */
     public String TextToLower(String text) {
         return text.toLowerCase();
     }
 
-    // Get Pascal case notation version of provided string
+    /**
+     * Get Pascal case notation version of provided string
+     *
+     * @param text
+     * @return {@code text} AsAPascalCasedString
+     */
     public String TextToPascal(String text) {
         char[] buffer = new char[MAX_TEXT_BUFFER_LENGTH];
 
@@ -1542,7 +1889,13 @@ public class rText {
         return Arrays.toString(buffer);
     }
 
-    // Encode text codepoint into UTF-8 text
+    /**
+     * Encode text codepoint into UTF-8 text
+     *
+     * @param codepoints
+     * @param length
+     * @return
+     */
     public String LoadUTF8(int[] codepoints, int length) {
         // We allocate enough memory to fit all possible codepoints
         // NOTE: 5 bytes for every codepoint should be enough
@@ -1560,7 +1913,12 @@ public class rText {
         return text.toString();
     }
 
-    // Encode codepoint into UTF-8 text (char array length returned as parameter)
+    /**
+     * Encode codepoint into UTF-8 text (char array length returned as parameter)
+     *
+     * @param codepoint
+     * @return
+     */
     public String CodepointToUTF8(int codepoint) {
         char[] utf8 = new char[6];
 
@@ -1586,11 +1944,15 @@ public class rText {
         return String.valueOf(utf8);
     }
 
-    // Get next codepoint in a UTF-8 encoded text, scanning until '\0' is found
-    // When an invalid UTF-8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
-    // Total number of bytes processed are returned as a parameter
-    // NOTE: The standard says U+FFFD should be returned in case of errors
-    // but that character is not supported by the default font in raylib
+    /**
+     * Get next codepoint in a UTF-8 encoded text, scanning until '\0' is found. </br>
+     * When an invalid UTF-8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned </br>
+     * </br>
+     * NOTE: The standard says U+FFFD should be returned in case of errors but that character is not supported by the default font in raylib
+     * @param text
+     * @param ptr
+     * @return
+     */
     public int GetCodepoint(String text, int ptr) {
         /*
             UTF-8 specs from https://www.ietf.org/rfc/rfc3629.txt
@@ -1711,18 +2073,32 @@ public class rText {
     }
 
 
-    // Get all codepoints in a string, codepoints count returned by parameters
+    /**
+     * Get all codepoints in a string
+     * @param text
+     * @return
+     */
     public int[] LoadCodepoints(String text) {
         return text.codePoints().toArray();
     }
 
-    // Unload codepoints data from memory
+    /**
+     * Unload codepoints data from memory
+     * @param codepoints Codepoints to unload
+     */
+    @Contract(mutates = "param")
     public void UnloadCodepoints(int[] codepoints) {
         codepoints = null;
     }
 
-    // Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found
-    // NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
+    /**
+     * Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found</bvr>
+     * </br>
+     * NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
+     *
+     * @param text
+     * @return
+     */
     public int GetCodepointCount(String text) {
         return text.codePointCount(0, text.length() - 1);
     }
@@ -1771,6 +2147,7 @@ public class rText {
     }
 
     /**
+     * Get the number of bytes occupied by a codepoint
      *
      * @param codepoint
      * @return
@@ -1794,7 +2171,13 @@ public class rText {
         return size;
     }
 
-    // Read a line from memory
+    /**
+     * Read a line from memory
+     *
+     * @param origin
+     * @param maxLength
+     * @return
+     */
     public String GetLine(String origin, int maxLength) {
         int count = 0;
         for (; count < maxLength; count++) {
@@ -1808,7 +2191,12 @@ public class rText {
         return origin.substring(0, count);
     }
 
-    // Load a BMFont file (AngelCode font file)
+    /**
+     * Load a BMFont file (AngelCode font file)
+     *
+     * @param fileName
+     * @return
+     */
     public Font LoadBMFont(String fileName) {
         int fontSize, imWidth, imHeight, codepointCount;
         int lineTracker = 1;
@@ -1960,7 +2348,11 @@ public class rText {
         return font;
     }
 
-    // Convert hexadecimal to decimal (single digit)
+    /**
+     * Convert hexadecimal to decimal (single digit)
+     * @param hex
+     * @return
+     */
     private byte HexToInt(char hex) {
         if ((hex >= '0') && (hex <= '9')) {
             return (byte) (hex - '0');
@@ -1976,6 +2368,14 @@ public class rText {
         }
     }
 
+    /**
+     * Load a font from a BDF font file
+     *
+     * @param fileData
+     * @param codepoints
+     * @param codepointCount
+     * @return
+     */
     private GlyphInfo[] LoadFontDataBDF(byte[] fileData, int[] codepoints, int codepointCount) {
         int MAX_BUFFER_SIZE = 256;
         int outFontSize = 0;

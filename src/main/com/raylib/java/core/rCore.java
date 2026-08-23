@@ -12,12 +12,16 @@ import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
 import com.raylib.java.core.rcamera.Camera3D;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
@@ -2000,8 +2004,46 @@ public class rCore {
     //----------------------------------------------------------------------------------
 
     //TODO: 3/20/21
-    // CompressData
-    // DecompressData
+
+    /**
+     * Compress data
+     * @param uncompressedData
+     * @return
+     */
+    public byte[] CompressData(byte[] uncompressedData) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
+            dos.write(uncompressedData);
+            dos.flush();
+            dos.finish();
+            return baos.toByteArray();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Decompress data
+     * @param compressedData
+     * @return
+     */
+    public byte[] DecompressData(byte[] compressedData) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(compressedData);
+             InflaterInputStream iis = new InflaterInputStream(bais);
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = iis.read(buffer)) > 0) {
+                baos.write(buffer, 0, len);
+            }
+            return baos.toByteArray();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Encode data to Base64 string
