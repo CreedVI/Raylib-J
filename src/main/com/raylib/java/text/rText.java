@@ -616,7 +616,7 @@ public class rText {
     }
 
     /**
-     * Check if a font is valid (font data loaded) </br>
+     * Check if a font is valid (font data loaded) <br/>
      * WARNING: GPU texture not checked
      *
      * @param font Font to be evaluated.
@@ -632,7 +632,7 @@ public class rText {
     }
 
     /**
-     * Load font data for further use </br>
+     * Load font data for further use <br/>
      * NOTE: Requires TTF font memory data and can generate SDF data
      *
      * @param fileData       Buffer containing font data
@@ -1945,9 +1945,9 @@ public class rText {
     }
 
     /**
-     * Get next codepoint in a UTF-8 encoded text, scanning until '\0' is found. </br>
-     * When an invalid UTF-8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned </br>
-     * </br>
+     * Get next codepoint in a UTF-8 encoded text, scanning until '\0' is found. <br/>
+     * When an invalid UTF-8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned <br/>
+     * <br/>
      * NOTE: The standard says U+FFFD should be returned in case of errors but that character is not supported by the default font in raylib
      * @param text
      * @param ptr
@@ -2093,7 +2093,7 @@ public class rText {
 
     /**
      * Returns total number of characters(codepoints) in a UTF8 encoded text, until '\0' is found</bvr>
-     * </br>
+     * <br/>
      * NOTE: If an invalid UTF8 sequence is encountered a '?'(0x3f) codepoint is counted instead
      *
      * @param text
