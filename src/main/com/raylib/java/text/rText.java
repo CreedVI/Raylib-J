@@ -769,7 +769,7 @@ public class rText {
 
                                     // WARNING: If requested SDF font, sdf-glyph height is definitely bigger than fontSize due to FONT_SDF_CHAR_PADDING
                                     if ((type != FONT_SDF) && (cpHeight > fontSize)) {
-                                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: [0x%04x] Glyph height is bigger than requested font size: %i > %i", cp, cpHeight, (int) fontSize);
+                                        context.tracelog.TRACELOG(LOG_WARNING, "FONT: [0x%04x] Glyph height is bigger than requested font size: %d > %d", cp, cpHeight, (int) fontSize);
                                     }
 
                                     // Load glyph image
@@ -824,7 +824,7 @@ public class rText {
                         }
 
                         if (glyphCounter < codepointCount) {
-                            context.tracelog.TRACELOG(LOG_WARNING, "FONT: Requested codepoints glyphs found: [%i/%i]", k, codepointCount);
+                            context.tracelog.TRACELOG(LOG_WARNING, "FONT: Requested codepoints glyphs found: [%d/%d]", k, codepointCount);
                         }
                     }
                     else {
