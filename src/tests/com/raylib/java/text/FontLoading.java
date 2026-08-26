@@ -56,11 +56,6 @@ public class FontLoading{
         // TTF font : Font data and atlas are generated directly from TTF
         // NOTE: We define a font base size of 32 pixels tall and up-to 250 characters
         Font fontTtf = rlj.text.LoadFontEx("src/tests/resources/text/pixantiqua.ttf", 32, null, 250);
-        Texture2D[] ttfGlyphs = new Texture2D[fontTtf.glyphs.length];
-        for (int i = 0; i < ttfGlyphs.length; i++) {
-            ttfGlyphs[i] = rlj.textures.LoadTextureFromImage(fontTtf.glyphs[i].image);
-        }
-        int glyphIndex = 0;
 
         boolean useTtf;
 
@@ -72,13 +67,6 @@ public class FontLoading{
             // Update
             //----------------------------------------------------------------------------------
             useTtf = rlj.core.IsKeyDown(KEY_SPACE);
-
-            if (rlj.core.IsKeyPressed(KEY_RIGHT)) {
-                glyphIndex++;
-            }
-            else if (rlj.core.IsKeyPressed(KEY_LEFT)) {
-                glyphIndex--;
-            }
             //----------------------------------------------------------------------------------
 
             // Draw
