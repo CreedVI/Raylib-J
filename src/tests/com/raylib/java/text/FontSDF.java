@@ -56,7 +56,7 @@ public class FontSDF{
         // Parameters > font size: 16, no chars array provided (0), chars count: 95 (autogenerate chars array)
         fontDefault.glyphs = rlj.text.LoadFontData(fileData, 16, null, 95, rText.FontType.FONT_DEFAULT);
         // Parameters > chars count: 95, font size: 16, chars padding in image: 4 px, pack method: 0 (default)
-        Image atlas = rlj.text.GenImageFontAtlas(fontDefault, 0, 0);
+        Image atlas = rlj.text.GenImageFontAtlas(fontDefault, 0);
         fontDefault.texture = rlj.textures.LoadTextureFromImage(atlas);
         rlj.textures.UnloadImage(atlas);
 
@@ -67,7 +67,7 @@ public class FontSDF{
         // Parameters > font size: 16, no chars array provided (0), chars count: 0 (defaults to 95)
         fontSDF.glyphs = rlj.text.LoadFontData(fileData, 16, null, 0, rText.FontType.FONT_SDF);
         // Parameters > chars count: 95, font size: 16, chars padding in image: 0 px, pack method: 1 (Skyline algorythm)
-        atlas = rlj.text.GenImageFontAtlas(fontSDF, 0, 1);
+        atlas = rlj.text.GenImageFontAtlas(fontSDF, 1);
         fontSDF.texture = rlj.textures.LoadTextureFromImage(atlas);
         rlj.textures.UnloadImage(atlas);
 

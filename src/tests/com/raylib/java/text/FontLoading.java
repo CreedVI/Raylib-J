@@ -1,11 +1,9 @@
 package com.raylib.java.text;
 
 import com.raylib.java.Raylib;
-import com.raylib.java.structs.Color;
-import com.raylib.java.structs.Font;
-import com.raylib.java.structs.Vector2;
+import com.raylib.java.structs.*;
 
-import static com.raylib.java.core.input.Keyboard.KEY_SPACE;
+import static com.raylib.java.core.input.Keyboard.*;
 
 public class FontLoading{
 
@@ -58,6 +56,11 @@ public class FontLoading{
         // TTF font : Font data and atlas are generated directly from TTF
         // NOTE: We define a font base size of 32 pixels tall and up-to 250 characters
         Font fontTtf = rlj.text.LoadFontEx("src/tests/resources/text/pixantiqua.ttf", 32, null, 250);
+        Texture2D[] ttfGlyphs = new Texture2D[fontTtf.glyphs.length];
+        for (int i = 0; i < ttfGlyphs.length; i++) {
+            ttfGlyphs[i] = rlj.textures.LoadTextureFromImage(fontTtf.glyphs[i].image);
+        }
+        int glyphIndex = 0;
 
         boolean useTtf;
 
@@ -69,6 +72,13 @@ public class FontLoading{
             // Update
             //----------------------------------------------------------------------------------
             useTtf = rlj.core.IsKeyDown(KEY_SPACE);
+
+            if (rlj.core.IsKeyPressed(KEY_RIGHT)) {
+                glyphIndex++;
+            }
+            else if (rlj.core.IsKeyPressed(KEY_LEFT)) {
+                glyphIndex--;
+            }
             //----------------------------------------------------------------------------------
 
             // Draw
@@ -84,7 +94,7 @@ public class FontLoading{
                 rlj.text.DrawText("Using BMFont (Angelcode) imported", 20, rlj.core.GetScreenHeight() - 30, 20, Color.GRAY);
             }
             else {
-                rlj.text.DrawTextEx(fontTtf, msg, new Vector2(20.0f, 100.0f), (float)fontTtf.baseSize, 2, Color.LIME);
+                rlj.text.DrawTextEx(fontTtf, msg, new Vector2(20.0f, 100.0f), (float)fontTtf.baseSize, fontTtf.glyphPadding, Color.LIME);
                 rlj.text.DrawText("Using TTF font generated", 20, rlj.core.GetScreenHeight() - 30, 20, Color.GRAY);
             }
 

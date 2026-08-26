@@ -568,7 +568,7 @@ public class rText {
      * @param fileData       Buffer containing file data.
      * @param fontSize       Base size of the font, in pixels.
      * @param codepoints     Array of codepoints to be loaded from the font, pass {@code null} to load default codepoints.
-     * @param codepointCount Number of codepoints to load, should be either {@code codepoints.length}, or {@code 0} if loading default codepoints.
+     * @param codepointCount Number of codepoints to load, should be {@code 0} if loading default codepoints.
      * @return {@code Font} from memory buffer.
      */
     public Font LoadFontFromMemory(String fileType, byte[] fileData, int fontSize, int[] codepoints, int codepointCount) {
@@ -578,15 +578,18 @@ public class rText {
 
         font.baseSize = fontSize;
         font.glyphPadding = 0;
+        font.glyphCount = (codepointCount > 0) ? codepointCount : 95;
 
         if (SUPPORT_FILEFORMAT_TTF) {
             if (fileExtLower.equals(".ttf") || fileExtLower.equals(".otf")) {
-                font.glyphs = LoadFontData(fileData, font.baseSize, codepoints, (codepointCount > 0) ? codepointCount : 95, FONT_DEFAULT);
+                font.glyphs = LoadFontData(fileData, font.baseSize, codepoints, font.glyphCount, FONT_DEFAULT);
+                font.glyphCount = font.glyphs.length;
             }
         }
         if (SUPPORT_FILEFORMAT_BDF) {
             if (fileExtLower.equals(".bdf")) {
-                font.glyphs = LoadFontDataBDF(fileData, codepoints, (codepointCount > 0) ? codepointCount : 95);
+                font.glyphs = LoadFontDataBDF(fileData, codepoints, font.glyphCount);
+                font.glyphCount = font.glyphs.length;
             }
         }
         else {
@@ -597,7 +600,7 @@ public class rText {
             if (font.glyphs != null) {
                 font.glyphPadding = FONT_TTF_DEFAULT_CHARS_PADDING;
 
-                Image atlas = GenImageFontAtlas(font, 0, 0);
+                Image atlas = GenImageFontAtlas(font, 0);
                 font.texture = context.textures.LoadTextureFromImage(atlas);
 
                 // Update glyphs[i].image to use alpha, required to be used on ImageDrawText()
@@ -765,7 +768,7 @@ public class rText {
                                 if (glyphs[k].image.data != null) {
                                     IntBuffer xAdvanceBuffer = stack.callocInt(1);
                                     stbtt_GetCodepointHMetrics(fontInfo, cp, xAdvanceBuffer, null);
-                                    glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get() * scaleFactor);
+                                    glyphs[k].advanceX = (int) ((float) xAdvanceBuffer.get(0) * scaleFactor);
 
                                     // WARNING: If requested SDF font, sdf-glyph height is definitely bigger than fontSize due to FONT_SDF_CHAR_PADDING
                                     if ((type != FONT_SDF) && (cpHeight > fontSize)) {
@@ -841,31 +844,26 @@ public class rText {
         return glyphs;
     }
 
-    //
-    // NOTE: Packing method
-
     /**
      * Generate image font atlas using chars info
      *
      * @param font       {@code Font} to be used to generate atlas
-     * @param padding    Pixels between glyphs
      * @param packMethod Packing method to use, either {@code 0} for Default, or {@code 1} for Skyline
      * @return {@code Image} containing an atlas of all loaded glyphs
      */
-    public Image GenImageFontAtlas(Font font, int padding, int packMethod) {
+    @Contract(mutates = "param1")
+    public Image GenImageFontAtlas(Font font, int packMethod) {
         Image atlas = new Image();
 
         int fontSize = font.baseSize;
-        Rectangle[] glyphRecs;
         int glyphCount = font.glyphCount;
+        int padding = font.glyphPadding;
         GlyphInfo[] glyphs = font.glyphs;
 
         if (font.glyphs == null) {
             context.tracelog.TRACELOG(LOG_WARNING, "FONT: Provided glyphs info not valid, returning empty image atlas");
             return atlas;
         }
-
-        glyphRecs = null;
 
         // In case no chars count provided, suppose default of 95
         glyphCount = (glyphCount > 0) ? glyphCount : 95;
@@ -896,7 +894,7 @@ public class rText {
         float imageMinSize = (float) Math.sqrt(totalArea);
         int imageSize = (int) Math.pow(2, Math.ceil(Math.log(imageMinSize) / Math.log(2)));
 
-        if (totalArea < ((imageSize * imageSize) / 2)) {
+        if (totalArea < ((float) (imageSize * imageSize) / 2)) {
             atlas.width = imageSize;    // Atlas bitmap width
             atlas.height = imageSize / 2; // Atlas bitmap height
         }
@@ -911,7 +909,11 @@ public class rText {
         atlas.mipmaps = 1;
 
         // DEBUG: View padding in the generated image setting a gray background...
-        //for (int i = 0; i < atlas.width*atlas.height; i++) ((unsigned char *)atlas.data)[i] = 100;
+        /*
+        for (int i = 0; i < atlas.width*atlas.height; i++) {
+            atlasData[i] = 100;
+        }
+         */
 
         // Use basic packing algorithm
         if (packMethod == 0) {
@@ -921,7 +923,7 @@ public class rText {
             // NOTE: Using simple packaging, one char after another
             for (int i = 0; i < glyphCount; i++) {
                 // Check remaining space for glyph
-                if (offsetX >= (atlas.width - glyphs[i].image.width - 2 * padding)) {
+                if (offsetX > (atlas.width - glyphs[i].image.width - 2 * padding)) {
                     offsetX = padding;
 
                     // NOTE: Be careful on offsetY for SDF fonts, by default SDF
@@ -946,6 +948,7 @@ public class rText {
                 }
 
                 // Copy pixel data from glyph image to atlas
+                byte[] glyphData = glyphs[i].image.getData();
                 for (int y = 0; y < glyphs[i].image.height; y++) {
                     for (int x = 0; x < glyphs[i].image.width; x++) {
                         int destX = offsetX + x;
@@ -953,7 +956,7 @@ public class rText {
 
                         // Security: check both lower and upper bounds
                         if ((destX >= 0) && (destX < atlas.width) && (destY >= 0) && (destY < atlas.height)) {
-                            atlasData[destY * atlas.width + destX] = glyphs[i].image.data.get(y * glyphs[i].image.width + x);
+                            atlasData[destY * atlas.width + destX] = glyphData[y * glyphs[i].image.width + x];
                         }
                     }
                 }
@@ -1339,8 +1342,7 @@ public class rText {
             }
             else {
                 if ((codepoint != ' ') && (codepoint != '\t')) {
-                    DrawTextCodepoint(font, codepoint, new Vector2(position.getX() + textOffsetX,
-                                                                   position.getY() + textOffsetY), fontSize, tint);
+                    DrawTextCodepoint(font, codepoint, new Vector2(position.getX() + textOffsetX, position.getY() + textOffsetY), fontSize, tint);
                 }
 
                 if (font.glyphs[index].advanceX == 0) {
@@ -1401,7 +1403,8 @@ public class rText {
                 position.getX() + font.glyphs[index].offsetX * scaleFactor - (float) font.glyphPadding * scaleFactor,
                 position.getY() + font.glyphs[index].offsetY * scaleFactor - (float) font.glyphPadding * scaleFactor,
                 (font.recs[index].getWidth() + 2.0f * font.glyphPadding) * scaleFactor,
-                (font.recs[index].getHeight() + 2.0f * font.glyphPadding) * scaleFactor);
+                (font.recs[index].getHeight() + 2.0f * font.glyphPadding) * scaleFactor
+        );
 
         // Character source rectangle from font texture atlas
         // NOTE: Considering glyphs padding when drawing, it could be required for outline/glow shader effects
@@ -1409,7 +1412,8 @@ public class rText {
                 font.recs[index].getX() - (float) font.glyphPadding,
                 font.recs[index].getY() - (float) font.glyphPadding,
                 font.recs[index].getWidth() + 2.0f * font.glyphPadding,
-                font.recs[index].getHeight() + 2.0f * font.glyphPadding);
+                font.recs[index].getHeight() + 2.0f * font.glyphPadding
+        );
 
         // Draw the character texture on the screen
         context.textures.DrawTexturePro(font.texture, srcRec, dstRec, new Vector2(), 0.0f, tint);

@@ -49,12 +49,17 @@ public class Image implements Cloneable{
     }
 
     public byte[] getData(){
-        byte[] array = new byte[data.capacity()];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = data.get();
+        if (this.data != null) {
+            byte[] array = new byte[data.capacity()];
+            for (int i = 0; i < array.length; i++) {
+                array[i] = data.get();
+            }
+            data.flip();
+            return array;
         }
-        data.flip();
-        return array;
+        else {
+            return new byte[0];
+        }
     }
 
     public void setData(ByteBuffer data) {
