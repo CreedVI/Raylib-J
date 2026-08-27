@@ -2545,7 +2545,11 @@ public class rCore {
     // Module Functions Definition: Input Handling: Keyboard
     //----------------------------------------------------------------------------------
 
-    // Detect if a key has been pressed once
+    /**
+     * Detect if a key has been pressed once
+     * @param key
+     * @return
+     */
     public boolean IsKeyPressed(int key) {
         return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
     }
@@ -2752,18 +2756,18 @@ public class rCore {
 
     // Detect if a mouse button is being pressed
     public boolean IsMouseButtonDown(int button) {
-        boolean up = false;
+        boolean down = false;
 
-        if (input.mouse.currentButtonState[button] == 0) {
-            up = true;
+        if (input.mouse.currentButtonState[button] == 1) {
+            down = true;
         }
 
         // NOTE: Touches are considered like mouse buttons
-        if (!input.touch.currentTouchState[button]) {
-            up = true;
+        if (input.touch.currentTouchState[button]) {
+            down = true;
         }
 
-        return up;
+        return down;
     }
 
     public boolean IsMouseButtonReleased(Mouse.MouseButton button) {
