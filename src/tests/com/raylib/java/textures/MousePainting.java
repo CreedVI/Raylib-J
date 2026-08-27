@@ -192,8 +192,7 @@ public class MousePainting {
             rlj.core.ClearBackground(RAYWHITE);
 
             // NOTE: Render texture must be y-flipped due to default OpenGL coordinates (left-bottom)
-            rlj.textures.DrawTextureRec(target.texture, new Rectangle(0, 0, (float) target.texture.width,
-                                                                      (float) -target.texture.height), new Vector2(), WHITE);
+            rlj.textures.DrawTextureRec(target.texture, new Rectangle(0, 0, (float) target.texture.width, (float) -target.texture.height), new Vector2(), WHITE);
 
             // Draw drawing circle for reference
             if (mousePos.y > 50) {
@@ -220,7 +219,8 @@ public class MousePainting {
             }
 
             rlj.shapes.DrawRectangleLinesEx(new Rectangle(colorsRecs[colorSelected].x - 2,
-                                                          colorsRecs[colorSelected].y - 2, colorsRecs[colorSelected].width + 4,
+                                                          colorsRecs[colorSelected].y - 2,
+                                                          colorsRecs[colorSelected].width + 4,
                                                           colorsRecs[colorSelected].height + 4), 2, BLACK);
 
             // Draw save image button
@@ -229,8 +229,7 @@ public class MousePainting {
 
             // Draw save image message
             if (showSaveMessage) {
-                rlj.shapes.DrawRectangle(0, 0, rlj.core.GetScreenWidth(), rlj.core.GetScreenHeight(),
-                                         rlj.textures.Fade(RAYWHITE, 0.8f));
+                rlj.shapes.DrawRectangle(0, 0, rlj.core.GetScreenWidth(), rlj.core.GetScreenHeight(), rlj.textures.Fade(RAYWHITE, 0.8f));
                 rlj.shapes.DrawRectangle(0, 150, rlj.core.GetScreenWidth(), 80, BLACK);
                 rlj.text.DrawText("IMAGE SAVED:  my_amazing_texture_painting.png", 150, 180, 20, RAYWHITE);
             }

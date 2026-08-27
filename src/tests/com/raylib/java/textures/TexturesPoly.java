@@ -70,7 +70,7 @@ public class TexturesPoly{
         {
             // Update
             //----------------------------------------------------------------------------------
-            ang++;
+            ang+=0.01f;
 
             Vector2[] positions = new Vector2[MAX_POINTS];
 
@@ -102,7 +102,7 @@ public class TexturesPoly{
 
     }
 
-    // Draw textured polygon, defined by vertex and texturecoordinates
+    // Draw textured polygon, defined by vertex and texture coordinates
     // NOTE: Polygon center must have straight line path to all points
     // without crossing perimeter, points must be in anticlockwise order
     public static void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2[] points, Vector2[] texcoords, int pointsCount,

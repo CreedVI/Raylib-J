@@ -33,8 +33,7 @@ public class RawData{
         // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
 
         // Load RAW image data (512x512, 32bit RGBA, no file header)
-        Image fudesumiRaw = rlj.textures.LoadImageRaw("src/tests/resources/textures/fudesumi.raw", 384, 512,
-                                                      RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 0);
+        Image fudesumiRaw = rlj.textures.LoadImageRaw("src/tests/resources/textures/fudesumi.raw", 384, 512, RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 0);
         Texture2D fudesumi = rlj.textures.LoadTextureFromImage(fudesumiRaw);  // Upload CPU (RAM) image to GPU (VRAM)
         rlj.textures.UnloadImage(fudesumiRaw);                                // Unload CPU (RAM) image data
 
@@ -77,8 +76,7 @@ public class RawData{
 
             rlj.core.ClearBackground(Color.RAYWHITE);
 
-            rlj.textures.DrawTexture(checked, screenWidth/2 - checked.width/2, screenHeight/2 - checked.height/2,
-                    rlj.textures.Fade(Color.WHITE, 0.5f));
+            rlj.textures.DrawTexture(checked, screenWidth/2 - checked.width/2, screenHeight/2 - checked.height/2, rlj.textures.Fade(Color.WHITE, 0.5f));
             rlj.textures.DrawTexture(fudesumi, 430, -30, Color.WHITE);
 
             rlj.text.DrawText("CHECKED TEXTURE ", 84, 85, 30, Color.BROWN);
