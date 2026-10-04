@@ -5,7 +5,6 @@ import com.raylib.java.core.tracelog.TraceLog;
 import com.raylib.java.gestures.rGestures;
 import com.raylib.java.io.FileIO;
 import com.raylib.java.models.rModels;
-import com.raylib.java.extras.physac.Physac;
 import com.raylib.java.raudioal.rAudioAL;
 import com.raylib.java.rlgl.RLGL;
 import com.raylib.java.shapes.rShapes;
@@ -15,7 +14,6 @@ import org.jetbrains.annotations.Contract;
 
 public class Raylib {
 
-    public rAudioAL audio;
     public RLGL rlgl;
     public rCore core;
     public FileIO files;
@@ -24,9 +22,8 @@ public class Raylib {
     public rShapes shapes;
     public rTextures textures;
     public rModels models;
-
-    public Physac physac;
     public rGestures gestures;
+    public rAudioAL audio;
 
     public TraceLog tracelog;
 
@@ -61,7 +58,6 @@ public class Raylib {
         this.audio = new rAudioAL(this);
         this.shapes = new rShapes(this);
         this.models = new rModels(this);
-        this.physac = new Physac();
         this.gestures = new rGestures(this);
     }
 
