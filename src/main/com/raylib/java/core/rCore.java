@@ -11,28 +11,29 @@ import com.raylib.java.core.tracelog.TraceLog;
 import com.raylib.java.structs.*;
 import com.raylib.java.core.rcamera.Camera2D;
 import com.raylib.java.core.rcamera.Camera3D;
+import org.jetbrains.annotations.Contract;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.Config.*;
 import static com.raylib.java.core.input.Keyboard.KEY_F12;
+import static com.raylib.java.core.input.Keyboard.KEY_ESCAPE;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_INFO;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.LOG_WARNING;
 import static com.raylib.java.gestures.GestureEvent.Gesture.GESTURE_NONE;
 import static com.raylib.java.rlgl.RLGL.*;
 import static com.raylib.java.rlgl.RLGL.rlBlendMode.BLEND_ALPHA;
 import static com.raylib.java.structs.AutomationEvent.AutomationEventType.*;
-import static com.raylib.java.core.input.Keyboard.KEY_ESCAPE;
 import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_ARROW;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_ORTHOGRAPHIC;
 import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.CAMERA_PERSPECTIVE;
@@ -91,7 +92,7 @@ public class rCore {
      *           Mouse gestures are directly mapped like touches and processed by gestures system
      *
      *       #define SUPPORT_BUSY_WAIT_LOOP      1
-     *           Use busy wait loop for timing sync, if not defined, a high-resolution timer is setup and used
+     *           Use busy wait loop for timing sync, if not defined, a high-resolution timer is set up and used
      *
      *       #define SUPPORT_PARTIALBUSY_WAIT_LOOP 0
      *           Use a partial-busy wait loop, in this case frame sleeps for most of the time and runs a busy-wait-loop at the end
@@ -138,20 +139,20 @@ public class rCore {
     public final Input input;
     public final Time time;
 
-    ArrayList<AutomationEvent> events;
+    ArrayList<AutomationEvent> currentEventList;
     int eventCount = 0;                 // Events count
-    public boolean eventsPlaying = false;      // Play events
-    public boolean eventsRecording = false;    // Record events
-    short eventsEnabled = 0b0000001111111111;    // Events enabled for checking
+    public boolean automationEventPlaying = false;      // Play events
+    public boolean automationEventRecording = false;    // Record events
+    short automationEventEnabled = 0b0000001111111111;    // Events enabled for checking
 
-    String[] dirFilesPath;
-    int dirFileCount;
+    private int gifFrameCounter = 0;
+    private boolean gifRecording = false;
 
     public int screenshotCounter;
 
     //Globals required for FPS calculation
     private static int index = 0;
-    private static float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
+    private static final float[] history = new float[30]; //FPS_CAPTURE_FRAMES_COUNT
     private static float average = 0, last = 0;
 
     private final Random random;
@@ -163,14 +164,12 @@ public class rCore {
         this.context = context;
 
         SetTraceLogCallback(new TraceLogCallback());
-        window = new Window();
-        input = new Input();
-        time = new Time();
+        this.window = new Window();
+        this.input = new Input();
+        this.time = new Time();
 
         this.random = new Random();
-
-        events = new ArrayList<>();
-
+        this.currentEventList = new ArrayList<>();
         this.platform = new Desktop(context, window, input);
     }
 
@@ -352,12 +351,20 @@ public class rCore {
 
         // Initialize random seed
         SetRandomSeed((long) time.frame);
+
+        context.tracelog.TRACELOG(LOG_INFO, "SYSTEM: Working Directory: %s", context.files.GetWorkingDirectory());
     }
 
     /**
      * Close window and unload OpenGL context
      */
     public void CloseWindow() {
+        if (SUPPORT_GIF_RECORDING) {
+            if (gifRecording) {
+                // todo: gif recording
+            }
+        }
+
         if (SUPPORT_MODULE_RTEXT) {
             context.text.UnloadFontDefault();        // WARNING: Module required: rtext
         }
@@ -897,9 +904,15 @@ public class rCore {
         context.rlgl.rlDrawRenderBatchActive();      // Update and draw internal render batch
 
         if (SUPPORT_AUTOMATION_EVENTS) {
-            // if (automationEventRecording) {
-            //     RecordAutomationEvent(); // Event Recording
-            // }
+            if (automationEventRecording) {
+                RecordAutomationEvent(); // Event Recording
+            }
+        }
+
+        if (SUPPORT_GIF_RECORDING) {
+            if (gifRecording) {
+                // todo: GifSequenceWriter
+            }
         }
 
         if (!SUPPORT_CUSTOM_FRAME_CONTROL) {
@@ -956,7 +969,7 @@ public class rCore {
     public void EndMode2D() {
         context.rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
 
-        context.rlgl.rlLoadIdentity();                   // Reset current matrix (modelview)
+        context.rlgl.rlLoadIdentity();                                  // Reset current matrix (modelview)
         if (context.rlgl.rlGetActiveFramebuffer() == 0) {
             context.rlgl.rlMultMatrixf(MatrixToFloat(window.screenScale)); // Apply screen scaling if required
         }
@@ -968,7 +981,7 @@ public class rCore {
      * @param camera rendering camera
      */
     public void BeginMode3D(Camera3D camera) {
-        context.rlgl.rlDrawRenderBatchActive();                         // Draw Buffers (Only OpenGL 3+ and ES2)
+        context.rlgl.rlDrawRenderBatchActive();          // Draw Buffers (Only OpenGL 3+ and ES2)
 
         context.rlgl.rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
         context.rlgl.rlPushMatrix();                     // Save previous matrix, which contains the settings for the 2d ortho projection
@@ -1231,7 +1244,7 @@ public class rCore {
             config.projection[1] = MatrixMultiply(proj, MatrixTranslate(-projOffset, 0.0f, 0.0f));
 
             // Compute camera transformation matrices
-            // NOTE: Camera movement might seem more natural if modelling the head
+            // NOTE: Camera movement might seem more natural if modeling the head
             // Axis of rotation is the base of the head, so adding some y (base of head to eye level
             // and -z (center of head to eye protrusion) to the camera positions
             config.viewOffset[0] = MatrixTranslate(device.interpupillaryDistance * 0.5f, 0.075f, 0.045f);
@@ -1301,11 +1314,9 @@ public class rCore {
             }
         }
 
-
         if ((vShaderStr == null) && (fShaderStr == null)) {
             context.tracelog.TRACELOG(LOG_WARNING, "SHADER: Shader files provided are not valid, using default shader");
         }
-
 
         shader = LoadShaderFromMemory(vShaderStr, fShaderStr);
 
@@ -1340,6 +1351,8 @@ public class rCore {
             //          vertex color location       = 3
             //          vertex tangent location     = 4
             //          vertex texcoord2 location   = 5
+            //          vertex boneIds location     = 6
+            //          vertex boneWeights location = 7
 
             // NOTE: If any location is not found, loc point becomes -1
             shader.locs = new int[RL_MAX_SHADER_LOCATIONS];
@@ -1543,11 +1556,10 @@ public class rCore {
 
         if (camera.projection == CAMERA_PERSPECTIVE) {
             // Calculate projection matrix from perspective
-            matProj = MatrixPerspective(camera.fovy * DEG2RAD,
-                                        ((double) width / (double) height), context.rlgl.rlGetCullDistanceNear(), context.rlgl.rlGetCullDistanceFar());
+            matProj = MatrixPerspective(camera.fovy * DEG2RAD, ((double) width / (double) height), context.rlgl.rlGetCullDistanceNear(), context.rlgl.rlGetCullDistanceFar());
         }
         else if (camera.projection == CAMERA_ORTHOGRAPHIC) {
-            float aspect = (float) window.screen.width / (float) window.screen.height;
+            float aspect = (float) width / (float) height;
             double top = camera.fovy / 2.0;
             double right = top * aspect;
 
@@ -1591,7 +1603,6 @@ public class rCore {
         Matrix mat = MatrixLookAt(camera.position, camera.target, camera.up);
 
         return mat;
-
     }
 
     /**
@@ -1736,7 +1747,7 @@ public class rCore {
 
     /**
      * Returns current FPS
-     * NOTE: Calculates an average frame rate
+     * NOTE: Calculating an average frame rate
      *
      * @return Current average frame rate
      */
@@ -1750,7 +1761,7 @@ public class rCore {
 
             float fpsFrame = GetFrameTime();
 
-            // If reseting the window, reset the FPS info
+            // If resetting the window, reset the FPS info
             if (time.frameCounter == 0) {
                 average = 0;
                 last = 0;
@@ -1800,11 +1811,9 @@ public class rCore {
         return glfwGetTime();
     }
 
-
     //----------------------------------------------------------------------------------
     // Module Functions Definition: Custom frame control
     //----------------------------------------------------------------------------------
-
 
     /**
      * Wait for some time (stop program execution)
@@ -1836,7 +1845,7 @@ public class rCore {
 
             // System halt function
             try {
-                TimeUnit.SECONDS.sleep((long) seconds);
+                TimeUnit.SECONDS.sleep((long) sleepSeconds);
             }
             catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -1882,13 +1891,13 @@ public class rCore {
     /**
      * Load random values sequence, no values repeated
      *
-     * @param count
-     * @param min
-     * @param max
-     * @return
+     * @param count Number of random values to generate
+     * @param min Minimum value of random number
+     * @param max Maximum value of random number
+     * @return {@code int[]} of random values between the <code>min</code> and <code>max</code>
      */
-    public int[] LoadRandomSequence(long count, int min, int max) {
-        int[] values = new int[(int) count];
+    public int[] LoadRandomSequence(int count, int min, int max) {
+        int[] values = new int[count];
 
         // Security check
         if (count > (Math.abs(max - min) + 1)) {
@@ -1921,6 +1930,7 @@ public class rCore {
     /**
      * Unload random values sequence
      */
+    @Contract(mutates = "param")
     public void UnloadRandomSequence(@SuppressWarnings({"ReassignedVariable", "ParameterCanBeLocal"}) int[] sequence) {
         // noinspection UnusedAssignment
         sequence = null;
@@ -1931,7 +1941,7 @@ public class rCore {
      * NOTE: This function could work in any platform but some platforms: PLATFORM_ANDROID and PLATFORM_WEB have their own internal file-systems,
      * to download image to user file-system some additional mechanism is required
      *
-     * @param fileName
+     * @param fileName Location to save the screenshot
      */
     public void TakeScreenshot(String fileName) {
         if (SUPPORT_MODULE_RTEXTURES) {
@@ -1949,7 +1959,6 @@ public class rCore {
 
             context.textures.ExportImage(image, path); // WARNING: Module required: rtextures
 
-            // TODO: Verification required for log
             context.tracelog.TRACELOG(LOG_INFO, "SYSTEM: [" + path + "] Screenshot taken successfully");
         }
         else {
@@ -1989,7 +1998,6 @@ public class rCore {
     public void SetTraceLogCallback(TraceLog callback) {
         context.tracelog = callback;
     }
-
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition: File System management
@@ -2150,11 +2158,99 @@ public class rCore {
         return decodedData;
     }
 
-    //TODO:
-    // ComputeCRC32
-    // ComputeMD5
-    // ComputeSHA1
-    // ComputeSHA256
+    /**
+     * Compute CRC32 hash code
+     *
+     * @param data {@code byte[]} to be hashed using the CRC32 Algorithm
+     * @return {@code long} with the value of the CRC32 Checksum
+     */
+    public long ComputeCRC32(byte[] data) {
+        CRC32 crc = new CRC32();
+        crc.update(data);
+
+        return crc.getValue();
+    }
+
+    /**
+     * Compute MD5 hash code
+     *
+     * @param data {@code byte[]} to be hashed using the MD5 Algorithm
+     * @return {@code String} containing the hexadecimal representation of the hash code
+     */
+    public String ComputeMD5(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+
+            byte[] digestedMessage = digest.digest(data);
+
+            StringBuilder hash = new StringBuilder();
+            for (byte b : digestedMessage) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hash.append('0');
+                }
+                hash.append(hex);
+            }
+            return hash.toString();
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Compute SHA-1 hash code
+     *
+     * @param data {@code byte[]} to be hashed using the SHA-1 Algorithm
+     * @return {@code String} containing the hexadecimal representation of the hash code
+     */
+    public String ComputeSHA1(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+
+            byte[] digestedMessage = digest.digest(data);
+
+            StringBuilder hash = new StringBuilder();
+            for (byte b : digestedMessage) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hash.append('0');
+                }
+                hash.append(hex);
+            }
+            return hash.toString();
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Compute SHA-256 hash code
+     *
+     * @param data {@code byte[]} to be hashed using the SHA-256 Algorithm
+     * @return {@code String} containing the hexadecimal representation of the hash code
+     */
+    public String ComputeSHA256(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            byte[] digestedMessage = digest.digest(data);
+
+            StringBuilder hash = new StringBuilder();
+            for (byte b : digestedMessage) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hash.append('0');
+                }
+                hash.append(hex);
+            }
+            return hash.toString();
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition: Automation Events Recording and Playing
@@ -2197,11 +2293,11 @@ public class rCore {
                 }
                 else if (repFile[count].charAt(0) == 'e') {
                     String[] eLine = repFile[count].split(" ");
-                    events.get(count).frame = Integer.parseInt(eLine[1]);
-                    events.get(count).type = Integer.parseInt(eLine[2]);
-                    events.get(count).params[0] = Integer.parseInt(eLine[3]);
-                    events.get(count).params[1] = Integer.parseInt(eLine[4]);
-                    events.get(count).params[2] = Integer.parseInt(eLine[5]);
+                    currentEventList.get(count).frame = Integer.parseInt(eLine[1]);
+                    currentEventList.get(count).type = Integer.parseInt(eLine[2]);
+                    currentEventList.get(count).params[0] = Integer.parseInt(eLine[3]);
+                    currentEventList.get(count).params[1] = Integer.parseInt(eLine[4]);
+                    currentEventList.get(count).params[2] = Integer.parseInt(eLine[5]);
 
                     count++;
                 }
@@ -2235,16 +2331,16 @@ public class rCore {
         // Export events as text
         StringBuilder repFileText = new StringBuilder();
 
-        if (fileName != null || fileName != "") {
+        if (fileName != null && !fileName.isBlank()) {
             repFileText.append("# Automation events list\n");
             repFileText.append("#    c <events_count>\n");
             repFileText.append("#    e <frame> <event_type> <param0> <param1> <param2> // <event_type_name>\n");
 
             repFileText.append("c ").append(eventCount).append("\n");
             for (int i = 0; i < eventCount; i++) {
-                repFileText.append("e ").append(events.get(i).frame).append(" ").append(events.get(i).type)
-                        .append(" ").append(events.get(i).params[0]).append(" ").append(events.get(i).params[1])
-                        .append(" ").append(events.get(i).params[2]).append(" // ").append(AutomationEvent.EventType.values()[events.get(i).type].name().toLowerCase())
+                repFileText.append("e ").append(currentEventList.get(i).frame).append(" ").append(currentEventList.get(i).type)
+                        .append(" ").append(currentEventList.get(i).params[0]).append(" ").append(currentEventList.get(i).params[1])
+                        .append(" ").append(currentEventList.get(i).params[2]).append(" // ").append(AutomationEvent.EventType.values()[currentEventList.get(i).type].name().toLowerCase())
                         .append("\n");
             }
 
@@ -2260,32 +2356,30 @@ public class rCore {
 
     /**
      * Check event in current frame and save into the events[i] array
-     *
-     * @param frame
      */
-    public void RecordAutomationEvent(int frame) {
+    public void RecordAutomationEvent() {
         for (int key = 0; key < MAX_KEYBOARD_KEYS; key++) {
             // INPUT_KEY_UP (only saved once)
             if (input.keyboard.previousKeyState[key] && !input.keyboard.currentKeyState[key]) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_KEY_UP.ordinal();
-                events.get(eventCount).params[0] = key;
-                events.get(eventCount).params[1] = 0;
-                events.get(eventCount).params[2] = 0;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_KEY_UP.ordinal();
+                currentEventList.get(eventCount).params[0] = key;
+                currentEventList.get(eventCount).params[1] = 0;
+                currentEventList.get(eventCount).params[2] = 0;
 
-                context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_KEY_UP: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
 
             // INPUT_KEY_DOWN
             if (input.keyboard.currentKeyState[key]) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_KEY_DOWN.ordinal();
-                events.get(eventCount).params[0] = key;
-                events.get(eventCount).params[1] = 0;
-                events.get(eventCount).params[2] = 0;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_KEY_DOWN.ordinal();
+                currentEventList.get(eventCount).params[0] = key;
+                currentEventList.get(eventCount).params[1] = 0;
+                currentEventList.get(eventCount).params[2] = 0;
 
-                context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_KEY_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_KEY_DOWN: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
         }
@@ -2293,75 +2387,75 @@ public class rCore {
         for (int button = 0; button < MAX_MOUSE_BUTTONS; button++) {
             // INPUT_MOUSE_BUTTON_UP
             if (input.mouse.previousButtonState[button] == 1 && !(input.mouse.currentButtonState[button] == 1)) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_MOUSE_BUTTON_UP.ordinal();
-                events.get(eventCount).params[0] = button;
-                events.get(eventCount).params[1] = 0;
-                events.get(eventCount).params[2] = 0;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_MOUSE_BUTTON_UP.ordinal();
+                currentEventList.get(eventCount).params[0] = button;
+                currentEventList.get(eventCount).params[1] = 0;
+                currentEventList.get(eventCount).params[2] = 0;
 
-                context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_UP: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
 
             // INPUT_MOUSE_BUTTON_DOWN
             if (input.mouse.currentButtonState[button] == 1) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_MOUSE_BUTTON_DOWN.ordinal();
-                events.get(eventCount).params[0] = button;
-                events.get(eventCount).params[1] = 0;
-                events.get(eventCount).params[2] = 0;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_MOUSE_BUTTON_DOWN.ordinal();
+                currentEventList.get(eventCount).params[0] = button;
+                currentEventList.get(eventCount).params[1] = 0;
+                currentEventList.get(eventCount).params[2] = 0;
 
-                context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_MOUSE_BUTTON_DOWN: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
         }
 
         // INPUT_MOUSE_POSITION (only saved if changed)
         if (((int) input.mouse.currentPosition.x != (int) input.mouse.previousPosition.x) || ((int) input.mouse.currentPosition.y != (int) input.mouse.previousPosition.y)) {
-            events.get(eventCount).frame = frame;
-            events.get(eventCount).type = INPUT_MOUSE_POSITION.ordinal();
-            events.get(eventCount).params[0] = (int) input.mouse.currentPosition.x;
-            events.get(eventCount).params[1] = (int) input.mouse.currentPosition.y;
-            events.get(eventCount).params[2] = 0;
+            currentEventList.get(eventCount).frame = time.frameCounter;
+            currentEventList.get(eventCount).type = INPUT_MOUSE_POSITION.ordinal();
+            currentEventList.get(eventCount).params[0] = (int) input.mouse.currentPosition.x;
+            currentEventList.get(eventCount).params[1] = (int) input.mouse.currentPosition.y;
+            currentEventList.get(eventCount).params[2] = 0;
 
-            context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_MOUSE_POSITION: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
             eventCount++;
         }
 
         // INPUT_MOUSE_WHEEL_MOTION
         if (input.mouse.currentWheelMove != input.mouse.previousWheelMove) {
-            events.get(eventCount).frame = frame;
-            events.get(eventCount).type = INPUT_MOUSE_WHEEL_MOTION.ordinal();
-            events.get(eventCount).params[0] = (int) input.mouse.currentWheelMove.x;
-            events.get(eventCount).params[1] = (int) input.mouse.currentWheelMove.y;
-            events.get(eventCount).params[2] = 0;
+            currentEventList.get(eventCount).frame = time.frameCounter;
+            currentEventList.get(eventCount).type = INPUT_MOUSE_WHEEL_MOTION.ordinal();
+            currentEventList.get(eventCount).params[0] = (int) input.mouse.currentWheelMove.x;
+            currentEventList.get(eventCount).params[1] = (int) input.mouse.currentWheelMove.y;
+            currentEventList.get(eventCount).params[2] = 0;
 
-            context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_MOUSE_WHEEL_MOTION: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
             eventCount++;
         }
 
         for (int id = 0; id < MAX_TOUCH_POINTS; id++) {
             // INPUT_TOUCH_UP
             if (input.touch.previousTouchState[id] && !input.touch.currentTouchState[id]) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_TOUCH_UP.ordinal();
-                events.get(eventCount).params[0] = id;
-                events.get(eventCount).params[1] = 0;
-                events.get(eventCount).params[2] = 0;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_TOUCH_UP.ordinal();
+                currentEventList.get(eventCount).params[0] = id;
+                currentEventList.get(eventCount).params[1] = 0;
+                currentEventList.get(eventCount).params[2] = 0;
 
-                context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_TOUCH_UP: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
 
             // INPUT_TOUCH_DOWN
             if (input.touch.currentTouchState[id]) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_TOUCH_DOWN.ordinal();
-                events.get(eventCount).params[0] = id;
-                events.get(eventCount).params[1] = 0;
-                events.get(eventCount).params[2] = 0;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_TOUCH_DOWN.ordinal();
+                currentEventList.get(eventCount).params[0] = id;
+                currentEventList.get(eventCount).params[1] = 0;
+                currentEventList.get(eventCount).params[2] = 0;
 
-                context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_TOUCH_DOWN: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
 
@@ -2369,13 +2463,13 @@ public class rCore {
             // TODO: It requires the id!
             /*
             if (((int)input.touch.currentPosition[id].x != (int)input.touch.previousPosition[id].x) || ((int)input.touch.currentPosition[id].y != (int)input.touch.previousPosition[id].y)) {
-                events.get(eventCount).frame = frame;
-                events.get(eventCount).type = INPUT_TOUCH_POSITION;
-                events.get(eventCount).params[0] = id;
-                events.get(eventCount).params[1] = (int)input.touch.currentPosition[id].x;
-                events.get(eventCount).params[2] = (int)input.touch.currentPosition[id].y;
+                currentEventList.get(eventCount).frame = time.frameCounter;
+                currentEventList.get(eventCount).type = INPUT_TOUCH_POSITION;
+                currentEventList.get(eventCount).params[0] = id;
+                currentEventList.get(eventCount).params[1] = (int)input.touch.currentPosition[id].x;
+                currentEventList.get(eventCount).params[2] = (int)input.touch.currentPosition[id].y;
 
-                context.logger.logger(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", events.get(eventCount).frame, events.get(eventCount).params[0], events.get(eventCount).params[1], events.get(eventCount).params[2]);
+                context.logger.logger(LOG_INFO, "[%i] INPUT_TOUCH_POSITION: %i, %i, %i", currentEventList.get(eventCount).frame, currentEventList.get(eventCount).params[0], currentEventList.get(eventCount).params[1], currentEventList.get(eventCount).params[2]);
                 eventCount++;
             }
             */
@@ -2401,25 +2495,25 @@ public class rCore {
             for (int button = 0; button < MAX_GAMEPAD_BUTTONS; button++) {
                 // INPUT_GAMEPAD_BUTTON_UP
                 if (input.gamepad.previousButtonState[gamepad][button] == 1 && !(input.gamepad.currentButtonState[gamepad][button] == 1)) {
-                    events.get(eventCount).frame = frame;
-                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_UP.ordinal();
-                    events.get(eventCount).params[0] = gamepad;
-                    events.get(eventCount).params[1] = button;
-                    events.get(eventCount).params[2] = 0;
+                    currentEventList.get(eventCount).frame = time.frameCounter;
+                    currentEventList.get(eventCount).type = INPUT_GAMEPAD_BUTTON_UP.ordinal();
+                    currentEventList.get(eventCount).params[0] = gamepad;
+                    currentEventList.get(eventCount).params[1] = button;
+                    currentEventList.get(eventCount).params[2] = 0;
 
-                    context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_UP: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                     eventCount++;
                 }
 
                 // INPUT_GAMEPAD_BUTTON_DOWN
                 if (input.gamepad.currentButtonState[gamepad][button] == 1) {
-                    events.get(eventCount).frame = frame;
-                    events.get(eventCount).type = INPUT_GAMEPAD_BUTTON_DOWN.ordinal();
-                    events.get(eventCount).params[0] = gamepad;
-                    events.get(eventCount).params[1] = button;
-                    events.get(eventCount).params[2] = 0;
+                    currentEventList.get(eventCount).frame = time.frameCounter;
+                    currentEventList.get(eventCount).type = INPUT_GAMEPAD_BUTTON_DOWN.ordinal();
+                    currentEventList.get(eventCount).params[0] = gamepad;
+                    currentEventList.get(eventCount).params[1] = button;
+                    currentEventList.get(eventCount).params[2] = 0;
 
-                    context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_GAMEPAD_BUTTON_DOWN: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                     eventCount++;
                 }
             }
@@ -2427,13 +2521,13 @@ public class rCore {
             for (int axis = 0; axis < MAX_GAMEPAD_AXIS; axis++) {
                 // INPUT_GAMEPAD_AXIS_MOTION
                 if (input.gamepad.axisState[gamepad][axis] > 0.1f) {
-                    events.get(eventCount).frame = frame;
-                    events.get(eventCount).type = INPUT_GAMEPAD_AXIS_MOTION.ordinal();
-                    events.get(eventCount).params[0] = gamepad;
-                    events.get(eventCount).params[1] = axis;
-                    events.get(eventCount).params[2] = (int) (input.gamepad.axisState[gamepad][axis] * 32768.0f);
+                    currentEventList.get(eventCount).frame = time.frameCounter;
+                    currentEventList.get(eventCount).type = INPUT_GAMEPAD_AXIS_MOTION.ordinal();
+                    currentEventList.get(eventCount).params[0] = gamepad;
+                    currentEventList.get(eventCount).params[1] = axis;
+                    currentEventList.get(eventCount).params[2] = (int) (input.gamepad.axisState[gamepad][axis] * 32768.0f);
 
-                    context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+                    context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                     eventCount++;
                 }
             }
@@ -2441,13 +2535,13 @@ public class rCore {
 
         // INPUT_GESTURE
         if (context.gestures.gesturesData.current != GESTURE_NONE) {
-            events.get(eventCount).frame = frame;
-            events.get(eventCount).type = INPUT_GESTURE.ordinal();
-            events.get(eventCount).params[0] = context.gestures.gesturesData.current.getFlag();
-            events.get(eventCount).params[1] = 0;
-            events.get(eventCount).params[2] = 0;
+            currentEventList.get(eventCount).frame = time.frameCounter;
+            currentEventList.get(eventCount).type = INPUT_GESTURE.ordinal();
+            currentEventList.get(eventCount).params[0] = context.gestures.gesturesData.current.getFlag();
+            currentEventList.get(eventCount).params[1] = 0;
+            currentEventList.get(eventCount).params[2] = 0;
 
-            context.tracelog.TRACELOG(LOG_INFO, "[" + events.get(eventCount).frame + "] INPUT_GESTURE: " + events.get(eventCount).params[0] + ", " + events.get(eventCount).params[1] + ", " + events.get(eventCount).params[2]);
+            context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_GESTURE: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
             eventCount++;
         }
     }
@@ -2459,57 +2553,57 @@ public class rCore {
      */
     public void PlayAutomationEvent(int frame) {
         for (int i = 0; i < eventCount; i++) {
-            if (events.get(i).frame == frame) {
-                switch (AutomationEvent.AutomationEventType.values()[events.get(i).type]) {
+            if (currentEventList.get(i).frame == frame) {
+                switch (AutomationEvent.AutomationEventType.values()[currentEventList.get(i).type]) {
                     // Input events
                     case INPUT_KEY_UP:    // param[0]: key
-                        input.keyboard.currentKeyState[events.get(i).params[0]] = false;
+                        input.keyboard.currentKeyState[currentEventList.get(i).params[0]] = false;
                         break;
                     case INPUT_KEY_DOWN:  // param[0]: key
-                        input.keyboard.currentKeyState[events.get(i).params[0]] = true;
+                        input.keyboard.currentKeyState[currentEventList.get(i).params[0]] = true;
                         break;
                     case INPUT_MOUSE_BUTTON_UP:    // param[0]: key
-                        input.mouse.currentButtonState[events.get(i).params[0]] = 0;
+                        input.mouse.currentButtonState[currentEventList.get(i).params[0]] = 0;
                         break;
                     case INPUT_MOUSE_BUTTON_DOWN:   // param[0]: key
-                        input.mouse.currentButtonState[events.get(i).params[0]] = 1;
+                        input.mouse.currentButtonState[currentEventList.get(i).params[0]] = 1;
                         break;
                     case INPUT_MOUSE_POSITION:      // param[0]: x, param[1]: y
-                        input.mouse.currentPosition.x = (float) events.get(i).params[0];
-                        input.mouse.currentPosition.y = (float) events.get(i).params[1];
+                        input.mouse.currentPosition.x = (float) currentEventList.get(i).params[0];
+                        input.mouse.currentPosition.y = (float) currentEventList.get(i).params[1];
                         break;
                     case INPUT_MOUSE_WHEEL_MOTION:   // param[0]: delta
-                        input.mouse.currentWheelMove.x = (float) events.get(i).params[0];
-                        input.mouse.currentWheelMove.y = (float) events.get(i).params[1];
+                        input.mouse.currentWheelMove.x = (float) currentEventList.get(i).params[0];
+                        input.mouse.currentWheelMove.y = (float) currentEventList.get(i).params[1];
                         break;
                     case INPUT_TOUCH_UP:     // param[0]: id
-                        input.touch.currentTouchState[events.get(i).params[0]] = false;
+                        input.touch.currentTouchState[currentEventList.get(i).params[0]] = false;
                         break;
                     case INPUT_TOUCH_DOWN:   // param[0]: id
-                        input.touch.currentTouchState[events.get(i).params[0]] = true;
+                        input.touch.currentTouchState[currentEventList.get(i).params[0]] = true;
                         break;
                     case INPUT_TOUCH_POSITION:      // param[0]: id, param[1]: x, param[2]: y
-                        input.touch.position[events.get(i).params[0]].x = (float) events.get(i).params[1];
-                        input.touch.position[events.get(i).params[0]].y = (float) events.get(i).params[2];
+                        input.touch.position[currentEventList.get(i).params[0]].x = (float) currentEventList.get(i).params[1];
+                        input.touch.position[currentEventList.get(i).params[0]].y = (float) currentEventList.get(i).params[2];
                         break;
                     case INPUT_GAMEPAD_CONNECT:     // param[0]: gamepad
-                        input.gamepad.ready[events.get(i).params[0]] = true;
+                        input.gamepad.ready[currentEventList.get(i).params[0]] = true;
                         break;
                     case INPUT_GAMEPAD_DISCONNECT:    // param[0]: gamepad
-                        input.gamepad.ready[events.get(i).params[0]] = false;
+                        input.gamepad.ready[currentEventList.get(i).params[0]] = false;
                         break;
                     case INPUT_GAMEPAD_BUTTON_UP:    // param[0]: gamepad, param[1]: button
-                        input.gamepad.currentButtonState[events.get(i).params[0]][events.get(i).params[1]] = 0;
+                        input.gamepad.currentButtonState[currentEventList.get(i).params[0]][currentEventList.get(i).params[1]] = 0;
                         break;
                     case INPUT_GAMEPAD_BUTTON_DOWN:  // param[0]: gamepad, param[1]: button
-                        input.gamepad.currentButtonState[events.get(i).params[0]][events.get(i).params[1]] = 1;
+                        input.gamepad.currentButtonState[currentEventList.get(i).params[0]][currentEventList.get(i).params[1]] = 1;
                         break;
                     case INPUT_GAMEPAD_AXIS_MOTION: // param[0]: gamepad, param[1]: axis, param[2]: delta
-                        input.gamepad.axisState[events.get(i).params[0]][events.get(i).params[1]] = ((float) events.get(i).params[2] / 32768.0f);
+                        input.gamepad.axisState[currentEventList.get(i).params[0]][currentEventList.get(i).params[1]] = ((float) currentEventList.get(i).params[2] / 32768.0f);
                         break;
                     case INPUT_GESTURE: // param[0]: gesture (enum Gesture) -> rgestures.h: GESTURES.current
                         //TODO
-                        //GESTURES.current = events.get(i).params[0];
+                        //GESTURES.current = currentEventList.get(i).params[0];
                         break;
 
                     // Window events
@@ -2523,7 +2617,7 @@ public class rCore {
                         MinimizeWindow();
                         break;
                     case WINDOW_RESIZE:
-                        SetWindowSize(events.get(i).params[0], events.get(i).params[1]);
+                        SetWindowSize(currentEventList.get(i).params[0], currentEventList.get(i).params[1]);
                         break;
 
                     // Custom events
@@ -2532,7 +2626,7 @@ public class rCore {
                         screenshotCounter++;
                         break;
                     case ACTION_SETTARGETFPS:
-                        SetTargetFPS(events.get(i).params[0]);
+                        SetTargetFPS(currentEventList.get(i).params[0]);
                         break;
                     default:
                         break;
@@ -2547,14 +2641,20 @@ public class rCore {
 
     /**
      * Detect if a key has been pressed once
-     * @param key
-     * @return
+     * @param key {@code int} keycode to query
+     * @return {@code true} if key is pressed
+     * @see com.raylib.java.core.input.Keyboard
      */
     public boolean IsKeyPressed(int key) {
         return ((!input.keyboard.getPreviousKeyState()[key]) && (input.keyboard.getCurrentKeyState()[key]));
     }
 
-    // Detect if a key has been pressed again (Only PLATFORM_DESKTOP)
+    /**
+     * Detect if a key has been pressed again (Only PLATFORM_DESKTOP)
+     *
+     * @param key {@code int} keycode to query
+     * @return {@code true} if key is pressed following a previous key press event
+     */
     public boolean IsKeyPressedRepeat(int key) {
         if ((key > 0) && (key < MAX_KEYBOARD_KEYS)) {
             return input.keyboard.keyRepeatInFrame[key];
@@ -2563,22 +2663,41 @@ public class rCore {
         return false;
     }
 
-    // Detect if a key is being pressed (key held down)
+    /**
+     * Detect if a key is being pressed (i.e. held down)
+     *
+     * @param key {@code int} keycode to query
+     * @return {@code true} if key is currently pressed
+     */
     public boolean IsKeyDown(int key) {
         return input.keyboard.getCurrentKeyState()[key];
     }
 
-    // Detect if a key has been released once
+    /**
+     * Detect if a key has been released once
+     *
+     * @param key {@code int} keycode to query
+     * @return {@code true} if key had been released following a previous key press event
+     */
     public boolean IsKeyReleased(int key) {
         return (input.keyboard.getPreviousKeyState()[key] && !input.keyboard.getCurrentKeyState()[key]);
     }
 
-    // Detect if a key is NOT being pressed (key not held down)
+    /**
+     * Detect if a key is NOT being pressed (key not held down)
+     *
+     * @param key {@code int} keycode to query
+     * @return {@code true} if key is not being pressed
+     */
     public boolean IsKeyUp(int key) {
         return !input.keyboard.getCurrentKeyState()[key];
     }
 
-    // Get the last key pressed
+    /**
+     * Get the last key pressed
+     *
+     * @return {@code int} keycode of the last key pressed
+     */
     public int GetKeyPressed() {
         int value = 0;
         if (input.keyboard.keyPressedQueueCount > 0) {
@@ -2597,13 +2716,17 @@ public class rCore {
         return value;
     }
 
-    // Get the last char pressed
-    public int GetCharPressed() {
-        int value = 0;
+    /**
+     * Get the last char pressed
+     *
+     * @return Last {@code char} pressed.
+     */
+    public char GetCharPressed() {
+        char value = 0;
 
         if (input.keyboard.getCharPressedQueueCount() > 0) {
             // Get character from the queue head
-            value = input.keyboard.getCharPressedQueue()[0];
+            value = (char) input.keyboard.getCharPressedQueue()[0];
 
             // Shift elements 1 step toward the head.
             if (input.keyboard.getCharPressedQueueCount() - 1 >= 0) {
@@ -2618,8 +2741,12 @@ public class rCore {
         return value;
     }
 
-    // Set a custom key to exit program
-    // NOTE: default exitKey is ESCAPE
+    /**
+     * Set a custom key to exit the program <br/>
+     * Default exit key is {@code ESAPE}
+     *
+     * @param key Keycode to exit the program
+     */
     public void SetExitKey(int key) {
         input.keyboard.setExitKey(key);
     }
@@ -2628,13 +2755,22 @@ public class rCore {
     // Module Functions Definition: Input Handling: Gamepad
     //----------------------------------------------------------------------------------
 
-    // NOTE: Gamepad support not implemented in emscripten GLFW3 (PLATFORM_WEB)
-    // Detect if a gamepad is available
+    /**
+     * Detect if a gamepad is available
+     *
+     * @param gamepad Gamepad to query
+     * @return {@code true} if gamepad number {@code number} is available
+     */
     public boolean IsGamepadAvailable(int gamepad) {
-        return (gamepad < MAX_GAMEPADS) & input.gamepad.getReady()[gamepad];
+        return (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad];
     }
 
-    // Return gamepad internal name id
+    /**
+     * Return gamepad internal name id
+     *
+     * @param gamepad Gamepad to query
+     * @return Internal name of the gamepad
+     */
     public String GetGamepadName(int gamepad) {
         if (PLATFORM_DESKTOP) {
             if (input.gamepad.getReady()[gamepad]) {
@@ -2649,16 +2785,33 @@ public class rCore {
         }
     }
 
-    // Return gamepad axis count
+    /**
+     * Return gamepad axis count
+     * @param gamepad
+     * @return
+     */
     public int GetGamepadAxisCount(int gamepad) {
         return input.gamepad.getAxisCount();
     }
 
+    /**
+     * Return axis movement vector for a gamepad
+     *
+     * @param gamepad
+     * @param axis
+     * @return
+     */
     public float GetGamepadAxisMovement(int gamepad, Gamepad.GamepadAxis axis) {
         return GetGamepadAxisMovement(gamepad, axis.GetValue());
     }
 
-    // Return axis movement vector for a gamepad
+    /**
+     * Return axis movement vector for a gamepad
+     *
+     * @param gamepad
+     * @param axis
+     * @return
+     */
     public float GetGamepadAxisMovement(int gamepad, int axis) {
         float value = 0;
 
@@ -2670,47 +2823,93 @@ public class rCore {
         return value;
     }
 
+    /**
+     * Detect if a gamepad button has been pressed once
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonPressed(int gamepad, Gamepad.GamepadButton button) {
         return IsGamepadButtonPressed(gamepad, button.GetValue());
     }
 
-    // Detect if a gamepad button has been pressed once
+    /**
+     * Detect if a gamepad button has been pressed once
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonPressed(int gamepad, int button) {
         return ((gamepad < MAX_GAMEPADS) && input.gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
                 (input.gamepad.previousButtonState[gamepad][button] == 0) && (input.gamepad.currentButtonState[gamepad][button] == 1));
     }
 
+    /**
+     * Detect if a gamepad button is being pressed
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonDown(int gamepad, Gamepad.GamepadButton button) {
         return IsGamepadButtonDown(gamepad, button.GetValue());
     }
 
-    // Detect if a gamepad button is being pressed
+    /**
+     * Detect if a gamepad button is being pressed
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonDown(int gamepad, int button) {
-        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getCurrentButtonState()[gamepad][button] == 1));
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 1));
     }
 
+    /**
+     * Detect if a gamepad button has NOT been pressed once
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonReleased(int gamepad, Gamepad.GamepadButton button) {
         return IsGamepadButtonReleased(gamepad, button.GetValue());
     }
 
-    // Detect if a gamepad button has NOT been pressed once
+    /**
+     * Detect if a gamepad button has NOT been pressed once
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonReleased(int gamepad, int button) {
         return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
                 (input.gamepad.getPreviousButtonState()[gamepad][button] == 1) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 0));
     }
 
+    /**
+     * Detect if a gamepad button is NOT being pressed
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonUp(int gamepad, Gamepad.GamepadButton button) {
         return IsGamepadButtonUp(gamepad, button.GetValue());
     }
 
-    // Detect if a gamepad button is NOT being pressed
+    /**
+     * Detect if a gamepad button is NOT being pressed
+     * @param gamepad
+     * @param button
+     * @return
+     */
     public boolean IsGamepadButtonUp(int gamepad, int button) {
         return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
                 (input.gamepad.getCurrentButtonState()[gamepad][button] == 0));
     }
 
-    // Get the last gamepad button pressed
+    /**
+     * Get the last gamepad button pressed
+     * @return
+     */
     public int GetGamepadButtonPressed() {
         return input.gamepad.getLastButtonPressed();
     }
@@ -2719,23 +2918,43 @@ public class rCore {
     // Module Functions Definition: Input Handling: Mouse
     //----------------------------------------------------------------------------------
 
-
-    // Set mouse cursor
-    // NOTE: This is a no-op on platforms other than PLATFORM_DESKTOP
+    /**
+     * Set mouse cursor <br/>
+     * NOTE: This is a no-op on platforms other than PLATFORM_DESKTOP
+     *
+     * @param cursor
+     * @see Mouse.MouseCursor
+     */
     public void SetMouseCursor(Mouse.MouseCursor cursor) {
         platform.SetMouseCursor(cursor);
     }
 
-    // Set mouse position XY
+    /**
+     * Set mouse position X and Y position
+     * @param x Value to set the x coordinate to
+     * @param y Value to set the y coordinate to
+     */
     public void SetMousePosition(int x, int y) {
         platform.SetMousePosition(x, y);
     }
 
+    /**
+     * Detect if a mouse button has been pressed once
+     *
+     * @param button
+     * @return
+     * @see Mouse.MouseButton
+     */
     public boolean IsMouseButtonPressed(Mouse.MouseButton button) {
         return IsMouseButtonPressed(button.GetValue());
     }
 
-    // Detect if a mouse button has been pressed once
+    /**
+     * Detect if a mouse button has been pressed once
+     *
+     * @param button
+     * @return
+     */
     public boolean IsMouseButtonPressed(int button) {
         boolean pressed = (input.mouse.getCurrentButtonState()[button] == 1) &&
                 (input.mouse.getPreviousButtonState()[button] == 0);
@@ -2750,11 +2969,23 @@ public class rCore {
         return pressed;
     }
 
+    /**
+     * Detect if a mouse button is being pressed
+     *
+     * @param button
+     * @return
+     * @see Mouse.MouseButton
+     */
     public boolean IsMouseButtonDown(Mouse.MouseButton button) {
         return IsMouseButtonDown(button.GetValue());
     }
 
-    // Detect if a mouse button is being pressed
+    /**
+     * Detect if a mouse button is being pressed
+     *
+     * @param button
+     * @return
+     */
     public boolean IsMouseButtonDown(int button) {
         boolean down = false;
 
@@ -2770,11 +3001,23 @@ public class rCore {
         return down;
     }
 
+    /**
+     * Detect if a mouse button has been released once
+     *
+     * @param button
+     * @return
+     * @see Mouse.MouseButton
+     */
     public boolean IsMouseButtonReleased(Mouse.MouseButton button) {
         return IsMouseButtonReleased(button.GetValue());
     }
 
-    // Detect if a mouse button has been released once
+    /**
+     * Detect if a mouse button has been released once
+     *
+     * @param button
+     * @return
+     */
     public boolean IsMouseButtonReleased(int button) {
         boolean released = false;
 
@@ -2790,26 +3033,50 @@ public class rCore {
         return released;
     }
 
+    /**
+     * Detect if a mouse button is NOT being pressed
+     *
+     * @param button
+     * @return
+     * @see Mouse.MouseButton
+     */
     public boolean IsMouseButtonUp(Mouse.MouseButton button) {
         return !IsMouseButtonDown(button.GetValue());
     }
 
-    // Detect if a mouse button is NOT being pressed
+    /**
+     * Detect if a mouse button is NOT being pressed
+     *
+     * @param button
+     * @return
+     */
     public boolean IsMouseButtonUp(int button) {
         return !IsMouseButtonDown(button);
     }
 
-    // Returns mouse position X
+    /**
+     * Returns mouse position X
+     *
+     * @return
+     */
     public int GetMouseX() {
         return (int) ((input.mouse.currentPosition.x + input.mouse.offset.x) * input.mouse.scale.x);
     }
 
-    // Returns mouse position Y
+    /**
+     * Returns mouse position Y
+     *
+     * @return
+     */
     public int GetMouseY() {
         return (int) ((input.mouse.currentPosition.y + input.mouse.offset.y) * input.mouse.scale.y);
     }
 
-    // Returns mouse position XY
+    /**
+     * Returns mouse position XY
+     *
+     * @return
+     */
     public Vector2 GetMousePosition() {
         Vector2 position = new Vector2();
 
@@ -2819,7 +3086,11 @@ public class rCore {
         return position;
     }
 
-    // Get mouse delta between frames
+    /**
+     * Get mouse delta between frames
+     *
+     * @return
+     */
     public Vector2 GetMouseDelta() {
         Vector2 delta = new Vector2();
 
@@ -2829,19 +3100,29 @@ public class rCore {
         return delta;
     }
 
-    // Set mouse offset
-    // NOTE: Useful when rendering to different size targets
+    /**
+     * Set mouse offset. This may be useful when rendering to different size targets.
+     * @param offsetX
+     * @param offsetY
+     */
     public void SetMouseOffset(int offsetX, int offsetY) {
         input.mouse.setOffset(new Vector2((float) offsetX, (float) offsetY));
     }
 
-    // Set mouse scaling
-    // NOTE: Useful when rendering to different size targets
+    /**
+     * Set mouse scaling. This may be useful when rendering to different size targets
+     * @param scaleX
+     * @param scaleY
+     */
     public void SetMouseScale(float scaleX, float scaleY) {
         input.mouse.setScale(new Vector2(scaleX, scaleY));
     }
 
-    // Returns mouse wheel movement Y
+    /**
+     * Returns mouse wheel movement Y
+     *
+     * @return
+     */
     public float GetMouseWheelMove() {
         float result = 0.0f;
 
@@ -2855,7 +3136,11 @@ public class rCore {
         return result;
     }
 
-    // Get mouse wheel movement X/Y as a vector
+    /**
+     * Get mouse wheel movement X/Y as a vector
+     *
+     * @return
+     */
     public Vector2 GetMouseWheelMoveV() {
         return input.mouse.currentWheelMove;
     }
@@ -2864,19 +3149,32 @@ public class rCore {
     // Module Functions Definition: Input Handling: Touch
     //----------------------------------------------------------------------------------
 
-    // Returns touch position X for touch point 0 (relative to screen size)
+    /**
+     * Returns touch position X for touch point 0 (relative to screen size)
+     *
+     * @return
+     */
     public int GetTouchX() {
         int touchX = (int) input.touch.position[0].x;
         return touchX;
     }
 
-    // Returns touch position Y for touch point 0 (relative to screen size)
+    /**
+     * Returns touch position Y for touch point 0 (relative to screen size)
+     *
+     * @return
+     */
     public int GetTouchY() {
         int touchY = (int) input.touch.position[0].y;
         return touchY;
     }
 
-    // Returns touch position XY for a touch point index (relative to screen size)
+    /**
+     * Returns touch position XY for a touch point index (relative to screen size)
+     *
+     * @param index
+     * @return
+     */
     public Vector2 GetTouchPosition(int index) {
         Vector2 position = new Vector2(-1.0f, -1.0f);
 
@@ -2890,8 +3188,13 @@ public class rCore {
         return position;
     }
 
-    // Get touch point identifier for given index
-    int GetTouchPointId(int index) {
+    /**
+     * Get touch point identifier for the given index
+     *
+     * @param index
+     * @return
+     */
+    public int GetTouchPointId(int index) {
         int id = -1;
 
         if (index < MAX_TOUCH_POINTS) {
@@ -2901,8 +3204,12 @@ public class rCore {
         return id;
     }
 
-    // Get number of touch points
-    int GetTouchPointCount() {
+    /**
+     * Get number of touch points
+     *
+     * @return
+     */
+    public int GetTouchPointCount() {
         return input.touch.pointCount;
     }
 
@@ -2919,8 +3226,8 @@ public class rCore {
 
     /**
      *
-     * @param width
-     * @param height
+     * @param width Desired width of the viewport
+     * @param height Desired height of the viewport
      */
     public void SetupViewport(int width, int height) {
         window.render.setWidth(width);
@@ -2929,9 +3236,11 @@ public class rCore {
         // Set viewport width and height
         // NOTE: We consider render size and offset in case black bars are required and
         // render area does not match full display area (this situation is only applicable on fullscreen mode)
-        context.rlgl.rlViewport((int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
-                                (int) (window.render.width - window.renderOffset.x),
-                                (int) (window.render.height - window.renderOffset.y));
+        context.rlgl.rlViewport(
+                (int) window.renderOffset.x / 2, (int) window.renderOffset.y / 2,
+                (int) (window.render.width - window.renderOffset.x),
+                (int) (window.render.height - window.renderOffset.y)
+        );
 
         context.rlgl.rlMatrixMode(RL_PROJECTION);        // Switch to projection matrix
         context.rlgl.rlLoadIdentity();                   // Reset current matrix (projection)

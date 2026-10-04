@@ -3,7 +3,7 @@ package com.raylib.java.core.input;
 import static com.raylib.java.Config.MAX_KEYBOARD_KEYS;
 import static com.raylib.java.Config.MAX_KEY_PRESSED_QUEUE;
 
-public class Keyboard{
+public class Keyboard {
 
     public int exitKey;                    // Default exit key
     public boolean[] currentKeyState;      // Registers current frame key state

@@ -37,8 +37,7 @@ public class Time{
      */
     int frameCounter;
 
-    public Time(){
-
+    public Time() {
     }
 
     public double getCurrent(){
