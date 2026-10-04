@@ -28,6 +28,13 @@ public class Rectangle implements Cloneable {
         this.height = h;
     }
 
+    public Rectangle(Rectangle r){
+        this.x = r.x;
+        this.y = r.y;
+        this.width = r.width;
+        this.height = r.height;
+    }
+
     public float getX(){
         return x;
     }
