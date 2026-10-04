@@ -17,6 +17,13 @@ public class Quaternion implements Cloneable {
         this.w = w;
     }
 
+    public Quaternion(Quaternion q){
+        this.x = q.x;
+        this.y = q.y;
+        this.z = q.z;
+        this.w = q.w;
+    }
+
     public float getX(){
         return x;
     }
