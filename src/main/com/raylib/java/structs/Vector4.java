@@ -1,7 +1,25 @@
 package com.raylib.java.structs;
 
+/**
+ * Vector, four components
+ */
 public class Vector4 implements Cloneable {
-    public float x, y, z, w;
+    /**
+     * Vector X component
+     */
+    public float x;
+    /**
+     * Vector Y component
+     */
+    public float y;
+    /**
+     * Vector Z component
+     */
+    public float z;
+    /**
+     * Vector W component
+     */
+    public float w;
 
     public Vector4(){
         this.x = 0;

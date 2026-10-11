@@ -1,5 +1,8 @@
 package com.raylib.java.core;
 
+/**
+ * Time, system time management
+ */
 public class Time{
 
     /**

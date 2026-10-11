@@ -2,11 +2,23 @@ package com.raylib.java.structs;
 
 import static com.raylib.java.rlgl.RLGL.MAX_MATERIAL_MAPS;
 
+/**
+ * Material, includes shader and maps
+ */
 public class Material implements Cloneable {
 
-    public Shader shader;          // Material shader
-    public MaterialMap[] maps;      // Material maps array (MAX_MATERIAL_MAPS)
-    public float[] params;        // Material generic parameters (if required)
+    /**
+     * Material shader
+     */
+    public Shader shader;
+    /**
+     * Material maps array (MAX_MATERIAL_MAPS)
+     */
+    public MaterialMap[] maps;
+    /**
+     * Material generic parameters (if required)
+     */
+    public float[] params;
 
     public Material(){
         shader = new Shader();

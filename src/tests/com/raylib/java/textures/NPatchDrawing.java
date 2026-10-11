@@ -43,14 +43,14 @@ public class NPatchDrawing {
         Rectangle dstRecV = new Rectangle(92.0f, 160.0f, 32.0f, 32.0f);
 
         // A 9-patch (NPATCH_NINE_PATCH) changes its sizes in both axis
-        NPatchInfo ninePatchInfo1 = new NPatchInfo(new Rectangle(0.0f, 0.0f, 64.0f, 64.0f), 12, 40, 12, 12, NPatchInfo.NPatchType.NPATCH_NINE_PATCH);
-        NPatchInfo ninePatchInfo2 = new NPatchInfo(new Rectangle(0.0f, 128.0f, 64.0f, 64.0f), 16, 16, 16, 16, NPatchInfo.NPatchType.NPATCH_NINE_PATCH);
+        NPatchInfo ninePatchInfo1 = new NPatchInfo(new Rectangle(0.0f, 0.0f, 64.0f, 64.0f), 12, 40, 12, 12, NPatchInfo.NPatchLayout.NPATCH_NINE_PATCH);
+        NPatchInfo ninePatchInfo2 = new NPatchInfo(new Rectangle(0.0f, 128.0f, 64.0f, 64.0f), 16, 16, 16, 16, NPatchInfo.NPatchLayout.NPATCH_NINE_PATCH);
 
         // A horizontal 3-patch (NPATCH_THREE_PATCH_HORIZONTAL) changes its sizes along the x axis only
-        NPatchInfo h3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 64.0f, 64.0f, 64.0f), 8, 8, 8, 8, NPatchInfo.NPatchType.NPATCH_THREE_PATCH_HORIZONTAL);
+        NPatchInfo h3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 64.0f, 64.0f, 64.0f), 8, 8, 8, 8, NPatchInfo.NPatchLayout.NPATCH_THREE_PATCH_HORIZONTAL);
 
         // A vertical 3-patch (NPATCH_THREE_PATCH_VERTICAL) changes its sizes along the y axis only
-        NPatchInfo v3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 192.0f, 64.0f, 64.0f), 6, 6, 6, 6, NPatchInfo.NPatchType.NPATCH_THREE_PATCH_VERTICAL);
+        NPatchInfo v3PatchInfo = new NPatchInfo(new Rectangle(0.0f, 192.0f, 64.0f, 64.0f), 6, 6, 6, 6, NPatchInfo.NPatchLayout.NPATCH_THREE_PATCH_VERTICAL);
 
         rlj.core.SetTargetFPS(60);
         //---------------------------------------------------------------------------------------

@@ -1,15 +1,22 @@
 package com.raylib.java.structs;
 
+/**
+ * List of file paths
+ */
 public class FilePathList implements Cloneable {
 
     public final int MAX_FILEPATH_CAPACITY = 8192;
 
-    public int capacity;                     // Filepaths max entries
-    public int count;                        // Filepaths entries count
-    public String[] paths;                   // Filepaths entries
+    /**
+     * Filepaths entries count
+     */
+    public int count;
+    /**
+     * Filepaths entries
+     */
+    public String[] paths;
 
     public FilePathList() {
-        capacity = MAX_FILEPATH_CAPACITY;
         count = 0;
         paths = new String[MAX_FILEPATH_CAPACITY];
     }

@@ -2,16 +2,46 @@ package com.raylib.java.core.tracelog;
 
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Tracelog, system logging interface.
+ */
 public interface TraceLog {
+    /**
+     * Logs to display based on severity 
+     */
     enum TracelogType{
-        LOG_ALL(0),        // Display all logs
+        /**
+         * Display all logs
+         */
+        LOG_ALL(0), 
+        /**
+         * Display trace, info, warning, error, and fatal logs  
+         */
         LOG_TRACE(1),
+        /**
+         * Display debug, info, warning, error, and fatal logs 
+         */
         LOG_DEBUG(2),
+        /**
+         * Display info, warning, error, and fatal logs
+         */
         LOG_INFO(3),
+        /**
+         * Display warning, error, and fatal logs
+         */
         LOG_WARNING(4),
+        /**
+         * Display error and fatal logs
+         */
         LOG_ERROR(5),
+        /**
+         * Display only fatal logs
+         */
         LOG_FATAL(6),
-        LOG_NONE(7);     // Disable logging
+        /**
+         * Disable all logging
+         */
+        LOG_NONE(7);
 
         private final int level;
 

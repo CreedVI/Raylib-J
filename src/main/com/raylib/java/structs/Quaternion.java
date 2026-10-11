@@ -1,69 +1,20 @@
 package com.raylib.java.structs;
 
-public class Quaternion implements Cloneable {
-    public float x, y, z, w;
+/**
+ * Quaternion, 4 components (Vector4 alias)
+ */
+public class Quaternion extends Vector4 {
 
-    public Quaternion(){
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-        this.w = 0;
+    public Quaternion() {
+        super();
     }
 
-    public Quaternion(float x, float y, float z, float w){
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
-    }
-
-    public Quaternion(Quaternion q){
-        this.x = q.x;
-        this.y = q.y;
-        this.z = q.z;
-        this.w = q.w;
-    }
-
-    public float getX(){
-        return x;
-    }
-
-    public void setX(float x){
-        this.x = x;
-    }
-
-    public float getY(){
-        return y;
-    }
-
-    public void setY(float y){
-        this.y = y;
-    }
-
-    public float getZ(){
-        return z;
-    }
-
-    public void setZ(float z){
-        this.z = z;
-    }
-
-    public float getW(){
-        return w;
-    }
-
-    public void setW(float w){
-        this.w = w;
+    public Quaternion(float x, float y, float z, float w) {
+        super(x, y, z, w);
     }
 
     @Override
     public Quaternion clone() {
-        try {
-            Quaternion clone = (Quaternion) super.clone();
-
-            return clone;
-        } catch(CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+        return (Quaternion) super.clone();
     }
 }

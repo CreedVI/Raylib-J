@@ -1,15 +1,33 @@
 package com.raylib.java.structs;
 
-public class BoneInfo implements Cloneable{
+/**
+ * Bone, skeletal animation bone
+ */
+public class BoneInfo implements Cloneable {
 
-    public String name;          // Bone name
-    public int parent;             // Bone parent
+    /**
+     * Bone name
+     */
+    public String name;
+    /**
+     * Bone parent ID
+     */
+    public int parent;
 
+    /**
+     * Create new {@code BoneInfo} with empty name and no parent
+     */
     public BoneInfo() {
         name = "";
-        parent = 0;
+        parent = -1;
     }
 
+    /**
+     * Create new {@code BoneInfo} with specified name and parent
+     *
+     * @param name Name of current bone
+     * @param parent ID of parent bone
+     */
     public BoneInfo(String name, int parent) {
         this.name = name;
         this.parent = parent;

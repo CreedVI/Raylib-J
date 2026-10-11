@@ -1,8 +1,17 @@
 package com.raylib.java.structs;
 
+/**
+ * Bounding box
+ */
 public class BoundingBox implements Cloneable {
 
+    /**
+     * Minimum vertex box-corner
+     */
     public Vector3 min;
+    /**
+     * Maximum vertex box-corner
+     */
     public Vector3 max;
 
     public BoundingBox() {

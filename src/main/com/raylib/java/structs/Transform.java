@@ -1,10 +1,22 @@
 package com.raylib.java.structs;
 
+/**
+ * Transform, vertex transformation data
+ */
 public class Transform implements Cloneable {
 
-    public Vector3 translation;    // Translation
-    public Quaternion rotation;    // Rotation
-    public Vector3 scale;          // Scale
+    /**
+     * Translation component
+     */
+    public Vector3 translation;
+    /**
+     * Rotation component
+     */
+    public Quaternion rotation;
+    /**
+     * Scale component
+     */
+    public Vector3 scale;
 
     public Transform() {
         translation = new Vector3();

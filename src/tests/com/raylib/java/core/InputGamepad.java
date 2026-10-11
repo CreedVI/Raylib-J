@@ -318,8 +318,8 @@ public class InputGamepad {
                     rlj.text.DrawText("AXIS " + i + ": " + rlj.core.GetGamepadAxisMovement(0, i), 20, 70 + 20 * i, 10, DARKGRAY);
                 }
 
-                if (rlj.core.GetGamepadButtonPressed() != -1){
-                    rlj.text.DrawText("DETECTED BUTTON: " + rlj.core.GetGamepadButtonPressed(), 10, 430, 10, RED);
+                if (rlj.core.GetGamepadButtonPressed(0) != -1){
+                    rlj.text.DrawText("DETECTED BUTTON: " + rlj.core.GetGamepadButtonPressed(0), 10, 430, 10, RED);
                 }
                 else{
                     rlj.text.DrawText("DETECTED BUTTON: NONE", 10, 430, 10, GRAY);

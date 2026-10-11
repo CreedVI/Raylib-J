@@ -3,19 +3,16 @@ package com.raylib.java.core.platforms;
 import com.raylib.java.Raylib;
 import com.raylib.java.core.Window;
 import com.raylib.java.core.callback.Callbacks;
-import com.raylib.java.core.callback.ErrorCallback;
 import com.raylib.java.core.input.*;
 import com.raylib.java.structs.Image;
 import com.raylib.java.structs.Point;
 import com.raylib.java.structs.Size;
 import com.raylib.java.structs.Vector2;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWAllocator;
 import org.lwjgl.glfw.GLFWGamepadState;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
@@ -27,7 +24,6 @@ import java.util.List;
 import static com.raylib.java.Config.*;
 import static com.raylib.java.Config.ConfigFlag.*;
 import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_LEFT_TRIGGER;
-import static com.raylib.java.core.input.Gamepad.GamepadAxis.GAMEPAD_AXIS_RIGHT_TRIGGER;
 import static com.raylib.java.core.input.Gamepad.GamepadButton.*;
 import static com.raylib.java.core.input.Mouse.MouseCursor.MOUSE_CURSOR_DEFAULT;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.*;
@@ -106,6 +102,7 @@ public class Desktop implements Platform {
     private final Raylib context;
     private final Window window;
     private final Input input;
+    private long handle;
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition: Window and Graphics Device
@@ -117,8 +114,6 @@ public class Desktop implements Platform {
         this.input = input;
     }
 
-    // Check if application should close
-    // NOTE: By default, if KEY_ESCAPE pressed or window close icon clicked
     public boolean WindowShouldClose() {
         if (window.isReady()) {
             return window.isShouldClose();
@@ -128,7 +123,6 @@ public class Desktop implements Platform {
         }
     }
 
-    // Toggle fullscreen mode
     public void ToggleFullscreen() {
         if (!FLAG_IS_SET(window.flags, FLAG_FULLSCREEN_MODE)) {
             // Store previous window position (in case we exit fullscreen)
@@ -155,12 +149,12 @@ public class Desktop implements Platform {
                 FLAG_SET(window.flags, FLAG_FULLSCREEN_MODE);
 
                 if (_GLFW_X11 || _GLFW_WAYLAND) {
-                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
+                    glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_FALSE);
                     FLAG_SET(window.flags, FLAG_WINDOW_UNDECORATED);
                 }
 
                 glfwSetWindowMonitor(
-                        window.handle,
+                        handle,
                         monitor,
                         0,
                         0,
@@ -204,7 +198,7 @@ public class Desktop implements Platform {
             if (_GLFW_X11 || _GLFW_WAYLAND) {
                 // NOTE: X11 requires restoring the decorated window after switching from
                 // fullscreen to avoid issues with framebuffer scaling
-                glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
+                glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_TRUE);
                 FLAG_CLEAR(window.flags, FLAG_WINDOW_UNDECORATED);
             }
         }
@@ -216,7 +210,6 @@ public class Desktop implements Platform {
         }
     }
 
-    // Toggle borderless windowed mode
     public void ToggleBorderlessWindowed() {
         // Leave fullscreen before attempting to set borderless windowed mode
         // NOTE: Fullscreen already saves the previous position so it does not need to be set again later
@@ -241,7 +234,7 @@ public class Desktop implements Platform {
                     window.setPreviousScreen(window.getScreen());
 
                     // Set undecorated flag
-                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
+                    glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_FALSE);
                     FLAG_SET(window.flags, FLAG_WINDOW_UNDECORATED);
 
                     // Get monitor position and size
@@ -252,10 +245,10 @@ public class Desktop implements Platform {
                     window.setScreen(new Size(mode.width(), mode.height()));
 
                     // Set screen position and size
-                    glfwSetWindowMonitor(window.handle, monitor, (int) window.getPosition().x, (int) window.getPosition().y, window.getScreen().width, window.getScreen().height, mode.refreshRate());
+                    glfwSetWindowMonitor(handle, monitor, (int) window.getPosition().x, (int) window.getPosition().y, window.getScreen().width, window.getScreen().height, mode.refreshRate());
 
                     // Refocus window
-                    glfwFocusWindow(window.handle);
+                    glfwFocusWindow(handle);
 
                     FLAG_SET(window.flags, FLAG_BORDERLESS_WINDOWED_MODE);
                 }
@@ -265,7 +258,7 @@ public class Desktop implements Platform {
                     window.setScreen(window.getPreviousScreen());
 
                     // Remove undecorated flag
-                    glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
+                    glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_TRUE);
                     FLAG_CLEAR(window.flags, FLAG_WINDOW_UNDECORATED);
 
                     if (!__APPLE__ && !_GLFW_WAYLAND) {
@@ -279,11 +272,11 @@ public class Desktop implements Platform {
                     }
 
                     // Return to previous screen size and position
-                    glfwSetWindowMonitor(window.handle, 0L, (int) window.getPosition().x, (int) window.getPosition().y,
+                    glfwSetWindowMonitor(handle, 0L, (int) window.getPosition().x, (int) window.getPosition().y,
                                          window.getScreen().width, window.getScreen().height, mode.refreshRate());
 
                     // Refocus window
-                    glfwFocusWindow(window.handle);
+                    glfwFocusWindow(handle);
 
                     FLAG_CLEAR(window.flags, FLAG_BORDERLESS_WINDOWED_MODE);
                 }
@@ -297,31 +290,27 @@ public class Desktop implements Platform {
         }
     }
 
-    // Set window state: maximized, if resizable
     public void MaximizeWindow() {
-        if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE) {
-            glfwMaximizeWindow(window.handle);
+        if (glfwGetWindowAttrib(handle, GLFW_RESIZABLE) == GLFW_TRUE) {
+            glfwMaximizeWindow(handle);
             window.flags |= FLAG_WINDOW_MAXIMIZED;
         }
     }
 
-    // Set window state: minimized
     public void MinimizeWindow() {
         // NOTE: Following function launches callback that sets appropriate flag!
-        glfwIconifyWindow(window.handle);
+        glfwIconifyWindow(handle);
     }
 
-    // Set window state: not minimized/maximized
     public void RestoreWindow() {
-        if (glfwGetWindowAttrib(window.handle, GLFW_RESIZABLE) == GLFW_TRUE) {
+        if (glfwGetWindowAttrib(handle, GLFW_RESIZABLE) == GLFW_TRUE) {
             // Restores the specified window if it was previously iconified (minimized) or maximized
-            glfwRestoreWindow(window.handle);
+            glfwRestoreWindow(handle);
             window.flags &= ~FLAG_WINDOW_MINIMIZED;
             window.flags &= ~FLAG_WINDOW_MAXIMIZED;
         }
     }
 
-    // Set window configuration state using flags
     public void SetWindowState(int flags) {
         // Check previous state and requested state to apply required changes
         // NOTE: In most cases the functions already change the flags internally
@@ -339,19 +328,19 @@ public class Desktop implements Platform {
 
         // State change: FLAG_WINDOW_RESIZABLE
         if (((window.flags & FLAG_WINDOW_RESIZABLE) != (flags & FLAG_WINDOW_RESIZABLE)) && ((flags & FLAG_WINDOW_RESIZABLE) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_RESIZABLE, GLFW_TRUE);
+            glfwSetWindowAttrib(handle, GLFW_RESIZABLE, GLFW_TRUE);
             window.flags |= FLAG_WINDOW_RESIZABLE;
         }
 
         // State change: FLAG_WINDOW_UNDECORATED
         if (((window.flags & FLAG_WINDOW_UNDECORATED) != (flags & FLAG_WINDOW_UNDECORATED)) && (flags & FLAG_WINDOW_UNDECORATED) > 0) {
-            glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_FALSE);
+            glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_FALSE);
             window.flags |= FLAG_WINDOW_UNDECORATED;
         }
 
         // State change: FLAG_WINDOW_HIDDEN
         if (((window.flags & FLAG_WINDOW_HIDDEN) != (flags & FLAG_WINDOW_HIDDEN)) && ((flags & FLAG_WINDOW_HIDDEN) > 0)) {
-            glfwHideWindow(window.handle);
+            glfwHideWindow(handle);
             window.flags |= FLAG_WINDOW_HIDDEN;
         }
 
@@ -369,13 +358,13 @@ public class Desktop implements Platform {
 
         // State change: FLAG_WINDOW_UNFOCUSED
         if (((window.flags & FLAG_WINDOW_UNFOCUSED) != (flags & FLAG_WINDOW_UNFOCUSED)) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
+            glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, GLFW_FALSE);
             window.flags |= FLAG_WINDOW_UNFOCUSED;
         }
 
         // State change: FLAG_WINDOW_TOPMOST
         if (((window.flags & FLAG_WINDOW_TOPMOST) != (flags & FLAG_WINDOW_TOPMOST)) && ((flags & FLAG_WINDOW_TOPMOST) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_TRUE);
+            glfwSetWindowAttrib(handle, GLFW_FLOATING, GLFW_TRUE);
             window.flags |= FLAG_WINDOW_TOPMOST;
         }
 
@@ -399,7 +388,7 @@ public class Desktop implements Platform {
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
         if (((window.flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) != (flags & FLAG_WINDOW_MOUSE_PASSTHROUGH)) && ((flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
+            glfwSetWindowAttrib(handle, GLFW_MOUSE_PASSTHROUGH, GLFW_TRUE);
             window.flags |= FLAG_WINDOW_MOUSE_PASSTHROUGH;
         }
 
@@ -414,7 +403,6 @@ public class Desktop implements Platform {
         }
     }
 
-    // Clear window configuration state flags
     public void ClearWindowState(int flags) {
         // Check previous state and requested state to apply required changes
         // NOTE: In most cases the functions already change the flags internally
@@ -432,19 +420,19 @@ public class Desktop implements Platform {
 
         // State change: FLAG_WINDOW_RESIZABLE
         if (((window.flags & FLAG_WINDOW_RESIZABLE) > 0) && ((flags & FLAG_WINDOW_RESIZABLE) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_RESIZABLE, GLFW_FALSE);
+            glfwSetWindowAttrib(handle, GLFW_RESIZABLE, GLFW_FALSE);
             window.flags &= ~FLAG_WINDOW_RESIZABLE;
         }
 
         // State change: FLAG_WINDOW_UNDECORATED
         if (((window.flags & FLAG_WINDOW_UNDECORATED) > 0) && ((flags & FLAG_WINDOW_UNDECORATED) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_DECORATED, GLFW_TRUE);
+            glfwSetWindowAttrib(handle, GLFW_DECORATED, GLFW_TRUE);
             window.flags &= ~FLAG_WINDOW_UNDECORATED;
         }
 
         // State change: FLAG_WINDOW_HIDDEN
         if (((window.flags & FLAG_WINDOW_HIDDEN) > 0) && ((flags & FLAG_WINDOW_HIDDEN) > 0)) {
-            glfwShowWindow(window.handle);
+            glfwShowWindow(handle);
             window.flags &= ~FLAG_WINDOW_HIDDEN;
         }
 
@@ -460,13 +448,13 @@ public class Desktop implements Platform {
 
         // State change: FLAG_WINDOW_UNFOCUSED
         if (((window.flags & FLAG_WINDOW_UNFOCUSED) > 0) && ((flags & FLAG_WINDOW_UNFOCUSED) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
+            glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
             window.flags &= ~FLAG_WINDOW_UNFOCUSED;
         }
 
         // State change: FLAG_WINDOW_TOPMOST
         if (((window.flags & FLAG_WINDOW_TOPMOST) > 0) && ((flags & FLAG_WINDOW_TOPMOST) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_FLOATING, GLFW_FALSE);
+            glfwSetWindowAttrib(handle, GLFW_FLOATING, GLFW_FALSE);
             window.flags &= ~FLAG_WINDOW_TOPMOST;
         }
 
@@ -489,7 +477,7 @@ public class Desktop implements Platform {
 
         // State change: FLAG_WINDOW_MOUSE_PASSTHROUGH
         if (((window.flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0) && ((flags & FLAG_WINDOW_MOUSE_PASSTHROUGH) > 0)) {
-            glfwSetWindowAttrib(window.handle, GLFW_MOUSE_PASSTHROUGH, GLFW_FALSE);
+            glfwSetWindowAttrib(handle, GLFW_MOUSE_PASSTHROUGH, GLFW_FALSE);
             window.flags &= ~FLAG_WINDOW_MOUSE_PASSTHROUGH;
         }
 
@@ -504,9 +492,6 @@ public class Desktop implements Platform {
         }
     }
 
-    // Set icon for window
-    // NOTE 1: Image must be in RGBA format, 8bit per channel
-    // NOTE 2: Image is scaled by the OS for all required sizes
     public void SetWindowIcon(Image image) {
         if (image.getFormat() == PIXELFORMAT_UNCOMPRESSED_R8G8B8A8) {
             byte[] imgData = image.getData();
@@ -522,7 +507,7 @@ public class Desktop implements Platform {
 
             // NOTE 1: We only support one image icon
             // NOTE 2: The specified image data is copied before this function returns
-            glfwSetWindowIcon(window.handle, iconBuffer);
+            glfwSetWindowIcon(handle, iconBuffer);
             iconBuffer.free();
         }
         else {
@@ -530,15 +515,11 @@ public class Desktop implements Platform {
         }
     }
 
-    // Set icon for window, multiple images
-    // NOTE 1: Images must be in RGBA format, 8bit per channel
-    // NOTE 2: The multiple images are used depending on provided sizes
-    // Standard Windows icon sizes: 256, 128, 96, 64, 48, 32, 24, 16
     public void SetWindowIcons(List<Image> images) {
         int count = images.size();
 
         if (images.isEmpty()) {
-            glfwSetWindowIcon(window.handle, null);
+            glfwSetWindowIcon(handle, null);
         }
         else {
             GLFWImage.Buffer icons = GLFWImage.malloc(count);
@@ -558,24 +539,21 @@ public class Desktop implements Platform {
                 }
             }
             // NOTE: Images data is copied internally before this function returns
-            glfwSetWindowIcon(window.handle, icons);
+            glfwSetWindowIcon(handle, icons);
 
             icons.free();
         }
     }
 
-    // Set title for window
     public void SetWindowTitle(String title) {
         window.setTitle(title);
-        glfwSetWindowTitle(window.handle, title);
+        glfwSetWindowTitle(handle, title);
     }
 
-    // Set window position on screen (windowed mode)
     public void SetWindowPosition(int x, int y) {
-        glfwSetWindowPos(window.handle, x, y);
+        glfwSetWindowPos(handle, x, y);
     }
 
-    // Set monitor for the current window
     public void SetWindowMonitor(int monitor) {
         int monitorCount = 0;
         PointerBuffer monitors = glfwGetMonitors();
@@ -584,14 +562,13 @@ public class Desktop implements Platform {
             context.tracelog.TRACELOG(LOG_INFO, "GLFW: Selected fullscreen monitor: [" + monitor + "] " + glfwGetMonitorName(monitor));
 
             GLFWVidMode mode = glfwGetVideoMode(monitor);
-            glfwSetWindowMonitor(window.handle, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
+            glfwSetWindowMonitor(handle, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
         }
         else {
             context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to find selected monitor");
         }
     }
 
-    // Set window minimum dimensions (FLAG_WINDOW_RESIZABLE)
     public void SetWindowMinSize(int width, int height) {
         window.getScreenMin().width = width;
         window.getScreenMin().height = height;
@@ -601,10 +578,9 @@ public class Desktop implements Platform {
         int maxWidth = (window.getScreenMax().width == 0) ? GLFW_DONT_CARE : window.getScreenMax().width;
         int maxHeight = (window.getScreenMax().height == 0) ? GLFW_DONT_CARE : window.getScreenMax().height;
 
-        glfwSetWindowSizeLimits(window.handle, minWidth, minHeight, maxWidth, maxHeight);
+        glfwSetWindowSizeLimits(handle, minWidth, minHeight, maxWidth, maxHeight);
     }
 
-    // Set window maximum dimensions (FLAG_WINDOW_RESIZABLE)
     public void SetWindowMaxSize(int width, int height) {
         window.getScreenMax().width = width;
         window.getScreenMax().height = height;
@@ -614,15 +590,14 @@ public class Desktop implements Platform {
         int maxWidth = (window.getScreenMax().width == 0) ? GLFW_DONT_CARE : window.getScreenMax().width;
         int maxHeight = (window.getScreenMax().height == 0) ? GLFW_DONT_CARE : window.getScreenMax().height;
 
-        glfwSetWindowSizeLimits(window.handle, minWidth, minHeight, maxWidth, maxHeight);
+        glfwSetWindowSizeLimits(handle, minWidth, minHeight, maxWidth, maxHeight);
     }
 
-    // Set window dimensions
+
     public void SetWindowSize(int width, int height) {
-        glfwSetWindowSize(window.handle, width, height);
+        glfwSetWindowSize(handle, width, height);
     }
 
-    // Set window opacity, value opacity is between 0.0 and 1.0
     public void SetWindowOpacity(float opacity) {
         if (opacity >= 1.0f) {
             opacity = 1.0f;
@@ -630,28 +605,25 @@ public class Desktop implements Platform {
         else if (opacity <= 0.0f) {
             opacity = 0.0f;
         }
-        glfwSetWindowOpacity(window.handle, opacity);
+        glfwSetWindowOpacity(handle, opacity);
     }
 
-    // Set window focused
     public void SetWindowFocused() {
-        glfwFocusWindow(window.handle);
+        glfwFocusWindow(handle);
     }
 
-    // Get native window window.handle
     public long GetWindowHandle() {
         if (__WINDOWS__) {
-            return glfwGetWin32Window(window.handle);
+            return glfwGetWin32Window(handle);
         }
         else if (__APPLE__) {
-            return glfwGetCocoaWindow(window.handle);
+            return glfwGetCocoaWindow(handle);
         }
         else {
-            return window.handle;
+            return handle;
         }
     }
 
-    // Get number of monitors
     public int GetMonitorCount() {
         int monitorCount = 0;
         PointerBuffer pb = glfwGetMonitors();
@@ -659,7 +631,6 @@ public class Desktop implements Platform {
         return monitorCount;
     }
 
-    // Get number of monitors
     public int GetCurrentMonitor() {
         return 0;
         /*
@@ -670,8 +641,8 @@ public class Desktop implements Platform {
 
         if (monitorCount >= 1) {
             if (context.core.IsWindowFullscreen()) {
-                // Get the window.handle of the monitor that the specified window is in full screen on
-                monitor = glfwGetWindowMonitor(window.handle);
+                // Get the handle of the monitor that the specified window is in full screen on
+                monitor = glfwGetWindowMonitor(handle);
 
                 for (int i = 0; i < monitorCount; i++) {
                     if (monitors.get(i) == monitor) {
@@ -692,7 +663,7 @@ public class Desktop implements Platform {
                 IntBuffer wcxb = IntBuffer.allocate(1);
                 IntBuffer wcyb = IntBuffer.allocate(1);
 
-                glfwGetWindowPos(window.handle, wcxb, wcyb);
+                glfwGetWindowPos(handle, wcxb, wcyb);
 
                 int wcx = wcxb.get();
                 int wcy = wcyb.get();
@@ -757,7 +728,6 @@ public class Desktop implements Platform {
          */
     }
 
-    // Get selected monitor position
     public Vector2 GetMonitorPosition(int monitor) {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -776,7 +746,6 @@ public class Desktop implements Platform {
         return new Vector2();
     }
 
-    // Get selected monitor width (currently used by monitor)
     public int GetMonitorWidth(int monitor) {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -799,7 +768,6 @@ public class Desktop implements Platform {
         return 0;
     }
 
-    // Get selected monitor height (currently used by monitor)
     public int GetMonitorHeight(int monitor) {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -823,7 +791,6 @@ public class Desktop implements Platform {
         return 0;
     }
 
-    // Get selected monitor physical width in millimetres
     public int GetMonitorPhysicalWidth(int monitor) {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -840,7 +807,6 @@ public class Desktop implements Platform {
         return 0;
     }
 
-    // Get selected monitor physical height in millimetres
     public int GetMonitorPhysicalHeight(int monitor) {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -857,7 +823,6 @@ public class Desktop implements Platform {
         return 0;
     }
 
-    // Get selected monitor refresh rate
     public int GetMonitorRefreshRate(int monitor) {
         PointerBuffer monitors = glfwGetMonitors();
         int monitorCount = monitors.sizeof();
@@ -873,7 +838,6 @@ public class Desktop implements Platform {
         return 0;
     }
 
-    // Get the human-readable, UTF-8 encoded name of the selected monitor
     public String GetMonitorName(int monitor) {
         int monitorCount;
         PointerBuffer monitors = glfwGetMonitors();
@@ -888,14 +852,13 @@ public class Desktop implements Platform {
         return "";
     }
 
-    // Get window position XY on monitor
     public Vector2 GetWindowPosition() {
         // Memory-safe get window position
         try (MemoryStack stack = stackPush()) {
             IntBuffer xBuffer = stack.mallocInt(1);
             IntBuffer yBuffer = stack.mallocInt(1);
             if (PLATFORM_DESKTOP) {
-                glfwGetWindowPos(window.handle, xBuffer, yBuffer);
+                glfwGetWindowPos(handle, xBuffer, yBuffer);
                 return new Vector2(xBuffer.get(0), yBuffer.get(0));
             }
             else {
@@ -904,7 +867,6 @@ public class Desktop implements Platform {
         }
     }
 
-    // Get window scale DPI factor for current monitor
     public Vector2 GetWindowScaleDPI() {
         Vector2 scale = new Vector2(1f, 1f);
 
@@ -940,32 +902,26 @@ public class Desktop implements Platform {
         return scale;
     }
 
-    // Set clipboard text content
     public void SetClipboardText(String text) {
-        glfwSetClipboardString(window.handle, text);
+        glfwSetClipboardString(handle, text);
     }
 
-    // Get clipboard text content
-    // NOTE: returned string is allocated and freed by GLFW
     public String GetClipboardText() {
-        return glfwGetClipboardString(window.handle);
+        return glfwGetClipboardString(handle);
     }
 
-    // Show mouse cursor
     public void ShowCursor() {
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         input.getMouse().cursorHidden = false;
     }
 
-    // Hides mouse cursor
     public void HideCursor() {
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
         input.getMouse().cursorHidden = true;
     }
 
-    // Enables cursor (unlock cursor)
     public void EnableCursor() {
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
         // Set cursor position in the middle
         SetMousePosition(window.getScreen().width / 2, window.getScreen().height / 2);
@@ -973,9 +929,8 @@ public class Desktop implements Platform {
         input.getMouse().cursorHidden = false;
     }
 
-    // Disables cursor (lock cursor)
     public void DisableCursor() {
-        glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // Set cursor position in the middle
         SetMousePosition(window.getScreen().width / 2, window.getScreen().height / 2);
@@ -983,26 +938,23 @@ public class Desktop implements Platform {
         input.getMouse().cursorHidden = true;
     }
 
-    // Swap back buffer with front buffer (screen drawing)
     public void SwapScreenBuffer() {
-        glfwSwapBuffers(window.handle);
+        glfwSwapBuffers(handle);
     }
 
     //----------------------------------------------------------------------------------
     // Module Functions Definition: Misc
     //----------------------------------------------------------------------------------
 
-    // Get elapsed time measure in seconds since InitTimer()
+    /**
+     * Get elapsed time measure in seconds since InitTimer()
+     * @return
+     */
     double GetTime() {
         // Elapsed time since glfwInit()
         return glfwGetTime();
     }
 
-    // Open URL with default system browser (if available)
-    // NOTE: This function is only safe to use if you control the URL given.
-    // A user could craft a malicious string performing another action.
-    // Only call this function yourself not with user input or make sure to check the string yourself.
-    // Ref: https://github.com/raysan5/raylib/issues/686
     public void OpenURL(String url) {
         if (url.contains("'")) {
             context.tracelog.TRACELOG(LOG_WARNING, "SYSTEM: Provided URL could be potentially malicious, avoid ['] character");
@@ -1042,7 +994,7 @@ public class Desktop implements Platform {
     //----------------------------------------------------------------------------------
 
     // Set internal gamepad mappings
-    public boolean SetgamepadMappings(byte[] mappings) {
+    public boolean SetGamepadMappings(byte[] mappings) {
         boolean result = false;
 
         ByteBuffer mappingsBuffer = ByteBuffer.allocateDirect(mappings.length);
@@ -1055,24 +1007,22 @@ public class Desktop implements Platform {
         return result;
     }
 
-    // Set mouse position XY
     public void SetMousePosition(int x, int y) {
         input.mouse.currentPosition = new Vector2(x, y);
         input.mouse.previousPosition = input.mouse.currentPosition;
 
         // NOTE: emscripten not implemented
-        glfwSetCursorPos(window.handle, input.mouse.currentPosition.x, input.mouse.currentPosition.y);
+        glfwSetCursorPos(handle, input.mouse.currentPosition.x, input.mouse.currentPosition.y);
     }
 
-    // Set mouse cursor
     public void SetMouseCursor(Mouse.MouseCursor mouseCursor) {
         input.mouse.cursor = mouseCursor;
         if (mouseCursor == MOUSE_CURSOR_DEFAULT) {
-            glfwSetCursor(window.handle, 0);
+            glfwSetCursor(handle, 0);
         }
         else {
             // NOTE: We are relating internal GLFW enum values to our mouseCursor enum values
-            glfwSetCursor(window.handle, glfwCreateStandardCursor(0x00036000 + mouseCursor.GetValue()));
+            glfwSetCursor(handle, glfwCreateStandardCursor(0x00036000 + mouseCursor.GetValue()));
         }
     }
 
@@ -1081,7 +1031,6 @@ public class Desktop implements Platform {
     // Module Internal Functions Definition
     //----------------------------------------------------------------------------------
 
-    // Initialize platform: graphics, inputs and more
     public int InitPlatform() {
         Callbacks callbacks = new Callbacks(context);
         glfwSetErrorCallback(callbacks.errorCallback);
@@ -1323,7 +1272,7 @@ public class Desktop implements Platform {
                 window.setScreen(window.getDisplay());
             }
 
-            window.handle = glfwCreateWindow(
+            handle = glfwCreateWindow(
                     window.getScreen().width,
                     window.getScreen().height,
                     (window.getTitle() != null) ? window.getTitle() : " ",
@@ -1331,7 +1280,7 @@ public class Desktop implements Platform {
                     0L
             );
 
-            if (window.handle <= 0) {
+            if (handle <= 0) {
                 glfwTerminate();
                 context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to initialize Window");
                 return -1;
@@ -1346,7 +1295,7 @@ public class Desktop implements Platform {
                 window.getScreen().height = 1;
             }
 
-            window.handle = glfwCreateWindow(
+            handle = glfwCreateWindow(
                     window.getScreen().width,
                     window.getScreen().height,
                     (window.getTitle() != null) ? window.getTitle() : " ",
@@ -1354,7 +1303,7 @@ public class Desktop implements Platform {
                     0
             );
 
-            if (window.handle <= 0) {
+            if (handle <= 0) {
                 glfwTerminate();
                 context.tracelog.TRACELOG(LOG_WARNING, "GLFW: Failed to initialize Window");
                 return -1;
@@ -1383,7 +1332,7 @@ public class Desktop implements Platform {
                     window.getScreen().height = window.getDisplay().height;
                 }
 
-                glfwSetWindowSize(window.handle, window.getScreen().width, window.getScreen().height);
+                glfwSetWindowSize(handle, window.getScreen().width, window.getScreen().height);
             }
             else {
                 // The monitor for the window-manager-created window can not be determined, so it can not be centered
@@ -1396,7 +1345,7 @@ public class Desktop implements Platform {
                 // AppKit can constrain the requested window size to the visible work area during creation
                 IntBuffer windowWidth = IntBuffer.allocate(1);
                 IntBuffer windowHeight = IntBuffer.allocate(1);
-                glfwGetWindowSize(window.handle, windowWidth, windowHeight);
+                glfwGetWindowSize(handle, windowWidth, windowHeight);
                 if ((windowWidth.get(0) > 0) && (windowHeight.get(0) > 0)) {
                     window.setScreen(new Size(windowWidth.get(0), windowHeight.get(0)));
                 }
@@ -1408,7 +1357,7 @@ public class Desktop implements Platform {
         }
 
 
-        glfwMakeContextCurrent(window.handle);
+        glfwMakeContextCurrent(handle);
         GL.createCapabilities();
         result = glfwGetError(null);
         if ((result != GLFW_NO_WINDOW_CONTEXT) && (result != GLFW_PLATFORM_ERROR)) {
@@ -1448,7 +1397,7 @@ public class Desktop implements Platform {
                         // instead of resizing the window (which would double-scale)
                         IntBuffer fbWidth = IntBuffer.allocate(1);
                         IntBuffer fbHeight = IntBuffer.allocate(1);
-                        glfwGetFramebufferSize(window.handle, fbWidth, fbHeight);
+                        glfwGetFramebufferSize(handle, fbWidth, fbHeight);
 
                         window.getRender().width = fbWidth.get(0);
                         window.getRender().height = fbHeight.get(0);
@@ -1458,7 +1407,7 @@ public class Desktop implements Platform {
                         context.core.SetMouseScale(1.0f / scaleDpi.x, 1.0f / scaleDpi.y);
 
                         // Force window size (and framebuffer) refresh
-                        glfwSetWindowSize(window.handle, window.getRender().width, window.getRender().height);
+                        glfwSetWindowSize(handle, window.getRender().width, window.getRender().height);
                     }
                 }
             }
@@ -1521,35 +1470,35 @@ public class Desktop implements Platform {
         // Initialize input events callbacks
         //----------------------------------------------------------------------------
         // Set window callback events
-        glfwSetWindowSizeCallback(window.handle, callbacks.windowSizeCallback); // NOTE: Resizing is not enabled by default
-        glfwSetFramebufferSizeCallback(window.handle, callbacks.frameBufferSizeCallback);
-        glfwSetWindowPosCallback(window.handle, callbacks.windowPositionCallback);
-        glfwSetWindowMaximizeCallback(window.handle, callbacks.windowMaximizeCallback);
-        glfwSetWindowIconifyCallback(window.handle, callbacks.windowIconifyCallback);
-        glfwSetWindowFocusCallback(window.handle, callbacks.windowFocusCallback);
-        glfwSetDropCallback(window.handle, callbacks.windowDropCallback);
+        glfwSetWindowSizeCallback(handle, callbacks.windowSizeCallback); // NOTE: Resizing is not enabled by default
+        glfwSetFramebufferSizeCallback(handle, callbacks.frameBufferSizeCallback);
+        glfwSetWindowPosCallback(handle, callbacks.windowPositionCallback);
+        glfwSetWindowMaximizeCallback(handle, callbacks.windowMaximizeCallback);
+        glfwSetWindowIconifyCallback(handle, callbacks.windowIconifyCallback);
+        glfwSetWindowFocusCallback(handle, callbacks.windowFocusCallback);
+        glfwSetDropCallback(handle, callbacks.windowDropCallback);
         if (FLAG_IS_SET(window.flags, FLAG_WINDOW_HIGHDPI)) {
-            glfwSetWindowContentScaleCallback(window.handle, callbacks.windowContentScaleCallback);
+            glfwSetWindowContentScaleCallback(handle, callbacks.windowContentScaleCallback);
         }
 
         // Set input callback events
-        glfwSetKeyCallback(window.handle, callbacks.keyCallback);
-        glfwSetCharCallback(window.handle, callbacks.charCallback);
-        glfwSetMouseButtonCallback(window.handle, callbacks.mouseButtonCallback);
-        glfwSetCursorPosCallback(window.handle, callbacks.mouseCursorPosCallback); // Track mouse position changes
-        glfwSetScrollCallback(window.handle, callbacks.mouseScrollCallback);
-        glfwSetCursorEnterCallback(window.handle, callbacks.cursorEnterCallback);
+        glfwSetKeyCallback(handle, callbacks.keyCallback);
+        glfwSetCharCallback(handle, callbacks.charCallback);
+        glfwSetMouseButtonCallback(handle, callbacks.mouseButtonCallback);
+        glfwSetCursorPosCallback(handle, callbacks.mouseCursorPosCallback); // Track mouse position changes
+        glfwSetScrollCallback(handle, callbacks.mouseScrollCallback);
+        glfwSetCursorEnterCallback(handle, callbacks.cursorEnterCallback);
         glfwSetJoystickCallback(callbacks.joystickCallback);
-        glfwSetInputMode(window.handle, GLFW_LOCK_KEY_MODS, GLFW_TRUE); // Enable lock keys modifiers (CAPS, NUM)
+        glfwSetInputMode(handle, GLFW_LOCK_KEY_MODS, GLFW_TRUE); // Enable lock keys modifiers (CAPS, NUM)
 
         // Retrieve gamepad names
         for (int i = 0; i < MAX_GAMEPADS; i++) {
             // WARNING: If glfwGetJoystickName() is longer than MAX_GAMEPAD_NAME_LENGTH,
             // only copying up to (MAX_GAMEPAD_NAME_LENGTH - 1)
-            if (glfwJoystickPresent(i)) {
-                context.core.input.gamepad.ready[i] = true;
-                context.core.input.gamepad.setAxisCount(GLFW_GAMEPAD_AXIS_LAST + 1);
-                context.core.input.gamepad.name[i] = glfwGetJoystickName(i);
+            if (glfwJoystickPresent(i) && glfwJoystickIsGamepad(i)) {
+                context.core.input.gamepad[i].setReady(true);
+                context.core.input.gamepad[i].setAxisCount(GLFW_GAMEPAD_AXIS_LAST + 1);
+                context.core.input.gamepad[i].setName(glfwGetGamepadName(i));
             }
         }
         //----------------------------------------------------------------------------
@@ -1590,9 +1539,6 @@ public class Desktop implements Platform {
         return 0;
     }
 
-    /**
-     * Poll (store) all input events
-     */
     public void PollInputEvents() {
         if (SUPPORT_GESTURES_SYSTEM) {
             // NOTE: Gestures update must be called every frame to reset gestures correctly
@@ -1605,7 +1551,9 @@ public class Desktop implements Platform {
         input.keyboard.charPressedQueueCount = 0;
 
         // Reset last gamepad button/axis registered state
-        input.gamepad.lastButtonPressed = 0;       // GAMEPAD_BUTTON_UNKNOWN
+        for (int i = 0; i < input.gamepad.length; i++) {
+            input.gamepad[i].setLastButtonPressed(0);       // GAMEPAD_BUTTON_UNKNOWN
+        }
         //input.gamepad.axisCount = 0;
 
         // keyboard/mouse input polling (automatically managed by GLFW3 through callback)
@@ -1646,15 +1594,15 @@ public class Desktop implements Platform {
         // Check if gamepads are ready
         // NOTE: We do it here in case of disconnection
         for (int i = 0; i < MAX_GAMEPADS; i++) {
-            input.gamepad.ready[i] = glfwJoystickPresent(i) && glfwJoystickIsGamepad(i);
+            input.gamepad[i].setReady(glfwJoystickPresent(i) && glfwJoystickIsGamepad(i));
         }
 
         // Register gamepads buttons events
         for (int i = 0; i < MAX_GAMEPADS; i++) {
             // Check if gamepad is available
-            if (input.gamepad.ready[i]) {
+            if (input.gamepad[i].getReady()) {
                 // Register previous gamepad states
-                System.arraycopy(input.gamepad.currentButtonState[i], 0, input.gamepad.previousButtonState[i], 0, MAX_GAMEPAD_BUTTONS);
+                System.arraycopy(input.gamepad[i].getCurrentButtonState(), 0, input.gamepad[i].getPreviousButtonState(), 0, MAX_GAMEPAD_BUTTONS);
 
                 // Get current gamepad state
                 // NOTE: There is no callback available, so we get it manually
@@ -1725,11 +1673,11 @@ public class Desktop implements Platform {
                     // Check for valid button
                     if (button != null) {
                         if (buttons[k] == GLFW_PRESS) {
-                            input.gamepad.currentButtonState[i][button.GetValue()] = 1;
-                            input.gamepad.lastButtonPressed = button.GetValue();
+                            input.gamepad[i].setCurrentButtonState(button.GetValue(), (byte) 1);
+                            input.gamepad[i].setLastButtonPressed(button.GetValue());
                         }
                         else {
-                            input.gamepad.currentButtonState[i][button.GetValue()] = 0;
+                            input.gamepad[i].setCurrentButtonState(button.GetValue(), (byte) 0);
                         }
                     }
                 }
@@ -1739,12 +1687,12 @@ public class Desktop implements Platform {
                 state.axes().get(axes);
 
                 for (int k = 0; (axes != null) && (k < GLFW_GAMEPAD_AXIS_LAST + 1) && (k < MAX_GAMEPAD_AXIS); k++) {
-                    input.gamepad.axisState[i][k] = axes[k];
+                    input.gamepad[i].setAxisState(k, axes[k]);
                 }
 
                 // Register buttons for 2nd triggers (because GLFW doesn't count these as buttons but rather axis)
-                input.gamepad.currentButtonState[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2.GetValue()] = (byte) ((input.gamepad.axisState[i][GAMEPAD_AXIS_LEFT_TRIGGER.GetValue()] > 0.1f) ? 1 : 0);
-                input.gamepad.currentButtonState[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2.GetValue()] = (byte) ((input.gamepad.axisState[i][GAMEPAD_AXIS_RIGHT_TRIGGER.GetValue()] > 0.1f) ? 1 : 0);
+                input.gamepad[i].setCurrentButtonState(GAMEPAD_BUTTON_LEFT_TRIGGER_2.GetValue(), (byte) ((input.gamepad[i].getAxisState()[GAMEPAD_AXIS_LEFT_TRIGGER.GetValue()] > 0.1f) ? 1 : 0));
+                input.gamepad[i].setCurrentButtonState(GAMEPAD_BUTTON_RIGHT_TRIGGER_2.GetValue(), (byte) ((input.gamepad[i].getAxisState()[GAMEPAD_AXIS_LEFT_TRIGGER.GetValue()] > 0.1f) ? 1 : 0));
 
                 // input.gamepad.getAxisCount()[i] = GLFW_GAMEPAD_AXIS_LAST + 1;
             }
@@ -1764,15 +1712,14 @@ public class Desktop implements Platform {
             glfwWaitEvents();
         }
 
-        window.setShouldClose(glfwWindowShouldClose(window.handle));
+        window.setShouldClose(glfwWindowShouldClose(handle));
 
         // Reset close status for next frame
-        glfwSetWindowShouldClose(window.handle, false);
+        glfwSetWindowShouldClose(handle, false);
     }
 
-    // Close platform
     public void ClosePlatform() {
-        glfwDestroyWindow(window.handle);
+        glfwDestroyWindow(handle);
         glfwTerminate();
     }
 

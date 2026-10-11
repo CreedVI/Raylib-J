@@ -1,9 +1,18 @@
 package com.raylib.java.structs;
 
+/**
+ * Ray, ray for ray casting
+ */
 public class Ray implements Cloneable {
 
-    public Vector3 position;       // Ray position (origin)
-    public Vector3 direction;      // Ray direction
+    /**
+     * Ray position (origin)
+     */
+    public Vector3 position;
+    /**
+     * Ray direction
+     */
+    public Vector3 direction;
 
     public Ray(){
         position = new Vector3();

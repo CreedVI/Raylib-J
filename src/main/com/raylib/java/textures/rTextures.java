@@ -33,7 +33,7 @@ import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.ATTACHMENT_COLOR
 import static com.raylib.java.rlgl.RLGL.rlFramebufferAttachType.ATTACHMENT_DEPTH;
 import static com.raylib.java.rlgl.RLGL.rlGlVersion.OPENGL_ES_20;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
-import static com.raylib.java.structs.NPatchInfo.NPatchType.*;
+import static com.raylib.java.structs.NPatchInfo.NPatchLayout.*;
 import static com.raylib.java.textures.rTextures.CubemapLayoutType.*;
 import static org.lwjgl.stb.STBImageResize.stbir_resize_uint8_linear;
 import static org.lwjgl.stb.STBPerlin.stb_perlin_fbm_noise3;
@@ -57,7 +57,7 @@ public class rTextures {
      *       #define SUPPORT_FILEFORMAT_PSD      0
      *       #define SUPPORT_FILEFORMAT_HDR      0
      *       #define SUPPORT_FILEFORMAT_PIC      0
-     *       #define SUPPORT_FILEFORMAT_PNM      0
+     *       #define SUPPORT_FILEFORMAT_QOI      0
      *       #define SUPPORT_FILEFORMAT_DDS      1
      *       #define SUPPORT_FILEFORMAT_PKM      0
      *       #define SUPPORT_FILEFORMAT_KTX      0
@@ -234,75 +234,6 @@ public class rTextures {
     }
 
     /**
-     * Load an image from an SVG file or string with custom size
-     *
-     * @param fileNameOrString Name of SVG file OR SVG data string.
-     * @param width            Desired width of image
-     * @param height           Desired height of image
-     * @return {@code Image} measuring {@code width} by {@code height} containing pixel data defined by the SVG.
-     */
-    public Image LoadImageSvg(String fileNameOrString, int width, int height) {
-        Image image = new Image();
-        boolean isSvgStringValid = false;
-
-        if (SUPPORT_FILEFORMAT_SVG) {
-            String fileText = "";
-            if (context.files.FileExists(fileNameOrString)) {
-                try {
-                    fileText = context.files.LoadFileText(fileNameOrString);
-                    isSvgStringValid = true;
-                }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            else {
-                if (fileNameOrString.substring(0, 3).equalsIgnoreCase("<svg")) {
-                    fileText = fileNameOrString;
-                    isSvgStringValid = true;
-                }
-            }
-
-            if (isSvgStringValid) {
-                SVGUniverse universe = new SVGUniverse();
-                universe.loadSVG(new StringReader(fileText), "svg");
-                SVGDiagram diagram = universe.getDiagram(universe.getLoadedDocumentURIs().get(0));
-                diagram.setDeviceViewport(new java.awt.Rectangle(0, 0, width, height));
-
-                BufferedImage svg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D graphics2D = svg.createGraphics();
-                graphics2D.setClip(0, 0, width, height);
-
-                try {
-                    diagram.render(null, graphics2D);
-                    Color[] pixels = new Color[width * height];
-
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            int argb = svg.getRGB(x, y);
-
-                            int alpha = (argb >> 24) & 0xff;
-                            int red = (argb >> 16) & 0xff;
-                            int green = (argb >> 8) & 0xff;
-                            int blue = argb & 0xff;
-
-                            pixels[(y * width) + x] = new Color(red, green, blue, alpha);
-                        }
-                    }
-
-                    image = new Image(pixels, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-                    graphics2D.dispose();
-                }
-                catch (SVGException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        return image;
-    }
-
-    /**
      * Load animated image data<br/>
      * - All frames are returned in RGBA format<br/>
      * - Frames delay data is discarded
@@ -451,7 +382,7 @@ public class rTextures {
             return image;
         }
 
-        if (SUPPORT_FILEFORMAT_PNG || SUPPORT_FILEFORMAT_BMP || SUPPORT_FILEFORMAT_TGA || SUPPORT_FILEFORMAT_JPG || SUPPORT_FILEFORMAT_GIF || SUPPORT_FILEFORMAT_PIC || SUPPORT_FILEFORMAT_PNM || SUPPORT_FILEFORMAT_PSD) {
+        if (SUPPORT_FILEFORMAT_PNG || SUPPORT_FILEFORMAT_BMP || SUPPORT_FILEFORMAT_TGA || SUPPORT_FILEFORMAT_JPG || SUPPORT_FILEFORMAT_GIF || SUPPORT_FILEFORMAT_QOI || SUPPORT_FILEFORMAT_PSD) {
             if (fileType.equalsIgnoreCase(".png") || fileType.equalsIgnoreCase(".bmp") || fileType.equalsIgnoreCase(".tga") ||
                     (fileType.equalsIgnoreCase(".jpeg") || fileType.equalsIgnoreCase(".jpg")) || fileType.equalsIgnoreCase(".gif") ||
                     fileType.equalsIgnoreCase(".pic") || fileType.equalsIgnoreCase(".ppm") || fileType.equalsIgnoreCase(".pgm") || fileType.equalsIgnoreCase(".psd")) {

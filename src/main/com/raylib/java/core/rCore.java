@@ -145,10 +145,7 @@ public class rCore {
     public boolean automationEventRecording = false;    // Record events
     short automationEventEnabled = 0b0000001111111111;    // Events enabled for checking
 
-    private int gifFrameCounter = 0;
-    private boolean gifRecording = false;
-
-    public int screenshotCounter;
+    public int screenshotCounter = 0;
 
     //Globals required for FPS calculation
     private static int index = 0;
@@ -167,7 +164,6 @@ public class rCore {
         this.window = new Window();
         this.input = new Input();
         this.time = new Time();
-
         this.random = new Random();
         this.currentEventList = new ArrayList<>();
         this.platform = new Desktop(context, window, input);
@@ -286,7 +282,9 @@ public class rCore {
         input.keyboard.setExitKey(KEY_ESCAPE);
         input.mouse.setScale(new Vector2(1.0f, 1.0f));
         input.mouse.setCursor(MOUSE_CURSOR_ARROW);
-        input.gamepad.setLastButtonPressed(0);
+        for (int i = 0; i < input.gamepad.length; i++) {
+            input.gamepad[i].setLastButtonPressed(0);
+        }
 
         if (SUPPORT_EVENTS_WAITING) {
             window.eventWaiting = true;
@@ -359,12 +357,6 @@ public class rCore {
      * Close window and unload OpenGL context
      */
     public void CloseWindow() {
-        if (SUPPORT_GIF_RECORDING) {
-            if (gifRecording) {
-                // todo: gif recording
-            }
-        }
-
         if (SUPPORT_MODULE_RTEXT) {
             context.text.UnloadFontDefault();        // WARNING: Module required: rtext
         }
@@ -906,12 +898,6 @@ public class rCore {
         if (SUPPORT_AUTOMATION_EVENTS) {
             if (automationEventRecording) {
                 RecordAutomationEvent(); // Event Recording
-            }
-        }
-
-        if (SUPPORT_GIF_RECORDING) {
-            if (gifRecording) {
-                // todo: GifSequenceWriter
             }
         }
 
@@ -2494,7 +2480,7 @@ public class rCore {
 
             for (int button = 0; button < MAX_GAMEPAD_BUTTONS; button++) {
                 // INPUT_GAMEPAD_BUTTON_UP
-                if (input.gamepad.previousButtonState[gamepad][button] == 1 && !(input.gamepad.currentButtonState[gamepad][button] == 1)) {
+                if (input.gamepad[gamepad].getPreviousButtonState()[button] == 1 && !(input.gamepad[gamepad].getCurrentButtonState()[button] == 1)) {
                     currentEventList.get(eventCount).frame = time.frameCounter;
                     currentEventList.get(eventCount).type = INPUT_GAMEPAD_BUTTON_UP.ordinal();
                     currentEventList.get(eventCount).params[0] = gamepad;
@@ -2506,7 +2492,7 @@ public class rCore {
                 }
 
                 // INPUT_GAMEPAD_BUTTON_DOWN
-                if (input.gamepad.currentButtonState[gamepad][button] == 1) {
+                if (input.gamepad[gamepad].getCurrentButtonState()[button] == 1) {
                     currentEventList.get(eventCount).frame = time.frameCounter;
                     currentEventList.get(eventCount).type = INPUT_GAMEPAD_BUTTON_DOWN.ordinal();
                     currentEventList.get(eventCount).params[0] = gamepad;
@@ -2520,12 +2506,12 @@ public class rCore {
 
             for (int axis = 0; axis < MAX_GAMEPAD_AXIS; axis++) {
                 // INPUT_GAMEPAD_AXIS_MOTION
-                if (input.gamepad.axisState[gamepad][axis] > 0.1f) {
+                if (input.gamepad[gamepad].getAxisState()[axis] > 0.1f) {
                     currentEventList.get(eventCount).frame = time.frameCounter;
                     currentEventList.get(eventCount).type = INPUT_GAMEPAD_AXIS_MOTION.ordinal();
                     currentEventList.get(eventCount).params[0] = gamepad;
                     currentEventList.get(eventCount).params[1] = axis;
-                    currentEventList.get(eventCount).params[2] = (int) (input.gamepad.axisState[gamepad][axis] * 32768.0f);
+                    currentEventList.get(eventCount).params[2] = (int) (input.gamepad[gamepad].getAxisState()[axis] * 32768.0f);
 
                     context.tracelog.TRACELOG(LOG_INFO, "[" + currentEventList.get(eventCount).frame + "] INPUT_GAMEPAD_AXIS_MOTION: " + currentEventList.get(eventCount).params[0] + ", " + currentEventList.get(eventCount).params[1] + ", " + currentEventList.get(eventCount).params[2]);
                     eventCount++;
@@ -2587,19 +2573,19 @@ public class rCore {
                         input.touch.position[currentEventList.get(i).params[0]].y = (float) currentEventList.get(i).params[2];
                         break;
                     case INPUT_GAMEPAD_CONNECT:     // param[0]: gamepad
-                        input.gamepad.ready[currentEventList.get(i).params[0]] = true;
+                        input.gamepad[currentEventList.get(i).params[0]].setReady(true);
                         break;
                     case INPUT_GAMEPAD_DISCONNECT:    // param[0]: gamepad
-                        input.gamepad.ready[currentEventList.get(i).params[0]] = false;
+                        input.gamepad[currentEventList.get(i).params[0]].setReady(false);
                         break;
                     case INPUT_GAMEPAD_BUTTON_UP:    // param[0]: gamepad, param[1]: button
-                        input.gamepad.currentButtonState[currentEventList.get(i).params[0]][currentEventList.get(i).params[1]] = 0;
+                        input.gamepad[currentEventList.get(i).params[0]].setCurrentButtonState(currentEventList.get(i).params[0], (byte) 0);
                         break;
                     case INPUT_GAMEPAD_BUTTON_DOWN:  // param[0]: gamepad, param[1]: button
-                        input.gamepad.currentButtonState[currentEventList.get(i).params[0]][currentEventList.get(i).params[1]] = 1;
+                        input.gamepad[currentEventList.get(i).params[0]].setCurrentButtonState(currentEventList.get(i).params[0], (byte) 1);
                         break;
                     case INPUT_GAMEPAD_AXIS_MOTION: // param[0]: gamepad, param[1]: axis, param[2]: delta
-                        input.gamepad.axisState[currentEventList.get(i).params[0]][currentEventList.get(i).params[1]] = ((float) currentEventList.get(i).params[2] / 32768.0f);
+                        input.gamepad[currentEventList.get(i).params[0]].setAxisState(currentEventList.get(i).params[0], ((float) currentEventList.get(i).params[2] / 32768.0f));
                         break;
                     case INPUT_GESTURE: // param[0]: gesture (enum Gesture) -> rgestures.h: GESTURES.current
                         //TODO
@@ -2762,7 +2748,7 @@ public class rCore {
      * @return {@code true} if gamepad number {@code number} is available
      */
     public boolean IsGamepadAvailable(int gamepad) {
-        return (gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad];
+        return (gamepad < MAX_GAMEPADS) && input.gamepad[gamepad].getReady();
     }
 
     /**
@@ -2773,8 +2759,8 @@ public class rCore {
      */
     public String GetGamepadName(int gamepad) {
         if (PLATFORM_DESKTOP) {
-            if (input.gamepad.getReady()[gamepad]) {
-                return glfwGetJoystickName(gamepad);
+            if (input.gamepad[gamepad].getReady()) {
+                return input.gamepad[gamepad].getName();
             }
             else {
                 return null;
@@ -2791,7 +2777,7 @@ public class rCore {
      * @return
      */
     public int GetGamepadAxisCount(int gamepad) {
-        return input.gamepad.getAxisCount();
+        return input.gamepad[gamepad].getAxisCount();
     }
 
     /**
@@ -2815,9 +2801,8 @@ public class rCore {
     public float GetGamepadAxisMovement(int gamepad, int axis) {
         float value = 0;
 
-        if ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (axis < MAX_GAMEPAD_AXIS) &&
-                (Math.abs(input.gamepad.getAxisState()[gamepad][axis]) > 0.1f)) {
-            value = input.gamepad.getAxisState()[gamepad][axis];      // 0.1f = GAMEPAD_AXIS_MINIMUM_DRIFT/DELTA
+        if ((gamepad < MAX_GAMEPADS) && input.gamepad[gamepad].getReady() && (axis < MAX_GAMEPAD_AXIS) && (Math.abs(input.gamepad[gamepad].getAxisState()[axis]) > 0.1f)) {
+            value = input.gamepad[gamepad].getAxisState()[axis];      // 0.1f = GAMEPAD_AXIS_MINIMUM_DRIFT/DELTA
         }
 
         return value;
@@ -2840,8 +2825,8 @@ public class rCore {
      * @return
      */
     public boolean IsGamepadButtonPressed(int gamepad, int button) {
-        return ((gamepad < MAX_GAMEPADS) && input.gamepad.ready[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.previousButtonState[gamepad][button] == 0) && (input.gamepad.currentButtonState[gamepad][button] == 1));
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad[gamepad].getReady() && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad[gamepad].getPreviousButtonState()[button] == 0) && (input.gamepad[gamepad].getCurrentButtonState()[button] == 1));
     }
 
     /**
@@ -2861,7 +2846,7 @@ public class rCore {
      * @return
      */
     public boolean IsGamepadButtonDown(int gamepad, int button) {
-        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 1));
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad[gamepad].getReady() && (button < MAX_GAMEPAD_BUTTONS) && (input.gamepad[gamepad].getCurrentButtonState()[button] == 1));
     }
 
     /**
@@ -2881,8 +2866,8 @@ public class rCore {
      * @return
      */
     public boolean IsGamepadButtonReleased(int gamepad, int button) {
-        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getPreviousButtonState()[gamepad][button] == 1) && (input.gamepad.getCurrentButtonState()[gamepad][button] == 0));
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad[gamepad].getReady() && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad[gamepad].getPreviousButtonState()[button] == 1) && (input.gamepad[gamepad].getCurrentButtonState()[button] == 0));
     }
 
     /**
@@ -2902,16 +2887,17 @@ public class rCore {
      * @return
      */
     public boolean IsGamepadButtonUp(int gamepad, int button) {
-        return ((gamepad < MAX_GAMEPADS) && input.gamepad.getReady()[gamepad] && (button < MAX_GAMEPAD_BUTTONS) &&
-                (input.gamepad.getCurrentButtonState()[gamepad][button] == 0));
+        return ((gamepad < MAX_GAMEPADS) && input.gamepad[gamepad].getReady() && (button < MAX_GAMEPAD_BUTTONS) &&
+                (input.gamepad[gamepad].getCurrentButtonState()[button] == 0));
     }
 
     /**
      * Get the last gamepad button pressed
+     * @param gamepad Gamepad index to query
      * @return
      */
-    public int GetGamepadButtonPressed() {
-        return input.gamepad.getLastButtonPressed();
+    public int GetGamepadButtonPressed(int gamepad) {
+        return input.gamepad[gamepad].getLastButtonPressed();
     }
 
     //----------------------------------------------------------------------------------

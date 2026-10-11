@@ -1,10 +1,22 @@
 package com.raylib.java.structs;
 
+/**
+ * MaterialMap
+ */
 public class MaterialMap implements Cloneable{
 
-    public Texture2D texture;      // Material map texture
-    public Color color;            // Material map color
-    public float value;            // Material map value
+    /**
+     * Material map texture
+     */
+    public Texture2D texture;
+    /**
+     * Material map color
+     */
+    public Color color;
+    /**
+     * Material map value
+     */
+    public float value;
 
     public MaterialMap(){
         texture = new Texture2D();

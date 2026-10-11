@@ -1,15 +1,42 @@
 package com.raylib.java.structs;
 
+/**
+ * VrStereoConfig, VR stereo rendering configuration for simulator
+ */
 public class VrStereoConfig implements Cloneable {
 
-    public Matrix[] projection;           // VR projection matrices (per eye)
-    public Matrix[] viewOffset;           // VR view offset matrices (per eye)
-    public float[] leftLensCenter;        // VR left lens center
-    public float[] rightLensCenter;       // VR right lens center
-    public float[] leftScreenCenter;      // VR left screen center
-    public float[] rightScreenCenter;     // VR right screen center
-    public float[] scale;                 // VR distortion scale
-    public float[] scaleIn;               // VR distortion scale in
+    /**
+     * VR projection matrices (per eye)
+     */
+    public Matrix[] projection;
+    /**
+     * VR view offset matrices (per eye)
+     */
+    public Matrix[] viewOffset;
+    /**
+     * VR left lens center
+     */
+    public float[] leftLensCenter;
+    /**
+     * VR right lens center
+     */
+    public float[] rightLensCenter;
+    /**
+     * VR left screen center
+     */
+    public float[] leftScreenCenter;
+    /**
+     * VR right screen center
+     */
+    public float[] rightScreenCenter;
+    /**
+     * VR distortion scale
+     */
+    public float[] scale;
+    /**
+     * VR distortion scale in
+     */
+    public float[] scaleIn;
 
     public VrStereoConfig(){
         projection = new Matrix[2];

@@ -1,12 +1,30 @@
 package com.raylib.java.structs;
 
+/**
+ * ModelAnimation, contains a full animation sequence
+ */
 public class ModelAnimation implements Cloneable {
 
-    public int boneCount;          // Number of bones
-    public int frameCount;         // Number of animation frames
+    /**
+     * Number of bones
+     */
+    public int boneCount;
+    /**
+     * Number of animation frames
+     */
+    public int frameCount;
+    /**
+     * Name of animation
+     */
     public String name;
-    public BoneInfo[] bones;        // Bones information (skeleton)
-    public Transform[][] framePoses; // Poses array by frame
+    /**
+     * Bones information (skeleton)
+     */
+    public BoneInfo[] bones;
+    /**
+     * Poses array by frame
+     */
+    public Transform[][] framePoses;
 
     @Override
     public ModelAnimation clone() {

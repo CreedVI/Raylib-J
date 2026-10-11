@@ -1,12 +1,30 @@
 package com.raylib.java.structs;
 
+/**
+ * GlyphInfo, font characters glyphs info
+ */
 public class GlyphInfo implements Cloneable{
 
-    public int value;              // Character value (Unicode)
-    public int offsetX;            // Character offset X when drawing
-    public int offsetY;            // Character offset Y when drawing
-    public int advanceX;           // Character advance position X
-    public Image image;            // Character image data
+    /**
+     * Character value (Unicode)
+     */
+    public int value;
+    /**
+     * Character offset X when drawing
+     */
+    public int offsetX;
+    /**
+     * Character offset Y when drawing
+     */
+    public int offsetY;
+    /**
+     * Character advance position X
+     */
+    public int advanceX;
+    /**
+     * Character image data
+     */
+    public Image image;
 
     public GlyphInfo(){
         value = 0;

@@ -4,36 +4,112 @@ import com.raylib.java.structs.Matrix;
 import com.raylib.java.structs.Point;
 import com.raylib.java.structs.Size;
 
+/**
+ * System window management
+ */
 public class Window {
-    public long handle;
 
-    protected String title;                           // window text title const pointer
-    public int flags;                                 // Configuration flags (bit based), keeps window state
-    protected boolean ready;                          // Check if window has been initialized successfully
-    protected boolean shouldClose;                    // Check if window set for closing
-    protected boolean resizedLastFrame;               // Check if window has been resized last frame
+    /**
+     * Window title text
+     */
+    protected String title;
+
+    /**
+     * Configuration flags (bit based), keeps window state
+     */
+    public int flags;
+
+    /**
+     * Check if window has been initialized successfully
+     */
+    protected boolean ready;
+
+    /**
+     * Check if window set for closing
+     */
+    protected boolean shouldClose;
+
+    /**
+     * Check if window has been resized last frame
+     */
+    protected boolean resizedLastFrame;
+
+    /**
+     * Using FBO (RenderTexture) for rendering instead of default framebuffer
+     */
     protected boolean usingFbo;
 
-    protected boolean eventWaiting;               // Wait for events before ending frame
+    /**
+     * Wait for events before ending frame
+     */
+    protected boolean eventWaiting;
 
-    protected Size display;                       // Display width and height (monitor, device-screen, LCD, ...)
-    protected Size screen;                        // Screen width and height (used render area)
-    protected Point position;                     // window position on screen (required on fullscreen toggle)
-    protected Size previousScreen;                // Screen previous width and height (required on borderless windowed toggle)
-    protected Point previousPosition;             // Window previous position (required on borderless windowed toggle)
-    protected Size currentFbo;                    // Current render width and height, it could change on BeginTextureMode()
-    protected Size render;                        // Framebuffer width and height (render area, including black bars if required)
-    protected Point renderOffset;                 // Offset from render area (must be divided by 2)
-    protected Size screenMin;                     // Screen minimum width and height (for resizable window)
-    protected Size screenMax;                     // Screen maximum width and height (for resizable window)
-    protected Matrix screenScale;                 // Matrix to scale screen (framebuffer rendering)
+    /**
+     * Display width and height (monitor, device-screen, LCD, ...)
+     */
+    protected Size display;
 
-    protected String[] dropFilePaths;               // Store dropped files paths as strings
-    protected int dropFilesCount;                   // Count dropped files strings
+    /**
+     * Screen width and height (used render area)
+     */
+    protected Size screen;
+
+    /**
+     * Window position on screen (required on fullscreen toggle)
+     */
+    protected Point position;
+
+    /**
+     * Screen previous width and height (required on borderless windowed toggle)
+     */
+    protected Size previousScreen;
+
+    /**
+     * Window previous position (required on borderless windowed toggle)
+     */
+    protected Point previousPosition;
+
+    /**
+     * Current render width and height, it could change on BeginTextureMode()
+     */
+    protected Size currentFbo;
+
+    /**
+     * Framebuffer width and height (render area, including black bars if required)
+     */
+    protected Size render;
+
+    /**
+     * Offset from render area (must be divided by 2)
+     */
+    protected Point renderOffset;
+
+    /**
+     * Screen minimum width and height (for resizable window)
+     */
+    protected Size screenMin;
+
+    /**
+     * Screen maximum width and height (for resizable window)
+     */
+    protected Size screenMax;
+
+    /**
+     * Matrix to scale screen (framebuffer rendering)
+     */
+    protected Matrix screenScale;
+
+    /**
+     * Store dropped files paths as strings
+     */
+    protected String[] dropFilePaths;
+
+    /**
+     * Count dropped files strings
+     */
+    protected int dropFilesCount;
 
     public Window() {
-        handle = 0;
-
         title = "";
         flags = 0;
         ready = false;
@@ -54,14 +130,6 @@ public class Window {
 
         dropFilePaths = new String[512];
         dropFilesCount = 0;
-    }
-
-    public long getHandle() {
-        return handle;
-    }
-
-    public void setHandle(long handle) {
-        this.handle = handle;
     }
 
     public String getTitle() {

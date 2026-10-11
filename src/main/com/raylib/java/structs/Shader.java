@@ -2,10 +2,19 @@ package com.raylib.java.structs;
 
 import static com.raylib.java.rlgl.RLGL.MAX_SHADER_LOCATIONS;
 
+/**
+ * Shader program
+ */
 public class Shader implements Cloneable {
 
-    public int id;                 // Shader program id
-    public int[] locs;              // Shader locations array (MAX_SHADER_LOCATIONS)
+    /**
+     * Shader program id
+     */
+    public int id;
+    /**
+     * Shader locations array (MAX_SHADER_LOCATIONS)
+     */
+    public int[] locs;
 
     public Shader() {
         id = 0;

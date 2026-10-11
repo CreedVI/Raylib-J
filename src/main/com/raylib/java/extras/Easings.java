@@ -2,7 +2,11 @@ package com.raylib.java.extras;
 
 import static com.raylib.java.raymath.Raymath.PI;
 
-public class Easings{
+/**
+ * Easing methods
+ * @link <a href="https://easings.net">easings.net</a>
+ */
+public class Easings {
 
     // Linear Easing functions
     public static float EaseLinearNone(float t, float b, float c, float d){

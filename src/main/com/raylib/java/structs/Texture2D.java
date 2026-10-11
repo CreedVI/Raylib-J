@@ -1,79 +1,22 @@
 package com.raylib.java.structs;
 
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat;
-import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+import com.raylib.java.rlgl.RLGL;
 
-public class Texture2D implements Cloneable {
+/**
+ * Texture2D, Texture alias
+ */
+public class Texture2D extends Texture {
 
-    public int id;                 // OpenGL texture id
-    public int width;              // Texture base width
-    public int height;             // Texture base height
-    public int mipmaps;            // Mipmap levels, 1 by default
-    public rlPixelFormat format;             // Data format (rlPixelFormat type)
-
-    public Texture2D(){
-        this.width = 1;
-        this.height = 1;
-        this.mipmaps = 1;
-        this.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+    public Texture2D() {
+        super();
     }
 
-    public Texture2D(int id, int width, int height, int mipmaps, rlPixelFormat format){
-        this.id = id;
-        this.width = width;
-        this.height = height;
-        this.mipmaps = mipmaps;
-        this.format = format;
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public void setId(int id){
-        this.id = id;
-    }
-
-    public int getWidth(){
-        return width;
-    }
-
-    public void setWidth(int width){
-        this.width = width;
-    }
-
-    public int getHeight(){
-        return height;
-    }
-
-    public void setHeight(int height){
-        this.height = height;
-    }
-
-    public int getMipmaps(){
-        return mipmaps;
-    }
-
-    public void setMipmaps(int mipmaps){
-        this.mipmaps = mipmaps;
-    }
-
-    public rlPixelFormat getFormat(){
-        return format;
-    }
-
-    public void setFormat(rlPixelFormat format){
-        this.format = format;
+    public Texture2D(int id, int width, int height, int mipmaps, RLGL.rlPixelFormat format) {
+        super(id, width, height, mipmaps, format);
     }
 
     @Override
     public Texture2D clone() {
-        try {
-            Texture2D clone = (Texture2D) super.clone();
-
-            return clone;
-        } catch(CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+        return (Texture2D) super.clone();
     }
 }

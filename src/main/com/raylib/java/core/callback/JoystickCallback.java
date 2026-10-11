@@ -15,10 +15,10 @@ public class JoystickCallback extends GLFWJoystickCallback {
     @Override
     public void invoke(int jid, int event) {
         if (event == GLFW_CONNECTED) {
-            context.core.input.getGamepad().name[jid] =  glfwGetJoystickName(jid);
+            context.core.input.getGamepad(jid).setName(glfwGetJoystickName(jid));
         }
         else if (event == GLFW_DISCONNECTED) {
-            context.core.input.getGamepad().name[jid] = null;
+            context.core.input.getGamepad(jid).setName(null);
         }
     }
 }

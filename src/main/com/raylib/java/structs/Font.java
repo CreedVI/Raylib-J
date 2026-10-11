@@ -1,13 +1,34 @@
 package com.raylib.java.structs;
 
+/**
+ * Font, font texture and GlyphInfo array data
+ */
 public class Font implements Cloneable{
 
-    public int baseSize;           // Base size (default chars height)
-    public int glyphCount;         // Number of characters
-    public int glyphPadding;       // Padding around the chars
-    public Texture2D texture;      // Characters texture atlas
-    public Rectangle[] recs;        // Characters rectangles in texture
-    public GlyphInfo[] glyphs;        // Characters info data
+    /**
+     * Base size (default chars height)
+     */
+    public int baseSize;
+    /**
+     * Number of glyph characters
+     */
+    public int glyphCount;
+    /**
+     * Padding around the glyph characters
+     */
+    public int glyphPadding;
+    /**
+     * Texture atlas containing the glyphs
+     */
+    public Texture2D texture;
+    /**
+     * Rectangles in texture for the glyphs
+     */
+    public Rectangle[] recs;
+    /**
+     * Glyphs info data
+     */
+    public GlyphInfo[] glyphs;
 
     public Font(){
         baseSize = 0;

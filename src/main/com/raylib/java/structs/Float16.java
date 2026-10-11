@@ -1,6 +1,13 @@
 package com.raylib.java.structs;
 
+/**
+ * Sixteen value {@code float[]} helper <br/>
+ * Helper type to be used instead of array return types for *ToFloat RayMath functions
+ */
 public class Float16 implements Cloneable {
+    /**
+     * Float values
+     */
     public float[] v = new float[16];
 
     public Float16(){

@@ -1,8 +1,17 @@
 package com.raylib.java.structs;
 
+/**
+ * Size, two components
+ */
 public class Size implements Cloneable {
 
+    /**
+     * Size width
+     */
     public int width;
+    /**
+     * Size height
+     */
     public int height;
 
     public Size(){

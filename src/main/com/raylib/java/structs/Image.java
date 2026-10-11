@@ -4,13 +4,31 @@ import com.raylib.java.rlgl.RLGL.rlPixelFormat;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Image, pixel data stored in CPU memory (RAM)
+ */
 public class Image implements Cloneable{
 
-    public ByteBuffer data;               // Image raw data
-    public int width;                     // Image base width
-    public int height;                    // Image base height
-    public int mipmaps;                   // Mipmap levels, 1 by default
-    public rlPixelFormat format;          // Data format (rlPixelFormat type)
+    /**
+     * Image raw data
+     */
+    public ByteBuffer data;
+    /**
+     * Image base width
+     */
+    public int width;
+    /**
+     * Image base height
+     */
+    public int height;
+    /**
+     * Mipmap levels, 1 by default
+     */
+    public int mipmaps;
+    /**
+     * Data format (rlPixelFormat type)
+     */
+    public rlPixelFormat format;
 
     public Image(){
         width = 0;

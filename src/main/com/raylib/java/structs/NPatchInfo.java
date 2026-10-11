@@ -1,22 +1,52 @@
 package com.raylib.java.structs;
 
+/**
+ * NPatchInfo, n-patch layout info
+ */
 public class NPatchInfo implements Cloneable{
 
-    public Rectangle source;   // Region in the texture
-    public int left;              // left border offset
-    public int top;               // top border offset
-    public int right;             // right border offset
-    public int bottom;            // bottom border offset
-    public NPatchType layout;              // layout of the n-patch: 3x3, 1x3 or 3x1
+    /**
+     * Region in the texture
+     */
+    public Rectangle source;
+    /**
+     * left border offset
+     */
+    public int left;
+    /**
+     * top border offset
+     */
+    public int top;
+    /**
+     * right border offset
+     */
+    public int right;
+    /**
+     * bottom border offset
+     */
+    public int bottom;
+    /**
+     * layout of the n-patch: 3x3, 1x3 or 3x1
+     */
+    public NPatchLayout layout;
 
-    public enum NPatchType {
-        NPATCH_NINE_PATCH(0),         // Npatch defined by 3x3 tiles
-        NPATCH_THREE_PATCH_VERTICAL(1),    // Npatch defined by 1x3 tiles
-        NPATCH_THREE_PATCH_HORIZONTAL(2);   // Npatch defined by 3x1 tiles
+    public enum NPatchLayout {
+        /**
+         * Npatch defined by 3x3 tiles
+         */
+        NPATCH_NINE_PATCH(0),
+        /**
+         * Npatch defined by 1x3 tiles
+         */
+        NPATCH_THREE_PATCH_VERTICAL(1),
+        /**
+         * Npatch defined by 3x1 tiles
+         */
+        NPATCH_THREE_PATCH_HORIZONTAL(2);
 
         private final int value;
 
-        NPatchType(int value) {
+        NPatchLayout(int value) {
             this.value = value;
         }
 
@@ -33,7 +63,7 @@ public class NPatchInfo implements Cloneable{
         bottom = 0;
     }
 
-    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, NPatchType type) {
+    public NPatchInfo(Rectangle source, int left, int top, int right, int bottom, NPatchLayout type) {
         this.source = source;
         this.left = left;
         this.top = top;
@@ -82,11 +112,11 @@ public class NPatchInfo implements Cloneable{
         this.bottom = bottom;
     }
 
-    public NPatchType getLayout() {
+    public NPatchLayout getLayout() {
         return layout;
     }
 
-    public void setLayout(NPatchType layout) {
+    public void setLayout(NPatchLayout layout) {
         this.layout = layout;
     }
 

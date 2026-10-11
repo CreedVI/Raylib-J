@@ -13,11 +13,23 @@ import static com.raylib.java.core.rcamera.Camera3D.CameraProjection.*;
 import static com.raylib.java.core.rcamera.Camera3D.CameraMode.*;
 import static com.raylib.java.raymath.Raymath.*;
 
+/**
+ * Camera for 3D rendering
+ */
 public class Camera3D {
 
-    // rCamera projection modes
+    /**
+     * Camera projection modes <br/>
+     * Defines perspective camera projection via {@code CAMERA_PERSPECTIVE} or orthographic projection via {@code CAMERA_ORTHOGRAPHIC}
+     */
     public enum CameraProjection {
+        /**
+         * Perspective camera projection
+         */
         CAMERA_PERSPECTIVE(0),
+        /**
+         * Orthographic camera projection
+          */
         CAMERA_ORTHOGRAPHIC(1);
 
         private final int value;
@@ -31,6 +43,9 @@ public class Camera3D {
         }
     }
 
+    /**
+     * Camera behaviour modes
+     */
     public enum CameraMode {
         CAMERA_CUSTOM(0),
         CAMERA_FREE(1),
@@ -70,12 +85,32 @@ public class Camera3D {
     // PLAYER (used by camera)
     private final float PLAYER_MOVEMENT_SENSITIVITY = 20.0f;
 
-    public Vector3 position;                // rCamera position
-    public Vector3 target;
-    public Vector3 up;                      // rCamera up vector (rotation over its axis)
-    public float fovy;                      // rCamera field-of-view aperture in Y (degrees) in perspective, used as near plane width in orthographic
-    public CameraProjection projection;     // rCamera projection, defines projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
+    /**
+     * Camera position in 3D space
+     */
+    public Vector3 position;
 
+    /**
+     * Point in 3D space camera is targeting
+     */
+    public Vector3 target;
+    /**
+     * Camera up vector (rotation over its axis)
+     */
+    public Vector3 up;
+    /**
+     * Camera field-of-view aperture in Y (degrees) in perspective, used as near plane width in orthographic projection
+     */
+    public float fovy;
+    /**
+     * Camera projection
+     * @see CameraProjection
+     */
+    public CameraProjection projection;
+
+    /**
+     * Raylib context for camera functionality
+     */
     private final Raylib context;
 
     public Camera3D(Raylib context) {

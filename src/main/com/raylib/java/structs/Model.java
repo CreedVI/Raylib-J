@@ -1,19 +1,49 @@
 package com.raylib.java.structs;
 
+/**
+ * Model, meshes, materials and animation data
+ */
 public class Model implements Cloneable {
 
-    public Matrix transform;       // Local transform matrix
+    /**
+     * Local transform matrix
+     */
+    public Matrix transform;
 
-    public int meshCount;          // Number of meshes
-    public int materialCount;      // Number of materials
-    public Mesh[] meshes;           // Meshes array
-    public Material[] materials;    // Materials array
-    public int[] meshMaterial;      // Mesh material number
+    /**
+     * Number of meshes
+     */
+    public int meshCount;
+    /**
+     * Number of materials
+     */
+    public int materialCount;
+    /**
+     * Meshes array
+     */
+    public Mesh[] meshes;
+    /**
+     * Materials array
+     */
+    public Material[] materials;
+    /**
+     * Mesh material number
+     */
+    public int[] meshMaterial;
 
     // Animation data
-    public int boneCount;          // Number of bones
-    public BoneInfo[] bones;        // Bones information (skeleton)
-    public Transform[] bindPose;    // Bones base transformation (pose)
+    /**
+     * Number of bones
+     */
+    public int boneCount;
+    /**
+     * Bones information (skeleton)
+     */
+    public BoneInfo[] bones;
+    /**
+     * Bones base transformation (pose)
+     */
+    public Transform[] bindPose;
 
     public Model() {
         transform = new Matrix();

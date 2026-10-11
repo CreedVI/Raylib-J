@@ -5,32 +5,104 @@ import com.raylib.java.structs.Vector3;
 
 public class Mouse{
 
-    public Vector2 currentPosition;               // Mouse position on screen
-    public Vector2 previousPosition;               // last mouse position on screen
-    public Vector2 lockedPosition;         // Mouse Position when locked
-    public Vector2 offset;                 // Mouse offset
-    public Vector2 scale;                  // Mouse scaling
+    /**
+     * Mouse position on screen
+     */
+    public Vector2 currentPosition;
 
-    public MouseCursor cursor;                     // Tracks current mouse cursor
-    public boolean cursorHidden;              // Track if cursor is hidden
-    public boolean cursorOnScreen;            // Tracks if cursor is inside client area
-    public boolean cursorLocked;              // Track if cursor is locked (disabled)
+    /**
+     * Last mouse position on screen
+     */
+    public Vector2 previousPosition;
 
-    public int[] currentButtonState;     // Registers current mouse button state
-    public int[] previousButtonState;    // Registers previous mouse button state
-    public Vector2 currentWheelMove;         // Registers current mouse wheel variation
-    public Vector2 previousWheelMove;        // Registers previous mouse wheel variation
+    /**
+     * Mouse position when locked
+     */
+    public Vector2 lockedPosition;
+
+    /**
+     * Mouse offset
+     */
+    public Vector2 offset;
+
+    /**
+     * Mouse scaling
+     */
+    public Vector2 scale;
+
+    /**
+     * Tracks status of current mouse cursor
+     */
+    public MouseCursor cursor;
+
+    /**
+     * Track if mouse cursor is hidden
+     */
+    public boolean cursorHidden;
+
+    /**
+     * Track if the mouse cursor is inside the client area
+     */
+    public boolean cursorOnScreen;
+
+    /**
+     * Track if the mouse cursor is locked (i.e. disabled)
+     */
+    public boolean cursorLocked;
+
+    /**
+     * Registers current mouse button states
+     */
+    public int[] currentButtonState;
+
+    /**
+     * Registers previous mouse button states
+     */
+    public int[] previousButtonState;
+
+    /**
+     * Registers the current mouse wheel movement variation
+     */
+    public Vector2 currentWheelMove;
+
+    /**
+     * Registers the previous mouse wheel movement variation
+     */
+    public Vector2 previousWheelMove;
 
 
-    // Mouse buttons
+    /**
+     * Mouse buttons
+     */
     public enum MouseButton {
-        MOUSE_BUTTON_LEFT(0),       // Mouse button left
-        MOUSE_BUTTON_RIGHT(1),       // Mouse button right
-        MOUSE_BUTTON_MIDDLE(2),       // Mouse button middle (pressed wheel)
-        MOUSE_BUTTON_SIDE(3),       // Mouse button side (advanced mouse device)
-        MOUSE_BUTTON_EXTRA(4),       // Mouse button extra (advanced mouse device)
-        MOUSE_BUTTON_FORWARD(5),       // Mouse button fordward (advanced mouse device)
-        MOUSE_BUTTON_BACK(6);       // Mouse button back (advanced mouse device)
+        /**
+         * Mouse button left
+         */
+        MOUSE_BUTTON_LEFT(0),
+        /**
+         * Mouse button right
+         */
+        MOUSE_BUTTON_RIGHT(1),
+        /**
+         * Mouse button middle (pressed wheel)
+         */
+        MOUSE_BUTTON_MIDDLE(2),
+        /**
+         * Mouse button side (advanced mouse device)
+         */
+        MOUSE_BUTTON_SIDE(3),
+        /**
+         * Mouse button extra (advanced mouse device)
+         */
+        MOUSE_BUTTON_EXTRA(4),
+        /**
+         * Mouse button forward (advanced mouse device)
+         */
+        MOUSE_BUTTON_FORWARD(5),
+        /**
+         * Mouse button back (advanced mouse device)
+         */
+        MOUSE_BUTTON_BACK(6);
 
         private final int value;
 
@@ -43,19 +115,54 @@ public class Mouse{
         }
     }
 
-    // Mouse cursor types
+    /**
+     * Mouse cursor types
+     */
     public enum MouseCursor {
-        MOUSE_CURSOR_DEFAULT(0),     // Default pointer shape
-        MOUSE_CURSOR_ARROW(1),     // Arrow shape
-        MOUSE_CURSOR_IBEAM(2),     // Text writing cursor shape
-        MOUSE_CURSOR_CROSSHAIR(3),     // Cross shape
-        MOUSE_CURSOR_POINTING_HAND(4),     // Pointing hand cursor
-        MOUSE_CURSOR_RESIZE_EW(5),     // Horizontal resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_NS(6),     // Vertical resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_NWSE(7),     // Top-left to bottom-right diagonal resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_NESW(8),     // The top-right to bottom-left diagonal resize/move arrow shape
-        MOUSE_CURSOR_RESIZE_ALL(9),     // The omni-directional resize/move cursor shape
-        MOUSE_CURSOR_NOT_ALLOWED(10);     // The operation-not-allowed shape
+        /**
+         * Default pointer shape
+         */
+        MOUSE_CURSOR_DEFAULT(0),
+        /**
+         * Arrow shape
+         */
+        MOUSE_CURSOR_ARROW(1),
+        /**
+         * Text writing cursor shape
+         */
+        MOUSE_CURSOR_IBEAM(2),
+        /**
+         * Cross shape
+         */
+        MOUSE_CURSOR_CROSSHAIR(3),
+        /**
+         * Pointing hand cursor
+         */
+        MOUSE_CURSOR_POINTING_HAND(4),
+        /**
+         * Horizontal resize/move arrow shape
+         */
+        MOUSE_CURSOR_RESIZE_EW(5),
+        /**
+         * Vertical resize/move arrow shape
+         */
+        MOUSE_CURSOR_RESIZE_NS(6),
+        /**
+         * Top-left to bottom-right diagonal resize/move arrow shape
+         */
+        MOUSE_CURSOR_RESIZE_NWSE(7),
+        /**
+         * The top-right to bottom-left diagonal resize/move arrow shape
+         */
+        MOUSE_CURSOR_RESIZE_NESW(8),
+        /**
+         * The omni-directional resize/move cursor shape
+         */
+        MOUSE_CURSOR_RESIZE_ALL(9),
+        /**
+         * The operation-not-allowed shape
+         */
+        MOUSE_CURSOR_NOT_ALLOWED(10);
 
         private final int value;
 

@@ -1,11 +1,26 @@
 package com.raylib.java.structs;
 
+/**
+ * RayCollision, ray hit information
+ */
 public class RayCollision implements Cloneable {
 
-    public boolean hit;            // Did the ray hit something?
-    public float distance;         // Distance to nearest hit
-    public Vector3 point;       // Position of nearest hit
-    public Vector3 normal;         // Surface normal of hit
+    /**
+     * Did the ray hit something?
+     */
+    public boolean hit;
+    /**
+     * Distance to nearest hit
+     */
+    public float distance;
+    /**
+     * Position of nearest hit
+     */
+    public Vector3 point;
+    /**
+     * Surface normal of hit
+     */
+    public Vector3 normal;
 
     public RayCollision(){
         point = new Vector3();

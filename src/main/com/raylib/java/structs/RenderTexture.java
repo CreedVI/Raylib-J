@@ -1,9 +1,21 @@
 package com.raylib.java.structs;
 
+/**
+ * RenderTexture, fbo for texture rendering
+ */
 public class RenderTexture implements Cloneable {
 
+    /**
+     * OpenGL framebuffer object id
+     */
     public int id;
+    /**
+     * Color buffer attachment texture
+     */
     public Texture2D texture;
+    /**
+     * Depth buffer attachment texture
+     */
     public Texture2D depth;
 
     public RenderTexture(){

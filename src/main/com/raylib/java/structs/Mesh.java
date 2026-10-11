@@ -1,31 +1,88 @@
 package com.raylib.java.structs;
 
+/**
+ * Mesh, vertex data and vao/vbo
+ */
 public class Mesh implements Cloneable {
 
-    public int vertexCount;        // Number of vertices stored in arrays
-    public int triangleCount;      // Number of triangles stored (indexed or not)
+    /**
+     * Number of vertices stored in arrays
+     */
+    public int vertexCount;
+    /**
+     * Number of triangles stored (indexed or not)
+     */
+    public int triangleCount;
 
     // Vertex attributes data
-    public float[] vertices;        // Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
-    public float[] texcoords;       // Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
-    public float[] texcoords2;      // Vertex second texture coordinates (useful for lightmaps) (shader-location = 5)
-    public float[] normals;         // Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)
-    public float[] tangents;        // Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
-    public byte[] colors;           // Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
-    public float[] indices;         // Vertex indices (in case vertex data comes indexed)
+    /**
+     * Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
+     */
+    public float[] vertices;
+    /**
+     * Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
+     */
+    public float[] texcoords;
+    /**
+     * Vertex second texture coordinates (useful for lightmaps) (shader-location = 5)
+     */
+    public float[] texcoords2;
+    /**
+     * Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)
+     */
+    public float[] normals;
+    /**
+     * Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
+     */
+    public float[] tangents;
+    /**
+     * Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
+     */
+    public byte[] colors;
+    /**
+     * Vertex indices (in case vertex data comes indexed)
+     */
+    public float[] indices;
+    /**
+     * Vertex indices (in case vertex data comes indexed)
+     */
     public short[] indicesS;
 
     // Animation vertex data
-    public float[] animVertices;    // Animated vertex positions (after bones transformations)
-    public float[] animNormals;     // Animated normals (after bones transformations)
-    public byte[] boneIds;          // Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
-    public float[] boneWeights;     // Vertex bone weight, up to 4 bones influence by vertex (skinning)
-    public Matrix[] boneMatrices;   // Bones animated transformation matrices
-    public int boneCount;          // Number of bones
+    /**
+     * Animated vertex positions (after bones transformations)
+     */
+    public float[] animVertices;
+    /**
+     * Animated normals (after bones transformations)
+     */
+    public float[] animNormals;
+    /**
+     * Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
+     */
+    public byte[] boneIds;
+    /**
+     * Vertex bone weight, up to 4 bones influence by vertex (skinning)
+     */
+    public float[] boneWeights;
+    /**
+     * Bones animated transformation matrices
+     */
+    public Matrix[] boneMatrices;
+    /**
+     * Number of bones
+     */
+    public int boneCount;
 
     // OpenGL identifiers
-    public int vaoId;               // OpenGL Vertex Array Object id
-    public int[] vboId;             // OpenGL Vertex Buffer Objects id (default vertex data)
+    /**
+     * OpenGL Vertex Array Object id
+     */
+    public int vaoId;
+    /**
+     * OpenGL Vertex Buffer Objects id (default vertex data)
+     */
+    public int[] vboId;
 
     public Mesh() {
         texcoords = new float[1];

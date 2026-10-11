@@ -1,19 +1,50 @@
 package com.raylib.java.structs;
 
+/**
+ * VrDeviceInfo, Head-Mounted-Display device parameters
+ */
 public class VrDeviceInfo implements Cloneable{
 
-    // Head-Mounted-Display device parameters
-
-    public int hResolution;                // Horizontal resolution in pixels
-    public int vResolution;                // Vertical resolution in pixels
-    public float hScreenSize;              // Horizontal size in meters
-    public float vScreenSize;              // Vertical size in meters
-    public float vScreenCenter;            // Screen center in meters
-    public float eyeToScreenDistance;      // Distance between eye and display in meters
-    public float lensSeparationDistance;   // Lens separation distance in meters
-    public float interpupillaryDistance;   // IPD (distance between pupils) in meters
-    public float[] lensDistortionValues;  // Lens distortion constant parameters
-    public float[] chromaAbCorrection;    // Chromatic aberration correction parameters
+    /**
+     * Horizontal resolution in pixels
+     */
+    public int hResolution;
+    /**
+     * Vertical resolution in pixels
+     */
+    public int vResolution;
+    /**
+     * Horizontal size in meters
+     */
+    public float hScreenSize;
+    /**
+     * Vertical size in meters
+     */
+    public float vScreenSize;
+    /**
+     * Screen center in meters
+     */
+    public float vScreenCenter;
+    /**
+     * Distance between eye and display in meters
+     */
+    public float eyeToScreenDistance;
+    /**
+     * Lens separation distance in meters
+     */
+    public float lensSeparationDistance;
+    /**
+     * IPD (distance between pupils) in meters
+     */
+    public float interpupillaryDistance;
+    /**
+     * Lens distortion constant parameters
+     */
+    public float[] lensDistortionValues;
+    /**
+     * Chromatic aberration correction parameters
+     */
+    public float[] chromaAbCorrection;
 
     public VrDeviceInfo(){
         lensDistortionValues = new float[4];

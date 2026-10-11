@@ -12,21 +12,58 @@ public class Config{
     // Module selection - Some modules could be avoided
     // Mandatory modules: rcore, rlgl, utils
     //------------------------------------------------------------------------------------
+    /**
+     * Support raylib module rShapes
+     */
     public static boolean SUPPORT_MODULE_RSHAPES   = true;
+    /**
+     * Support raylib module rTextures
+     */
     public static boolean SUPPORT_MODULE_RTEXTURES = true;
-    public static boolean SUPPORT_MODULE_RTEXT     = true;          // WARNING: It requires SUPPORT_MODULE_RTEXTURES to load sprite font textures
+    /**
+     * Support raylib module rText <br/>
+     * WARNING: rText requires SUPPORT_MODULE_RTEXTURES to load sprite font textures
+     */
+    public static boolean SUPPORT_MODULE_RTEXT     = true;
+    /**
+     * Support raylib module rModels
+     */
     public static boolean SUPPORT_MODULE_RMODELS   = true;
+    /**
+     * Support raylib module rAudio
+     */
     public static boolean SUPPORT_MODULE_RAUDIO    = true;
 
     //------------------------------------------------------------------------------------
     // Module: core - Configuration Flags
     //------------------------------------------------------------------------------------
+    /**
+     * Operating system application is running on
+     */
     private static final String OS = System.getProperty("os.name").toLowerCase();
+    /**
+     * Flag for Windows OS
+     */
     public static boolean __WINDOWS__ = (OS.contains("win"));
+    /**
+     * Flag for OSX
+     */
     public static boolean __APPLE__ = (OS.contains("mac"));
+    /**
+     * Flag for GNU/Linux OS
+     */
     public static boolean __LINUX__ = (OS.contains("nix") || OS.contains("nux") || OS.contains("aix"));
+    /**
+     * Flag if application is being run on a desktop platform
+     */
     public static boolean PLATFORM_DESKTOP = (__WINDOWS__ || __APPLE__ || __LINUX__);
+    /**
+     * Flag for Wayland display server (GNU/Linux)
+     */
     public static boolean _GLFW_WAYLAND = false;
+    /**
+     * Flag for X11 display server (GNU/Linux)
+     */
     public static boolean _GLFW_X11 = false;
 
     /**
@@ -67,10 +104,6 @@ public class Config{
      */
     public static boolean SUPPORT_SCREEN_CAPTURE = false;
     /**
-     * Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
-     */
-    public static boolean SUPPORT_GIF_RECORDING = false;
-    /**
      * Support CompressData() and DecompressData() functions
      */
     static boolean SUPPORT_COMPRESSION_API = true;
@@ -83,31 +116,69 @@ public class Config{
      */
     public static boolean SUPPORT_STANDARD_FILEIO = true;
 
-    // Support automatic generated events, loading and recording of those events when required
+    /**
+     * Support automatic generated events, loading and recording of those events when required
+     */
     public static boolean SUPPORT_AUTOMATION_EVENTS = false;
 
-    // Support custom frame control, only for advance users
-    // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timming + PollInputEvents()
-    // Enabling this flag allows manual control of the frame processes, use at your own risk
+    /**
+     * Support custom frame control, only for advance users. <br/>
+     * By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timming + PollInputEvents() <br/>
+     * Enabling this flag allows manual control of the frame processes, use at your own risk
+     */
     public static boolean SUPPORT_CUSTOM_FRAME_CONTROL = false;
 
 
     // core: Configuration values
     //------------------------------------------------------------------------------------
-
+    /**
+     * Maximum length for filepaths (Linux PATH_MAX default value)
+     */
     public final static int LINUX_MAX_FILEPATH_LENGTH = 4096;
-    // Maximum length for filepaths (Linux PATH_MAX default value)
-    public final static int MAX_FILEPATH_LENGTH = 512;              // Maximum length supported for file paths
-    public final static int MAX_KEYBOARD_KEYS = 512;                // Maximum number of keyboard keys supported
-    public final static int MAX_MOUSE_BUTTONS = 8;                  // Maximum number of mouse buttons supported
-    public final static int MAX_GAMEPADS = 16;                       // Max number of gamepads supported
-    public final static int MAX_GAMEPAD_AXIS = 8;                   // Max number of axis supported (per gamepad)
-    public final static int MAX_GAMEPAD_BUTTONS = 64;               // Max number of buttons supported (per gamepad)
-    public final static int MAX_TOUCH_POINTS = 10;                  // Maximum number of touch points supported
-    public final static int MAX_KEY_PRESSED_QUEUE = 16;             // Max number of keys in the key input queue
-    public final static int MAX_CHAR_PRESSED_QUEUE = 16;            // Max number of characters in the char input queue
-    public final static String STORAGE_DATA_FILE = "storage.data";  // Automatic storage filename
-    public final static int MAX_DECOMPRESSION_SIZE = 64;            // Max size allocated for decompression in MB
+    /**
+     * Maximum length supported for file paths
+     */
+    public final static int MAX_FILEPATH_LENGTH = 512;
+    /**
+     * Maximum number of keyboard keys supported
+     */
+    public final static int MAX_KEYBOARD_KEYS = 512;
+    /**
+     * Maximum number of mouse buttons supported
+     */
+    public final static int MAX_MOUSE_BUTTONS = 8;
+    /**
+     * Max number of gamepads supported
+     */
+    public final static int MAX_GAMEPADS = 16;
+    /**
+     * Max number of axis supported (per gamepad)
+     */
+    public final static int MAX_GAMEPAD_AXIS = 8;
+    /**
+     * Max number of buttons supported (per gamepad)
+     */
+    public final static int MAX_GAMEPAD_BUTTONS = 64;
+    /**
+     * Maximum number of touch points supported
+     */
+    public final static int MAX_TOUCH_POINTS = 10;
+    /**
+     * Max number of keys in the key input queue
+     */
+    public final static int MAX_KEY_PRESSED_QUEUE = 16;
+    /**
+     * Max number of characters in the char input queue
+     */
+    public final static int MAX_CHAR_PRESSED_QUEUE = 16;
+    /**
+     * Automatic storage filename
+     */
+    public final static String STORAGE_DATA_FILE = "storage.data";
+    /**
+     * Max size allocated for decompression in MB
+     */
+    public final static int MAX_DECOMPRESSION_SIZE = 64;
 
 
     //------------------------------------------------------------------------------------
@@ -120,23 +191,59 @@ public class Config{
 
     // rlgl: Configuration values
     //------------------------------------------------------------------------------------
+    /**
+     *
+     */
     public final static boolean SUPPORT_GL_DETAILS_INFO = false;
+    /**
+     *
+     */
     public final static boolean FBO_READ_TEXTURE_AS_RGBA = false;
-    public final static int RL_DEFAULT_BATCH_BUFFER_ELEMENTS = 8192;    // Default internal render batch limits
-    final static int ES2_DEFAULT_BATCH_BUFFER_ELEMENTS = 2048;    // Default internal render batch limits
+
+    /**
+     * Default internal render batch limits
+     */
+    public final static int RL_DEFAULT_BATCH_BUFFER_ELEMENTS = 8192;
+    /**
+     * Default internal render batch limits
+     */
+    final static int ES2_DEFAULT_BATCH_BUFFER_ELEMENTS = 2048;
 
 
-    final static int RL_DEFAULT_BATCH_BUFFERS = 1;      // Default number of batch buffers (multi-buffering)
-    public final static int RL_DEFAULT_BATCH_DRAWCALLS = 256;      // Default number of batch draw calls (by state changes: mode, texture)
+    /**
+     * Default number of batch buffers (multi-buffering)
+     */
+    private final static int RL_DEFAULT_BATCH_BUFFERS = 1;
+    /**
+     * Default number of batch draw calls (by state changes: mode, texture)
+     */
+    public final static int RL_DEFAULT_BATCH_DRAWCALLS = 256;
 
-    public final static int RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS = 4; // Maximum number of textures units that can be activated on batch
-    // drawing (SetShaderValueTexture())
-    public final static int RL_MAX_MATRIX_STACK_SIZE = 32;      // Maximum size of internal Matrix stack
-    public final static int RL_MAX_SHADER_LOCATIONS = 32;      // Maximum number of shader locations supported
+    /**
+     * Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
+     */
+    public final static int RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS = 4;
+    /**
+     * Maximum size of internal Matrix stack
+     */
+    public final static int RL_MAX_MATRIX_STACK_SIZE = 32;
+    /**
+     * Maximum number of shader locations supported
+     */
+    public final static int RL_MAX_SHADER_LOCATIONS = 32;
 
-    public final static float RL_CULL_DISTANCE_NEAR = 0.01f;      // Default projection matrix near cull distance
-    public final static float RL_CULL_DISTANCE_FAR = 1000.0f;      // Default projection matrix far cull distance
+    /**
+     * Default projection matrix near cull distance
+     */
+    public final static float RL_CULL_DISTANCE_NEAR = 0.01f;
+    /**
+     * Default projection matrix far cull distance
+     */
+    public final static float RL_CULL_DISTANCE_FAR = 1000.0f;
 
+    /**
+     * Enable/Disable OpenGL debugging context
+     */
     public static boolean RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = false;
 
     //------------------------------------------------------------------------------------
@@ -165,21 +272,59 @@ public class Config{
     // Module: textures - Configuration Flags
     //------------------------------------------------------------------------------------
     // Select desired file formats to be supported for image data loading
+    /**
+     * Support loading PNG image files
+     */
     public static boolean SUPPORT_FILEFORMAT_PNG = true;
+    /**
+     * Support loading BMP image files
+     */
     public static boolean SUPPORT_FILEFORMAT_BMP = true;
-    public static boolean SUPPORT_FILEFORMAT_TGA = true;
-    public static boolean SUPPORT_FILEFORMAT_JPG = true;
-    public static boolean SUPPORT_FILEFORMAT_SVG = true;
+    /**
+     * Support loading TGA image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_TGA = false;
+    /**
+     * Support loading JPG/JPEG image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_JPG = false;
+    /**
+     * Support loading SIG image files
+     */
     public static boolean SUPPORT_FILEFORMAT_GIF = true;
-    public static boolean SUPPORT_FILEFORMAT_PIC = true;
-    public static boolean SUPPORT_FILEFORMAT_PNM = true;
-    public static boolean SUPPORT_FILEFORMAT_PSD = true;
-    static boolean SUPPORT_FILEFORMAT_DDS = true;
-    public static boolean SUPPORT_FILEFORMAT_HDR = true;
-    //#define SUPPORT_FILEFORMAT_KTX      1
-    //#define SUPPORT_FILEFORMAT_ASTC     1
-    //#define SUPPORT_FILEFORMAT_PKM      1
-    //#define SUPPORT_FILEFORMAT_PVR      1
+    /**
+     * Support loading QOI image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_QOI = true;
+    /**
+     * Support loading PSD image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_PSD = false;
+    /**
+     * Support loading DDS image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_DDS = true;
+    /**
+     * Support loading HDR image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_HDR = false;
+    /**
+     * Support loading KTX image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_KTX  = false;
+    /**
+     * Support loading ASTC image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_ASTC = false;
+    /**
+     * Support loading PKM image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_PKM  = false;
+    /**
+     * Support loading PVR image files
+     */
+    public static boolean SUPPORT_FILEFORMAT_PVR  = false;
+
     /**
      * Support image export functionality (.png, .bmp, .tga, .jpg)
      */
@@ -224,10 +369,18 @@ public class Config{
 
     // text: Configuration values
     //------------------------------------------------------------------------------------
-    public final static int MAX_TEXT_BUFFER_LENGTH = 1024;        // Size of internal static buffers used on some functions:
-    // TextFormat(), TextSubtext(), TextToUpper(), TextToLower(), TextToPascal(), TextSplit()
-    public final static int MAX_TEXT_UNICODE_CHARS = 512;        // Maximum number of unicode codepoints: GetCodepoints()
-    public final static int MAX_TEXTSPLIT_COUNT = 128;        // Maximum number of substrings to split: TextSplit()
+    /**
+     * Size of internal static buffers used on some functions: TextFormat(), TextSubtext(), TextToUpper(), TextToLower(), TextToPascal(), TextSplit()
+     */
+    public final static int MAX_TEXT_BUFFER_LENGTH = 1024;
+    /**
+     * Maximum number of unicode codepoints: GetCodepoints()
+     */
+    public final static int MAX_TEXT_UNICODE_CHARS = 512;
+    /**
+     * Maximum number of substrings to split: TextSplit()
+     */
+    public final static int MAX_TEXTSPLIT_COUNT = 128;
 
 
     //------------------------------------------------------------------------------------
@@ -265,11 +418,17 @@ public class Config{
     public static boolean SUPPORT_FILEFORMAT_VOX = true;
 
     /**
-     * Support procedural mesh generation functions, uses external par_shapes.h library <br/>
+     * Support procedural mesh generation functions, uses par_shapes library <br/>
      * NOTE: Some generated meshes DO NOT include generated texture coordinates
      */
     public static boolean SUPPORT_MESH_GENERATION = true;
+    /**
+     * Support mesh generation for plane meshes
+     */
     public static boolean SUPPORT_CUSTOM_MESH_GEN_PLANE = true;
+    /**
+     * Support mesh generation for cube meshes
+     */
     public static boolean SUPPORT_CUSTOM_MESH_GEN_CUBE = true;
 
 
@@ -303,12 +462,27 @@ public class Config{
 
     // audio: Configuration values
     //------------------------------------------------------------------------------------
-    public final static String AUDIO_DEVICE_FORMAT = "ma_format_f32";    // Device output format (miniaudio: float-32bit)
-    final static int AUDIO_DEVICE_CHANNELS = 2;    // Device output channels: stereo
-    final static int AUDIO_DEVICE_SAMPLE_RATE = 44100;    // Device output sample rate
+    /**
+     * Device output format (miniaudio: float-32bit)
+     */
+    public final static String AUDIO_DEVICE_FORMAT = "ma_format_f32";
+    /**
+     * Device output channels: stereo
+     */
+    public final static int AUDIO_DEVICE_CHANNELS = 2;
+    /**
+     * Device output sample rate
+     */
+    public final static int AUDIO_DEVICE_SAMPLE_RATE = 44100;
 
-    final static int DEFAULT_AUDIO_BUFFER_SIZE = 4096;    // Default audio buffer size for streaming
-    public final static int MAX_AUDIO_BUFFER_POOL_CHANNELS = 16;    // Maximum number of audio pool channels
+    /**
+     * Default audio buffer size for streaming
+     */
+    public final static int DEFAULT_AUDIO_BUFFER_SIZE = 4096;
+    /**
+     * Maximum number of audio pool channels
+     */
+    public final static int MAX_AUDIO_BUFFER_POOL_CHANNELS = 16;
 
     //------------------------------------------------------------------------------------
     // Module: utils - Configuration Flags
@@ -326,31 +500,90 @@ public class Config{
 
     // utils: Configuration values
     //------------------------------------------------------------------------------------
-    final static int MAX_TRACELOG_MSG_LENGTH = 128;    // Max length of one trace-log message
-    final static int MAX_UWP_MESSAGES = 512;    // Max UWP messages to process
+    /**
+     * Max length of one trace-log message
+     */
+    public final static int MAX_TRACELOG_MSG_LENGTH = 128;
+    /**
+     * Max UWP messages to process
+     */
+    public final static int MAX_UWP_MESSAGES = 512;
 
     // rModels: config values
     //------------------------------------------------------------------------------------
+    /**
+     * 
+     */
     public final static boolean COMPUTE_TANGENTS_METHOD_01 = true;
 
+    /**
+     * Window configuration flags
+     */
     public static class ConfigFlag{
-        public static final int
-        FLAG_VSYNC_HINT = 0x00000040,   // Set to try enabling V-Sync on GPU
-        FLAG_FULLSCREEN_MODE = 0x00000002,   // Set to run program in fullscreen
-        FLAG_WINDOW_RESIZABLE = 0x00000004,   // Set to allow resizable window
-        FLAG_WINDOW_UNDECORATED = 0x00000008,   // Set to disable window decoration (frame and buttons)
-        FLAG_WINDOW_HIDDEN = 0x00000080,   // Set to hide window
-        FLAG_WINDOW_MINIMIZED = 0x00000200,   // Set to minimize window (iconify)
-        FLAG_WINDOW_MAXIMIZED = 0x00000400,   // Set to maximize window (expanded to monitor)
-        FLAG_WINDOW_UNFOCUSED = 0x00000800,   // Set to window non focused
-        FLAG_WINDOW_TOPMOST = 0x00001000,   // Set to window always on top
-        FLAG_WINDOW_ALWAYS_RUN = 0x00000100,   // Set to allow windows running while minimized
-        FLAG_WINDOW_TRANSPARENT = 0x00000010,   // Set to allow transparent framebuffer
-        FLAG_WINDOW_HIGHDPI = 0x00002000,   // Set to support HighDPI
-        FLAG_BORDERLESS_WINDOWED_MODE = 0x00008000, // Set to run program in borderless windowed mode
-        FLAG_WINDOW_MOUSE_PASSTHROUGH = 0x00004000, // Set to support mouse passthrough, only supported when FLAG_WINDOW_UNDECORATED
-        FLAG_MSAA_4X_HINT = 0x00000020,   // Set to try enabling MSAA 4X
-        FLAG_INTERLACED_HINT = 0x00010000;    // Set to try enabling interlaced video format (for V3D)
+        /**
+         * Set to try enabling V-Sync on GPU
+         */
+        public static final int FLAG_VSYNC_HINT = 0x00000040;
+        /**
+         * Set to run program in fullscreen
+         */
+        public static final int FLAG_FULLSCREEN_MODE = 0x00000002;
+        /**
+         * Set to allow resizable window
+         */
+        public static final int FLAG_WINDOW_RESIZABLE = 0x00000004;
+        /**
+         * Set to disable window decoration (frame and buttons)
+         */
+        public static final int FLAG_WINDOW_UNDECORATED = 0x00000008;
+        /**
+         * Set to hide window
+         */
+        public static final int FLAG_WINDOW_HIDDEN = 0x00000080;
+        /**
+         * Set to minimize window (iconify)
+         */
+        public static final int FLAG_WINDOW_MINIMIZED = 0x00000200;
+        /**
+         * Set to maximize window (expanded to monitor)
+         */
+        public static final int FLAG_WINDOW_MAXIMIZED = 0x00000400;
+        /**
+         * Set to window non focused
+         */
+        public static final int FLAG_WINDOW_UNFOCUSED = 0x00000800;
+        /**
+         * Set to window always on top
+         */
+        public static final int FLAG_WINDOW_TOPMOST = 0x00001000;
+        /**
+         * Set to allow windows running while minimized
+         */
+        public static final int FLAG_WINDOW_ALWAYS_RUN = 0x00000100;
+        /**
+         * Set to allow transparent framebuffer
+         */
+        public static final int FLAG_WINDOW_TRANSPARENT = 0x00000010;
+        /**
+         * Set to support HighDPI
+         */
+        public static final int FLAG_WINDOW_HIGHDPI = 0x00002000;
+        /**
+         * Set to run program in borderless windowed mode
+         */
+        public static final int FLAG_BORDERLESS_WINDOWED_MODE = 0x00008000;
+        /**
+         * Set to support mouse passthrough; only supported when FLAG_WINDOW_UNDECORATED
+         */
+        public static final int FLAG_WINDOW_MOUSE_PASSTHROUGH = 0x00004000;
+        /**
+         * Set to try enabling MSAA 4X
+         */
+        public static final int FLAG_MSAA_4X_HINT = 0x00000020;
+        /**
+         * Set to try enabling interlaced video format (for V3D)
+         */
+        public static final int FLAG_INTERLACED_HINT = 0x00010000;
 
     }
 
@@ -427,14 +660,6 @@ public class Config{
      */
     public void setSupportScreenCapture(boolean supportScreenCapture){
         SUPPORT_SCREEN_CAPTURE = supportScreenCapture;
-    }
-
-    /**
-     * Define support for gif recording
-     * @param supportGifRecording flag for support
-     */
-    public void setSupportGifRecording(boolean supportGifRecording){
-        SUPPORT_GIF_RECORDING = supportGifRecording;
     }
 
     /**

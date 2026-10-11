@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Contract;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
 
+import javax.imageio.stream.IIOByteBuffer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -49,25 +50,26 @@ public class rModels {
      *   rmodels - Basic functions to draw 3d shapes and load and draw 3d models
      *
      *   CONFIGURATION:
-     *       #define SUPPORT_MODULE_RMODELS
+     *       #define SUPPORT_MODULE_RMODELS      1
      *           rmodels module is included in the build
      *
-     *       #define SUPPORT_FILEFORMAT_OBJ
-     *       #define SUPPORT_FILEFORMAT_MTL
-     *       #define SUPPORT_FILEFORMAT_IQM
-     *       #define SUPPORT_FILEFORMAT_GLTF
-     *       #define SUPPORT_FILEFORMAT_VOX
-     *       #define SUPPORT_FILEFORMAT_M3D
-     *           Selected desired file formats to be supported for model data loading.
+     *       #define SUPPORT_FILEFORMAT_OBJ      1
+     *       #define SUPPORT_FILEFORMAT_MTL      1
+     *       #define SUPPORT_FILEFORMAT_IQM      1
+     *       #define SUPPORT_FILEFORMAT_GLTF     1
+     *       #define SUPPORT_FILEFORMAT_GLTF_WRITE   0
+     *       #define SUPPORT_FILEFORMAT_VOX      1
+     *       #define SUPPORT_FILEFORMAT_M3D      1
+     *           Selected desired fileformats to be supported for model data loading
      *
-     *       #define SUPPORT_MESH_GENERATION
+     *       #define SUPPORT_MESH_GENERATION     1
      *           Support procedural mesh generation functions, uses external par_shapes.h library
      *           NOTE: Some generated meshes DO NOT include generated texture coordinates
      *
      *
      *   LICENSE: zlib/libpng
      *
-     *   Copyright (c) 2013-2024 Ramon Santamaria (@raysan5)
+     *   Copyright (c) 2013-2026 Ramon Santamaria (@raysan5)
      *
      *   This software is provided "as-is", without any express or implied warranty. In no event
      *   will the authors be held liable for any damages arising from the use of this software.
@@ -117,10 +119,13 @@ public class rModels {
     // Defines and Macros
     //----------------------------------------------------------------------------------
     final private int MAX_MATERIAL_MAPS = 12;    // Maximum number of maps supported
-    final private int MAX_MESH_VERTEX_BUFFERS = 7;    // Maximum vertex buffers (VBO) per mesh
+
+    // NOTE: Two additional vertex buffers required to store bone indices and bone weights
+    // WARNING: Some GPUs could not support more than 8 VBOs
+    final private int MAX_MESH_VERTEX_BUFFERS = 9;      // Maximum vertex buffers (VBO) per mesh
+
     final private int GLTF_ANIMDELAY = 17;    // Animation frames delay, (~1000 ms/60 FPS = 16.666666* ms)
     final private int M3D_ANIMDELAY = 17;   // Animation frames delay, (~1000 ms/60 FPS = 16.666666* ms)
-
 
     final private Raylib context;
 
@@ -140,7 +145,13 @@ public class rModels {
         return ((col1.r == col2.r) && (col1.g == col2.g) && (col1.b == col2.b) && (col1.a == col2.a));
     }
 
-    // Draw a line in 3D world space
+    /**
+     * Draw a line in 3D world space
+     *
+     * @param startPos Staring point of the line
+     * @param endPos   Ending point of the line
+     * @param color    Color to draw line
+     */
     public void DrawLine3D(Vector3 startPos, Vector3 endPos, Color color) {
         // WARNING: Be careful with internal buffer vertex alignment
         // when using RL_LINES or RL_TRIANGLES, data is aligned to fit
@@ -153,7 +164,13 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw a point in 3D space, actually a small line
+    /**
+     * Draw a point in 3D space, actually a small line <br/>
+     * WARNING: OpenGL ES 2.0 does not support point mode drawing
+     *
+     * @param position Position of point in 3D space
+     * @param color    Color to draw the point
+     */
     public void DrawPoint3D(Vector3 position, Color color) {
         context.rlgl.rlPushMatrix();
         context.rlgl.rlTranslatef(position.x, position.y, position.z);
@@ -165,7 +182,15 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw a circle in 3D world space
+    /**
+     * Draw a circle in 3D world space
+     *
+     * @param center        Center position of the circle
+     * @param radius        Length of the circle radius
+     * @param rotationAxis  Axis of rotation for the circle
+     * @param rotationAngle Angle of rotation for the circle
+     * @param color         Color to draw the circle
+     */
     public void DrawCircle3D(Vector3 center, float radius, Vector3 rotationAxis, float rotationAngle, Color color) {
         context.rlgl.rlPushMatrix();
         context.rlgl.rlTranslatef(center.x, center.y, center.z);
@@ -182,7 +207,15 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw a color-filled triangle (vertex in counter-clockwise order!)
+    /**
+     * Draw a color-filled triangle. <br/>
+     * CAUTION: Vertices must be in counter-clockwise order!
+     *
+     * @param v1    First vertex of the triangle
+     * @param v2    Second vertex of the triangle
+     * @param v3    Third vertex of the triangle
+     * @param color Color to draw the triangle
+     */
     public void DrawTriangle3D(Vector3 v1, Vector3 v2, Vector3 v3, Color color) {
         context.rlgl.rlBegin(RL_TRIANGLES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
@@ -192,7 +225,12 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw a triangle strip defined by points
+    /**
+     * Draw a triangle strip defined by points
+     *
+     * @param points {@code Vector3[]} of vertices. Must have a length greater than three.
+     * @param color  Color to use when drawing the triangles
+     */
     public void DrawTriangleStrip3D(Vector3[] points, Color color) {
         if (points.length < 3) {
             return; // Security check
@@ -218,6 +256,16 @@ public class rModels {
 
     // Draw cube
     // NOTE: Cube position is the center position
+
+    /**
+     * Draw a cube in 3D space
+     *
+     * @param position Center position of the cube in 3D space
+     * @param width    Width of the cube
+     * @param height   Height of the cube
+     * @param length   Length of the cube
+     * @param color    Color to draw the cube
+     */
     public void DrawCube(Vector3 position, float width, float height, float length, Color color) {
         float x = 0.0f;
         float y = 0.0f;
@@ -295,12 +343,26 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw cube (Vector version)
+    /**
+     * Draw a cube in 3D space
+     *
+     * @param position Center position of the cube in 3D space
+     * @param size     {@code Vector3} of measurements for the cube as (Width, Height, Length)
+     * @param color    Color to draw the cube
+     */
     public void DrawCubeV(Vector3 position, Vector3 size, Color color) {
         DrawCube(position, size.x, size.y, size.z, color);
     }
 
-    // Draw cube wires
+    /**
+     * Draw cube wires
+     *
+     * @param position Center position of the cube in 3D space
+     * @param width    Width of the cube
+     * @param height   Height of the cube
+     * @param length   Length of the cube
+     * @param color    Color to draw the cube
+     */
     public void DrawCubeWires(Vector3 position, float width, float height, float length, Color color) {
         float x = 0.0f;
         float y = 0.0f;
@@ -367,17 +429,37 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw cube wires (vector version)
+    /**
+     * Draw cube wires
+     *
+     * @param position Center position of the cube in 3D space
+     * @param size     {@code Vector3} of measurements for the cube as (Width, Height, Length)
+     * @param color    Color to draw the cube
+     */
     public void DrawCubeWiresV(Vector3 position, Vector3 size, Color color) {
         DrawCubeWires(position, size.x, size.y, size.z, color);
     }
 
-    // Draw sphere
+    /**
+     * Draw sphere
+     *
+     * @param centerPos Center position of the cube in 3D space
+     * @param radius    Length of the sphere's radius
+     * @param color     Color to draw the cube
+     */
     public void DrawSphere(Vector3 centerPos, float radius, Color color) {
         DrawSphereEx(centerPos, radius, 16, 16, color);
     }
 
-    // Draw sphere with extended parameters
+    /**
+     * Draw sphere with extended parameters
+     *
+     * @param centerPos Center position of the cube in 3D space
+     * @param radius    Length of the sphere's radius
+     * @param rings     Number of horizontal segments to use when rendering the sphere
+     * @param slices    Number of vertical segments to use when rendering the sphere
+     * @param color     Color to draw the sphere
+     */
     public void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color) {
         if (false) {
             // Basic implementation, do not use it!
@@ -468,7 +550,15 @@ public class rModels {
         }
     }
 
-    // Draw sphere wires
+    /**
+     * Draw sphere wires
+     *
+     * @param centerPos Center position of the cube in 3D space
+     * @param radius    Length of the sphere's radius
+     * @param rings     Number of horizontal segments to use when rendering the sphere
+     * @param slices    Number of vertical segments to use when rendering the sphere
+     * @param color     Color to draw the sphere
+     */
     public void DrawSphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color) {
         int numVertex = (rings + 2) * slices * 6;
 
@@ -509,8 +599,17 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw a cylinder
-    // NOTE: It could be also used for pyramid and cone
+    /**
+     * Draw a cylinder <br/>
+     * NOTE: This function may also be used to draw pyramids and cones
+     *
+     * @param position     Center position of the cylinder in 3D space
+     * @param radiusTop    Length of the radius for the top face
+     * @param radiusBottom Length of the radius for the bottom face
+     * @param height       Height of the cylinder
+     * @param sides        Number of sides to use when rendering the cylinder
+     * @param color        Color to draw the cylinder
+     */
     public void DrawCylinder(Vector3 position, float radiusTop, float radiusBottom, float height, int sides, Color color) {
         if (sides < 3) {
             sides = 3;
@@ -563,8 +662,17 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw a cylinder with base at startPos and top at endPos
-    // NOTE: It could be also used for pyramid and cone
+    /**
+     * Draw a cylinder <br/>
+     * NOTE: This function may also be used to draw pyramids and cones
+     *
+     * @param startPos    Position of the top face in 3D space
+     * @param endPos      Position of the bottom face in 3D space
+     * @param startRadius Length of the top radius
+     * @param endRadius   Length of the bottom radius
+     * @param sides       Number of sides to use when rendering the cylinder
+     * @param color       Color to use when drawing the cylinder
+     */
     public void DrawCylinderEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color) {
         if (sides < 3) {
             sides = 3;
@@ -625,8 +733,17 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw a wired cylinder
-    // NOTE: It could be also used for pyramid and cone
+    /**
+     * Draw a wired cylinder
+     * NOTE: This function may also be used to draw pyramids and cones
+     *
+     * @param position     Center position of the cylinder in 3D space
+     * @param radiusTop    Length of the radius for the top face
+     * @param radiusBottom Length of the radius for the bottom face
+     * @param height       Height of the cylinder
+     * @param sides        Number of sides to use when rendering the cylinder
+     * @param color        Color to draw the cylinder
+     */
     public void DrawCylinderWires(Vector3 position, float radiusTop, float radiusBottom, float height, int sides, Color color) {
         if (sides < 3) {
             sides = 3;
@@ -660,8 +777,17 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw a wired cylinder with base at startPos and top at endPos
-    // NOTE: It could be also used for pyramid and cone
+    /**
+     * Draw a wired cylinder <br/>
+     * NOTE: This function may also be used to draw pyramids and cones
+     *
+     * @param startPos    Position of the top face in 3D space
+     * @param endPos      Position of the bottom face in 3D space
+     * @param startRadius Length of the top radius
+     * @param endRadius   Length of the bottom radius
+     * @param sides Number of sides to use when rendering the cylinder
+     * @param color Color to draw the cylinder
+     */
     public void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color) {
         if (sides < 3) {
             sides = 3;
@@ -711,7 +837,16 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw a capsule with the center of its sphere caps at startPos and endPos
+    /**
+     * Draw a capsule
+     *
+     * @param startPos Center position of the top endcap
+     * @param endPos Center position of the bottom endcap
+     * @param radius Length of the capsule's radius
+     * @param rings     Number of horizontal segments to use when rendering the sphere
+     * @param slices    Number of vertical segments to use when rendering the sphere
+     * @param color     Color to draw the sphere
+     */
     void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color) {
         if (slices < 3) {
             slices = 3;
@@ -854,7 +989,16 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw capsule wires with the center of its sphere caps at startPos and endPos
+    /**
+     * Draw capsule wires
+     *
+     * @param startPos Center position of the top endcap
+     * @param endPos Center position of the bottom endcap
+     * @param radius Length of the capsule's radius
+     * @param rings     Number of horizontal segments to use when rendering the sphere
+     * @param slices    Number of vertical segments to use when rendering the sphere
+     * @param color     Color to draw the sphere
+     */
     void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color) {
         if (slices < 3) {
             slices = 3;
@@ -991,7 +1135,13 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw a plane
+    /**
+     * Draw a plane
+     *
+     * @param centerPos Center position of the plane in 3D space
+     * @param size Size of the plane
+     * @param color Color to draw the plane
+     */
     public void DrawPlane(Vector3 centerPos, Vector2 size, Color color) {
 
         // NOTE: Plane is always created on XZ ground
@@ -1011,7 +1161,12 @@ public class rModels {
         context.rlgl.rlPopMatrix();
     }
 
-    // Draw a ray line
+    /**
+     * Draw a ray line
+     *
+     * @param ray {@code Ray} to draw
+     * @param color Color to draw the ray
+     */
     public void DrawRay(Ray ray, Color color) {
         float scale = 10000;
 
@@ -1024,7 +1179,12 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
-    // Draw a grid centered at (0, 0, 0)
+    /**
+     * Draw a grid centered at the origin (0, 0, 0)
+     *
+     * @param slices
+     * @param spacing
+     */
     public void DrawGrid(int slices, float spacing) {
         int halfSlices = slices / 2;
 
@@ -1046,6 +1206,12 @@ public class rModels {
         context.rlgl.rlEnd();
     }
 
+    /**
+     * Load model from files (mesh and material)
+     *
+     * @param fileName Filepath to model
+     * @return Model defined by file
+     */
     public Model LoadModel(String fileName) {
 
         Model model = new Model();
@@ -1099,6 +1265,13 @@ public class rModels {
     // WARNING: A shallow copy of mesh is generated, passed by value,
     // as long as struct contains pointers to data and some values, we get a copy
     // of mesh pointing to same data as original version... be careful!
+
+    /**
+     * Load a model from a generated mesh
+     *
+     * @param mesh
+     * @return {@code Model} defined by the mesh
+     */
     public Model LoadModelFromMesh(Mesh mesh) {
         Model model = new Model();
 
@@ -1118,7 +1291,12 @@ public class rModels {
         return model;
     }
 
-    // Check if a model is valid (loaded in GPU, VAO/VBOs)
+    /**
+     * Check if a model is valid (loaded in GPU, VAO/VBOs)
+     *
+     * @param model Model to evaluate
+     * @return {@code true} if {@code model} is valid
+     */
     public boolean IsModelValid(Model model) {
         boolean result = false;
 
@@ -1177,9 +1355,14 @@ public class rModels {
         return result;
     }
 
-    // Unload model (meshes/materials) from memory (RAM and/or VRAM)
-    // NOTE: This function takes care of all model elements, for a detailed control
-    // over them, use UnloadMesh() and UnloadMaterial()
+    /**
+     * Unload model (meshes/materials) from memory (RAM and/or VRAM) <br/>
+     * NOTE: This function takes care of all model elements, for a detailed control over them, use UnloadMesh() and UnloadMaterial()
+     *
+     * @param model Model to unload
+     * @see rModels#UnloadMesh(Mesh)
+     * @see rModels#UnloadMaterial(Material)
+     */
     @Contract(mutates = "param")
     public void UnloadModel(Model model) {
         // Unload meshes
@@ -1207,7 +1390,12 @@ public class rModels {
         context.tracelog.TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
     }
 
-    // Compute model bounding box limits (considers all meshes)
+    /**
+     * Compute model bounding box limits (considers all meshes)
+     *
+     * @param model Model to evaluate
+     * @return {@code BoundingBox} defined by {@code model}
+     */
     public BoundingBox GetModelBoundingBox(Model model) {
         BoundingBox bounds = new BoundingBox();
 
@@ -1239,7 +1427,12 @@ public class rModels {
         return bounds;
     }
 
-    // Upload vertex data into a VAO (if supported) and VBO
+    /**
+     * Upload vertex data into a VAO (if supported) and VBO
+     *
+     * @param mesh {@code Mesh} to upload
+     * @param dynamic {@code true} if {@code mesh} contains dynamic vertex buffers
+     */
     public void UploadMesh(Mesh mesh, boolean dynamic) {
         if (mesh.vaoId > 0) {
             // Check if mesh has already been loaded in GPU
@@ -1347,12 +1540,25 @@ public class rModels {
         }
     }
 
-    // Update mesh vertex data in GPU for a specific buffer index
+    /**
+     * Update mesh vertex data in GPU for a specific buffer index
+     *
+     * @param mesh Mesh to update
+     * @param index VBO to update
+     * @param data data to upload to the VBO
+     * @param offset Offset in {@code data} to upload
+     */
     public void UpdateMeshBuffer(Mesh mesh, int index, byte[] data, int offset) {
         context.rlgl.rlUpdateVertexBuffer(mesh.vboId[index], data, offset);
     }
 
-    // Draw a 3d mesh with material and transform
+    /**
+     * Draw a 3d mesh with material and transform
+     *
+     * @param mesh Mesh to draw
+     * @param material Material to use when drawing {@code mesh}
+     * @param transform Transform matrix to use when rendering {@code mesh}
+     */
     public void DrawMesh(Mesh mesh, Material material, Matrix transform) {
         if (GRAPHICS_API_OPENGL_11) {
             final int GL_VERTEX_ARRAY = 0x8074;
@@ -1591,7 +1797,14 @@ public class rModels {
         }
     }
 
-    // Draw multiple mesh instances with material and different transforms
+    /**
+     * Draw multiple mesh instances with material and different transforms
+     *
+     * @param mesh Mesh to draw
+     * @param material Material to use when drawing {@code mesh}
+     * @param transforms {@code Matrix[]} of transform matrices to use for rendering
+     * @param instances Number of instances of {@code mesh} to draw
+     */
     public void DrawMeshInstanced(Mesh mesh, Material material, Matrix[] transforms, int instances) {
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             // Instancing required variables
@@ -1823,7 +2036,11 @@ public class rModels {
         }
     }
 
-    // Unload mesh from memory (RAM and VRAM)
+    /**
+     * Unload mesh from memory (RAM and VRAM)
+     *
+     * @param mesh Mesh to unload from memory
+     */
     @Contract(mutates = "param")
     public void UnloadMesh(Mesh mesh) {
         // Unload rlgl mesh vboId data
@@ -1851,7 +2068,13 @@ public class rModels {
         mesh.boneMatrices = null;
     }
 
-    // Export mesh data to file
+    /**
+     * Export mesh data to file
+     *
+     * @param mesh Mesh to export
+     * @param fileName Location to save file
+     * @return {@code true} if file operation is successful
+     */
     public boolean ExportMesh(Mesh mesh, String fileName) {
         boolean success = false;
 
@@ -2024,6 +2247,12 @@ public class rModels {
     }
      */
 
+    /**
+     *
+     * @param loader
+     * @param path
+     * @return
+     */
     private Material[] ProcessMaterialsOBJ(OBJLoader loader, String path) {
         Material[] materials = new Material[loader.objInfo.totalMaterials];
         context.tracelog.TRACELOG(LOG_INFO, path);
@@ -5193,7 +5422,7 @@ public class rModels {
                     image.format =
                             (m3dj.textures.get((int) property.GetPropertyValue()).format == 4) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 :
                                     ((m3dj.textures.get((int) property.GetPropertyValue()).format == 3) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8 :
-                                     ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
+                                            ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
 
                     if (property.key.equals("m3dp_map_Kd")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTextureFromImage(image);

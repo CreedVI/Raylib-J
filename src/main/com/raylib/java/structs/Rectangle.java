@@ -1,10 +1,25 @@
 package com.raylib.java.structs;
 
+/**
+ * Rectangle, 4 components
+ */
 public class Rectangle implements Cloneable {
 
+    /**
+     * Rectangle top-left corner position along the X axis
+     */
     public float x;
+    /**
+     * Rectangle top-left corner position along the Y axis
+     */
     public float y;
+    /**
+     * Rectangle width
+     */
     public float width;
+    /**
+     * Rectangle height
+     */
     public float height;
 
     public Rectangle(){

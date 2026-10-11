@@ -4,14 +4,32 @@ import com.raylib.java.structs.Vector2;
 
 import static com.raylib.java.Config.MAX_TOUCH_POINTS;
 
-public class Touch{
+public class Touch {
 
-    public int pointCount;                // Number of touch points active
-    public int[] pointId;                 // Point identifiers
-    public Vector2[] position;            // Touch position on screen
-    public Vector2[] previousPosition;    // Previous touch position on screen
-    public boolean[] currentTouchState;   // Registers current touch state
-    public boolean[] previousTouchState;  // Registers previous touch state
+    /**
+     * Number of touch points active
+     */
+    public int pointCount;
+    /**
+     * Point identifiers
+     */
+    public int[] pointId;
+    /**
+     * Touch position on screen
+     */
+    public Vector2[] position;
+    /**
+     * Previous touch position on screen
+     */
+    public Vector2[] previousPosition;
+    /**
+     * Registers current touch state
+     */
+    public boolean[] currentTouchState;
+    /**
+     * Registers previous touch state
+     */
+    public boolean[] previousTouchState;
 
     public Touch(){
         pointId = new int[MAX_TOUCH_POINTS];
