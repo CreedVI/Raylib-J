@@ -242,6 +242,47 @@ public class Config{
     public final static float RL_CULL_DISTANCE_FAR = 1000.0f;
 
     /**
+     * GPU skinning, disable if your GPU does not support more than 8 VBOs
+     */
+    public static boolean RL_SUPPORT_MESH_GPU_SKINNING = true;
+
+    // Default shader vertex attribute locations
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION = 0;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD = 1;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL = 2;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR = 3;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT = 4;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2 = 5;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES = 6;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS = 7;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS = 8;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_INSTANCETRANSFORM = 9;
+
+    // Default shader vertex attribute names to set location points
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION = "vertexPosition";    // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD = "vertexTexCoord";    // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL = "vertexNormal";      // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR = "vertexColor";       // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT = "vertexTangent";     // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2 = "vertexTexCoord2";   // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES = "vertexBoneIndices"; // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_BONEWEIGHTS = "vertexBoneWeights"; // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS
+    public static String RL_DEFAULT_SHADER_ATTRIB_NAME_INSTANCETRANSFORM = "instanceTransform"; // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_INSTANCETRANSFORM
+
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_MVP = "mvp";               // model-view-projection matrix
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW = "matView";           // view matrix
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION = "matProjection";     // projection matrix
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL = "matModel";          // model matrix
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL = "matNormal";         // normal matrix (transpose(inverse(matModelView))
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR = "colDiffuse";        // color diffuse (base tint color, multiplied by texture color)
+    public static String RL_DEFAULT_SHADER_UNIFORM_NAME_BONEMATRICES = "boneMatrices";      // bone matrices (required for GPU skinning)
+
+    public static String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0 = "texture0";          // texture0 (texture slot active 0)
+    public static String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1 = "texture1";          // texture1 (texture slot active 1)
+    public static String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2 = "texture2";          // texture2 (texture slot active 2)
+
+
+    /**
      * Enable/Disable OpenGL debugging context
      */
     public static boolean RLGL_ENABLE_OPENGL_DEBUG_CONTEXT = false;

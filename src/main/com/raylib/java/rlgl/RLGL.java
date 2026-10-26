@@ -98,7 +98,7 @@ public class RLGL {
      *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR        "vertexColor"       // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR
      *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT      "vertexTangent"     // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT
      *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2    "vertexTexCoord2"   // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2
-     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES  "vertexBoneIndices" // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES
+     *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES  "vertexBoneIndices" // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS
      *       #define RL_DEFAULT_SHADER_ATTRIB_NAME_BONEWEIGHTS  "vertexBoneWeights" // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS
      *
      *       #define RL_DEFAULT_SHADER_UNIFORM_NAME_MVP         "mvp"               // model-view-projection matrix
@@ -288,42 +288,6 @@ public class RLGL {
 
     public static final int RL_READ_FRAMEBUFFER = 0x8CA8;      // GL_READ_FRAMEBUFFER
     public static final int RL_DRAW_FRAMEBUFFER = 0x8CA9;      // GL_DRAW_FRAMEBUFFER
-
-    // Default shader vertex attribute locations
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION = 0;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD = 1;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL = 2;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR = 3;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT = 4;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2 = 5;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES = 6;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES = 7;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS = 8;
-    public static final int RL_DEFAULT_SHADER_ATTRIB_LOCATION_INSTANCETRANSFORM = 9;
-
-    // Default shader vertex attribute names to set location points
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_POSITION = "vertexPosition";    // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD = "vertexTexCoord";    // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_NORMAL = "vertexNormal";      // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR = "vertexColor";       // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT = "vertexTangent";     // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2 = "vertexTexCoord2";   // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES = "vertexBoneIndices"; // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_BONEWEIGHTS = "vertexBoneWeights"; // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS
-    public static final String RL_DEFAULT_SHADER_ATTRIB_NAME_INSTANCETRANSFORM = "instanceTransform"; // Bound by default to shader location: RL_DEFAULT_SHADER_ATTRIB_LOCATION_INSTANCETRANSFORM
-
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_MVP = "mvp";               // model-view-projection matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_VIEW = "matView";           // view matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_PROJECTION = "matProjection";     // projection matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_MODEL = "matModel";          // model matrix
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_NORMAL = "matNormal";         // normal matrix (transpose(inverse(matModelView))
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_COLOR = "colDiffuse";        // color diffuse (base tint color, multiplied by texture color)
-    public static final String RL_DEFAULT_SHADER_UNIFORM_NAME_BONEMATRICES = "boneMatrices";      // bone matrices (required for GPU skinning)
-
-    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE0 = "texture0";          // texture0 (texture slot active 0)
-    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE1 = "texture1";          // texture1 (texture slot active 1)
-    public static final String RL_DEFAULT_SHADER_SAMPLER2D_NAME_TEXTURE2 = "texture2";          // texture2 (texture slot active 2)
-
 
     private static int glInternalFormat = 0, glFormat = 0, glType = 0;
 
@@ -3890,8 +3854,7 @@ public class RLGL {
             glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR, RL_DEFAULT_SHADER_ATTRIB_NAME_COLOR);
             glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, RL_DEFAULT_SHADER_ATTRIB_NAME_TANGENT);
             glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2, RL_DEFAULT_SHADER_ATTRIB_NAME_TEXCOORD2);
-
-            glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES, RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES);
+            glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS, RL_DEFAULT_SHADER_ATTRIB_NAME_BONEINDICES);
             glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS, RL_DEFAULT_SHADER_ATTRIB_NAME_BONEWEIGHTS);
             glBindAttribLocation(programId, RL_DEFAULT_SHADER_ATTRIB_LOCATION_INSTANCETRANSFORM, RL_DEFAULT_SHADER_ATTRIB_NAME_INSTANCETRANSFORM);
 

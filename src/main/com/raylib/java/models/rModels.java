@@ -17,7 +17,6 @@ import org.jetbrains.annotations.Contract;
 import org.lwjgl.util.par.ParShapes;
 import org.lwjgl.util.par.ParShapesMesh;
 
-import javax.imageio.stream.IIOByteBuffer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,15 +32,15 @@ import static com.raylib.java.Config.*;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.SHADER_ATTRIB_VEC4;
+import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_INT;
+import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC4;
 import static com.raylib.java.structs.Color.BLACK;
 import static com.raylib.java.structs.Color.WHITE;
 import static com.raylib.java.models.rModels.MaterialMapIndex.*;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
-import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.SHADER_ATTRIB_VEC4;
-import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_INT;
-import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_VEC4;
 
 public class rModels {
 
@@ -1443,13 +1442,18 @@ public class rModels {
         mesh.vboId = new int[MAX_MESH_VERTEX_BUFFERS];
 
         mesh.vaoId = 0;        // Vertex Array Object
-        mesh.vboId[0] = 0;     // Vertex buffer: positions
-        mesh.vboId[1] = 0;     // Vertex buffer: texcoords
-        mesh.vboId[2] = 0;     // Vertex buffer: normals
-        mesh.vboId[3] = 0;     // Vertex buffer: colors
-        mesh.vboId[4] = 0;     // Vertex buffer: tangents
-        mesh.vboId[5] = 0;     // Vertex buffer: texcoords2
-        mesh.vboId[6] = 0;     // Vertex buffer: indices
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION] = 0;     // Vertex buffer: positions
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD] = 0;     // Vertex buffer: texcoords
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL] = 0;     // Vertex buffer: normals
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] = 0;     // Vertex buffer: colors
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT] = 0;     // Vertex buffer: tangents
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2] = 0;     // Vertex buffer: texcoords2
+        mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = 0;     // Vertex buffer: indices
+
+        if (RL_SUPPORT_MESH_GPU_SKINNING) {
+            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS] = 0;      // Vertex buffer: boneIds
+            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS] = 0;  // Vertex buffer: boneWeights
+        }
 
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             mesh.vaoId = context.rlgl.rlLoadVertexArray();
@@ -1459,74 +1463,108 @@ public class rModels {
 
             // Enable vertex attributes: position (shader-location = 0)
             float[] vertices = (mesh.animVertices != null) ? mesh.animVertices : mesh.vertices;
-            mesh.vboId[0] = context.rlgl.rlLoadVertexBuffer(vertices, dynamic);
-            context.rlgl.rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
-            context.rlgl.rlEnableVertexAttribute(0);
+            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION] = context.rlgl.rlLoadVertexBuffer(vertices, dynamic);
+            context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION, 3, RL_FLOAT, false, 0, 0);
+            context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION);
 
             // Enable vertex attributes: texcoords (shader-location = 1)
-            mesh.vboId[1] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords, dynamic);
-            context.rlgl.rlSetVertexAttribute(1, 2, RL_FLOAT, false, 0, 0);
-            context.rlgl.rlEnableVertexAttribute(1);
+            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords, dynamic);
+            context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD, 2, RL_FLOAT, false, 0, 0);
+            context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD);
 
             if (mesh.normals != null) {
                 // Enable vertex attributes: normals (shader-location = 2)
                 float[] normals = (mesh.animNormals != null) ? mesh.animNormals : mesh.normals;
-                mesh.vboId[2] = context.rlgl.rlLoadVertexBuffer(normals, dynamic);
-                context.rlgl.rlSetVertexAttribute(2, 3, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(2);
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL] = context.rlgl.rlLoadVertexBuffer(normals, dynamic);
+                context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL, 3, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL);
             }
             else {
                 // Default color vertex attribute set to WHITE
                 float[] value = {1.0f, 1.0f, 1.0f};
-                context.rlgl.rlSetVertexAttributeDefault(2, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC3, 3);
-                context.rlgl.rlDisableVertexAttribute(2);
+                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC3, 3);
+                context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL);
             }
 
             if (mesh.colors != null) {
                 // Enable vertex attribute: color (shader-location = 3)
-                mesh.vboId[3] = context.rlgl.rlLoadVertexBuffer(mesh.colors, dynamic);
-                context.rlgl.rlSetVertexAttribute(3, 4, RL_UNSIGNED_BYTE, true, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(3);
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] = context.rlgl.rlLoadVertexBuffer(mesh.colors, dynamic);
+                context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR, 4, RL_UNSIGNED_BYTE, true, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR);
             }
             else {
                 // Default color vertex attribute set to WHITE
                 float[] value = {1.0f, 1.0f, 1.0f, 1.0f};
-                context.rlgl.rlSetVertexAttributeDefault(3, value, SHADER_ATTRIB_VEC4, 4);
-                context.rlgl.rlDisableVertexAttribute(3);
+                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR, value, SHADER_ATTRIB_VEC4, 4);
+                context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR);
             }
 
             if (mesh.tangents != null) {
                 // Enable vertex attribute: tangent (shader-location = 4)
-                mesh.vboId[4] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, dynamic);
-                context.rlgl.rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(4);
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, dynamic);
+                context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, 4, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT);
             }
             else {
                 // Default tangents vertex attribute
                 float[] value = {0.0f, 0.0f, 0.0f, 0.0f};
-                context.rlgl.rlSetVertexAttributeDefault(4, value, SHADER_ATTRIB_VEC4, 4);
-                context.rlgl.rlDisableVertexAttribute(4);
+                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, value, SHADER_ATTRIB_VEC4, 4);
+                context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT);
             }
 
             if (mesh.texcoords2 != null) {
                 // Enable vertex attribute: texcoord2 (shader-location = 5)
-                mesh.vboId[5] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords2, dynamic);
-                context.rlgl.rlSetVertexAttribute(5, 2, RL_FLOAT, false, 0, 0);
-                context.rlgl.rlEnableVertexAttribute(5);
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords2, dynamic);
+                context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2, 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2);
             }
             else {
                 // Default texcoord2 vertex attribute
                 float[] value = {0.0f, 0.0f};
-                context.rlgl.rlSetVertexAttributeDefault(5, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC2, 2);
-                context.rlgl.rlDisableVertexAttribute(5);
+                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC2, 2);
+                context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2);
+            }
+
+            if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                if (mesh.boneIds != null) {
+                    // Enable vertex attribute: boneIds (shader-location = 7)
+                    mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS] = context.rlgl.rlLoadVertexBuffer(mesh.boneIds, dynamic);
+                    context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS, 4, RL_UNSIGNED_BYTE, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS);
+                }
+                else {
+                    // Default vertex attribute: boneIds
+                    // WARNING: Default value provided to shader if location available
+                    float[] value ={
+                        0.0f, 0.0f, 0.0f, 0.0f
+                    } ;
+                    context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS, value, SHADER_ATTRIB_VEC4, 4);
+                    context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS);
+                }
+
+                if (mesh.boneWeights != null) {
+                    // Enable vertex attribute: boneWeights (shader-location = 8)
+                    mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS] = context.rlgl.rlLoadVertexBuffer(mesh.boneWeights, dynamic);
+                    context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS, 4, RL_FLOAT, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS);
+                }
+                else {
+                    // Default vertex attribute: boneWeights
+                    // WARNING: Default value provided to shader if location available
+                    float[] value ={
+                        0.0f, 0.0f, 0.0f, 0.0f
+                    } ;
+                    context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS, value, SHADER_ATTRIB_VEC4, 2);
+                    context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS);
+                }
             }
 
             if (mesh.indices != null) {
-                mesh.vboId[6] = context.rlgl.rlLoadVertexBufferElement(mesh.indices, dynamic);
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = context.rlgl.rlLoadVertexBufferElement(mesh.indices, dynamic);
             }
 
             if (mesh.indicesS != null) {
-                mesh.vboId[6] = context.rlgl.rlLoadVertexBufferElement(mesh.indicesS, dynamic);
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = context.rlgl.rlLoadVertexBufferElement(mesh.indicesS, dynamic);
             }
 
             if (mesh.vaoId > 0) {
@@ -1663,6 +1701,13 @@ public class rModels {
             if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
+
+            if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                // Upload Bone Transforms
+                if ((material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && mesh.boneMatrices != null) {
+                    context.rlgl.rlSetUniformMatrices(material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()], mesh.boneMatrices);
+                }
+            }
             //-----------------------------------------------------
 
             // Bind active texture maps (if available)
@@ -1689,18 +1734,18 @@ public class rModels {
             // This could be a dangerous approach because different meshes with different shaders can enable/disable some attributes
             if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
-                context.rlgl.rlEnableVertexBuffer(mesh.vboId[0]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION]);
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                 // Bind mesh VBO data: vertex texcoords (shader-location = 1)
-                context.rlgl.rlEnableVertexBuffer(mesh.vboId[1]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD]);
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
                 if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
-                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[2]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
                 }
@@ -1708,7 +1753,7 @@ public class rModels {
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
                 if (material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
                     if (mesh.vboId[3] != 0) {
-                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[3]);
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
@@ -1723,20 +1768,36 @@ public class rModels {
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
                 if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
-                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[4]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
                 if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
-                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[5]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
+                if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                    // Bind mesh VBO data: vertex bone ids (shader-location = 6, if available)
+                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()], 4, RL_UNSIGNED_BYTE, false, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()]);
+                    }
+
+                    // Bind mesh VBO data: vertex bone weights (shader-location = 7, if available)
+                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()] != -1) {
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()], 4, RL_FLOAT, false, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()]);
+                    }
+                }
+
                 if (mesh.indices != null || mesh.indicesS != null) {
-                    context.rlgl.rlEnableVertexBufferElement(mesh.vboId[6]);
+                    context.rlgl.rlEnableVertexBufferElement(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES]);
                 }
             }
 
@@ -1894,6 +1955,13 @@ public class rModels {
             if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
+
+            if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                // Upload Bone Transforms
+                if ((material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && mesh.boneMatrices != null) {
+                    context.rlgl.rlSetUniformMatrices(material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()], mesh.boneMatrices);
+                }
+            }
             //-----------------------------------------------------
 
             // Bind active texture maps (if available)
@@ -1918,26 +1986,26 @@ public class rModels {
             // or use VBOs if not possible
             if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
-                context.rlgl.rlEnableVertexBuffer(mesh.vboId[0]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION]);
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()]);
 
                 // Bind mesh VBO data: vertex texcoords (shader-location = 1)
-                context.rlgl.rlEnableVertexBuffer(mesh.vboId[1]);
+                context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD]);
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
                 if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
-                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[2]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
                 if (material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
-                    if (mesh.vboId[3] != 0) {
-                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[3]);
+                    if (mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] != 0) {
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
                     }
@@ -1954,20 +2022,36 @@ public class rModels {
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
                 if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
-                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[4]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
                 if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
-                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[5]);
+                    context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
+                if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                    // Bind mesh VBO data: vertex bone ids (shader-location = 6, if available)
+                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()], 4, RL_UNSIGNED_BYTE, false, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()]);
+                    }
+
+                    // Bind mesh VBO data: vertex bone weights (shader-location = 7, if available)
+                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()] != -1) {
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS]);
+                        context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()], 4, RL_FLOAT, false, 0, 0);
+                        context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()]);
+                    }
+                }
+
                 if (mesh.indices != null) {
-                    context.rlgl.rlEnableVertexBufferElement(mesh.vboId[6]);
+                    context.rlgl.rlEnableVertexBufferElement(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES]);
                 }
             }
 
@@ -2096,7 +2180,7 @@ public class rModels {
             txtData.append("# // more info and bugs-report:  github.com/raysan5/raylib                        //\n");
             txtData.append("# // feedback and support:       ray[at]raylib.com                                //\n");
             txtData.append("# //                                                                              //\n");
-            txtData.append("# // Copyright (c) 2018-2022 Ramon Santamaria (@raysan5)                          //\n");
+            txtData.append("# // Copyright (c) 2018-2024 Ramon Santamaria (@raysan5)                          //\n");
             txtData.append("# //                                                                              //\n");
             txtData.append("# //////////////////////////////////////////////////////////////////////////////////\n\n");
             txtData.append("# Vertex Count:     " + mesh.vertexCount + "\n");
@@ -3745,11 +3829,7 @@ public class rModels {
         }
 
         // Create the bounding box
-        BoundingBox box = new BoundingBox();
-        box.min = minVertex;
-        box.max = maxVertex;
-
-        return box;
+        return new BoundingBox(minVertex, maxVertex);
     }
 
     // Compute mesh tangents
@@ -3834,16 +3914,16 @@ public class rModels {
         if (mesh.vboId != null) {
             if (mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
                 // Update existing vertex buffer
-                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[4], mesh.tangents, mesh.vertexCount * 4);
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount * 4);
             }
             else {
                 // Load a new tangent attributes buffer
-                mesh.vboId[4] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, false);
+                mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, false);
             }
 
             context.rlgl.rlEnableVertexArray(mesh.vaoId);
-            context.rlgl.rlSetVertexAttribute(4, 4, RL_FLOAT, false, 0, 0);
-            context.rlgl.rlEnableVertexAttribute(4);
+            context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, 4, RL_FLOAT, false, 0, 0);
+            context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT);
             context.rlgl.rlDisableVertexArray();
         }
 
@@ -3934,7 +4014,7 @@ public class rModels {
     public void DrawBillboard(Camera3D camera, Texture2D texture, Vector3 position, float scale, Color tint) {
         Rectangle source = new Rectangle(0.0f, 0.0f, (float) texture.width, (float) texture.height);
 
-        DrawBillboardRec(camera, texture, source, position, new Vector2(scale * Math.abs((float) source.width / source.height), scale), tint);
+        DrawBillboardRec(camera, texture, source, position, new Vector2(scale * Math.abs(source.width / source.height), scale), tint);
     }
 
     // Draw a billboard (part of a texture defined by a rectangle)
