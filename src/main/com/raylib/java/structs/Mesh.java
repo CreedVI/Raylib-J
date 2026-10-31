@@ -58,9 +58,9 @@ public class Mesh implements Cloneable {
      */
     public float[] animNormals;
     /**
-     * Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
+     * Vertex bone indices, max 255 bone ids, up to 4 bones influence by vertex (skinning)
      */
-    public byte[] boneIds;
+    public byte[] boneIndices;
     /**
      * Vertex bone weight, up to 4 bones influence by vertex (skinning)
      */
@@ -115,8 +115,8 @@ public class Mesh implements Cloneable {
             System.arraycopy(animVertices, 0, clone.animVertices, 0, animVertices.length);
             clone.animNormals = new float[animNormals.length];
             System.arraycopy(animNormals, 0, clone.animNormals, 0, animNormals.length);
-            clone.boneIds = new byte[boneIds.length];
-            System.arraycopy(boneIds, 0, clone.boneIds, 0, boneIds.length);
+            clone.boneIndices = new byte[boneIndices.length];
+            System.arraycopy(boneIndices, 0, clone.boneIndices, 0, boneIndices.length);
             clone.boneWeights = new float[boneWeights.length];
             System.arraycopy(boneWeights, 0, clone.boneWeights, 0, boneWeights.length);
             clone.boneMatrices = new Matrix[boneMatrices.length];

@@ -32,6 +32,7 @@ import static com.raylib.java.Config.*;
 import static com.raylib.java.core.tracelog.TraceLog.TracelogType.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.*;
 import static com.raylib.java.rlgl.RLGL.rlPixelFormat.PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.SHADER_ATTRIB_VEC2;
 import static com.raylib.java.rlgl.RLGL.rlShaderAttributeDataType.SHADER_ATTRIB_VEC4;
 import static com.raylib.java.rlgl.RLGL.rlShaderLocationIndex.*;
 import static com.raylib.java.rlgl.RLGL.rlShaderUniformDataType.SHADER_UNIFORM_INT;
@@ -42,51 +43,64 @@ import static com.raylib.java.models.rModels.MaterialMapIndex.*;
 import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 
+/**
+ rmodels - Basic functions to draw 3d shapes and load and draw 3d models <br/>
+ &emsp;CONFIGURATION: <br/>
+ &emsp;&emsp;#define SUPPORT_MODULE_RMODELS      1 <br/>
+ &emsp;&emsp;&emsp;rmodels module is included in the build <br/>
+ <br/>
+ &emsp;&emsp;&emsp;#define SUPPORT_FILEFORMAT_OBJ      1 <br/>
+ &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_MTL      1 <br/>
+ &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_IQM      1 <br/>
+ &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_GLTF     1 <br/>
+ &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_GLTF_WRITE   0 <br/>
+ &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_VOX      1 <br/>
+ &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_M3D      1 <br/>
+ &emsp;&emsp;&emsp;&emsp;Selected desired fileformats to be supported for model data loading <br/>
+ <br/>
+ &emsp;&emsp;&emsp;#define SUPPORT_MESH_GENERATION     1 <br/>
+ &emsp;&emsp;&emsp;Support procedural mesh generation functions, uses external par_shapes.h library <br/>
+ &emsp;&emsp;&emsp;NOTE: Some generated meshes DO NOT include generated texture coordinates <br/>
+ <br/>
+ <br/>
+ &emsp;LICENSE: zlib/libpng
+ <br/>
+ &emsp;Copyright (c) 2013-2026 Ramon Santamaria (@raysan5) <br/>
+ <br/>
+ &emsp;This software is provided "as-is", without any express or implied warranty. In no event <br/>
+ &emsp;will the authors be held liable for any damages arising from the use of this software. <br/>
+ <br/>
+ &emsp;Permission is granted to anyone to use this software for any purpose, including commercial <br/>
+ &emsp;applications, and to alter it and redistribute it freely, subject to the following restrictions: <br/>
+ <br/>
+ &emsp;1. The origin of this software must not be misrepresented; you must not claim that you <br/>
+ &emsp;wrote the original software. If you use this software in a product, an acknowledgment <br/>
+ &emsp;in the product documentation would be appreciated but is not required. <br/>
+ <br/>
+ &emsp;2. Altered source versions must be plainly marked as such, and must not be misrepresented <br/>
+ &emsp;as being the original software. <br/>
+ <br/>
+ &emsp;3. This notice may not be removed or altered from any source distribution. <br/>
+ <br/>
+ */
 public class rModels {
 
-    /**********************************************************************************************
-     *
-     *   rmodels - Basic functions to draw 3d shapes and load and draw 3d models
-     *
-     *   CONFIGURATION:
-     *       #define SUPPORT_MODULE_RMODELS      1
-     *           rmodels module is included in the build
-     *
-     *       #define SUPPORT_FILEFORMAT_OBJ      1
-     *       #define SUPPORT_FILEFORMAT_MTL      1
-     *       #define SUPPORT_FILEFORMAT_IQM      1
-     *       #define SUPPORT_FILEFORMAT_GLTF     1
-     *       #define SUPPORT_FILEFORMAT_GLTF_WRITE   0
-     *       #define SUPPORT_FILEFORMAT_VOX      1
-     *       #define SUPPORT_FILEFORMAT_M3D      1
-     *           Selected desired fileformats to be supported for model data loading
-     *
-     *       #define SUPPORT_MESH_GENERATION     1
-     *           Support procedural mesh generation functions, uses external par_shapes.h library
-     *           NOTE: Some generated meshes DO NOT include generated texture coordinates
-     *
-     *
-     *   LICENSE: zlib/libpng
-     *
-     *   Copyright (c) 2013-2026 Ramon Santamaria (@raysan5)
-     *
-     *   This software is provided "as-is", without any express or implied warranty. In no event
-     *   will the authors be held liable for any damages arising from the use of this software.
-     *
-     *   Permission is granted to anyone to use this software for any purpose, including commercial
-     *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
-     *
-     *     1. The origin of this software must not be misrepresented; you must not claim that you
-     *     wrote the original software. If you use this software in a product, an acknowledgment
-     *     in the product documentation would be appreciated but is not required.
-     *
-     *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
-     *     as being the original software.
-     *
-     *     3. This notice may not be removed or altered from any source distribution.
-     *
-     **********************************************************************************************/
-
+    /**
+     * Defines Material Map indices for the following material types:
+     * <ol start="0">
+     *     <li>Albedo/Diffuse</li>
+     *     <li>Metalness/Specular</li>
+     *     <li>Normal</li>
+     *     <li>Roughness</li>
+     *     <li>Occlusion</li>
+     *     <li>Emission</li>
+     *     <li>Height</li>
+     *     <li>Cubemap</li>
+     *     <li>Irradiance</li>
+     *     <li>Prefilter</li>
+     *     <li>BRDF</li>
+     * </ol>
+     */
     public enum MaterialMapIndex {
 
         MATERIAL_MAP_ALBEDO(0),     // Albedo material (same as: MATERIAL_MAP_DIFFUSE)
@@ -121,7 +135,7 @@ public class rModels {
 
     // NOTE: Two additional vertex buffers required to store bone indices and bone weights
     // WARNING: Some GPUs could not support more than 8 VBOs
-    final private int MAX_MESH_VERTEX_BUFFERS = 9;      // Maximum vertex buffers (VBO) per mesh
+    final private int MAX_MESH_VERTEX_BUFFERS;      // Maximum vertex buffers (VBO) per mesh
 
     final private int GLTF_ANIMDELAY = 17;    // Animation frames delay, (~1000 ms/60 FPS = 16.666666* ms)
     final private int M3D_ANIMDELAY = 17;   // Animation frames delay, (~1000 ms/60 FPS = 16.666666* ms)
@@ -132,20 +146,45 @@ public class rModels {
     // Module Functions Definition
     //----------------------------------------------------------------------------------
 
+    /**
+     * Initialise rModels
+     *
+     * @param context context for Raylib-J
+     */
     public rModels(Raylib context) {
         this.context = context;
+        if (RL_SUPPORT_GPU_SKINNING) {
+            MAX_MESH_VERTEX_BUFFERS = 9;
+        }
+        else {
+            MAX_MESH_VERTEX_BUFFERS = 7;
+        }
     }
 
+    /**
+     * Convert a color to a normalised greyscale value
+     *
+     * @param c Color to convert
+     * @return Normalised greyscale value
+     */
     private float GRAY_VALUE(Color c) {
         return (c.r + c.g + c.b) / 3f;
     }
 
+    /**
+     * Check if two colors are equal
+     *
+     * @param col1 First color to evaluate
+     * @param col2 Second color to evaluate
+     * @return {@code true} if colors have equal RGBA components
+     */
     private static boolean COLOR_EQUAL(Color col1, Color col2) {
         return ((col1.r == col2.r) && (col1.g == col2.g) && (col1.b == col2.b) && (col1.a == col2.a));
     }
 
     /**
-     * Draw a line in 3D world space
+     * Draw a line in 3D world space <br/>
+     * WARNING: OpenGL ES 2.0 does not support point mode drawing
      *
      * @param startPos Staring point of the line
      * @param endPos   Ending point of the line
@@ -529,15 +568,21 @@ public class rModels {
                 for (int j = 0; j < slices; j++) {
                     vertices[0] = vertices[2]; // Rotate around y axis to set up vertices for next face
                     vertices[1] = vertices[3];
-                    vertices[2] = new Vector3(cosslice * vertices[2].x - sinslice * vertices[2].z, vertices[2].y, sinslice * vertices[2].x + cosslice * vertices[2].z); // Rotation matrix around y axis
-                    vertices[3] = new Vector3(cosslice * vertices[3].x - sinslice * vertices[3].z, vertices[3].y, sinslice * vertices[3].x + cosslice * vertices[3].z);
+                    vertices[2] = new Vector3(cosslice*vertices[2].x - sinslice*vertices[2].z, vertices[2].y, sinslice*vertices[2].x + cosslice*vertices[2].z); // Rotation matrix around y axis
+                    vertices[3] = new Vector3(cosslice*vertices[3].x - sinslice*vertices[3].z, vertices[3].y, sinslice*vertices[3].x + cosslice*vertices[3].z);
 
+                    context.rlgl.rlNormal3f(vertices[0].x, vertices[0].y, vertices[0].z);
                     context.rlgl.rlVertex3f(vertices[0].x, vertices[0].y, vertices[0].z);
+                    context.rlgl.rlNormal3f(vertices[3].x, vertices[3].y, vertices[3].z);
                     context.rlgl.rlVertex3f(vertices[3].x, vertices[3].y, vertices[3].z);
+                    context.rlgl.rlNormal3f(vertices[1].x, vertices[1].y, vertices[1].z);
                     context.rlgl.rlVertex3f(vertices[1].x, vertices[1].y, vertices[1].z);
 
+                    context.rlgl.rlNormal3f(vertices[0].x, vertices[0].y, vertices[0].z);
                     context.rlgl.rlVertex3f(vertices[0].x, vertices[0].y, vertices[0].z);
+                    context.rlgl.rlNormal3f(vertices[2].x, vertices[2].y, vertices[2].z);
                     context.rlgl.rlVertex3f(vertices[2].x, vertices[2].y, vertices[2].z);
+                    context.rlgl.rlNormal3f(vertices[3].x, vertices[3].y, vertices[3].z);
                     context.rlgl.rlVertex3f(vertices[3].x, vertices[3].y, vertices[3].z);
                 }
 
@@ -875,12 +920,9 @@ public class rModels {
         for (int c = 0; c < 2; c++) {
             for (int i = 0; i < rings; i++) {
                 for (int j = 0; j < slices; j++) {
-                    // we build up the rings from capCenter in the direction of the 'direction' vector we computed earlier
+                    // Building up the rings from capCenter in the direction of the 'direction' vector computed earlier
 
-                    // as we iterate through the rings they must be placed higher above the center, the height we need is sin(angle(i))
-                    // as we iterate through the rings they must get smaller by the cos(angle(i))
-
-                    // compute the four vertices
+                    // Compute the four vertices
                     float ringSin1 = (float) (Math.sin(baseSliceAngle * (j)) * Math.cos(baseRingAngle * (i)));
                     float ringCos1 = (float) (Math.cos(baseSliceAngle * (j)) * Math.cos(baseRingAngle * (i)));
                     Vector3 w1 = new Vector3(
@@ -1027,12 +1069,9 @@ public class rModels {
         for (int c = 0; c < 2; c++) {
             for (int i = 0; i < rings; i++) {
                 for (int j = 0; j < slices; j++) {
-                    // we build up the rings from capCenter in the direction of the 'direction' vector we computed earlier
+                    // Building up the rings from capCenter in the direction of the 'direction' vector computed earlier
 
-                    // as we iterate through the rings they must be placed higher above the center, the height we need is sin(angle(i))
-                    // as we iterate through the rings they must get smaller by the cos(angle(i))
-
-                    // compute the four vertices
+                    // Compute the four vertices
                     float ringSin1 = (float) (Math.sin(baseSliceAngle * (j)) * Math.cos(baseRingAngle * (i)));
                     float ringCos1 = (float) (Math.cos(baseSliceAngle * (j)) * Math.cos(baseRingAngle * (i)));
                     Vector3 w1 = new Vector3(
@@ -1221,14 +1260,14 @@ public class rModels {
         else if (SUPPORT_FILEFORMAT_IQM && context.files.IsFileExtension(fileName, ".iqm")) {
             model = LoadIQM(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_M3D && (context.files.IsFileExtension(fileName, ".m3d") || context.files.IsFileExtension(fileName, ".a3d"))) {
-            model = LoadM3D(fileName);
-        }
         else if (SUPPORT_FILEFORMAT_GLTF && ((context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb")))) {
             model = LoadGLTF(fileName);
         }
         else if (SUPPORT_FILEFORMAT_VOX && context.files.IsFileExtension(fileName, ".vox")) {
             model = LoadVOX(fileName);
+        }
+        else if (SUPPORT_FILEFORMAT_M3D && (context.files.IsFileExtension(fileName, ".m3d") || context.files.IsFileExtension(fileName, ".a3d"))) {
+            model = LoadM3D(fileName);
         }
 
         // Make sure model transform is set to identity matrix!
@@ -1260,15 +1299,10 @@ public class rModels {
         return model;
     }
 
-    // Load model from generated mesh
-    // WARNING: A shallow copy of mesh is generated, passed by value,
-    // as long as struct contains pointers to data and some values, we get a copy
-    // of mesh pointing to same data as original version... be careful!
-
     /**
      * Load a model from a generated mesh
      *
-     * @param mesh
+     * @param mesh Mesh to use for model generation
      * @return {@code Model} defined by the mesh
      */
     public Model LoadModelFromMesh(Mesh mesh) {
@@ -1338,7 +1372,7 @@ public class rModels {
                 result = false;
                 break;
             }  // Vertex indices buffer not uploaded to GPU
-            if ((model.meshes[i].boneIds != null) && (model.meshes[i].vboId[7] == 0)) {
+            if ((model.meshes[i].boneIndices != null) && (model.meshes[i].vboId[7] == 0)) {
                 result = false;
                 break;
             }  // Vertex boneIds buffer not uploaded to GPU
@@ -1347,7 +1381,7 @@ public class rModels {
                 break;
             }  // Vertex boneWeights buffer not uploaded to GPU
 
-            // NOTE: Some OpenGL versions do not support VAO, so we don't check it
+            // NOTE: Some OpenGL versions do not support VAO, so avoid below check
             //if (model.meshes[i].vaoId == 0) { result = false; break }
         }
 
@@ -1356,7 +1390,7 @@ public class rModels {
 
     /**
      * Unload model (meshes/materials) from memory (RAM and/or VRAM) <br/>
-     * NOTE: This function takes care of all model elements, for a detailed control over them, use UnloadMesh() and UnloadMaterial()
+     * NOTE: This function takes care of all model elements, for detailed control over them, use UnloadMesh() and UnloadMaterial()
      *
      * @param model Model to unload
      * @see rModels#UnloadMesh(Mesh)
@@ -1383,8 +1417,8 @@ public class rModels {
         model.meshMaterial = null;
 
         // Unload animation data
-        model.bones = null;
-        model.bindPose = null;
+        model.skeleton.bones = null;
+        model.skeleton.bindPose = null;
 
         context.tracelog.TRACELOG(LOG_INFO, "MODEL: Unloaded model (and meshes) from RAM and VRAM");
     }
@@ -1450,8 +1484,8 @@ public class rModels {
         mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2] = 0;     // Vertex buffer: texcoords2
         mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = 0;     // Vertex buffer: indices
 
-        if (RL_SUPPORT_MESH_GPU_SKINNING) {
-            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS] = 0;      // Vertex buffer: boneIds
+        if (RL_SUPPORT_GPU_SKINNING) {
+            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES] = 0;      // Vertex buffer: boneIndices
             mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS] = 0;  // Vertex buffer: boneWeights
         }
 
@@ -1468,9 +1502,17 @@ public class rModels {
             context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION);
 
             // Enable vertex attributes: texcoords (shader-location = 1)
-            mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords, dynamic);
-            context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD, 2, RL_FLOAT, false, 0, 0);
-            context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD);
+            if (mesh.texcoords != null) {
+                mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords, dynamic);
+                context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD, 2, RL_FLOAT, false, 0, 0);
+                context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD);
+            }
+            else {
+                float[] value = {0.0f, 0.0f};
+
+                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD, value, SHADER_ATTRIB_VEC2, 2);
+                context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD);
+            }
 
             if (mesh.normals != null) {
                 // Enable vertex attributes: normals (shader-location = 2)
@@ -1480,8 +1522,9 @@ public class rModels {
                 context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL);
             }
             else {
-                // Default color vertex attribute set to WHITE
-                float[] value = {1.0f, 1.0f, 1.0f};
+                // Default vertex attribute: normal
+                // WARNING: Default value provided to shader if location available
+                float[] value = {0.0f, 0.0f, 0.0f};
                 context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC3, 3);
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL);
             }
@@ -1493,8 +1536,9 @@ public class rModels {
                 context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR);
             }
             else {
-                // Default color vertex attribute set to WHITE
-                float[] value = {1.0f, 1.0f, 1.0f, 1.0f};
+                // Default vertex attribute: color
+                // WARNING: Default value provided to shader if location available
+                float[] value = {1.0f, 1.0f, 1.0f, 1.0f}; // WHITE
                 context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR, value, SHADER_ATTRIB_VEC4, 4);
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR);
             }
@@ -1507,7 +1551,8 @@ public class rModels {
             }
             else {
                 // Default tangents vertex attribute
-                float[] value = {0.0f, 0.0f, 0.0f, 0.0f};
+                // WARNING: Default value provided to shader if location available
+                float[] value = {1.0f, 0.0f, 0.0f, 1.0f};
                 context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, value, SHADER_ATTRIB_VEC4, 4);
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT);
             }
@@ -1519,18 +1564,19 @@ public class rModels {
                 context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2);
             }
             else {
-                // Default texcoord2 vertex attribute
+                // Default vertex attribute: texcoord2
+                // WARNING: Default value provided to shader if location available
                 float[] value = {0.0f, 0.0f};
-                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2, value, rlShaderAttributeDataType.SHADER_ATTRIB_VEC2, 2);
+                context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2, value, SHADER_ATTRIB_VEC2, 2);
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2);
             }
 
-            if (RL_SUPPORT_MESH_GPU_SKINNING) {
-                if (mesh.boneIds != null) {
-                    // Enable vertex attribute: boneIds (shader-location = 7)
-                    mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS] = context.rlgl.rlLoadVertexBuffer(mesh.boneIds, dynamic);
-                    context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS, 4, RL_UNSIGNED_BYTE, false, 0, 0);
-                    context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS);
+            if (RL_SUPPORT_GPU_SKINNING) {
+                if (mesh.boneIndices != null) {
+                    // Enable vertex attribute: boneIndices (shader-location = 7)
+                    mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES] = context.rlgl.rlLoadVertexBuffer(mesh.boneIndices, dynamic);
+                    context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES, 4, RL_UNSIGNED_BYTE, false, 0, 0);
+                    context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES);
                 }
                 else {
                     // Default vertex attribute: boneIds
@@ -1538,8 +1584,8 @@ public class rModels {
                     float[] value ={
                         0.0f, 0.0f, 0.0f, 0.0f
                     } ;
-                    context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS, value, SHADER_ATTRIB_VEC4, 4);
-                    context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS);
+                    context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES, value, SHADER_ATTRIB_VEC4, 4);
+                    context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES);
                 }
 
                 if (mesh.boneWeights != null) {
@@ -1604,12 +1650,31 @@ public class rModels {
             final int GL_COLOR_ARRAY = 0x8076;
             final int GL_TEXTURE_COORD_ARRAY = 0x8078;
 
-            context.rlgl.rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture.id);
+            if ((mesh.texcoords != null) && (material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture.id > 0)) {
+                context.rlgl.rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture.id);
+            }
 
-            context.rlgl.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
-            context.rlgl.rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
-            context.rlgl.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
-            context.rlgl.rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
+            if (mesh.animVertices != null) {
+                context.rlgl.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.animVertices);
+            }
+            else {
+                context.rlgl.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
+            }
+
+            if (mesh.texcoords != null) {
+                context.rlgl.rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
+            }
+
+            if (mesh.animNormals != null) {
+                context.rlgl.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.animNormals);
+            }
+            else if (mesh.normals != null) {
+                context.rlgl.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
+            }
+
+            if (mesh.colors != null) {
+                context.rlgl.rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
+            }
 
             context.rlgl.rlPushMatrix();
             context.rlgl.rlMultMatrixf(MatrixToFloat(transform));
@@ -1640,6 +1705,10 @@ public class rModels {
             // Bind shader program
             context.rlgl.rlEnableShader(material.shader.id);
 
+            if (material.shader.locs == null) {
+                return;
+            }
+
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
@@ -1667,10 +1736,10 @@ public class rModels {
             }
 
             // Get a copy of current matrices to work with,
-            // just in case stereo render is required and we need to modify them
-            // NOTE: At this point the modelview matrix just contains the view matrix (camera)
+            // in case stereo render is required, and they need to be modified
+            // NOTE: At this point the modelview matrix contains the view matrix (camera)
             // That's because BeginMode3D() sets it and there is no model-drawing function
-            // that modifies it, all use context.rlgl.rlPushMatrix() and context.rlgl.rlPopMatrix()
+            // that modifies it, all use rlPushMatrix() and rlPopMatrix()
             Matrix matModel = MatrixIdentity();
             Matrix matView = context.rlgl.rlGetMatrixModelview();
             Matrix matModelView = MatrixIdentity();
@@ -1700,13 +1769,6 @@ public class rModels {
             // Upload model normal matrix (if locations available)
             if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
-            }
-
-            if (RL_SUPPORT_MESH_GPU_SKINNING) {
-                // Upload Bone Transforms
-                if ((material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && mesh.boneMatrices != null) {
-                    context.rlgl.rlSetUniformMatrices(material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()], mesh.boneMatrices);
-                }
             }
             //-----------------------------------------------------
 
@@ -1780,10 +1842,10 @@ public class rModels {
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
-                if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                if (RL_SUPPORT_GPU_SKINNING) {
                     // Bind mesh VBO data: vertex bone ids (shader-location = 6, if available)
                     if (material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
-                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS]);
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()], 4, RL_UNSIGNED_BYTE, false, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()]);
                     }
@@ -1869,7 +1931,7 @@ public class rModels {
     public void DrawMeshInstanced(Mesh mesh, Material material, Matrix[] transforms, int instances) {
         if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             // Instancing required variables
-            float[] instanceTransforms = null;
+            float[] instanceTransform = null;
             int instancesVboId = 0;
 
             // Bind shader program
@@ -1892,18 +1954,18 @@ public class rModels {
             // Upload to shader material.colSpecular (if location available)
             if (material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values = {
-                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.r / 255.0f,
-                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.g / 255.0f,
-                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.b / 255.0f,
-                        (float) material.maps[SHADER_LOC_COLOR_SPECULAR.GetLocation()].color.a / 255.0f
+                        (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.r / 255.0f,
+                        (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.g / 255.0f,
+                        (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.b / 255.0f,
+                        (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.a / 255.0f
                 };
 
                 context.rlgl.rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()], values, SHADER_UNIFORM_VEC4);
             }
 
             // Get a copy of current matrices to work with,
-            // just in case stereo render is required and we need to modify them
-            // NOTE: At this point the modelview matrix just contains the view matrix (camera)
+            // in case stereo render is required, and they need to be modified
+            // NOTE: At this point the modelview matrix contains the view matrix (camera)
             // That's because BeginMode3D() sets it and there is no model-drawing function
             // that modifies it, all use context.rlgl.rlPushMatrix() and context.rlgl.rlPopMatrix()
             Matrix matModel = MatrixIdentity();
@@ -1920,12 +1982,12 @@ public class rModels {
             }
 
             // Create instances buffer
-            instanceTransforms = new float[instances * 16];
+            instanceTransform = new float[instances * 16];
 
             // Fill buffer with instances transformations as float16 arrays
             for (int i = 0; i < instances; i++) {
                 Float16 tmp = MatrixToFloatV(transforms[i]);
-                System.arraycopy(tmp.v, 0, instanceTransforms, i * 16, tmp.v.length);
+                System.arraycopy(tmp.v, 0, instanceTransform, i * 16, tmp.v.length);
             }
 
             // Enable mesh VAO to attach new buffer
@@ -1933,15 +1995,17 @@ public class rModels {
 
             // This could alternatively use a static VBO and either glMapBuffer() or glBufferSubData()
             // It isn't clear which would be reliably faster in all cases and on all platforms,
-            // anecdotally glMapBuffer() seems very slow (syncs) while glBufferSubData() seems
-            // no faster, since we're transferring all the transform matrices anyway
-            instancesVboId = context.rlgl.rlLoadVertexBuffer(instanceTransforms, false);
+            // anecdotally glMapBuffer() seems quite slow (syncs) while glBufferSubData() seems
+            // no faster, since all the transform matrices are transferred anyway
+            instancesVboId = context.rlgl.rlLoadVertexBuffer(instanceTransform, false);
 
-            // Instances transformation matrices are send to shader attribute location: SHADER_LOC_MATRIX_MODEL
-            for (int i = 0; i < 4; i++) {
-                context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] + i);
-                context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 4, RL_FLOAT, false, 16, i);
-                context.rlgl.rlSetVertexAttributeDivisor(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] + i, 1);
+            // Instances transformation matrices are sent to shader attribute location: SHADER_LOC_VERTEX_INSTANCETRANSFORM
+            if (material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] != -1) {
+                for (int i = 0; i < 4; i++) {
+                    context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i, 4, RL_FLOAT, false, 16*Float.BYTES, i*4*Float.BYTES);
+                    context.rlgl.rlSetVertexAttributeDivisor(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i, 1);
+                }
             }
 
             context.rlgl.rlDisableVertexBuffer();
@@ -1954,13 +2018,6 @@ public class rModels {
             // Upload model normal matrix (if locations available)
             if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
-            }
-
-            if (RL_SUPPORT_MESH_GPU_SKINNING) {
-                // Upload Bone Transforms
-                if ((material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && mesh.boneMatrices != null) {
-                    context.rlgl.rlSetUniformMatrices(material.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()], mesh.boneMatrices);
-                }
             }
             //-----------------------------------------------------
 
@@ -2034,10 +2091,10 @@ public class rModels {
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
-                if (RL_SUPPORT_MESH_GPU_SKINNING) {
+                if (RL_SUPPORT_GPU_SKINNING) {
                     // Bind mesh VBO data: vertex bone ids (shader-location = 6, if available)
                     if (material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
-                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS]);
+                        context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()], 4, RL_UNSIGNED_BYTE, false, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()]);
                     }
@@ -2136,6 +2193,7 @@ public class rModels {
             }
         }
 
+        // Unload mesh vertex buffers
         mesh.vertices = null;
         mesh.texcoords = null;
         mesh.normals = null;
@@ -2145,11 +2203,13 @@ public class rModels {
         mesh.indices = null;
         mesh.indicesS = null;
 
+        // Unload mesh skin animation data
+        mesh.boneWeights = null;
+        mesh.boneIndices = null;
+
+        // Unload mesh runtime CPU skinning data
         mesh.animVertices = null;
         mesh.animNormals = null;
-        mesh.boneWeights = null;
-        mesh.boneIds = null;
-        mesh.boneMatrices = null;
     }
 
     /**
@@ -2160,19 +2220,11 @@ public class rModels {
      * @return {@code true} if file operation is successful
      */
     public boolean ExportMesh(Mesh mesh, String fileName) {
-        boolean success = false;
+        boolean result = false;
 
         if (context.files.IsFileExtension(fileName, ".obj")) {
-            // Estimated data size, it should be enough...
-            int dataSize = mesh.vertexCount * ("v 0000.00f 0000.00f 0000.00f").length() +
-                    (mesh.vertexCount * ("vt 0.000f 0.00f").length()) +
-                    (mesh.vertexCount * ("vn 0.000f 0.00f 0.00f").length()) +
-                    (mesh.triangleCount * ("f 00000/00000/00000 00000/00000/00000 00000/00000/00000").length());
-
-            // NOTE: Text data buffer size is estimated considering mesh data size
             StringBuilder txtData = new StringBuilder();
 
-            int byteCount = 0;
             txtData.append("# //////////////////////////////////////////////////////////////////////////////////\n");
             txtData.append("# //                                                                              //\n");
             txtData.append("# // rMeshOBJ exporter v1.0 - Mesh exported as triangle faces and not optimized   //\n");
@@ -2180,7 +2232,7 @@ public class rModels {
             txtData.append("# // more info and bugs-report:  github.com/raysan5/raylib                        //\n");
             txtData.append("# // feedback and support:       ray[at]raylib.com                                //\n");
             txtData.append("# //                                                                              //\n");
-            txtData.append("# // Copyright (c) 2018-2024 Ramon Santamaria (@raysan5)                          //\n");
+            txtData.append("# // Copyright (c) 2018-2026 Ramon Santamaria (@raysan5)                          //\n");
             txtData.append("# //                                                                              //\n");
             txtData.append("# //////////////////////////////////////////////////////////////////////////////////\n\n");
             txtData.append("# Vertex Count:     " + mesh.vertexCount + "\n");
@@ -2189,16 +2241,16 @@ public class rModels {
             txtData.append("g mesh\n");
 
             for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
-                txtData.append("v " + String.format(String.valueOf(mesh.vertices[v]), "%.2f") + String.format(String.valueOf(mesh.vertices[v + 1]), "%.2f") + String.format(String.valueOf(mesh.vertices[v + 2]), "%.2f"));
+                txtData.append("v " + String.format(String.valueOf(mesh.vertices[v]), "%.6f") + String.format(String.valueOf(mesh.vertices[v + 1]), "%.6f") + String.format(String.valueOf(mesh.vertices[v + 2]), "%.6f"));
             }
 
             for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 2) {
-                txtData.append("vt " + String.format(String.valueOf(mesh.texcoords[v]), "%.2f") + String.format(String.valueOf(mesh.texcoords[v + 1]), "%.2f"));
+                txtData.append("vt " + String.format(String.valueOf(mesh.texcoords[v]), "%.6f") + String.format(String.valueOf(mesh.texcoords[v + 1]), "%.6f"));
 
             }
 
             for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
-                txtData.append("v " + String.format(String.valueOf(mesh.normals[v]), "%.2f") + String.format(String.valueOf(mesh.normals[v + 1]), "%.2f") + String.format(String.valueOf(mesh.normals[v + 2]), "%.2f"));
+                txtData.append("v " + String.format(String.valueOf(mesh.normals[v]), "%.6f") + String.format(String.valueOf(mesh.normals[v + 1]), "%.6f") + String.format(String.valueOf(mesh.normals[v + 2]), "%.6f"));
             }
 
             if (mesh.indices != null) {
@@ -2219,123 +2271,142 @@ public class rModels {
 
             // NOTE: Text data length exported is determined by '\0' (null) character
             try {
-                success = context.files.SaveFileText(fileName, txtData.toString());
+                result = context.files.SaveFileText(fileName, txtData.toString());
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+        else if (context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb")) {
+            // TODO: Implement gltf/glb support
+        }
         else if (context.files.IsFileExtension(fileName, ".raw")) {
             // TODO: Support additional file formats to export mesh vertex data
         }
 
-        return success;
+        return result;
     }
 
-    /* TODO:
-    // Export mesh as code file (.h) defining multiple arrays of vertex attributes
-    bool ExportMeshAsCode(Mesh mesh, const char *fileName)
-    {
-        bool success = false;
+    /**
+     * Export mesh as code file (.h) defining multiple arrays of vertex attributes
+     *
+     * @param mesh Mesh to export
+     * @param fileName Location to save file
+     * @return {@code true} if file operation is successful
+     */
+    public boolean ExportMeshAsCode(Mesh mesh, String fileName) {
+        boolean result = false;
 
-#ifndef TEXT_BYTES_PER_LINE
-    #define TEXT_BYTES_PER_LINE     20
-#endif
+        int TEXT_BYTES_PER_LINE = 20;
 
         // NOTE: Text data buffer size is fixed to 64MB
-        char *txtData = (char *)RL_CALLOC(64*1024*1024, sizeof(char));  // 64 MB
+        StringBuilder txtData = new StringBuilder();
 
-        int byteCount = 0;
-        byteCount += sprintf(txtData + byteCount, "////////////////////////////////////////////////////////////////////////////////////////\n");
-        byteCount += sprintf(txtData + byteCount, "//                                                                                    //\n");
-        byteCount += sprintf(txtData + byteCount, "// MeshAsCode exporter v1.0 - Mesh vertex data exported as arrays                     //\n");
-        byteCount += sprintf(txtData + byteCount, "//                                                                                    //\n");
-        byteCount += sprintf(txtData + byteCount, "// more info and bugs-report:  github.com/raysan5/raylib                              //\n");
-        byteCount += sprintf(txtData + byteCount, "// feedback and support:       ray[at]raylib.com                                      //\n");
-        byteCount += sprintf(txtData + byteCount, "//                                                                                    //\n");
-        byteCount += sprintf(txtData + byteCount, "// Copyright (c) 2023 Ramon Santamaria (@raysan5)                                     //\n");
-        byteCount += sprintf(txtData + byteCount, "//                                                                                    //\n");
-        byteCount += sprintf(txtData + byteCount, "////////////////////////////////////////////////////////////////////////////////////////\n\n");
+        txtData.append("////////////////////////////////////////////////////////////////////////////////////////\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// MeshAsCode exporter v1.0 - Mesh vertex data exported as arrays                     //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// more info and bugs-report:  github.com/raysan5/raylib                              //\n");
+        txtData.append("// feedback and support:       ray[at]raylib.com                                      //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("// Copyright (c) 2023 Ramon Santamaria (@raysan5)                                     //\n");
+        txtData.append("//                                                                                    //\n");
+        txtData.append("////////////////////////////////////////////////////////////////////////////////////////\n\n");
 
         // Get file name from path and convert variable name to uppercase
-        char varFileName[256] = { 0 };
-        strcpy(varFileName, GetFileNameWithoutExt(fileName));
-        for (int i = 0; varFileName[i] != '\0'; i++) if ((varFileName[i] >= 'a') && (varFileName[i] <= 'z')) { varFileName[i] = varFileName[i] - 32; }
+        String varFileName = context.files.GetFileNameWithoutExt(fileName).toUpperCase(); // NOTE: Using function provided by [rcore] module
 
         // Add image information
-        byteCount += sprintf(txtData + byteCount, "// Mesh basic information\n");
-        byteCount += sprintf(txtData + byteCount, "#define %s_VERTEX_COUNT    %i\n", varFileName, mesh.vertexCount);
-        byteCount += sprintf(txtData + byteCount, "#define %s_TRIANGLE_COUNT   %i\n\n", varFileName, mesh.triangleCount);
+        txtData.append("// Mesh basic information\n");
+        txtData.append(String.format("#define %s_VERTEX_COUNT    %d\n", varFileName, mesh.vertexCount));
+        txtData.append(String.format("#define %s_TRIANGLE_COUNT   %d\n\n", varFileName, mesh.triangleCount));
 
         // Define vertex attributes data as separate arrays
         //-----------------------------------------------------------------------------------------
-        if (mesh.vertices != NULL)      // Vertex position (XYZ - 3 components per vertex - float)
-        {
-            byteCount += sprintf(txtData + byteCount, "static float %s_VERTEX_DATA[%i] = { ", varFileName, mesh.vertexCount*3);
-            for (int i = 0; i < mesh.vertexCount*3 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.vertices[i]);
-            byteCount += sprintf(txtData + byteCount, "%.3ff };\n\n", mesh.vertices[mesh.vertexCount*3 - 1]);
+        if (mesh.vertices != null) {
+            // Vertex position (XYZ - 3 components per vertex - float)
+            txtData.append(String.format("static float %s_VERTEX_DATA[%d] = { ", varFileName, mesh.vertexCount*3));
+            for (int i = 0; i < mesh.vertexCount*3 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.vertices[i]));
+            }
+            txtData.append(String.format("%.3ff };\n\n", mesh.vertices[mesh.vertexCount*3 - 1]));
         }
 
-        if (mesh.texcoords != NULL)      // Vertex texture coordinates (UV - 2 components per vertex - float)
-        {
-            byteCount += sprintf(txtData + byteCount, "static float %s_TEXCOORD_DATA[%i] = { ", varFileName, mesh.vertexCount*2);
-            for (int i = 0; i < mesh.vertexCount*2 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.texcoords[i]);
-            byteCount += sprintf(txtData + byteCount, "%.3ff };\n\n", mesh.texcoords[mesh.vertexCount*2 - 1]);
+        if (mesh.texcoords != null) {
+            // Vertex texture coordinates (UV - 2 components per vertex - float)
+            txtData.append(String.format("static float %s_TEXCOORD_DATA[%d] = { ", varFileName, mesh.vertexCount*2));
+            for (int i = 0; i < mesh.vertexCount*2 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.texcoords[i]));
+            }
+            txtData.append(String.format("%.3ff };\n\n", mesh.texcoords[mesh.vertexCount*2 - 1]));
         }
 
-        if (mesh.texcoords2 != NULL)      // Vertex texture coordinates (UV - 2 components per vertex - float)
-        {
-            byteCount += sprintf(txtData + byteCount, "static float %s_TEXCOORD2_DATA[%i] = { ", varFileName, mesh.vertexCount*2);
-            for (int i = 0; i < mesh.vertexCount*2 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.texcoords2[i]);
-            byteCount += sprintf(txtData + byteCount, "%.3ff };\n\n", mesh.texcoords2[mesh.vertexCount*2 - 1]);
+        if (mesh.texcoords2 != null) {
+            // Vertex texture coordinates (UV - 2 components per vertex - float)
+            txtData.append(String.format("static float %s_TEXCOORD2_DATA[%d] = { ", varFileName, mesh.vertexCount*2));
+            for (int i = 0; i < mesh.vertexCount*2 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.texcoords2[i]));
+            }
+            txtData.append(String.format("%.3ff };\n\n", mesh.texcoords2[mesh.vertexCount*2 - 1]));
         }
 
-        if (mesh.normals != NULL)      // Vertex normals (XYZ - 3 components per vertex - float)
-        {
-            byteCount += sprintf(txtData + byteCount, "static float %s_NORMAL_DATA[%i] = { ", varFileName, mesh.vertexCount*3);
-            for (int i = 0; i < mesh.vertexCount*3 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.normals[i]);
-            byteCount += sprintf(txtData + byteCount, "%.3ff };\n\n", mesh.normals[mesh.vertexCount*3 - 1]);
+        if (mesh.normals != null) {
+            // Vertex normals (XYZ - 3 components per vertex - float)
+            txtData.append(String.format("static float %s_NORMAL_DATA[%d] = { ", varFileName, mesh.vertexCount*3));
+            for (int i = 0; i < mesh.vertexCount*3 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.normals[i]));
+            }
+            txtData.append(String.format("%.3ff };\n\n", mesh.normals[mesh.vertexCount*3 - 1]));
         }
 
-        if (mesh.tangents != NULL)      // Vertex tangents (XYZW - 4 components per vertex - float)
-        {
-            byteCount += sprintf(txtData + byteCount, "static float %s_TANGENT_DATA[%i] = { ", varFileName, mesh.vertexCount*4);
-            for (int i = 0; i < mesh.vertexCount*4 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.tangents[i]);
-            byteCount += sprintf(txtData + byteCount, "%.3ff };\n\n", mesh.tangents[mesh.vertexCount*4 - 1]);
+        if (mesh.tangents != null) {
+            // Vertex tangents (XYZW - 4 components per vertex - float)
+            txtData.append(String.format("static float %s_TANGENT_DATA[%d] = { ", varFileName, mesh.vertexCount*4));
+            for (int i = 0; i < mesh.vertexCount*4 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.tangents[i]));
+            }
+            txtData.append(String.format("%.3ff };\n\n", mesh.tangents[mesh.vertexCount*4 - 1]));
         }
 
-        if (mesh.colors != NULL)        // Vertex colors (RGBA - 4 components per vertex - unsigned char)
-        {
-            byteCount += sprintf(txtData + byteCount, "static unsigned char %s_COLOR_DATA[%i] = { ", varFileName, mesh.vertexCount*4);
-            for (int i = 0; i < mesh.vertexCount*4 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "0x%x,\n" : "0x%x, "), mesh.colors[i]);
-            byteCount += sprintf(txtData + byteCount, "0x%x };\n\n", mesh.colors[mesh.vertexCount*4 - 1]);
+        if (mesh.colors != null) {
+            // Vertex colors (RGBA - 4 components per vertex - unsigned char)
+            txtData.append(String.format("static unsigned char %s_COLOR_DATA[%d] = { ", varFileName, mesh.vertexCount*4));
+            for (int i = 0; i < mesh.vertexCount*4 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "0x%x,\n" : "0x%x, "), mesh.colors[i]));
+            }
+            txtData.append(String.format("0x%x };\n\n", mesh.colors[mesh.vertexCount*4 - 1]));
         }
 
-        if (mesh.indices != NULL)       // Vertex indices (3 index per triangle - unsigned short)
-        {
-            byteCount += sprintf(txtData + byteCount, "static unsigned short %s_INDEX_DATA[%i] = { ", varFileName, mesh.triangleCount*3);
-            for (int i = 0; i < mesh.triangleCount*3 - 1; i++) byteCount += sprintf(txtData + byteCount, ((i%TEXT_BYTES_PER_LINE == 0)? "%i,\n" : "%i, "), mesh.indices[i]);
-            byteCount += sprintf(txtData + byteCount, "%i };\n", mesh.indices[mesh.triangleCount*3 - 1]);
+        if (mesh.indices != null) {
+            // Vertex indices (3 index per triangle - unsigned short)
+            txtData.append(String.format("static unsigned short %s_INDEX_DATA[%d] = { ", varFileName, mesh.triangleCount*3));
+            for (int i = 0; i < mesh.triangleCount*3 - 1; i++) {
+                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%d,\n" : "%d, "), mesh.indices[i]));
+            }
+            txtData.append(String.format("%d };\n", (int) mesh.indices[mesh.triangleCount*3 - 1]));
         }
         //-----------------------------------------------------------------------------------------
 
-        // NOTE: Text data size exported is determined by '\0' (NULL) character
-        success = SaveFileText(fileName, txtData);
+        // NOTE: Text data size exported is determined by '\0' (null) character
+        try {
+            result = context.files.SaveFileText(fileName, txtData.toString());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        RL_FREE(txtData);
+        // if (result) context.tracelog.TRACELOG(LOG_INFO, "FILEIO: [%s] Image as code exported successfully", fileName);
+        // else context.tracelog.TRACELOG(LOG_WARNING, "FILEIO: [%s] Failed to export image as code", fileName);
 
-        //if (success != 0) TRACELOG(LOG_INFO, "FILEIO: [%s] Image as code exported successfully", fileName);
-        //else TRACELOG(LOG_WARNING, "FILEIO: [%s] Failed to export image as code", fileName);
-
-        return success;
+        return result;
     }
-     */
 
     /**
-     *
-     * @param loader
-     * @param path
-     * @return
+     * Process OBJ Materials
+     * @param loader {@code OBJLoader} used to load the OBJ file
+     * @param path Working path of the OBJ file
+     * @return Array of {Material}s defined by the OBJ file
+     * @see OBJLoader
      */
     private Material[] ProcessMaterialsOBJ(OBJLoader loader, String path) {
         Material[] materials = new Material[loader.objInfo.totalMaterials];
@@ -2396,7 +2467,12 @@ public class rModels {
         return materials;
     }
 
-    // Load materials from model file
+    /**
+     * Load materials from model file
+     *
+     * @param fileName Material file to load
+     * @return Array of {Material}s defined by the material file
+     */
     public Material[] LoadMaterials(String fileName) {
         Material[] materials = null;
         int count = 0;
@@ -2429,7 +2505,11 @@ public class rModels {
         return materials;
     }
 
-    // Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
+    /**
+     * Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
+     *
+     * @return Default {@code Material}
+     */
     public Material LoadMaterialDefault() {
         Material material = new Material();
         material.maps = new MaterialMap[MAX_MATERIAL_MAPS];
@@ -2452,7 +2532,12 @@ public class rModels {
         return material;
     }
 
-    // Check if a material is valid (map textures loaded in GPU)
+    /**
+     * Check if a material is valid (map textures loaded in GPU)
+     *
+     * @param material Material to evaluate
+     * @return {@code true} if {@code material} is valid
+     */
     public boolean IsMaterialValid(Material material) {
         boolean result = false;
 
@@ -2461,12 +2546,18 @@ public class rModels {
             result = true;
         }
 
-        // TODO: Check if available maps contain loaded textures
+        // NOTE: Checking if available maps contain loaded textures does not determine if
+        // a material is valid, there can be maps without a texture assigned, only properties
 
         return result;
     }
 
-    // Unload material from memory
+    /**
+     * Unload material from memory
+     *
+     * @param material {@code Material} to unload
+     */
+    @Contract(mutates = "param")
     public void UnloadMaterial(Material material) {
         // Unload material shader (avoid unloading default shader, managed by raylib)
         if (material.shader.id != context.rlgl.rlGetShaderIdDefault()) {
@@ -2485,13 +2576,27 @@ public class rModels {
         material.maps = null;
     }
 
-    // Set texture for a material map type (MATERIAL_MAP_DIFFUSE, MATERIAL_MAP_SPECULAR...)
-    // NOTE: Previous texture should be manually unloaded
-    public void SetMaterialTexture(Material material, int mapType, Texture2D texture) {
-        material.maps[mapType].texture = texture;
+    /**
+     * Set texture for a material map type (MATERIAL_MAP_DIFFUSE, MATERIAL_MAP_SPECULAR...)
+     *
+     * @param material Material to map to
+     * @param mapType Material Map type
+     * @param texture Texture to map
+     * @see MaterialMapIndex
+     */
+    @Contract(mutates = "param1")
+    public void SetMaterialTexture(Material material, MaterialMapIndex mapType, Texture2D texture) {
+        material.maps[mapType.GetIndex()].texture = texture;
     }
 
-    // Set the material for a mesh
+    /**
+     * Set the material for a mesh
+     *
+     * @param model Model to modify the material of
+     * @param meshId Mesh to modify
+     * @param materialId Material to use for {@code meshId}
+     */
+    @Contract(mutates = "param1")
     public void SetModelMeshMaterial(Model model, int meshId, int materialId) {
         if (meshId >= model.meshCount) {
             context.tracelog.TRACELOG(LOG_WARNING, "MESH: Id greater than mesh count");
@@ -2504,7 +2609,11 @@ public class rModels {
         }
     }
 
-    // Load model animations from file
+    /**
+     * Load model animations from file
+     * @param fileName File to load
+     * @return Array of {ModelAnimations} defined by the animation file
+     */
     public ModelAnimation[] LoadModelAnimations(String fileName) {
         ModelAnimation[] animations = null;
 
@@ -2527,83 +2636,218 @@ public class rModels {
         return animations;
     }
 
-    // Update model animated bones transform matrices for a given frame
-    // NOTE: Updated data is not uploaded to GPU but kept at model.meshes[i].boneMatrices[boneId],
-    // to be uploaded to shader at drawing, in case GPU skinning is enabled
-    public void UpdateModelAnimationBones(Model model, ModelAnimation anim, int frame) {
-        if ((anim.frameCount > 0) && (anim.bones != null) && (anim.framePoses != null)) {
-            if (frame >= anim.frameCount) {
-                frame = frame % anim.frameCount;
+    // Update model animated vertex data (positions and normals) for a given frame
+    // NOTE: Updated data is uploaded to GPU
+
+    /**
+     * Update model animation data (vertex buffers / bone matrices) for a specific pose <br/>
+     * NOTE 1: Request frame could be fractional, using a lerp interpolation between two frames <br/>
+     * NOTE 2: Updated vertex animation data is uploaded to GPU in case of CPU skinning, for GPU skinning, bone matrices are uploaded to shader on DrawModelEx()
+     *
+     * @param model Model to update
+     * @param anim Animation to use for transformation
+     * @param frame Frame of the animation
+     */
+    public void UpdateModelAnimation(Model model, ModelAnimation anim, int frame) {
+        if (model.boneMatrices == null) {
+            return;
+        }
+
+        //UpdateModelAnimationEx(model, anim, frame, anim, frame, 0.0f);
+
+        // Update model animated bones transform matrices for a given frame
+        if ((anim.keyframeCount > 0) && (model.skeleton.bones != null) && (anim.keyframePoses != null)) {
+            // Get frame and blending from frame factor required
+            int currentFrame = (int)frame;
+            int nextFrame = currentFrame + 1;
+            float blend = frame - currentFrame;
+            blend = Clamp(blend, 0.0f, 1.0f);
+            if (currentFrame >= anim.keyframeCount) currentFrame = currentFrame%anim.keyframeCount;
+            if (nextFrame >= anim.keyframeCount) nextFrame = nextFrame%anim.keyframeCount;
+
+            Matrix bindPoseMatrix = new Matrix();
+            Matrix currentPoseMatrix = new Matrix();
+
+            // Update all bones and bone matrices of model
+            for (int boneIndex = 0; boneIndex < model.skeleton.boneCount; boneIndex++) {
+                // Compute interpolated pose between current and next frame
+                // NOTE: Storing animation frame data in model.currentPose
+                model.currentPose[boneIndex].translation = Vector3Lerp(
+                        anim.keyframePoses[currentFrame][boneIndex].translation,
+                        anim.keyframePoses[nextFrame][boneIndex].translation, blend);
+                model.currentPose[boneIndex].rotation = QuaternionSlerp(
+                        anim.keyframePoses[currentFrame][boneIndex].rotation,
+                        anim.keyframePoses[nextFrame][boneIndex].rotation, blend);
+                model.currentPose[boneIndex].scale = Vector3Lerp(
+                        anim.keyframePoses[currentFrame][boneIndex].scale,
+                        anim.keyframePoses[nextFrame][boneIndex].scale, blend);
+
+                // Compute runtime bone matrix from model current pose
+                //-----------------------------------------------------------------------------------
+                Transform bindPoseTransform = model.skeleton.bindPose[boneIndex].clone();
+                bindPoseMatrix = MatrixMultiply(
+                        MatrixMultiply(MatrixScale(bindPoseTransform.scale.x, bindPoseTransform.scale.y, bindPoseTransform.scale.z),
+                                       QuaternionToMatrix(bindPoseTransform.rotation)),
+                        MatrixTranslate(bindPoseTransform.translation.x, bindPoseTransform.translation.y, bindPoseTransform.translation.z));
+
+                Transform currentPoseTransform = model.currentPose[boneIndex].clone();
+                currentPoseMatrix = MatrixMultiply(
+                        MatrixMultiply(MatrixScale(currentPoseTransform.scale.x, currentPoseTransform.scale.y, currentPoseTransform.scale.z),
+                                       QuaternionToMatrix(currentPoseTransform.rotation)),
+                        MatrixTranslate(currentPoseTransform.translation.x, currentPoseTransform.translation.y, currentPoseTransform.translation.z));
+
+                model.boneMatrices[boneIndex] = MatrixMultiply(MatrixInvert(bindPoseMatrix), currentPoseMatrix);
+                //-----------------------------------------------------------------------------------
             }
 
-            // Get first mesh which have bones
-            int firstMeshWithBones = -1;
-
-            for (int i = 0; i < model.meshCount; i++) {
-                if (model.meshes[i].boneMatrices != null) {
-                    if (firstMeshWithBones == -1) {
-                        firstMeshWithBones = i;
-                        break;
-                    }
-                }
-            }
-
-            if (firstMeshWithBones != -1) {
-                // Update all bones and boneMatrices of first mesh with bones.
-                for (int boneId = 0; boneId < anim.boneCount; boneId++) {
-                    Transform bindTransform = model.bindPose[boneId];
-                    Matrix bindMatrix = MatrixMultiply(
-                            MatrixMultiply(
-                                    MatrixScale(bindTransform.scale.x, bindTransform.scale.y, bindTransform.scale.z),
-                                    QuaternionToMatrix(bindTransform.rotation)
-                            ),
-                            MatrixTranslate(bindTransform.translation.x, bindTransform.translation.y, bindTransform.translation.z)
-                    );
-
-                    Transform targetTransform = anim.framePoses[frame][boneId];
-                    Matrix targetMatrix = MatrixMultiply(
-                            MatrixMultiply(
-                                    MatrixScale(targetTransform.scale.x, targetTransform.scale.y, targetTransform.scale.z),
-                                    QuaternionToMatrix(targetTransform.rotation)
-                            ),
-                            MatrixTranslate(targetTransform.translation.x, targetTransform.translation.y, targetTransform.translation.z)
-                    );
-
-                    model.meshes[firstMeshWithBones].boneMatrices[boneId] = MatrixMultiply(MatrixInvert(bindMatrix), targetMatrix);
-                }
-
-                // Update remaining meshes with bones
-                // NOTE: Using deep copy because shallow copy results in double free with 'UnloadModel()'
-                for (int i = firstMeshWithBones + 1; i < model.meshCount; i++) {
-                    if (model.meshes[i].boneMatrices != null) {
-                        System.arraycopy(model.meshes[firstMeshWithBones].boneMatrices, 0, model.meshes[i].boneMatrices, 0, model.meshes[i].boneCount);
-                    }
-                }
-            }
+            // CPU skinning, updates CPU buffers and uploads them to GPU
+            // NOTE: On GPU skinning not supported, use CPU skinning
+            UpdateModelAnimationVertexBuffers(model);
         }
     }
 
-    // Update model animated vertex data (positions and normals) for a given frame
-    // NOTE: Updated data is uploaded to GPU
-    public void UpdateModelAnimation(Model model, ModelAnimation anim, int frame) {
-        UpdateModelAnimationBones(model, anim, frame);
+    /**
+     * Update model animation data (vertex buffers / bone matrices) for a specific pose, defined by two different animations at specific frames blended together ,br/>
+     * NOTE 1: Request frames could be fractional, using a lerp interpolation between two frames <br/>
+     * NOTE 2: Updated vertex animation data is uploaded to GPU in case of CPU skinning, for GPU skinning, bone matrices are uploaded to shader on DrawModelEx()
+     *
+     * @param model
+     * @param animA
+     * @param frameA
+     * @param animB
+     * @param frameB
+     * @param blend
+     */
+    public void UpdateModelAnimationEx(Model model, ModelAnimation animA, float frameA, ModelAnimation animB, float frameB, float blend) {
+        if (model.boneMatrices == null) return;
 
+        if ((animA.keyframeCount > 0) && (animA.keyframePoses != null) &&
+                (animB.keyframeCount > 0) && (animB.keyframePoses != null) &&
+                (blend >= 0.0f) && (blend <= 1.0f)) {
+            // Inter-frame interpolation values for first animation
+            int currentFrameA = (int)frameA%animA.keyframeCount;
+            int nextFrameA = currentFrameA + 1;
+            float blendA = frameA - currentFrameA;
+            blendA = Clamp(blendA, 0.0f, 1.0f);
+            if (currentFrameA >= animA.keyframeCount) currentFrameA = currentFrameA%animA.keyframeCount;
+            if (nextFrameA >= animA.keyframeCount) nextFrameA = nextFrameA%animA.keyframeCount;
+
+            // Inter-frame interpolation values for second animation
+            int currentFrameB = (int)frameB%animB.keyframeCount;
+            int nextFrameB = currentFrameB + 1;
+            float blendB = frameB - currentFrameB;
+            blendB = Clamp(blendB, 0.0f, 1.0f);
+            if (currentFrameB >= animB.keyframeCount) currentFrameB = currentFrameB%animB.keyframeCount;
+            if (nextFrameB >= animB.keyframeCount) nextFrameB = nextFrameB%animB.keyframeCount;
+
+            Matrix bindPoseMatrix = new Matrix();
+            Matrix currentPoseMatrix = new Matrix();
+
+            for (int boneIndex = 0; boneIndex < model.skeleton.boneCount; boneIndex++) {
+                // Get frame-interpolation for first animation
+                Vector3 frameATranslation = Vector3Lerp(
+                        animA.keyframePoses[currentFrameA][boneIndex].translation,
+                        animA.keyframePoses[nextFrameA][boneIndex].translation, blendA);
+                Quaternion frameARotation = QuaternionSlerp(
+                        animA.keyframePoses[currentFrameA][boneIndex].rotation,
+                        animA.keyframePoses[nextFrameA][boneIndex].rotation, blendA);
+                Vector3 frameAScale = Vector3Lerp(
+                        animA.keyframePoses[currentFrameA][boneIndex].scale,
+                        animA.keyframePoses[nextFrameA][boneIndex].scale, blendA);
+
+                // Get frame-interpolation for second animation
+                Vector3 frameBTranslation = Vector3Lerp(
+                        animB.keyframePoses[currentFrameB][boneIndex].translation,
+                        animB.keyframePoses[nextFrameB][boneIndex].translation, blendB);
+                Quaternion frameBRotation = QuaternionSlerp(
+                        animB.keyframePoses[currentFrameB][boneIndex].rotation,
+                        animB.keyframePoses[nextFrameB][boneIndex].rotation, blendB);
+                Vector3 frameBScale = Vector3Lerp(
+                        animB.keyframePoses[currentFrameB][boneIndex].scale,
+                        animB.keyframePoses[nextFrameB][boneIndex].scale, blendB);
+
+                // Compute interpolated pose between both animations frames
+                // NOTE: Storing animation frame data in model.currentPose
+                model.currentPose[boneIndex].translation = Vector3Lerp(frameATranslation, frameBTranslation, blend);
+                model.currentPose[boneIndex].rotation = QuaternionSlerp(frameARotation, frameBRotation, blend);
+                model.currentPose[boneIndex].scale = Vector3Lerp(frameAScale, frameBScale, blend);
+
+                // Compute runtime bone matrix from model current pose
+                //-----------------------------------------------------------------------------------
+                Transform bindPoseTransform = model.skeleton.bindPose[boneIndex].clone();
+                bindPoseMatrix = MatrixMultiply(
+                        MatrixMultiply(MatrixScale(bindPoseTransform.scale.x, bindPoseTransform.scale.y, bindPoseTransform.scale.z),
+                                       QuaternionToMatrix(bindPoseTransform.rotation)),
+                        MatrixTranslate(bindPoseTransform.translation.x, bindPoseTransform.translation.y, bindPoseTransform.translation.z));
+
+                Transform currentPoseTransform = model.currentPose[boneIndex].clone();
+                currentPoseMatrix = MatrixMultiply(
+                        MatrixMultiply(MatrixScale(currentPoseTransform.scale.x, currentPoseTransform.scale.y, currentPoseTransform.scale.z),
+                                       QuaternionToMatrix(currentPoseTransform.rotation)),
+                        MatrixTranslate(currentPoseTransform.translation.x, currentPoseTransform.translation.y, currentPoseTransform.translation.z));
+
+                model.boneMatrices[boneIndex] = MatrixMultiply(MatrixInvert(bindPoseMatrix), currentPoseMatrix);
+                //-----------------------------------------------------------------------------------
+
+                /*
+                Vector3 outATranslation = animA.keyframePoses[currentFrameA][boneIndex].translation;
+                Quaternion outARotation = animA.keyframePoses[currentFrameA][boneIndex].rotation;
+                Vector3 outAScale = animA.keyframePoses[currentFrameA][boneIndex].scale;
+    
+                Vector3 outBTranslation = animB.keyframePoses[currentFrameB][boneIndex].translation;
+                Quaternion outBRotation = animB.keyframePoses[currentFrameB][boneIndex].rotation;
+                Vector3 outBScale = animB.keyframePoses[currentFrameB][boneIndex].scale;
+    
+                // Invert bind pose transformation
+                Vector3 invBindTranslation = Vector3RotateByQuaternion(
+                    Vector3Negate(model.skeleton.bindPose[boneIndex].translation),
+                    QuaternionInvert(model.skeleton.bindPose[boneIndex].rotation));
+                Quaternion invBindRotation = QuaternionInvert(model.skeleton.bindPose[boneIndex].rotation);
+                Vector3 invBindScale = Vector3Divide((Vector3){ 1.0f, 1.0f, 1.0f }, model.skeleton.bindPose[boneIndex].scale);
+    
+                Vector3 boneTranslation = Vector3Add(Vector3RotateByQuaternion(
+                    Vector3Multiply(model.currentPose[boneIndex].scale, invBindTranslation),
+                        model.currentPose[boneIndex].rotation),
+                        model.currentPose[boneIndex].translation);
+                Quaternion boneRotation = QuaternionMultiply(model.currentPose[boneIndex].rotation, invBindRotation);
+                Vector3 boneScale = Vector3Multiply(model.currentPose[boneIndex].scale, invBindScale);
+    
+                model.boneMatrices[boneIndex] = MatrixMultiply(
+                    MatrixMultiply(QuaternionToMatrix(boneRotation),
+                        MatrixTranslate(boneTranslation.x, boneTranslation.y, boneTranslation.z)),
+                    MatrixScale(boneScale.x, boneScale.y, boneScale.z));
+                */
+            }
+
+            // CPU skinning, updates CPU buffers and uploads them to GPU (if available)
+            // NOTE: Fallback in case GPU skinning is not supported or enabled
+            UpdateModelAnimationVertexBuffers(model);
+        }
+    }
+
+    /**
+     * Update model vertex animation buffers (positions and normals) <br/>
+     * NOTE: Required for CPU skinning, uploads animated vertex buffers to GPU
+     * @param model
+     */
+    private void UpdateModelAnimationVertexBuffers(Model model) {
         for (int m = 0; m < model.meshCount; m++) {
             Mesh mesh = model.meshes[m];
-            Vector3 animVertex = new Vector3();
-            Vector3 animNormal = new Vector3();
-            int boneId = 0;
+            Vector3 animVertex;
+            Vector3 animNormal;
+            int vertexValuesCount = mesh.vertexCount*3;
+
+            int boneIndex = 0;
             int boneCounter = 0;
             float boneWeight = 0.0f;
-            boolean updated = false; // Flag to check when anim vertex information is updated
-            int vValues = mesh.vertexCount * 3;
+            boolean bufferUpdateRequired = false; // Flag to check when anim vertex information is updated
 
-            // Skip if missing bone data, causes segfault without on some models
-            if ((mesh.boneWeights == null) || (mesh.boneIds == null)) {
+            // Skip if missing bone data or missing anim buffers initialization
+            if ((mesh.boneWeights == null) || (mesh.boneIndices == null) || (mesh.animVertices == null) || (mesh.animNormals == null)) {
                 continue;
             }
 
-            for (int vCounter = 0; vCounter < vValues; vCounter += 3) {
+            for (int vCounter = 0; vCounter < vertexValuesCount; vCounter += 3) {
                 mesh.animVertices[vCounter] = 0;
                 mesh.animVertices[vCounter + 1] = 0;
                 mesh.animVertices[vCounter + 2] = 0;
@@ -2616,72 +2860,68 @@ public class rModels {
                 // Iterates over 4 bones per vertex
                 for (int j = 0; j < 4; j++, boneCounter++) {
                     boneWeight = mesh.boneWeights[boneCounter];
-                    boneId = mesh.boneIds[boneCounter];
+                    boneIndex = mesh.boneIndices[boneCounter];
 
                     // Early stop when no transformation will be applied
-                    if (boneWeight == 0.0f) {
-                        continue;
-                    }
+                    if (boneWeight == 0.0f) continue;
                     animVertex = new Vector3(mesh.vertices[vCounter], mesh.vertices[vCounter + 1], mesh.vertices[vCounter + 2]);
-                    animVertex = Vector3Transform(animVertex, model.meshes[m].boneMatrices[boneId]);
-                    mesh.animVertices[vCounter] += animVertex.x * boneWeight;
-                    mesh.animVertices[vCounter + 1] += animVertex.y * boneWeight;
-                    mesh.animVertices[vCounter + 2] += animVertex.z * boneWeight;
-                    updated = true;
+                    animVertex = Vector3Transform(animVertex, model.boneMatrices[boneIndex]);
+                    mesh.animVertices[vCounter] += animVertex.x*boneWeight;
+                    mesh.animVertices[vCounter + 1] += animVertex.y*boneWeight;
+                    mesh.animVertices[vCounter + 2] += animVertex.z*boneWeight;
+                    bufferUpdateRequired = true;
 
                     // Normals processing
-                    // NOTE: We use meshes.baseNormals (default normal) to calculate meshes.normals (animated normals)
-                    if ((mesh.normals != null) && (mesh.animNormals != null)) {
+                    // NOTE: Using meshes.baseNormals (default normal) to calculate meshes.normals (animated normals)
+                    if ((mesh.normals != null) && (mesh.animNormals != null )) {
                         animNormal = new Vector3(mesh.normals[vCounter], mesh.normals[vCounter + 1], mesh.normals[vCounter + 2]);
-                        animNormal = Vector3Transform(animNormal, MatrixTranspose(MatrixInvert(model.meshes[m].boneMatrices[boneId])));
-                        mesh.animNormals[vCounter] += animNormal.x * boneWeight;
-                        mesh.animNormals[vCounter + 1] += animNormal.y * boneWeight;
-                        mesh.animNormals[vCounter + 2] += animNormal.z * boneWeight;
+                        animNormal = Vector3Transform(animNormal, MatrixTranspose(MatrixInvert(model.boneMatrices[boneIndex])));
+                        mesh.animNormals[vCounter] += animNormal.x*boneWeight;
+                        mesh.animNormals[vCounter + 1] += animNormal.y*boneWeight;
+                        mesh.animNormals[vCounter + 2] += animNormal.z*boneWeight;
                     }
                 }
             }
 
-            if (updated) {
-                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[0], mesh.animVertices, 0); // Update vertex position
+            if (bufferUpdateRequired) {
+                // Update GPU vertex buffers with updated data (position + normals)
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_POSITION.GetLocation()], mesh.animVertices, mesh.vertexCount*3*Float.BYTES);
                 if (mesh.normals != null) {
-                    context.rlgl.rlUpdateVertexBuffer(mesh.vboId[2], mesh.animNormals, 0); // Update vertex normals
+                    context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_NORMAL.GetLocation()], mesh.animNormals, mesh.vertexCount*3*Float.BYTES);
                 }
             }
         }
     }
 
-    // Unload animation array data
+    /**
+     * Unload animation array data
+     * @param animations Animation data to unload
+     */
+    @Contract(mutates = "param")
     public void UnloadModelAnimations(ModelAnimation[] animations) {
         for (ModelAnimation animation : animations) {
-            UnloadModelAnimation(animation);
+            for (int i = 0; i < animation.keyframeCount; i++) {
+                animation.keyframePoses[i] = null;
+            }
+
+            animation.keyframePoses = null;
         }
+        animations = null;
     }
 
-    // Unload animation data
-    public void UnloadModelAnimation(ModelAnimation anim) {
-        for (int i = 0; i < anim.frameCount; i++) {
-            anim.framePoses[i] = null;
-        }
-
-        anim.bones = null;
-        anim.framePoses = null;
-    }
-
-    // Check model animation skeleton match
-    // NOTE: Only number of bones and parent connections are checked
-    boolean IsModelAnimationValid(Model model, ModelAnimation anim) {
+    /**
+     * Check model animation skeleton match <br/>
+     * NOTE: Only number of bones and parent connections are checked
+     *
+     * @param model
+     * @param anim
+     * @return
+     */
+    public boolean IsModelAnimationValid(Model model, ModelAnimation anim) {
         boolean result = true;
 
-        if (model.boneCount != anim.boneCount) {
+        if (model.skeleton.boneCount != anim.boneCount) {
             result = false;
-        }
-        else {
-            for (int i = 0; i < model.boneCount; i++) {
-                if (model.bones[i].parent != anim.bones[i].parent) {
-                    result = false;
-                    break;
-                }
-            }
         }
 
         return result;
@@ -2689,7 +2929,13 @@ public class rModels {
 
     // MESH GENERATION
 
-    // Generate polygonal mesh
+    /**
+     * Generate polygonal mesh
+     *
+     * @param sides Number of sides on the polygon
+     * @param radius Distance from polygon center to the side
+     * @return Mesh for a polygon defined by the parameters
+     */
     public Mesh GenMeshPoly(int sides, float radius) {
         Mesh mesh = new Mesh();
 
@@ -2759,7 +3005,15 @@ public class rModels {
         return mesh;
     }
 
-    // Generate plane mesh (with subdivisions)
+    /**
+     * Generate plane mesh (with subdivisions)
+     *
+     * @param width Width of the plane
+     * @param length Length of the plane
+     * @param resX Width of the plane subdivisions
+     * @param resZ Length of the plane subdivisions
+     * @return Mesh of a plane defined by the parameters
+     */
     public Mesh GenMeshPlane(float width, float length, int resX, int resZ) {
         Mesh mesh = new Mesh();
 
@@ -2885,7 +3139,14 @@ public class rModels {
         return mesh;
     }
 
-    // Generated cuboid mesh
+    /**
+     * Generated cuboid mesh
+     *
+     * @param width Width of the cuboid
+     * @param height Height of the cuboid
+     * @param length Length of the cuboid
+     * @return Cuboid mesh defined by the parameters
+     */
     public Mesh GenMeshCube(float width, float height, float length) {
         Mesh mesh = new Mesh();
 
@@ -3031,7 +3292,14 @@ public class rModels {
         return mesh;
     }
 
-    // Generate sphere mesh (standard sphere)
+    /**
+     * Generate sphere mesh (standard sphere)
+     *
+     * @param radius Radius of the sphere
+     * @param rings Horizontal divisions of the sphere (Parallels)
+     * @param slices Vertical divisions of the sphere (Meridians)
+     * @return Sphere mesh defined by the parameters
+     */
     public Mesh GenMeshSphere(float radius, int rings, int slices) {
         Mesh mesh = new Mesh();
 
@@ -3078,7 +3346,14 @@ public class rModels {
         return mesh;
     }
 
-    // Generate hemi-sphere mesh (half sphere, no bottom cap)
+    /**
+     * Generate hemi-sphere mesh (half sphere, no bottom cap)
+     *
+     * @param radius Radius of the sphere
+     * @param rings Horizontal divisions of the sphere (Parallels)
+     * @param slices Vertical divisions of the sphere (Meridians)
+     * @return Hemisphere mesh defined by the parameters
+     */
     public Mesh GenMeshHemiSphere(float radius, int rings, int slices) {
         Mesh mesh = new Mesh();
 
@@ -3128,7 +3403,14 @@ public class rModels {
         return mesh;
     }
 
-    // Generate cylinder mesh
+    /**
+     * Generate cylinder mesh
+     *
+     * @param radius Distance from the center of the cylinder to the wall
+     * @param height Height of the cylinder
+     * @param slices Vertical divisions of the cylinder (Meridians)
+     * @return Hemisphere mesh defined by the parameters
+     */
     public Mesh GenMeshCylinder(float radius, float height, int slices) {
         Mesh mesh = new Mesh();
 
@@ -3194,7 +3476,14 @@ public class rModels {
         return mesh;
     }
 
-    // Generate cone/pyramid mesh
+    /**
+     * Generate cone/pyramid mesh
+     *
+     * @param radius Radius of the bottom face
+     * @param height Height of the cone
+     * @param slices Vertical divisions of the cylinder (Meridians)
+     * @return conical mesh defined by the parameters
+     */
     public Mesh GenMeshCone(float radius, float height, int slices) {
         Mesh mesh = new Mesh();
 
@@ -3251,7 +3540,15 @@ public class rModels {
         return mesh;
     }
 
-    // Generate torus mesh
+    /**
+     * Generate torus mesh
+     *
+     * @param radius Radius of the torus
+     * @param size Thickness of the torus
+     * @param radSeg Radial segments
+     * @param sides Vertical divisions of the torus (Meridians)
+     * @return Torus mesh defined by the parameters
+     */
     public Mesh GenMeshTorus(float radius, float size, int radSeg, int sides) {
         Mesh mesh = new Mesh();
 
@@ -3305,7 +3602,15 @@ public class rModels {
         return mesh;
     }
 
-    // Generate trefoil knot mesh
+    /**
+     * Generate trefoil knot mesh
+     *
+     * @param radius Radius of the knot
+     * @param size Thickness of the knot
+     * @param radSeg Radial segments
+     * @param sides Vertical divisions of the knot (Meridians)
+     * @return Trefoil knot mesh defined by the parameters
+     */
     public Mesh GenMeshKnot(float radius, float size, int radSeg, int sides) {
         Mesh mesh = new Mesh();
 
@@ -3357,8 +3662,14 @@ public class rModels {
         return mesh;
     }
 
-    // Generate a mesh from heightmap
-    // NOTE: Vertex data is uploaded to GPU
+    /**
+     * Generate a mesh from heightmap <br/>
+     * NOTE: Vertex data is uploaded to GPU
+     *
+     * @param heightmap {@code Image} containing heightmap data
+     * @param size {@code Vector3} containing the desired (Width, Height, Depth) of the mesh
+     * @return Heightmap defined by the image and size
+     */
     public Mesh GenMeshHeightmap(Image heightmap, Vector3 size) {
         Mesh mesh = new Mesh();
 
@@ -3483,8 +3794,13 @@ public class rModels {
         return mesh;
     }
 
-    // Generate a cubes mesh from pixel data
-    // NOTE: Vertex data is uploaded to GPU
+    /**
+     * Generate a cube mesh from pixel data <br/>
+     * NOTE: Vertex data is uploaded to the GPU
+     * @param cubicmap
+     * @param cubeSize
+     * @return
+     */
     public Mesh GenMeshCubicmap(Image cubicmap, Vector3 cubeSize) {
         Mesh mesh = new Mesh();
 
@@ -3505,13 +3821,16 @@ public class rModels {
         Vector2[] mapTexcoords = new Vector2[maxTriangles * 3];
         Vector3[] mapNormals = new Vector3[maxTriangles * 3];
 
-        // Define the 6 normals of the cube, we will combine them accordingly later...
+        // Define the 6 normals of the cube, combined accoridingly later
         Vector3 n1 = new Vector3(1.0f, 0.0f, 0.0f);
         Vector3 n2 = new Vector3(-1.0f, 0.0f, 0.0f);
         Vector3 n3 = new Vector3(0.0f, 1.0f, 0.0f);
         Vector3 n4 = new Vector3(0.0f, -1.0f, 0.0f);
         Vector3 n5 = new Vector3(0.0f, 0.0f, -1.0f);
         Vector3 n6 = new Vector3(0.0f, 0.0f, 1.0f);
+
+        // NOTE: Using texture rectangles to define different
+        // textures for top-bottom-front-back-right-left (6)
 
         Rectangle rightTexUV = new Rectangle(0.0f, 0.0f, 0.5f, 0.5f);
         Rectangle leftTexUV = new Rectangle(0.5f, 0.0f, 0.5f, 0.5f);
@@ -3521,8 +3840,8 @@ public class rModels {
         Rectangle bottomTexUV = new Rectangle(0.5f, 0.5f, 0.5f, 0.5f);
 
         for (int z = 0; z < cubicmap.height; ++z) {
-            for (int x = 0; x < cubicmap.width; ++x) {
-                // Define the 8 vertex of the cube, we will combine them accordingly later...
+            for (int x = 0; x < cubicmap.width; x++) {
+                // Define the 8 vertex of the cube, to be combined accordingly later...
                 Vector3 v1 = new Vector3(w * (x - 0.5f), h2, h * (z - 0.5f));
                 Vector3 v2 = new Vector3(w * (x - 0.5f), h2, h * (z + 0.5f));
                 Vector3 v3 = new Vector3(w * (x + 0.5f), h2, h * (z + 0.5f));
@@ -3532,7 +3851,7 @@ public class rModels {
                 Vector3 v7 = new Vector3(w * (x - 0.5f), 0, h * (z + 0.5f));
                 Vector3 v8 = new Vector3(w * (x + 0.5f), 0, h * (z + 0.5f));
 
-                // We check pixel color to be WHITE -> draw full cube
+                // Check pixel color to be WHITE -> draw full cube
                 if (COLOR_EQUAL(pixels[z * cubicmap.width + x], WHITE)) {
                     // Define triangles and checking collateral cubes
                     //------------------------------------------------
@@ -3704,7 +4023,7 @@ public class rModels {
                         tcCounter += 6;
                     }
                 }
-                // We check pixel color to be BLACK, we will only draw floor and roof
+                // Check pixel color to be BLACK, in that case only draw floor and roof
                 else if (COLOR_EQUAL(pixels[z * cubicmap.width + x], BLACK)) {
                     // Define top triangles (2 tris, 6 vertex --> v1-v2-v3, v1-v3-v4)
                     mapVertices[vCounter] = v1;
@@ -3811,8 +4130,13 @@ public class rModels {
 
     // END MESH GENERATION
 
-    // Compute mesh bounding box limits
-    // NOTE: minVertex and maxVertex should be transformed by model transform matrix
+    /**
+     * Compute mesh bounding box limits
+     * NOTE: resulting {@code BoundingBox} should be transformed by the model's transformation matrix
+     *
+     * @param mesh Mesh to evaluate
+     * @return {@code BoudingBox} defined by mesh
+     */
     public BoundingBox GetMeshBoundingBox(Mesh mesh) {
         // Get min and max vertex to construct bounds (AABB)
         Vector3 minVertex = new Vector3();
@@ -3832,35 +4156,74 @@ public class rModels {
         return new BoundingBox(minVertex, maxVertex);
     }
 
-    // Compute mesh tangents
-    // NOTE: To calculate mesh tangents and binormals we need mesh vertex positions and texture coordinates
-    // Implementation based on: https://answers.unity.com/questions/7789/calculating-tangents-vector4.html
+    /**
+     * Compute mesh tangents
+     * NOTE: To calculate mesh tangents and binormals, we need mesh vertex positions and texture coordinates
+     * @param mesh
+     * @link <a href="https://answers.unity.com/questions/7789/calculating-tangents-vector4.html">Implementation based on</a>
+     */
+    @Contract(mutates = "param")
     public void GenMeshTangents(Mesh mesh) {
-        if ((mesh.vertices == null) || (mesh.texcoords == null)) {
-            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Tangents generation requires texcoord vertex attribute data");
+        // Check if input mesh data is useful
+        if ((mesh == null) || (mesh.vertices == null) || (mesh.texcoords == null) || (mesh.normals == null)) {
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Tangents generation requires vertices, texcoords and normals vertex attribute data");
             return;
         }
 
-        mesh.tangents = new float[mesh.vertexCount * 4];
-
-        Vector3[] tan1 = new Vector3[mesh.vertexCount];
-        Vector3[] tan2 = new Vector3[mesh.vertexCount];
-
-        if (mesh.vertexCount % 3 != 0) {
-            context.tracelog.TRACELOG(LOG_WARNING, "MESH: vertexCount expected to be a multiple of 3. Expect uninitialized values.");
+        // Allocate or reallocate tangents data
+        if (mesh.tangents == null) {
+            mesh.tangents = new float[mesh.vertexCount*4];
+        }
+        else {
+            mesh.tangents = null;
+            mesh.tangents = new float[mesh.vertexCount*4];
         }
 
-        for (int i = 0; i < mesh.vertexCount - 3; i += 3) {
-            // Get triangle vertices
-            Vector3 v1 = new Vector3(mesh.vertices[(i) * 3], mesh.vertices[(i) * 3 + 1], mesh.vertices[(i) * 3 + 2]);
-            Vector3 v2 = new Vector3(mesh.vertices[(i + 1) * 3], mesh.vertices[(i + 1) * 3 + 1], mesh.vertices[(i + 1) * 3 + 2]);
-            Vector3 v3 = new Vector3(mesh.vertices[(i + 2) * 3], mesh.vertices[(i + 2) * 3 + 1], mesh.vertices[(i + 2) * 3 + 2]);
+        // Allocate temporary arrays for tangents calculation
+        Vector3[] tan1 = new Vector3[mesh.vertexCount];
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            tan1[i] = new Vector3();
+        }
+        Vector3[] tan2 = new Vector3[mesh.vertexCount];
+        for (int i = 0; i < mesh.vertexCount; i++) {
+            tan2[i] = new Vector3();
+        }
+
+        if (tan1 == null || tan2 == null) {
+            context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to allocate temporary memory for tangent calculation");
+            return;
+        }
+
+        // Process all triangles of the mesh
+        // 'triangleCount' must be always valid
+        for (int t = 0; t < mesh.triangleCount; t++) {
+            // Get triangle vertex indices
+            int i0 = 0, i1 = 0, i2 = 0;
+
+            if (mesh.indices != null) {
+                // Use indices if available
+                i0 = (int) mesh.indices[t*3 + 0];
+                i1 = (int) mesh.indices[t*3 + 1];
+                i2 = (int) mesh.indices[t*3 + 2];
+            }
+            else {
+                // Sequential access for non-indexed mesh
+                i0 = t*3 + 0;
+                i1 = t*3 + 1;
+                i2 = t*3 + 2;
+            }
+
+            // Get triangle vertices position
+            Vector3 v1 = new Vector3(mesh.vertices[i0*3 + 0], mesh.vertices[i0*3 + 1], mesh.vertices[i0*3 + 2]);
+            Vector3 v2 = new Vector3(mesh.vertices[i1*3 + 0], mesh.vertices[i1*3 + 1], mesh.vertices[i1*3 + 2]);
+            Vector3 v3 = new Vector3(mesh.vertices[i2*3 + 0], mesh.vertices[i2*3 + 1], mesh.vertices[i2*3 + 2]);
 
             // Get triangle texcoords
-            Vector2 uv1 = new Vector2(mesh.texcoords[(i) * 2], mesh.texcoords[(i) * 2 + 1]);
-            Vector2 uv2 = new Vector2(mesh.texcoords[(i + 1) * 2], mesh.texcoords[(i + 1) * 2 + 1]);
-            Vector2 uv3 = new Vector2(mesh.texcoords[(i + 2) * 2], mesh.texcoords[(i + 2) * 2 + 1]);
+            Vector2 uv1 = new Vector2(mesh.texcoords[i0*2 + 0], mesh.texcoords[i0*2 + 1]);
+            Vector2 uv2 = new Vector2(mesh.texcoords[i1*2 + 0], mesh.texcoords[i1*2 + 1]);
+            Vector2 uv3 = new Vector2(mesh.texcoords[i2*2 + 0], mesh.texcoords[i2*2 + 1]);
 
+            // Calculate triangle edges
             float x1 = v2.x - v1.x;
             float y1 = v2.y - v1.y;
             float z1 = v2.z - v1.z;
@@ -3868,59 +4231,88 @@ public class rModels {
             float y2 = v3.y - v1.y;
             float z2 = v3.z - v1.z;
 
+            // Calculate texture coordinate differences
             float s1 = uv2.x - uv1.x;
             float t1 = uv2.y - uv1.y;
             float s2 = uv3.x - uv1.x;
             float t2 = uv3.y - uv1.y;
 
-            float div = s1 * t2 - s2 * t1;
-            float r = (div == 0.0f) ? 0.0f : 1.0f / div;
+            // Calculate denominator and check for degenerate UV
+            float div = s1*t2 - s2*t1;
+            float r = (Math.abs(div) < 0.0001f)? 0.0f : 1.0f/div;
 
-            Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
-            Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+            // Calculate tangent and bitangent directions
+            Vector3 sdir = new Vector3((t2*x1 - t1*x2)*r, (t2*y1 - t1*y2)*r, (t2*z1 - t1*z2)*r);
+            Vector3 tdir = new Vector3((s1*x2 - s2*x1)*r, (s1*y2 - s2*y1)*r, (s1*z2 - s2*z1)*r);
 
-            tan1[i] = sdir;
-            tan1[i + 1] = sdir;
-            tan1[i + 2] = sdir;
+            // Accumulate tangents and bitangents for each vertex of the triangle
+            tan1[i0] = Vector3Add(tan1[i0], sdir);
+            tan1[i1] = Vector3Add(tan1[i1], sdir);
+            tan1[i2] = Vector3Add(tan1[i2], sdir);
 
-            tan2[i] = tdir;
-            tan2[i + 1] = tdir;
-            tan2[i + 2] = tdir;
+            tan2[i0] = Vector3Add(tan2[i0], tdir);
+            tan2[i1] = Vector3Add(tan2[i1], tdir);
+            tan2[i2] = Vector3Add(tan2[i2], tdir);
         }
 
-        // Compute tangents considering normals
+        // Calculate final tangents for each vertex
         for (int i = 0; i < mesh.vertexCount; i++) {
-            Vector3 normal = new Vector3(mesh.normals[i * 3], mesh.normals[i * 3 + 1], mesh.normals[i * 3 + 2]);
+            Vector3 normal = new Vector3(mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2]);
             Vector3 tangent = tan1[i];
 
-            // TODO: Review, not sure if tangent computation is right, just used reference proposed maths...
-            if (COMPUTE_TANGENTS_METHOD_01) {
-                Vector3 tmp = Vector3Subtract(tangent, Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
-                tmp = Vector3Normalize(tmp);
-                mesh.tangents[i * 4] = tmp.x;
-                mesh.tangents[i * 4 + 1] = tmp.y;
-                mesh.tangents[i * 4 + 2] = tmp.z;
-                mesh.tangents[i * 4 + 3] = 1.0f;
+            // Handle zero tangent (can happen with degenerate UVs)
+            if (Vector3Length(tangent) < 0.0001f) {
+                // Create a tangent perpendicular to the normal
+                if (Math.abs(normal.z) > 0.707f) tangent = new Vector3(1.0f, 0.0f, 0.0f);
+                else tangent = Vector3Normalize(new Vector3(-normal.y, normal.x, 0.0f ));
+
+                mesh.tangents[i*4 + 0] = tangent.x;
+                mesh.tangents[i*4 + 1] = tangent.y;
+                mesh.tangents[i*4 + 2] = tangent.z;
+                mesh.tangents[i*4 + 3] = 1.0f;
+                continue;
+            }
+
+            // Gram-Schmidt orthogonalization to make tangent orthogonal to normal
+            // T_prime = T - N*dot(N, T)
+            Vector3 orthogonalized = Vector3Subtract(tangent, Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
+
+            // Handle cases where orthogonalized vector is too small
+            if (Vector3Length(orthogonalized) < 0.0001f) {
+                // Create a tangent perpendicular to the normal
+                if (Math.abs(normal.z) > 0.707f) orthogonalized = new Vector3(1.0f, 0.0f, 0.0f);
+                else orthogonalized = Vector3Normalize(new Vector3(-normal.y, normal.x, 0.0f));
             }
             else {
-                Vector3OrthoNormalize(normal, tangent);
-                mesh.tangents[i * 4] = tangent.x;
-                mesh.tangents[i * 4 + 1] = tangent.y;
-                mesh.tangents[i * 4 + 2] = tangent.z;
-                mesh.tangents[i * 4 + 3] = (Vector3DotProduct(Vector3CrossProduct(normal, tangent), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
+                // Normalize the orthogonalized tangent
+                orthogonalized = Vector3Normalize(orthogonalized);
             }
+
+            // Store the calculated tangent
+            mesh.tangents[i*4 + 0] = orthogonalized.x;
+            mesh.tangents[i*4 + 1] = orthogonalized.y;
+            mesh.tangents[i*4 + 2] = orthogonalized.z;
+
+            // Calculate the handedness (w component)
+            mesh.tangents[i*4 + 3] = (Vector3DotProduct(Vector3CrossProduct(normal, orthogonalized), tan2[i]) < 0.0f)? -1.0f : 1.0f;
         }
 
+        // Free temporary arrays
+        tan1 = null;
+        tan2 = null;
+
+        // Update vertex buffers if available
         if (mesh.vboId != null) {
             if (mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
-                // Update existing vertex buffer
-                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount * 4);
+                // Update existing tangent vertex buffer
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount*4*Float.BYTES);
             }
             else {
-                // Load a new tangent attributes buffer
+                // Create new tangent vertex buffer
                 mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, false);
             }
 
+            // Set up vertex attributes for shader
             context.rlgl.rlEnableVertexArray(mesh.vaoId);
             context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, 4, RL_FLOAT, false, 0, 0);
             context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT);
@@ -3930,7 +4322,14 @@ public class rModels {
         context.tracelog.TRACELOG(LOG_INFO, "MESH: Tangents data computed and uploaded for provided mesh");
     }
 
-    // Draw a model (with texture if set)
+    /**
+     * Draw a model (with texture if set)
+     *
+     * @param model Model to draw
+     * @param position Position to draw model at
+     * @param scale Amount to scale model by
+     * @param tint Tint to apply when drawing model
+     */
     public void DrawModel(Model model, Vector3 position, float scale, Color tint) {
         Vector3 vScale = new Vector3(scale, scale, scale);
         Vector3 rotationAxis = new Vector3(0.0f, 1.0f, 0.0f);
@@ -3938,7 +4337,16 @@ public class rModels {
         DrawModelEx(model, position, rotationAxis, 0.0f, vScale, tint);
     }
 
-    // Draw a model with extended parameters
+    /**
+     * Draw a model with extended parameters
+     *
+     * @param model Model to draw
+     * @param position Position to draw model at
+     * @param rotationAxis Axis about which to rotate model
+     * @param rotationAngle Amount to rotate model
+     * @param scale Amount to scale model on each axis by
+     * @param tint Tint to apply when drawing model
+     */
     public void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
         // Calculate transformation matrix from function parameters
         // Get transform matrix (rotation -> scale -> translation)
@@ -3951,26 +4359,41 @@ public class rModels {
         Matrix transform = MatrixMultiply(model.transform, matTransform);
 
         for (int i = 0; i < model.meshCount; i++) {
-            Color color = new Color(
-                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.r,
-                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.g,
-                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.b,
-                    model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.a
-            );
+            Material mat = model.materials[model.meshMaterial[i]];
+            Color colDiffuse = mat.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color;
 
-            Color colorTint = new Color(255, 255, 255, 255);
-            colorTint.r = (int) ((color.r * tint.r) / 255.0f);
-            colorTint.g = (int) ((color.g * tint.g) / 255.0f);
-            colorTint.b = (int) ((color.b * tint.b) / 255.0f);
-            colorTint.a = (int) ((color.a * tint.a) / 255.0f);
+            // Applying color tint directly to material diffuse map,
+            // because is comes as an input paramter to the function
+            Color colTinted = new Color();
+            colTinted.r = ((colDiffuse.r * tint.r)/255);
+            colTinted.g = ((colDiffuse.g * tint.g)/255);
+            colTinted.b = ((colDiffuse.b * tint.b)/255);
+            colTinted.a = ((colDiffuse.a * tint.a)/255);
 
-            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = colorTint;
-            DrawMesh(model.meshes[i], model.materials[model.meshMaterial[i]], transform);
-            model.materials[model.meshMaterial[i]].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = color;
+            mat.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = colTinted;
+
+            // Upload runtime bone transforms matrices, to compute skinning on the shader (GPU-skinning)
+            // NOTE: Required location must be found and Mesh bones indices and weights must be also uploaded to shader
+            if ((mat.shader.locs != null) && (mat.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && (model.boneMatrices != null)) {
+                context.rlgl.rlEnableShader(mat.shader.id); // Enable shader to set bone transform matrices
+                context.rlgl.rlSetUniformMatrices(mat.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()], model.boneMatrices);
+            }
+
+            DrawMesh(model.meshes[i], mat, model.transform);
+
+            // Restore material diffuse map color (before tint applied)
+            mat.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = colDiffuse;
         }
     }
 
-    // Draw a model wires (with texture if set)
+    /**
+     * Draw a model wires (with texture if set)
+     *
+     * @param model Model to draw
+     * @param position Position to draw model at
+     * @param scale Amount to scale model by
+     * @param tint Tint to apply when drawing model
+     */
     public void DrawModelWires(Model model, Vector3 position, float scale, Color tint) {
         context.rlgl.rlEnableWireMode();
 
@@ -3979,7 +4402,16 @@ public class rModels {
         context.rlgl.rlDisableWireMode();
     }
 
-    // Draw a model wires (with texture if set) with extended parameters
+    /**
+     * Draw a model wires (with texture if set) with extended parameters
+     *
+     * @param model Model to draw
+     * @param position Position to draw model at
+     * @param rotationAxis Axis about which to rotate model
+     * @param rotationAngle Amount to rotate model
+     * @param scale Amount to scale model on each axis by
+     * @param tint Tint to apply when drawing model
+     */
     public void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
         context.rlgl.rlEnableWireMode();
 
@@ -3988,36 +4420,31 @@ public class rModels {
         context.rlgl.rlDisableWireMode();
     }
 
-    // Draw a model points
-    public void DrawModelPoints(Model model, Vector3 position, float scale, Color tint) {
-        context.rlgl.rlEnablePointMode();
-        context.rlgl.rlDisableBackfaceCulling();
-
-        DrawModel(model, position, scale, tint);
-
-        context.rlgl.rlEnableBackfaceCulling();
-        context.rlgl.rlDisableWireMode();
-    }
-
-    // Draw a model points
-    public void DrawModelPointsEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
-        context.rlgl.rlEnablePointMode();
-        context.rlgl.rlDisableBackfaceCulling();
-
-        DrawModelEx(model, position, rotationAxis, rotationAngle, scale, tint);
-
-        context.rlgl.rlEnableBackfaceCulling();
-        context.rlgl.rlDisableWireMode();
-    }
-
-    // Draw a billboard
+    /**
+     * Draw a billboard
+     *
+     * @param camera Camera to use when drawing billboard
+     * @param texture Texture to draw as a billboard
+     * @param position Position in the world to draw the billboard
+     * @param scale Scaling factor used when drawing the billoard
+     * @param tint Color tint to apply when drawing billboard
+     */
     public void DrawBillboard(Camera3D camera, Texture2D texture, Vector3 position, float scale, Color tint) {
         Rectangle source = new Rectangle(0.0f, 0.0f, (float) texture.width, (float) texture.height);
 
         DrawBillboardRec(camera, texture, source, position, new Vector2(scale * Math.abs(source.width / source.height), scale), tint);
     }
 
-    // Draw a billboard (part of a texture defined by a rectangle)
+    /**
+     * Draw a billboard from part of a texture defined by a rectangle
+     *
+     * @param camera Camera to use when drawing billboard
+     * @param texture Texture to draw as a billboard
+     * @param source Region of the texture to render
+     * @param position Position in the world to draw the billboard
+     * @param size (Width, Height) pair defining billboard size
+     * @param tint Color tint to apply when drawing billboard
+     */
     public void DrawBillboardRec(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector2 size, Color tint) {
         // NOTE: Billboard locked on axis-Y
         Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
@@ -4025,7 +4452,19 @@ public class rModels {
         DrawBillboardPro(camera, texture, source, position, up, size, Vector2Scale(size, 0.5f), 0.0f, tint);
     }
 
-    // Draw a billboard with additional parameters
+    /**
+     * Draw a billboard with additional parameters
+     *
+     * @param camera Camera to use when drawing billboard
+     * @param texture Texture to draw as a billboard
+     * @param source Region of the texture to render
+     * @param position Position in the world to draw the billboard
+     * @param up Upwards pointing vector of the billboard
+     * @param size (Width, Height) pair defining billboard size
+     * @param origin Centerpoint within the billboard
+     * @param rotation Rotation applied to the billboard about the up vector, in degrees
+     * @param tint Color tint to apply when drawing billboard
+     */
     public void DrawBillboardPro(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint) {
         // Compute the up vector and the right vector
         Matrix matView = MatrixLookAt(camera.position, camera.target, camera.up);
@@ -4035,13 +4474,13 @@ public class rModels {
 
         // Flip the content of the billboard while maintaining the counterclockwise edge rendering order
         if (size.x < 0.0f) {
-            source.x += size.x;
+            source.x -= size.x;
             source.width *= -1.0;
             right = Vector3Negate(right);
             origin.x *= -1.0f;
         }
         if (size.y < 0.0f) {
-            source.y += size.y;
+            source.y -= size.y;
             source.height *= -1.0;
             up = Vector3Negate(up);
             origin.y *= -1.0f;
@@ -4100,7 +4539,12 @@ public class rModels {
         context.rlgl.rlSetTexture(0);
     }
 
-    // Draw a bounding box with wires
+    /**
+     * Draw a bounding box with wires
+     *
+     * @param box BoundingBox to draw
+     * @param color Color to draw wires
+     */
     public void DrawBoundingBox(BoundingBox box, Color color) {
         Vector3 size = new Vector3();
 
@@ -4113,8 +4557,17 @@ public class rModels {
         DrawCubeWires(center, size.x, size.y, size.z, color);
     }
 
-    // Check collision between two spheres
+    /**
+     * Check collision between two spheres
+     *
+     * @param center1 Center point of sphere 1
+     * @param radius1 Radius of sphere 1
+     * @param center2 Center point of sphere 2
+     * @param radius2 Radius of sphere 2
+     * @return {@code true} if the two spheres overlap
+     */
     public boolean CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2) {
+        boolean collision = false;
 
         // Simple way to check for collision, just checking distance between two points
         // Unfortunately, sqrtf() is a costly operation, so we avoid it with following solution
@@ -4129,12 +4582,22 @@ public class rModels {
         */
 
         // Check for distances squared to avoid sqrtf()
+        float radSum = radius1 + radius2;
 
-        return Vector3DotProduct(Vector3Subtract(center2, center1), Vector3Subtract(center2, center1)) <= (radius1 + radius2) * (radius1 + radius2);
+        if (Vector3DistanceSqr(center1, center2) <= (radSum*radSum)) {
+            collision = true;
+        }
+
+        return collision;
     }
 
-    // Check collision between two boxes
-    // NOTE: Boxes are defined by two points minimum and maximum
+    /**
+     * Check collision between two boxes
+     *
+     * @param box1 First {@code BoundingBox} to evaluate
+     * @param box2 Second {@code BoundingBox} to evaluate
+     * @return {@code true} if the {@code BoundingBox}es overlap
+     */
     public boolean CheckCollisionBoxes(BoundingBox box1, BoundingBox box2) {
         boolean collision = true;
 
@@ -4153,41 +4616,39 @@ public class rModels {
         return collision;
     }
 
-    // Check collision between box and sphere
+    /**
+     * Check collision between box and sphere
+     *
+     * @param box {@code BoundingBox} to evaluate
+     * @param center Center point of the sphere
+     * @param radius Radius of the sphere
+     * @return {@code true} if there is overlap between the two shapes
+     */
     public boolean CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius) {
         boolean collision = false;
 
-        float dmin = 0;
+        Vector3 closestPoint = new Vector3(
+                Clamp(center.x, box.min.x, box.max.x),
+                Clamp(center.y, box.min.y, box.max.y),
+                Clamp(center.z, box.min.z, box.max.z)
+        );
 
-        if (center.x < box.min.x) {
-            dmin += Math.pow(center.x - box.min.x, 2);
-        }
-        else if (center.x > box.max.x) {
-            dmin += Math.pow(center.x - box.max.x, 2);
-        }
-
-        if (center.y < box.min.y) {
-            dmin += Math.pow(center.y - box.min.y, 2);
-        }
-        else if (center.y > box.max.y) {
-            dmin += Math.pow(center.y - box.max.y, 2);
-        }
-
-        if (center.z < box.min.z) {
-            dmin += Math.pow(center.z - box.min.z, 2);
-        }
-        else if (center.z > box.max.z) {
-            dmin += Math.pow(center.z - box.max.z, 2);
-        }
-
-        if (dmin <= (radius * radius)) {
+        if (Vector3DistanceSqr(center, closestPoint) <= (radius*radius)) {
             collision = true;
         }
 
         return collision;
     }
 
-    // Get collision info between ray and sphere
+    /**
+     * Get Collision info between ray and sphere
+     *
+     * @param ray {@code Ray} to evaluate
+     * @param center Center point of the sphere
+     * @param radius Radius of the sphere
+     * @return {@code RayCollision} object containing collision information
+     * @see RayCollision
+     */
     public RayCollision GetRayCollisionSphere(Ray ray, Vector3 center, float radius) {
         RayCollision collision = new RayCollision();
 
@@ -4221,11 +4682,18 @@ public class rModels {
         return collision;
     }
 
-    // Get collision info between ray and box
+    /**
+     * Get collision info between a Ray and a BoundingBox
+     *
+     * @param ray {@code Ray} to evaluate
+     * @param box {@code BoundingBox} to evaluate
+     * @return {@code RayCollision} object containing collision information
+     * @see RayCollision
+     */
     public RayCollision GetRayCollisionBox(Ray ray, BoundingBox box) {
         RayCollision collision = new RayCollision();
 
-        // Note: If ray.position is inside the box, the distance is negative (as if the ray was reversed)
+        // NOTE: If ray.position is inside the box, the distance is negative (as if the ray was reversed)
         // Reversing ray.direction will give use the correct result
         boolean insideBox = (ray.position.x > box.min.x) && (ray.position.x < box.max.x) &&
                 (ray.position.y > box.min.y) && (ray.position.y < box.max.y) &&
@@ -4259,7 +4727,7 @@ public class rModels {
         // Get vector center point->hit point
         collision.normal = Vector3Subtract(collision.point, collision.normal);
         // Scale vector to unit cube
-        // NOTE: We use an additional .01 to fix numerical errors
+        // NOTE: Use an additional .01 to fix numerical errors
         collision.normal = Vector3Scale(collision.normal, 2.01f);
         collision.normal = Vector3Divide(collision.normal, Vector3Subtract(box.max, box.min));
         // The relevant elemets of the vector are now slightly larger than 1.0f (or smaller than -1.0f)
@@ -4281,7 +4749,15 @@ public class rModels {
         return collision;
     }
 
-    // Get collision info between ray and mesh
+    /**
+     * Get collision info between ray and mesh
+     *
+     * @param ray {@code Ray} to evaluate
+     * @param mesh {@code Mesh} to evaluate
+     * @param transform Transformation matrix to be used against the {@code mesh}
+     * @return {@code RayCollision} object containing collision information
+     * @see RayCollision
+     */
     public RayCollision GetRayCollisionMesh(Ray ray, Mesh mesh, Matrix transform) {
         RayCollision collision = new RayCollision();
 
@@ -4327,9 +4803,18 @@ public class rModels {
         return collision;
     }
 
-    // Get collision info between ray and triangle
-    // NOTE: The points are expected to be in counter-clockwise winding
-    // NOTE: Based on https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+    /**
+     * Get collision info between ray and triangle <br/>
+     * NOTE: The points are expected to be given in counter-clockwise winding
+     *
+     * @param ray {@code Ray} to evaluate
+     * @param p1 First vertex of the triangle
+     * @param p2 Second vertex of the triangle
+     * @param p3 Third vertex of the triangle
+     * @return {@code RayCollision} object containing collision information
+     * @see RayCollision
+     * @link <a href="https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm">Based on Trumbore Intersection Algorithm</a>
+     */
     public RayCollision GetRayCollisionTriangle(Ray ray, Vector3 p1, Vector3 p2, Vector3 p3) {
         float EPSILON = 0.000001f;        // A small number
 
@@ -4391,8 +4876,18 @@ public class rModels {
         return collision;
     }
 
-    // Get collision info between ray and quad
-    // NOTE: The points are expected to be in counter-clockwise winding
+    /**
+     * Get collision info between ray and quad <br/>
+     * NOTE: The points are expected to be given in counter-clockwise winding
+     *
+     * @param ray {@code Ray} to evaluate
+     * @param p1 First vertex of the quad
+     * @param p2 Second vertex of the quad
+     * @param p3 Third vertex of the quad
+     * @param p4 Fourth vertex of the quad
+     * @return {@code RayCollision} object containing collision information
+     * @see RayCollision
+     */
     public RayCollision GetRayCollisionQuad(Ray ray, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4) {
         RayCollision collision = new RayCollision();
 
@@ -4406,32 +4901,46 @@ public class rModels {
     }
 
     //----------------------------------------------------------------------------------
-    // Module specific Functions Definition
+    // Module Internal Functions Definition
     //----------------------------------------------------------------------------------
 
     // Build pose from parent joints
     // NOTE: Required for animations loading (required by IQM and GlTF)
+
+    /**
+     * Build pose from parent joints <br/>
+     * Required for animations loading
+     *
+     * @param bones
+     * @param transforms
+     * @return
+     */
     private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, Transform[] transforms) {
         Transform[] result = transforms.clone();
 
         for (int i = 0; i < bones.length; i++) {
-
             if (bones[i].parent >= 0) {
                 if (bones[i].parent > i) {
-                    context.tracelog.TRACELOG(LOG_WARNING, "Assumes bones are topologically sorted, but bone " + i + " has parent " + bones[i].parent + ". Skipping.");
+                    context.tracelog.TRACELOG(LOG_WARNING, "Skipping bone not topologically sorted: Bone %i has parent %i", i, bones[i].parent);
                     continue;
                 }
                 result[i].rotation = QuaternionMultiply(result[bones[i].parent].rotation, result[i].rotation);
+                result[i].scale = Vector3Multiply(result[i].scale, result[bones[i].parent].scale);
+                result[i].translation = Vector3Multiply(result[i].translation, result[bones[i].parent].scale);
                 result[i].translation = Vector3RotateByQuaternion(result[i].translation, result[bones[i].parent].rotation);
                 result[i].translation = Vector3Add(result[i].translation, result[bones[i].parent].translation);
-                result[i].scale = Vector3Multiply(result[i].scale, result[bones[i].parent].scale);
             }
         }
 
         return result;
     }
 
-    // Load OBJ mesh data
+    /**
+     * Load OBJ mesh data
+     *
+     * @param fileName Filepath of OBJ file
+     * @return {@code Model} as defined by the OBJ file
+     */
     private Model LoadOBJ(String fileName) {
         Model model = new Model();
 
@@ -4571,19 +5080,63 @@ public class rModels {
         return model;
     }
 
-    // Convert array of four bytes to int
+    /**
+     * Convert array of four bytes to int <br/>
+     * If an array with a length of less than four is passed, {@code -1} <br/>
+     * If an array with greater than four is passed, only [0...3] are considered.
+     *
+     * @param bytes Byte array of at least four bytes
+     * @return Integer value defined by bytes [0...3] of the byte array
+     */
     private static int IQM_toInt(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getInt();
+        if (bytes.length < Integer.BYTES) {
+            return -1;
+        }
+        else {
+            return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getInt();
+        }
     }
 
+    /**
+     * Convert array of four bytes to float <br/>
+     * If an array with a length of less than four is passed, {@code -1} <br/>
+     * If an array with greater than four is passed, only [0...3] are considered.
+     *
+     * @param bytes Byte array of at least four bytes
+     * @return Float value defined by bytes [0...3] of the byte array
+     */
     private static float IQM_toFloat(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getFloat();
+        if (bytes.length < Float.BYTES) {
+            return -1;
+        }
+        else {
+            return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getFloat();
+        }
     }
 
+    /**
+     * Convert array of two bytes to short <br/>
+     * If an array with a length of less than two is passed, {@code -1} <br/>
+     * If an array with greater than two is passed, only [0...1] are considered.
+     *
+     * @param bytes Byte array of at least two bytes
+     * @return Short value defined by bytes [0...1] of the byte array
+     */
     private static short IQM_toShort(byte[] bytes) {
-        return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getShort();
+        if (bytes.length < Short.BYTES) {
+            return -1;
+        }
+        else {
+            return ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()).getShort();
+        }
     }
 
+    /**
+     * Load IQM mesh data
+     *
+     * @param fileName Location of the IQM file
+     * @return {@code Model} as defined by the IQM file
+     */
     public Model LoadIQM(String fileName) {
         Model model = new Model();
 
@@ -4745,7 +5298,7 @@ public class rModels {
                 model.meshes[i].normals = new float[model.meshes[i].vertexCount * 3];
                 model.meshes[i].texcoords = new float[model.meshes[i].vertexCount * 2];
 
-                model.meshes[i].boneIds = new byte[model.meshes[i].vertexCount * 4];
+                model.meshes[i].boneIndices = new byte[model.meshes[i].vertexCount * 4];
                 model.meshes[i].boneWeights = new float[model.meshes[i].vertexCount * 4];
 
                 model.meshes[i].triangleCount = imesh[i].num_triangles;
@@ -4869,7 +5422,7 @@ public class rModels {
                         for (int m = 0; m < header.num_meshes; m++) {
                             int boneCounter = 0;
                             for (int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
-                                model.meshes[m].boneIds[boneCounter] = blendi[j];
+                                model.meshes[m].boneIndices[boneCounter] = blendi[j];
                                 boneCounter++;
                             }
                         }
@@ -4937,14 +5490,14 @@ public class rModels {
                 }
             }
 
-            model.boneCount = header.num_joints;
-            model.bones = new BoneInfo[header.num_joints];
-            model.bindPose = new Transform[header.num_joints];
+            model.skeleton.boneCount = header.num_joints;
+            model.skeleton.bones = new BoneInfo[header.num_joints];
+            model.skeleton.bindPose = new Transform[header.num_joints];
 
             for (int i = 0; i < header.num_joints; i++) {
                 // Bones
-                model.bones[i] = new BoneInfo();
-                model.bones[i].parent = joint[i].parent;
+                model.skeleton.bones[i] = new BoneInfo();
+                model.skeleton.bones[i].parent = joint[i].parent;
                 byte[] tmp = new byte[BONE_NAME_LENGTH];
                 char[] bonetmp = new char[BONE_NAME_LENGTH];
                 fileData.reset();
@@ -4953,28 +5506,28 @@ public class rModels {
                 for (int j = 0; j < BONE_NAME_LENGTH; j++) {
                     bonetmp[j] = (char) tmp[j];
                 }
-                model.bones[i].name = bonetmp.toString();
+                model.skeleton.bones[i].name = bonetmp.toString();
 
                 // Bind pose (base pose)
-                model.bindPose[i] = new Transform();
-                model.bindPose[i].translation.x = joint[i].translate[0];
-                model.bindPose[i].translation.y = joint[i].translate[1];
-                model.bindPose[i].translation.z = joint[i].translate[2];
+                model.skeleton.bindPose[i] = new Transform();
+                model.skeleton.bindPose[i].translation.x = joint[i].translate[0];
+                model.skeleton.bindPose[i].translation.y = joint[i].translate[1];
+                model.skeleton.bindPose[i].translation.z = joint[i].translate[2];
 
-                model.bindPose[i].rotation.x = joint[i].rotate[0];
-                model.bindPose[i].rotation.y = joint[i].rotate[1];
-                model.bindPose[i].rotation.z = joint[i].rotate[2];
-                model.bindPose[i].rotation.w = joint[i].rotate[3];
+                model.skeleton.bindPose[i].rotation.x = joint[i].rotate[0];
+                model.skeleton.bindPose[i].rotation.y = joint[i].rotate[1];
+                model.skeleton.bindPose[i].rotation.z = joint[i].rotate[2];
+                model.skeleton.bindPose[i].rotation.w = joint[i].rotate[3];
 
-                model.bindPose[i].scale.x = joint[i].scale[0];
-                model.bindPose[i].scale.y = joint[i].scale[1];
-                model.bindPose[i].scale.z = joint[i].scale[2];
+                model.skeleton.bindPose[i].scale.x = joint[i].scale[0];
+                model.skeleton.bindPose[i].scale.y = joint[i].scale[1];
+                model.skeleton.bindPose[i].scale.z = joint[i].scale[2];
             }
 
-            model.bindPose = BuildPoseFromParentJoints(model.bones, model.bindPose);
+            model.skeleton.bindPose = BuildPoseFromParentJoints(model.skeleton.bones, model.skeleton.bindPose);
 
             for (int i = 0; i < model.meshCount; i++) {
-                model.meshes[i].boneCount = model.boneCount;
+                model.meshes[i].boneCount = model.skeleton.boneCount;
                 model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
                 for (int j = 0; j < model.meshes[i].boneMatrices.length; j++) {
                     model.meshes[i].boneMatrices[j] = MatrixIdentity();
@@ -4989,6 +5542,11 @@ public class rModels {
         return model;
     }
 
+    /**
+     * Load IQM animation data
+     * @param fileName Location of the IQM file
+     * @return Array of {@code ModelAnimation}s as defined by the IQM file
+     */
     public ModelAnimation[] LoadModelAnimationsIQM(String fileName) {
         final String IQM_MAGIC = "INTERQUAKEMODEL\0"; //IQM file magic number
         final int IQM_VERSION = 2;                    //only IQM version 2 supported
@@ -5098,7 +5656,6 @@ public class rModels {
 
             }
 
-
             // Get animations data
             animCount = iqmHeader.num_anims;
             IQMAnim[] anim = new IQMAnim[animCount];
@@ -5134,22 +5691,23 @@ public class rModels {
 
             for (int a = 0; a < iqmHeader.num_anims; a++) {
                 animations[a] = new ModelAnimation();
-                animations[a].frameCount = anim[a].num_frames;
                 animations[a].boneCount = iqmHeader.num_poses;
-                animations[a].bones = new BoneInfo[iqmHeader.num_poses];
-                animations[a].framePoses = new Transform[anim[a].num_frames][];
+                BoneInfo[] bones = new BoneInfo[iqmHeader.num_poses];
+                
+                animations[a].keyframeCount = anim[a].num_frames;
+                animations[a].keyframePoses = new Transform[anim[a].num_frames][];
                 // animations[a].framerate = anim.framerate;     // TODO: Use framerate?
 
                 for (int j = 0; j < iqmHeader.num_poses; j++) {
-                    animations[a].bones[j] = new BoneInfo();
-                    animations[a].bones[j].name = "ANIMJOINTNAME";
-                    animations[a].bones[j].parent = poses[j].parent;
+                    bones[j] = new BoneInfo();
+                    bones[j].name = "ANIMJOINTNAME";
+                    bones[j].parent = poses[j].parent;
                 }
 
                 for (int j = 0; j < anim[a].num_frames; j++) {
-                    animations[a].framePoses[j] = new Transform[iqmHeader.num_poses];
+                    animations[a].keyframePoses[j] = new Transform[iqmHeader.num_poses];
                     for (int i = 0; i < iqmHeader.num_poses; i++) {
-                        animations[a].framePoses[j][i] = new Transform();
+                        animations[a].keyframePoses[j][i] = new Transform();
                     }
                 }
 
@@ -5157,88 +5715,88 @@ public class rModels {
 
                 for (int frame = 0; frame < anim[a].num_frames; frame++) {
                     for (int i = 0; i < iqmHeader.num_poses; i++) {
-                        animations[a].framePoses[frame][i].translation.x = poses[i].channeloffset[0];
+                        animations[a].keyframePoses[frame][i].translation.x = poses[i].channeloffset[0];
 
                         if ((poses[i].mask & 0x01) == 1) {
-                            animations[a].framePoses[frame][i].translation.x += framedata[dcounter] * poses[i].channelscale[0];
+                            animations[a].keyframePoses[frame][i].translation.x += framedata[dcounter] * poses[i].channelscale[0];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].translation.y = poses[i].channeloffset[1];
+                        animations[a].keyframePoses[frame][i].translation.y = poses[i].channeloffset[1];
 
                         if ((poses[i].mask & 0x02) == 2) {
-                            animations[a].framePoses[frame][i].translation.y += framedata[dcounter] * poses[i].channelscale[1];
+                            animations[a].keyframePoses[frame][i].translation.y += framedata[dcounter] * poses[i].channelscale[1];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].translation.z = poses[i].channeloffset[2];
+                        animations[a].keyframePoses[frame][i].translation.z = poses[i].channeloffset[2];
 
                         if ((poses[i].mask & 0x04) == 4) {
-                            animations[a].framePoses[frame][i].translation.z += framedata[dcounter] * poses[i].channelscale[2];
+                            animations[a].keyframePoses[frame][i].translation.z += framedata[dcounter] * poses[i].channelscale[2];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].rotation.x = poses[i].channeloffset[3];
+                        animations[a].keyframePoses[frame][i].rotation.x = poses[i].channeloffset[3];
 
                         if ((poses[i].mask & 0x08) == 8) {
-                            animations[a].framePoses[frame][i].rotation.x += framedata[dcounter] * poses[i].channelscale[3];
+                            animations[a].keyframePoses[frame][i].rotation.x += framedata[dcounter] * poses[i].channelscale[3];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].rotation.y = poses[i].channeloffset[4];
+                        animations[a].keyframePoses[frame][i].rotation.y = poses[i].channeloffset[4];
 
                         if ((poses[i].mask & 0x10) == 16) {
-                            animations[a].framePoses[frame][i].rotation.y += framedata[dcounter] * poses[i].channelscale[4];
+                            animations[a].keyframePoses[frame][i].rotation.y += framedata[dcounter] * poses[i].channelscale[4];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].rotation.z = poses[i].channeloffset[5];
+                        animations[a].keyframePoses[frame][i].rotation.z = poses[i].channeloffset[5];
 
                         if ((poses[i].mask & 0x20) == 32) {
-                            animations[a].framePoses[frame][i].rotation.z += framedata[dcounter] * poses[i].channelscale[5];
+                            animations[a].keyframePoses[frame][i].rotation.z += framedata[dcounter] * poses[i].channelscale[5];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].rotation.w = poses[i].channeloffset[6];
+                        animations[a].keyframePoses[frame][i].rotation.w = poses[i].channeloffset[6];
 
                         if ((poses[i].mask & 0x40) == 64) {
-                            animations[a].framePoses[frame][i].rotation.w += framedata[dcounter] * poses[i].channelscale[6];
+                            animations[a].keyframePoses[frame][i].rotation.w += framedata[dcounter] * poses[i].channelscale[6];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].scale.x = poses[i].channeloffset[7];
+                        animations[a].keyframePoses[frame][i].scale.x = poses[i].channeloffset[7];
 
                         if ((poses[i].mask & 0x80) == 128) {
-                            animations[a].framePoses[frame][i].scale.x += framedata[dcounter] * poses[i].channelscale[7];
+                            animations[a].keyframePoses[frame][i].scale.x += framedata[dcounter] * poses[i].channelscale[7];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].scale.y = poses[i].channeloffset[8];
+                        animations[a].keyframePoses[frame][i].scale.y = poses[i].channeloffset[8];
 
                         if ((poses[i].mask & 0x100) == 256) {
-                            animations[a].framePoses[frame][i].scale.y += framedata[dcounter] * poses[i].channelscale[8];
+                            animations[a].keyframePoses[frame][i].scale.y += framedata[dcounter] * poses[i].channelscale[8];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].scale.z = poses[i].channeloffset[9];
+                        animations[a].keyframePoses[frame][i].scale.z = poses[i].channeloffset[9];
 
                         if ((poses[i].mask & 0x200) == 512) {
-                            animations[a].framePoses[frame][i].scale.z += framedata[dcounter] * poses[i].channelscale[9];
+                            animations[a].keyframePoses[frame][i].scale.z += framedata[dcounter] * poses[i].channelscale[9];
                             dcounter++;
                         }
 
-                        animations[a].framePoses[frame][i].rotation = QuaternionNormalize(animations[a].framePoses[frame][i].rotation);
+                        animations[a].keyframePoses[frame][i].rotation = QuaternionNormalize(animations[a].keyframePoses[frame][i].rotation);
                     }
                 }
 
                 // Build frameposes
                 for (int frame = 0; frame < anim[a].num_frames; frame++) {
                     for (int i = 0; i < animations[a].boneCount; i++) {
-                        if (animations[a].bones[i].parent >= 0) {
-                            animations[a].framePoses[frame][i].rotation = QuaternionMultiply(animations[a].framePoses[frame][animations[a].bones[i].parent].rotation, animations[a].framePoses[frame][i].rotation);
-                            animations[a].framePoses[frame][i].translation = Vector3RotateByQuaternion(animations[a].framePoses[frame][i].translation, animations[a].framePoses[frame][animations[a].bones[i].parent].rotation);
-                            animations[a].framePoses[frame][i].translation = Vector3Add(animations[a].framePoses[frame][i].translation, animations[a].framePoses[frame][animations[a].bones[i].parent].translation);
-                            animations[a].framePoses[frame][i].scale = Vector3Multiply(animations[a].framePoses[frame][i].scale, animations[a].framePoses[frame][animations[a].bones[i].parent].scale);
+                        if (bones[i].parent >= 0) {
+                            animations[a].keyframePoses[frame][i].rotation = QuaternionMultiply(animations[a].keyframePoses[frame][bones[i].parent].rotation, animations[a].keyframePoses[frame][i].rotation);
+                            animations[a].keyframePoses[frame][i].translation = Vector3RotateByQuaternion(animations[a].keyframePoses[frame][i].translation, animations[a].keyframePoses[frame][bones[i].parent].rotation);
+                            animations[a].keyframePoses[frame][i].translation = Vector3Add(animations[a].keyframePoses[frame][i].translation, animations[a].keyframePoses[frame][bones[i].parent].translation);
+                            animations[a].keyframePoses[frame][i].scale = Vector3Multiply(animations[a].keyframePoses[frame][i].scale, animations[a].keyframePoses[frame][bones[i].parent].scale);
                         }
                     }
                 }
@@ -5251,437 +5809,13 @@ public class rModels {
         return animations;
     }
 
-    private Model LoadM3D(String filePath) {
-        M3DJ parser = new M3DJ();
-        M3DJ_Model m3dj;
-
-        try {
-            m3dj = parser.LoadFile(filePath);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        Model model = new Model();
-        int i, j, k, l, n, mi = -2, vcolor;
-
-        // no faces? this is probably just a material library
-        if (m3dj.faces.isEmpty()) {
-            return model;
-        }
-
-        if (!m3dj.materials.isEmpty()) {
-            model.meshCount = model.materialCount = m3dj.materials.size();
-            context.tracelog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes");
-        }
-        else {
-            model.meshCount = 1;
-            model.materialCount = 0;
-            context.tracelog.TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
-        }
-
-        // We always need a default material, so we add +1
-        model.materialCount++;
-
-        // Faces must be in non-decreasing materialid order. Verify that quickly, sorting them otherwise
-        // WARNING: Sorting is not needed, valid M3D model files should already be sorted
-        // Just keeping the sorting function for reference (Check PR #3363 #3385)
-        /*
-        for (i = 1; i < m3d->numface; i++)
-        {
-            if (m3d->face[i-1].materialid <= m3d->face[i].materialid) continue;
-
-            // face[i-1] > face[i].  slide face[i] lower
-            m3df_t slider = m3d->face[i];
-            j = i-1;
-
-            do
-            {   // face[j] > slider, face[j+1] is svailable vacant gap
-                m3d->face[j+1] = m3d->face[j];
-                j = j-1;
-            }
-            while (j >= 0 && m3d->face[j].materialid > slider.materialid);
-
-            m3d->face[j+1] = slider;
-        }
-        */
-
-        model.meshes = new Mesh[model.meshCount];
-        for (int m = 0; m < model.meshes.length; m++) {
-            model.meshes[m] = new Mesh();
-        }
-
-        model.meshMaterial = new int[model.meshCount];
-
-        model.materials = new Material[model.materialCount + 1];
-        for (int m = 0; m < model.materials.length; m++) {
-            model.materials[m] = new Material();
-        }
-
-        // Map no material to index 0 with default shader, everything else materialId + 1
-        model.materials[0] = context.models.LoadMaterialDefault();
-
-        for (i = l = 0, k = -1; i < m3dj.faces.size(); i++, l++) {
-            // Materials are grouped together
-            if (mi != m3dj.faces.get(i).materialId) {
-                // There should be only one material switch per material kind,
-                // but be bulletproof for non-optimal model files
-                if (k + 1 >= model.meshCount) {
-                    model.meshCount++;
-
-                    // Create a second buffer for mesh re-allocation
-                    Mesh[] tempMeshes = new Mesh[model.meshCount];
-                    System.arraycopy(model.meshes, 0, tempMeshes, 0, model.meshCount - 1);
-                    model.meshes = tempMeshes;
-                    for (int m = 0; m < model.meshes.length; m++) {
-                        model.meshes[m] = new Mesh();
-                    }
-
-                    // Create a second buffer for material re-allocation
-                    int[] tempMeshMaterial = new int[model.meshCount];
-                    System.arraycopy(model.meshMaterial, 0, tempMeshMaterial, 0, model.meshCount - 1);
-                    model.meshMaterial = tempMeshMaterial;
-                }
-
-                k++;
-                mi = m3dj.faces.get(i).materialId;
-
-                // Only allocate colors VertexBuffer if there's a color vertices in the model for this material batch
-                // if all colors are fully transparent black for all vertices of this material, then we assume no vertices colors
-                for (j = i, l = vcolor = 0; (j < m3dj.faces.size()) && (mi == m3dj.faces.get(j).materialId); j++, l++) {
-                    if (
-                            m3dj.vertices.get(m3dj.faces.get(j).vertices[0]).colorIndex != M3D_UNDEF ||
-                                    m3dj.vertices.get(m3dj.faces.get(j).vertices[1]).colorIndex != M3D_UNDEF ||
-                                    m3dj.vertices.get(m3dj.faces.get(j).vertices[2]).colorIndex != M3D_UNDEF
-                    ) {
-                        vcolor = 1;
-                    }
-                }
-
-                model.meshes[k].vertexCount = l * 3;
-                model.meshes[k].triangleCount = l;
-                model.meshes[k].vertices = new float[model.meshes[k].vertexCount * 3];
-                model.meshes[k].texcoords = new float[model.meshes[k].vertexCount * 2];
-                model.meshes[k].normals = new float[model.meshes[k].vertexCount * 3];
-
-                // If no map is provided, or we have colors defined, we allocate storage for vertices colors
-                // M3D specs only consider vertices colors if no material is provided, however raylib uses both and mixes the colors
-                if ((mi == M3D_UNDEF) || vcolor != 0) {
-                    model.meshes[k].colors = new byte[model.meshes[k].vertexCount * 4];
-                }
-
-                // If no map is provided, and we allocated vertices colors, set them to white
-                if ((mi == M3D_UNDEF) && (model.meshes[k].colors != null)) {
-                    Arrays.fill(model.meshes[k].colors, (byte) 255);
-                }
-
-                if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
-                    model.meshes[k].boneIds = new byte[model.meshes[k].vertexCount * 4];
-                    model.meshes[k].boneWeights = new float[model.meshes[k].vertexCount * 4];
-                    model.meshes[k].animVertices = new float[model.meshes[k].vertexCount * 3];
-                    model.meshes[k].animNormals = new float[model.meshes[k].vertexCount * 3];
-                }
-
-                model.meshMaterial[k] = mi + 1;
-                l = 0;
-            }
-
-            // Process meshes per material, add triangles
-            model.meshes[k].vertices[l * 9 + 0] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).x * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 1] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).y * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 2] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).z * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 3] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).x * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 4] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).y * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 5] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).z * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 6] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).x * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 7] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).y * m3dj.header.scale);
-            model.meshes[k].vertices[l * 9 + 8] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).z * m3dj.header.scale);
-
-            // Without vertices color (full transparency), we use the default color
-            if (model.meshes[k].colors != null && !m3dj.colors.isEmpty()) {
-                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a > 0) {
-                    model.meshes[k].colors[l * 12 + 0] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a;
-                    model.meshes[k].colors[l * 12 + 1] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).b;
-                    model.meshes[k].colors[l * 12 + 2] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).g;
-                    model.meshes[k].colors[l * 12 + 3] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).r;
-                }
-                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a > 0) {
-                    model.meshes[k].colors[l * 12 + 4] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a;
-                    model.meshes[k].colors[l * 12 + 5] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).b;
-                    model.meshes[k].colors[l * 12 + 6] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).g;
-                    model.meshes[k].colors[l * 12 + 7] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).r;
-                }
-                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a > 0) {
-                    model.meshes[k].colors[l * 12 + 8] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a;
-                    model.meshes[k].colors[l * 12 + 9] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).b;
-                    model.meshes[k].colors[l * 12 + 10] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).g;
-                    model.meshes[k].colors[l * 12 + 11] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).r;
-                }
-            }
-
-            if (m3dj.faces.get(i).texCoords[0] != M3D_UNDEF) {
-                model.meshes[k].texcoords[l * 6 + 0] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[0]).u;
-                model.meshes[k].texcoords[l * 6 + 1] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[0]).v);
-                model.meshes[k].texcoords[l * 6 + 2] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[1]).u;
-                model.meshes[k].texcoords[l * 6 + 3] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[1]).v);
-                model.meshes[k].texcoords[l * 6 + 4] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[2]).u;
-                model.meshes[k].texcoords[l * 6 + 5] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[2]).v);
-            }
-
-            if (m3dj.faces.get(i).normals[0] != M3D_UNDEF) {
-                model.meshes[k].normals[l * 9 + 0] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).x;
-                model.meshes[k].normals[l * 9 + 1] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).y;
-                model.meshes[k].normals[l * 9 + 2] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).z;
-                model.meshes[k].normals[l * 9 + 3] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[1]).x;
-                model.meshes[k].normals[l * 9 + 4] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[1]).y;
-                model.meshes[k].normals[l * 9 + 5] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[1]).z;
-                model.meshes[k].normals[l * 9 + 6] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[2]).x;
-                model.meshes[k].normals[l * 9 + 7] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[2]).y;
-                model.meshes[k].normals[l * 9 + 8] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[2]).z;
-            }
-
-            // Add skin (vertices / bone weight pairs)
-            if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
-                for (n = 0; n < 3; n++) {
-                    int skinId = m3dj.vertices.get(m3dj.faces.get(i).vertices[n]).skinIndex;
-
-                    // Check if there is a skin for this mesh, should be, just failsafe
-                    if ((skinId != M3D_UNDEF) && (skinId < m3dj.skins.size())) {
-                        for (j = 0; j < 4; j++) {
-                            model.meshes[k].boneIds[l * 12 + n * 4 + j] = (byte) m3dj.skins.get(skinId).boneIds[j];
-                            model.meshes[k].boneWeights[l * 12 + n * 4 + j] = m3dj.skins.get(skinId).weights[j];
-                        }
-                    }
-                    else {
-                        // raylib does not handle boneless meshes with skeletal animations, so
-                        // we put all vertices without a bone into a special "no bone" bone
-                        model.meshes[k].boneIds[l * 12 + n * 4] = (byte) m3dj.bones.size();
-                        model.meshes[k].boneWeights[l * 12 + n * 4] = 1.0f;
-                    }
-                }
-            }
-        }
-
-        // Load materials
-        for (i = 0; i < m3dj.materials.size(); i++) {
-            model.materials[i + 1] = context.models.LoadMaterialDefault();
-
-            for (j = 0; j < m3dj.materials.get(i).properties.size(); j++) {
-                M3DJ_Property property = m3dj.materials.get(i).properties.get(j);
-
-                if (property.key.equals("m3dp_Kd")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
-                    model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].value = 0.0f;
-                }
-                else if (property.key.equals("m3dp_Ks")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
-                }
-                else if (property.key.equals("m3dp_Ns")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].value = (int) property.GetPropertyValue();
-                }
-                else if (property.key.equals("m3dp_Ke")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
-                    model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].value = 0.0f;
-                }
-                else if (property.key.equals("m3dp_Pm")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_METALNESS.GetIndex()].value = (float) property.GetPropertyValue();
-                }
-                else if (property.key.equals("m3dp_Pr")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].value = (float) property.GetPropertyValue();
-                }
-                else if (property.key.equals("m3dp_Ps")) {
-                    model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].color = WHITE;
-                    model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].value = (float) property.GetPropertyValue();
-                }
-                else if (property.id >= 128) {
-                    Image image = new Image();
-                    image.data = m3dj.textures.get((int) property.GetPropertyValue()).textureData;
-                    image.width = m3dj.textures.get((int) property.GetPropertyValue()).width;
-                    image.height = m3dj.textures.get((int) property.GetPropertyValue()).height;
-                    image.mipmaps = 1;
-                    image.format =
-                            (m3dj.textures.get((int) property.GetPropertyValue()).format == 4) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 :
-                                    ((m3dj.textures.get((int) property.GetPropertyValue()).format == 3) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8 :
-                                            ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
-
-                    if (property.key.equals("m3dp_map_Kd")) {
-                        model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
-                    }
-                    else if (property.key.equals("m3dp_map_Ks")) {
-                        model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
-                    }
-                    else if (property.key.equals("m3dp_map_Ke")) {
-                        model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
-                    }
-                    else if (property.key.equals("m3dp_map_Km")) {
-                        model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
-                    }
-                    else if (property.key.equals("m3dp_map_Ka")) {
-                        model.materials[i + 1].maps[MATERIAL_MAP_OCCLUSION.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
-                    }
-                    else if (property.key.equals("m3dp_map_Pm")) {
-                        model.materials[i + 1].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
-                    }
-                }
-            }
-        }
-
-        // Load bones
-        if (!m3dj.bones.isEmpty()) {
-            model.boneCount = m3dj.bones.size() + 1;
-            model.bones = new BoneInfo[model.boneCount];
-            model.bindPose = new Transform[model.boneCount];
-
-            for (i = 0; i < m3dj.bones.size(); i++) {
-                model.bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
-                model.bindPose[i] = new Transform();
-                model.bindPose[i].translation.x = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).x * m3dj.header.scale);
-                model.bindPose[i].translation.y = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).y * m3dj.header.scale);
-                model.bindPose[i].translation.z = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).z * m3dj.header.scale);
-                model.bindPose[i].rotation.x = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).x;
-                model.bindPose[i].rotation.y = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).y;
-                model.bindPose[i].rotation.z = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).z;
-                model.bindPose[i].rotation.w = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).w;
-
-                // TODO: If the orientation quaternion is not normalized, then that's encoding scaling
-                model.bindPose[i].rotation = QuaternionNormalize(model.bindPose[i].rotation);
-                model.bindPose[i].scale.x = model.bindPose[i].scale.y = model.bindPose[i].scale.z = 1.0f;
-
-                // Child bones are stored in parent bone relative space, convert that into model space
-                if (model.bones[i].parent >= 0) {
-                    model.bindPose[i].rotation = QuaternionMultiply(model.bindPose[model.bones[i].parent].rotation, model.bindPose[i].rotation);
-                    model.bindPose[i].translation = Vector3RotateByQuaternion(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].rotation);
-                    model.bindPose[i].translation = Vector3Add(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation);
-                    model.bindPose[i].scale = Vector3Multiply(model.bindPose[i].scale, model.bindPose[model.bones[i].parent].scale);
-                }
-            }
-
-            // Add a special "no bone" bone
-            model.bones[i] = new BoneInfo("NO BONE", -1);
-            model.bindPose[i] = new Transform();
-            model.bindPose[i].translation.x = 0.0f;
-            model.bindPose[i].translation.y = 0.0f;
-            model.bindPose[i].translation.z = 0.0f;
-            model.bindPose[i].rotation.x = 0.0f;
-            model.bindPose[i].rotation.y = 0.0f;
-            model.bindPose[i].rotation.z = 0.0f;
-            model.bindPose[i].rotation.w = 1.0f;
-            model.bindPose[i].scale.x = model.bindPose[i].scale.y = model.bindPose[i].scale.z = 1.0f;
-        }
-
-        // Load bone-pose default mesh into animations[a] vertices. These will be updated when UpdateModelAnimation gets
-        // called, but not before, however DrawMesh uses these if they exist (so not good if they are left empty)
-        if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
-            for (i = 0; i < model.meshCount; i++) {
-                System.arraycopy(model.meshes[i].vertices, 0, model.meshes[i].animVertices, 0, model.meshes[i].vertexCount * 3);
-                System.arraycopy(model.meshes[i].normals, 0, model.meshes[i].animNormals, 0, model.meshes[i].vertexCount * 3);
-
-                model.meshes[i].boneCount = model.boneCount;
-                model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
-                for (int bm = 0; bm < model.meshes[i].boneMatrices.length; bm++) {
-                    model.meshes[i].boneMatrices[bm] = MatrixIdentity();
-                }
-            }
-        }
-
-        return model;
-    }
-
-    private ModelAnimation[] LoadModelAnimationsM3D(String filePath) {
-        M3DJ parser = new M3DJ();
-        M3DJ_Model m3dj;
-        int i, j;
-
-        try {
-            m3dj = parser.LoadFile(filePath);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (m3dj == null) {
-            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + filePath + "] Failed to load M3D.");
-            return null;
-        }
-        else {
-            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] Loaded successfully: " +
-                    m3dj.actions.size() + " animations[a](s), " + m3dj.bones.size() + " bones, " + m3dj.skins.size() + " skins.");
-        }
-
-        if (m3dj.actions.isEmpty() || m3dj.bones.isEmpty() || m3dj.skins.isEmpty()) {
-            return null;
-        }
-
-        ModelAnimation[] animations = new ModelAnimation[m3dj.actions.size()];
-
-        for (int a = 0; a < m3dj.actions.size(); a++) {
-            animations[a] = new ModelAnimation();
-
-            animations[a].frameCount = m3dj.actions.get(a).animationLength / M3D_ANIMDELAY;
-            animations[a].boneCount = m3dj.bones.size() + 1;
-            animations[a].bones = new BoneInfo[animations[a].boneCount];
-            animations[a].framePoses = new Transform[animations[a].frameCount][];
-
-            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] animations[a] #" + a + ": " + m3dj.actions.get(a).animationLength +
-                    " msec, " + animations[a].frameCount + " frames.");
-
-            for (i = 0; i < m3dj.bones.size(); i++) {
-                animations[a].bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
-            }
-
-            // A special, never transformed "no bone" bone, used for boneless vertices
-            animations[a].bones[i] = new BoneInfo("NO BONE", -1);
-
-            // M3D stores frames at arbitrary intervals with sparse skeletons. We need full skeletons at
-            // regular intervals, so let the M3D SDK do the heavy lifting and calculate interpolated bones
-            for (i = 0; i < animations[a].frameCount; i++) {
-                animations[a].framePoses[i] = new Transform[m3dj.bones.size() + 1];
-
-                M3DJ_Bone[] pose = parser.Pose(m3dj, a, i * M3D_ANIMDELAY);
-
-                if (pose != null) {
-                    for (j = 0; j < m3dj.bones.size(); j++) {
-                        animations[a].framePoses[i][j] = new Transform();
-                        animations[a].framePoses[i][j].translation.x = (float) (m3dj.vertices.get(pose[j].position).x * m3dj.header.scale);
-                        animations[a].framePoses[i][j].translation.y = (float) (m3dj.vertices.get(pose[j].position).y * m3dj.header.scale);
-                        animations[a].framePoses[i][j].translation.z = (float) (m3dj.vertices.get(pose[j].position).z * m3dj.header.scale);
-                        animations[a].framePoses[i][j].rotation.x = (float) m3dj.vertices.get(pose[j].orientation).x;
-                        animations[a].framePoses[i][j].rotation.y = (float) m3dj.vertices.get(pose[j].orientation).y;
-                        animations[a].framePoses[i][j].rotation.z = (float) m3dj.vertices.get(pose[j].orientation).z;
-                        animations[a].framePoses[i][j].rotation.w = (float) m3dj.vertices.get(pose[j].orientation).w;
-                        animations[a].framePoses[i][j].rotation = QuaternionNormalize(animations[a].framePoses[i][j].rotation);
-                        animations[a].framePoses[i][j].scale.x = 1.0f;
-                        animations[a].framePoses[i][j].scale.y = 1.0f;
-                        animations[a].framePoses[i][j].scale.z = 1.0f;
-
-                        // Child bones are stored in parent bone relative space, convert that into model space
-                        if (animations[a].bones[j].parent >= 0) {
-                            animations[a].framePoses[i][j].rotation = QuaternionMultiply(animations[a].framePoses[i][animations[a].bones[j].parent].rotation, animations[a].framePoses[i][j].rotation);
-                            animations[a].framePoses[i][j].translation = Vector3RotateByQuaternion(animations[a].framePoses[i][j].translation, animations[a].framePoses[i][animations[a].bones[j].parent].rotation);
-                            animations[a].framePoses[i][j].translation = Vector3Add(animations[a].framePoses[i][j].translation, animations[a].framePoses[i][animations[a].bones[j].parent].translation);
-                            animations[a].framePoses[i][j].scale = Vector3Multiply(animations[a].framePoses[i][j].scale, animations[a].framePoses[i][animations[a].bones[j].parent].scale);
-                        }
-                    }
-
-                    // Default transform for the "no bone" bone
-                    animations[a].framePoses[i][j] = new Transform();
-                    animations[a].framePoses[i][j].translation.x = 0.0f;
-                    animations[a].framePoses[i][j].translation.y = 0.0f;
-                    animations[a].framePoses[i][j].translation.z = 0.0f;
-                    animations[a].framePoses[i][j].rotation.x = 0.0f;
-                    animations[a].framePoses[i][j].rotation.y = 0.0f;
-                    animations[a].framePoses[i][j].rotation.z = 0.0f;
-                    animations[a].framePoses[i][j].rotation.w = 1.0f;
-                    animations[a].framePoses[i][j].scale.x = 1.0f;
-                    animations[a].framePoses[i][j].scale.y = 1.0f;
-                    animations[a].framePoses[i][j].scale.z = 1.0f;
-                }
-            }
-        }
-
-        return animations;
-    }
-
+    /**
+     *
+     * @param img
+     * @param bufferView
+     * @param texPath
+     * @return
+     */
     private Image LoadImageFromCgltfImage(ImageModel img, BufferViewModel bufferView, String texPath) {
         Image image = new Image();
 
@@ -6278,12 +6412,12 @@ public class rModels {
         //----------------------------------------------------------------------------------------------------
         if (!gltf.getSkinModels().isEmpty()) {
             SkinModel skin = gltf.getSkinModels().get(0);
-            model.bones = LoadBoneInfoGLTF(skin);
-            model.boneCount = model.bones.length;
-            model.bindPose = new Transform[model.boneCount];
+            model.skeleton.bones = LoadBoneInfoGLTF(skin);
+            model.skeleton.boneCount = model.skeleton.bones.length;
+            model.skeleton.bindPose = new Transform[model.skeleton.boneCount];
 
-            for (int i = 0; i < model.boneCount; i++) {
-                model.bindPose[i] = new Transform();
+            for (int i = 0; i < model.skeleton.boneCount; i++) {
+                model.skeleton.bindPose[i] = new Transform();
                 float[] worldTransform = new float[16];
                 skin.getJoints().get(i).computeGlobalTransform(worldTransform);
                 Matrix worldMatrix = new Matrix(
@@ -6292,7 +6426,7 @@ public class rModels {
                         worldTransform[2], worldTransform[6], worldTransform[10], worldTransform[14],
                         worldTransform[3], worldTransform[7], worldTransform[11], worldTransform[15]
                 );
-                MatrixDecompose(worldMatrix, model.bindPose[i].translation, model.bindPose[i].rotation, model.bindPose[i].scale);
+                MatrixDecompose(worldMatrix, model.skeleton.bindPose[i].translation, model.skeleton.bindPose[i].rotation, model.skeleton.bindPose[i].scale);
             }
         }
 
@@ -6328,15 +6462,15 @@ public class rModels {
                         if (attribute.getElementType() == ElementType.VEC4) {
                             if (attribute.getComponentDataType() == byte.class) {
                                 // Init raylib mesh bone ids to copy glTF attribute data
-                                model.meshes[meshIndex].boneIds = new byte[model.meshes[meshIndex].vertexCount * 4];
+                                model.meshes[meshIndex].boneIndices = new byte[model.meshes[meshIndex].vertexCount * 4];
 
                                 //Load attribute: vec4, byte
                                 BufferViewModel bufferView = attribute.getBufferViewModel();
-                                bufferView.getBufferViewData().get(model.meshes[meshIndex].boneIds);
+                                bufferView.getBufferViewData().get(model.meshes[meshIndex].boneIndices);
                             }
                             else if (attribute.getComponentDataType() == short.class) {
                                 // Init raylib mesh bone ids to copy glTF attribute data
-                                model.meshes[meshIndex].boneIds = new byte[model.meshes[meshIndex].vertexCount * 4];
+                                model.meshes[meshIndex].boneIndices = new byte[model.meshes[meshIndex].vertexCount * 4];
 
                                 // Load data into a temp buffer to be converted to raylib data type
                                 short[] tmp = new short[model.meshes[meshIndex].vertexCount * 4];
@@ -6351,7 +6485,7 @@ public class rModels {
                                     }
 
                                     // Cast to byte, regardless of overflow
-                                    model.meshes[meshIndex].boneIds[b] = (byte) tmp[b];
+                                    model.meshes[meshIndex].boneIndices[b] = (byte) tmp[b];
                                 }
                             }
                             else {
@@ -6417,7 +6551,7 @@ public class rModels {
                 // in this case we need to fully attach all the verts to the parent bone so it will animate with the bone
                 if (!gltf.getSkinModels().isEmpty() && !hasJoints && node.getParent() != null && !node.getParent().getMeshModels().isEmpty()) {
                     int parentBoneId = -1;
-                    for (int joint = 0; joint < model.boneCount; joint++) {
+                    for (int joint = 0; joint < model.skeleton.boneCount; joint++) {
                         if (gltf.getSkinModels().get(0).getJoints().get(joint) == node.getParent()) {
                             parentBoneId = joint;
                             break;
@@ -6425,11 +6559,11 @@ public class rModels {
                     }
 
                     if (parentBoneId >= 0) {
-                        model.meshes[meshIndex].boneIds = new byte[model.meshes[meshIndex].vertexCount * 4];
+                        model.meshes[meshIndex].boneIndices = new byte[model.meshes[meshIndex].vertexCount * 4];
                         model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount * 4];
 
                         for (int vertexIndex = 0; vertexIndex < model.meshes[meshIndex].vertexCount * 4; vertexIndex += 4) {
-                            model.meshes[meshIndex].boneIds[vertexIndex] = (byte) parentBoneId;
+                            model.meshes[meshIndex].boneIndices[vertexIndex] = (byte) parentBoneId;
                             model.meshes[meshIndex].boneWeights[vertexIndex] = 1.0f;
                         }
                     }
@@ -6444,7 +6578,7 @@ public class rModels {
                 }
 
                 // Bone Transform Matrices
-                model.meshes[meshIndex].boneCount = model.boneCount;
+                model.meshes[meshIndex].boneCount = model.skeleton.boneCount;
                 model.meshes[meshIndex].boneMatrices = new Matrix[model.meshes[meshIndex].boneCount];
 
                 for (int j = 0; j < model.meshes[meshIndex].boneCount; j++) {
@@ -6457,7 +6591,14 @@ public class rModels {
         return model;
     }
 
-    // Get interpolated pose for bone sampler at a specific time. Returns true on success
+    /**
+     * Get interpolated pose for bone sampler at a specific time. Returns true on success
+     * @param interpolationType
+     * @param input
+     * @param output
+     * @param time
+     * @return
+     */
     private float[] GetPoseAtTimeGLTF(AnimationModel.Interpolation interpolationType, AccessorModel input, AccessorModel output, float time) {
         float[] pose = new float[0];
 
@@ -6544,6 +6685,11 @@ public class rModels {
         }
     }
 
+    /**
+     *
+     * @param fileName
+     * @return
+     */
     private ModelAnimation[] LoadModelAnimationsGLTF(String fileName) {
         ModelAnimation[] animations = null;
 
@@ -6566,8 +6712,8 @@ public class rModels {
 
             for (int i = 0; i < gltf.getAnimationModels().size(); i++) {
                 animations[i] = new ModelAnimation();
-                animations[i].bones = LoadBoneInfoGLTF(skin);
-                animations[i].boneCount = animations[i].bones.length;
+                BoneInfo[] bones = LoadBoneInfoGLTF(skin);
+                animations[i].boneCount = bones.length;
 
                 AnimationModel animData = gltf.getAnimationModels().get(i);
                 Channels[] boneChannels = new Channels[animations[i].boneCount];
@@ -6628,11 +6774,11 @@ public class rModels {
                     animations[i].name = animData.getName();
                 }
 
-                animations[i].frameCount = (int) (((animDuration * 1000.0f) / GLTF_ANIMDELAY) + 1);
-                animations[i].framePoses = new Transform[animations[i].frameCount][];
+                animations[i].keyframeCount = (int) (((animDuration * 1000.0f) / GLTF_ANIMDELAY) + 1);
+                animations[i].keyframePoses = new Transform[animations[i].keyframeCount][];
 
-                for (int j = 0; j < animations[i].frameCount; j++) {
-                    animations[i].framePoses[j] = new Transform[animations[i].boneCount];
+                for (int j = 0; j < animations[i].keyframeCount; j++) {
+                    animations[i].keyframePoses[j] = new Transform[animations[i].boneCount];
                     float time = ((float) j * GLTF_ANIMDELAY) / 1000.0f;
 
                     for (int k = 0; k < animations[i].boneCount; k++) {
@@ -6647,7 +6793,7 @@ public class rModels {
                                 translation = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
                             }
                             else {
-                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load translate pose data for bone " + animations[i].bones[k].name);
+                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load translate pose data for bone " + bones[k].name);
                             }
                         }
 
@@ -6659,7 +6805,7 @@ public class rModels {
                                 rotation = new Quaternion(tRotate[0], tRotate[1], tRotate[2], tRotate[3]);
                             }
                             else {
-                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load rotate pose data for bone " + animations[i].bones[k].name);
+                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load rotate pose data for bone " + bones[k].name);
                             }
                         }
 
@@ -6671,17 +6817,17 @@ public class rModels {
                                 scale = new Vector3(tScale[0], tScale[1], tScale[2]);
                             }
                             else {
-                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load scale pose data for bone " + animations[i].bones[k].name);
+                                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load scale pose data for bone " + bones[k].name);
                             }
                         }
 
-                        animations[i].framePoses[j][k] = new Transform(translation, rotation, scale);
+                        animations[i].keyframePoses[j][k] = new Transform(translation, rotation, scale);
                     }
 
-                    animations[i].framePoses[j] = BuildPoseFromParentJoints(animations[i].bones, animations[i].framePoses[j]);
+                    animations[i].keyframePoses[j] = BuildPoseFromParentJoints(bones, animations[i].keyframePoses[j]);
                 }
 
-                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.getName() + " (" + animations[i].frameCount + " frames, " + animDuration + "s)");
+                context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Loaded animation: " + animData.getName() + " (" + animations[i].keyframeCount + " frames, " + animDuration + "s)");
             }
         }
 
@@ -6692,7 +6838,12 @@ public class rModels {
         return animations;
     }
 
-    // Load VOX (MagicaVoxel) mesh data
+    /**
+     * Load VOX (MagicaVoxel) mesh data
+     *
+     * @param fileName
+     * @return
+     */
     private Model LoadVOX(String fileName) {
         Model model = new Model();
 
@@ -6811,4 +6962,446 @@ public class rModels {
 
         return model;
     }
+
+    /**
+     *
+     * @param filePath
+     * @return
+     */
+    private Model LoadM3D(String filePath) {
+        M3DJ parser = new M3DJ();
+        M3DJ_Model m3dj;
+
+        try {
+            m3dj = parser.LoadFile(filePath);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Model model = new Model();
+        int i, j, k, l, n, mi = -2, vcolor;
+
+        // no faces? this is probably just a material library
+        if (m3dj.faces.isEmpty()) {
+            return model;
+        }
+
+        if (!m3dj.materials.isEmpty()) {
+            model.meshCount = model.materialCount = m3dj.materials.size();
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes");
+        }
+        else {
+            model.meshCount = 1;
+            model.materialCount = 0;
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: No materials, putting all meshes in a default material");
+        }
+
+        // We always need a default material, so we add +1
+        model.materialCount++;
+
+        // Faces must be in non-decreasing materialid order. Verify that quickly, sorting them otherwise
+        // WARNING: Sorting is not needed, valid M3D model files should already be sorted
+        // Just keeping the sorting function for reference (Check PR #3363 #3385)
+        /*
+        for (i = 1; i < m3d->numface; i++)
+        {
+            if (m3d->face[i-1].materialid <= m3d->face[i].materialid) continue;
+
+            // face[i-1] > face[i].  slide face[i] lower
+            m3df_t slider = m3d->face[i];
+            j = i-1;
+
+            do
+            {   // face[j] > slider, face[j+1] is svailable vacant gap
+                m3d->face[j+1] = m3d->face[j];
+                j = j-1;
+            }
+            while (j >= 0 && m3d->face[j].materialid > slider.materialid);
+
+            m3d->face[j+1] = slider;
+        }
+        */
+
+        model.meshes = new Mesh[model.meshCount];
+        for (int m = 0; m < model.meshes.length; m++) {
+            model.meshes[m] = new Mesh();
+        }
+
+        model.meshMaterial = new int[model.meshCount];
+
+        model.materials = new Material[model.materialCount + 1];
+        for (int m = 0; m < model.materials.length; m++) {
+            model.materials[m] = new Material();
+        }
+
+        // Map no material to index 0 with default shader, everything else materialId + 1
+        model.materials[0] = context.models.LoadMaterialDefault();
+
+        for (i = l = 0, k = -1; i < m3dj.faces.size(); i++, l++) {
+            // Materials are grouped together
+            if (mi != m3dj.faces.get(i).materialId) {
+                // There should be only one material switch per material kind,
+                // but be bulletproof for non-optimal model files
+                if (k + 1 >= model.meshCount) {
+                    model.meshCount++;
+
+                    // Create a second buffer for mesh re-allocation
+                    Mesh[] tempMeshes = new Mesh[model.meshCount];
+                    System.arraycopy(model.meshes, 0, tempMeshes, 0, model.meshCount - 1);
+                    model.meshes = tempMeshes;
+                    for (int m = 0; m < model.meshes.length; m++) {
+                        model.meshes[m] = new Mesh();
+                    }
+
+                    // Create a second buffer for material re-allocation
+                    int[] tempMeshMaterial = new int[model.meshCount];
+                    System.arraycopy(model.meshMaterial, 0, tempMeshMaterial, 0, model.meshCount - 1);
+                    model.meshMaterial = tempMeshMaterial;
+                }
+
+                k++;
+                mi = m3dj.faces.get(i).materialId;
+
+                // Only allocate colors VertexBuffer if there's a color vertices in the model for this material batch
+                // if all colors are fully transparent black for all vertices of this material, then we assume no vertices colors
+                for (j = i, l = vcolor = 0; (j < m3dj.faces.size()) && (mi == m3dj.faces.get(j).materialId); j++, l++) {
+                    if (
+                            m3dj.vertices.get(m3dj.faces.get(j).vertices[0]).colorIndex != M3D_UNDEF ||
+                                    m3dj.vertices.get(m3dj.faces.get(j).vertices[1]).colorIndex != M3D_UNDEF ||
+                                    m3dj.vertices.get(m3dj.faces.get(j).vertices[2]).colorIndex != M3D_UNDEF
+                    ) {
+                        vcolor = 1;
+                    }
+                }
+
+                model.meshes[k].vertexCount = l * 3;
+                model.meshes[k].triangleCount = l;
+                model.meshes[k].vertices = new float[model.meshes[k].vertexCount * 3];
+                model.meshes[k].texcoords = new float[model.meshes[k].vertexCount * 2];
+                model.meshes[k].normals = new float[model.meshes[k].vertexCount * 3];
+
+                // If no map is provided, or we have colors defined, we allocate storage for vertices colors
+                // M3D specs only consider vertices colors if no material is provided, however raylib uses both and mixes the colors
+                if ((mi == M3D_UNDEF) || vcolor != 0) {
+                    model.meshes[k].colors = new byte[model.meshes[k].vertexCount * 4];
+                }
+
+                // If no map is provided, and we allocated vertices colors, set them to white
+                if ((mi == M3D_UNDEF) && (model.meshes[k].colors != null)) {
+                    Arrays.fill(model.meshes[k].colors, (byte) 255);
+                }
+
+                if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
+                    model.meshes[k].boneIndices = new byte[model.meshes[k].vertexCount * 4];
+                    model.meshes[k].boneWeights = new float[model.meshes[k].vertexCount * 4];
+                    model.meshes[k].animVertices = new float[model.meshes[k].vertexCount * 3];
+                    model.meshes[k].animNormals = new float[model.meshes[k].vertexCount * 3];
+                }
+
+                model.meshMaterial[k] = mi + 1;
+                l = 0;
+            }
+
+            // Process meshes per material, add triangles
+            model.meshes[k].vertices[l * 9 + 0] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).x * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 1] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).y * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 2] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).z * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 3] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).x * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 4] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).y * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 5] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).z * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 6] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).x * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 7] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).y * m3dj.header.scale);
+            model.meshes[k].vertices[l * 9 + 8] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).z * m3dj.header.scale);
+
+            // Without vertices color (full transparency), we use the default color
+            if (model.meshes[k].colors != null && !m3dj.colors.isEmpty()) {
+                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a > 0) {
+                    model.meshes[k].colors[l * 12 + 0] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a;
+                    model.meshes[k].colors[l * 12 + 1] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).b;
+                    model.meshes[k].colors[l * 12 + 2] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).g;
+                    model.meshes[k].colors[l * 12 + 3] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).r;
+                }
+                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a > 0) {
+                    model.meshes[k].colors[l * 12 + 4] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a;
+                    model.meshes[k].colors[l * 12 + 5] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).b;
+                    model.meshes[k].colors[l * 12 + 6] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).g;
+                    model.meshes[k].colors[l * 12 + 7] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).r;
+                }
+                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a > 0) {
+                    model.meshes[k].colors[l * 12 + 8] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a;
+                    model.meshes[k].colors[l * 12 + 9] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).b;
+                    model.meshes[k].colors[l * 12 + 10] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).g;
+                    model.meshes[k].colors[l * 12 + 11] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).r;
+                }
+            }
+
+            if (m3dj.faces.get(i).texCoords[0] != M3D_UNDEF) {
+                model.meshes[k].texcoords[l * 6 + 0] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[0]).u;
+                model.meshes[k].texcoords[l * 6 + 1] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[0]).v);
+                model.meshes[k].texcoords[l * 6 + 2] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[1]).u;
+                model.meshes[k].texcoords[l * 6 + 3] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[1]).v);
+                model.meshes[k].texcoords[l * 6 + 4] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[2]).u;
+                model.meshes[k].texcoords[l * 6 + 5] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[2]).v);
+            }
+
+            if (m3dj.faces.get(i).normals[0] != M3D_UNDEF) {
+                model.meshes[k].normals[l * 9 + 0] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).x;
+                model.meshes[k].normals[l * 9 + 1] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).y;
+                model.meshes[k].normals[l * 9 + 2] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).z;
+                model.meshes[k].normals[l * 9 + 3] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[1]).x;
+                model.meshes[k].normals[l * 9 + 4] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[1]).y;
+                model.meshes[k].normals[l * 9 + 5] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[1]).z;
+                model.meshes[k].normals[l * 9 + 6] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[2]).x;
+                model.meshes[k].normals[l * 9 + 7] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[2]).y;
+                model.meshes[k].normals[l * 9 + 8] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[2]).z;
+            }
+
+            // Add skin (vertices / bone weight pairs)
+            if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
+                for (n = 0; n < 3; n++) {
+                    int skinId = m3dj.vertices.get(m3dj.faces.get(i).vertices[n]).skinIndex;
+
+                    // Check if there is a skin for this mesh, should be, just failsafe
+                    if ((skinId != M3D_UNDEF) && (skinId < m3dj.skins.size())) {
+                        for (j = 0; j < 4; j++) {
+                            model.meshes[k].boneIndices[l * 12 + n * 4 + j] = (byte) m3dj.skins.get(skinId).boneIds[j];
+                            model.meshes[k].boneWeights[l * 12 + n * 4 + j] = m3dj.skins.get(skinId).weights[j];
+                        }
+                    }
+                    else {
+                        // raylib does not handle boneless meshes with skeletal animations, so
+                        // we put all vertices without a bone into a special "no bone" bone
+                        model.meshes[k].boneIndices[l * 12 + n * 4] = (byte) m3dj.bones.size();
+                        model.meshes[k].boneWeights[l * 12 + n * 4] = 1.0f;
+                    }
+                }
+            }
+        }
+
+        // Load materials
+        for (i = 0; i < m3dj.materials.size(); i++) {
+            model.materials[i + 1] = context.models.LoadMaterialDefault();
+
+            for (j = 0; j < m3dj.materials.get(i).properties.size(); j++) {
+                M3DJ_Property property = m3dj.materials.get(i).properties.get(j);
+
+                if (property.key.equals("m3dp_Kd")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
+                    model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].value = 0.0f;
+                }
+                else if (property.key.equals("m3dp_Ks")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
+                }
+                else if (property.key.equals("m3dp_Ns")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].value = (int) property.GetPropertyValue();
+                }
+                else if (property.key.equals("m3dp_Ke")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
+                    model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].value = 0.0f;
+                }
+                else if (property.key.equals("m3dp_Pm")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_METALNESS.GetIndex()].value = (float) property.GetPropertyValue();
+                }
+                else if (property.key.equals("m3dp_Pr")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].value = (float) property.GetPropertyValue();
+                }
+                else if (property.key.equals("m3dp_Ps")) {
+                    model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].color = WHITE;
+                    model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].value = (float) property.GetPropertyValue();
+                }
+                else if (property.id >= 128) {
+                    Image image = new Image();
+                    image.data = m3dj.textures.get((int) property.GetPropertyValue()).textureData;
+                    image.width = m3dj.textures.get((int) property.GetPropertyValue()).width;
+                    image.height = m3dj.textures.get((int) property.GetPropertyValue()).height;
+                    image.mipmaps = 1;
+                    image.format =
+                            (m3dj.textures.get((int) property.GetPropertyValue()).format == 4) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 :
+                                    ((m3dj.textures.get((int) property.GetPropertyValue()).format == 3) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8 :
+                                            ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
+
+                    if (property.key.equals("m3dp_map_Kd")) {
+                        model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
+                    }
+                    else if (property.key.equals("m3dp_map_Ks")) {
+                        model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
+                    }
+                    else if (property.key.equals("m3dp_map_Ke")) {
+                        model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
+                    }
+                    else if (property.key.equals("m3dp_map_Km")) {
+                        model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
+                    }
+                    else if (property.key.equals("m3dp_map_Ka")) {
+                        model.materials[i + 1].maps[MATERIAL_MAP_OCCLUSION.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
+                    }
+                    else if (property.key.equals("m3dp_map_Pm")) {
+                        model.materials[i + 1].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
+                    }
+                }
+            }
+        }
+
+        // Load bones
+        if (!m3dj.bones.isEmpty()) {
+            model.skeleton.boneCount = m3dj.bones.size() + 1;
+            model.skeleton.bones = new BoneInfo[model.skeleton.boneCount];
+            model.skeleton.bindPose = new Transform[model.skeleton.boneCount];
+
+            for (i = 0; i < m3dj.bones.size(); i++) {
+                model.skeleton.bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
+                model.skeleton.bindPose[i] = new Transform();
+                model.skeleton.bindPose[i].translation.x = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).x * m3dj.header.scale);
+                model.skeleton.bindPose[i].translation.y = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).y * m3dj.header.scale);
+                model.skeleton.bindPose[i].translation.z = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).z * m3dj.header.scale);
+                model.skeleton.bindPose[i].rotation.x = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).x;
+                model.skeleton.bindPose[i].rotation.y = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).y;
+                model.skeleton.bindPose[i].rotation.z = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).z;
+                model.skeleton.bindPose[i].rotation.w = (float) m3dj.vertices.get(m3dj.bones.get(i).orientation).w;
+
+                // TODO: If the orientation quaternion is not normalized, then that's encoding scaling
+                model.skeleton.bindPose[i].rotation = QuaternionNormalize(model.skeleton.bindPose[i].rotation);
+                model.skeleton.bindPose[i].scale.x = model.skeleton.bindPose[i].scale.y = model.skeleton.bindPose[i].scale.z = 1.0f;
+
+                // Child bones are stored in parent bone relative space, convert that into model space
+                if (model.skeleton.bones[i].parent >= 0) {
+                    model.skeleton.bindPose[i].rotation = QuaternionMultiply(model.skeleton.bindPose[model.skeleton.bones[i].parent].rotation, model.skeleton.bindPose[i].rotation);
+                    model.skeleton.bindPose[i].translation = Vector3RotateByQuaternion(model.skeleton.bindPose[i].translation, model.skeleton.bindPose[model.skeleton.bones[i].parent].rotation);
+                    model.skeleton.bindPose[i].translation = Vector3Add(model.skeleton.bindPose[i].translation, model.skeleton.bindPose[model.skeleton.bones[i].parent].translation);
+                    model.skeleton.bindPose[i].scale = Vector3Multiply(model.skeleton.bindPose[i].scale, model.skeleton.bindPose[model.skeleton.bones[i].parent].scale);
+                }
+            }
+
+            // Add a special "no bone" bone
+            model.skeleton.bones[i] = new BoneInfo("NO BONE", -1);
+            model.skeleton.bindPose[i] = new Transform();
+            model.skeleton.bindPose[i].translation.x = 0.0f;
+            model.skeleton.bindPose[i].translation.y = 0.0f;
+            model.skeleton.bindPose[i].translation.z = 0.0f;
+            model.skeleton.bindPose[i].rotation.x = 0.0f;
+            model.skeleton.bindPose[i].rotation.y = 0.0f;
+            model.skeleton.bindPose[i].rotation.z = 0.0f;
+            model.skeleton.bindPose[i].rotation.w = 1.0f;
+            model.skeleton.bindPose[i].scale.x = model.skeleton.bindPose[i].scale.y = model.skeleton.bindPose[i].scale.z = 1.0f;
+        }
+
+        // Load bone-pose default mesh into animations[a] vertices. These will be updated when UpdateModelAnimation gets
+        // called, but not before, however DrawMesh uses these if they exist (so not good if they are left empty)
+        if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
+            for (i = 0; i < model.meshCount; i++) {
+                System.arraycopy(model.meshes[i].vertices, 0, model.meshes[i].animVertices, 0, model.meshes[i].vertexCount * 3);
+                System.arraycopy(model.meshes[i].normals, 0, model.meshes[i].animNormals, 0, model.meshes[i].vertexCount * 3);
+
+                model.meshes[i].boneCount = model.skeleton.boneCount;
+                model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
+                for (int bm = 0; bm < model.meshes[i].boneMatrices.length; bm++) {
+                    model.meshes[i].boneMatrices[bm] = MatrixIdentity();
+                }
+            }
+        }
+
+        return model;
+    }
+
+    /**
+     *
+     * @param filePath
+     * @return
+     */
+    private ModelAnimation[] LoadModelAnimationsM3D(String filePath) {
+        M3DJ parser = new M3DJ();
+        M3DJ_Model m3dj;
+        int i, j;
+
+        try {
+            m3dj = parser.LoadFile(filePath);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (m3dj == null) {
+            context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + filePath + "] Failed to load M3D.");
+            return null;
+        }
+        else {
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] Loaded successfully: " +
+                    m3dj.actions.size() + " animations[a](s), " + m3dj.bones.size() + " bones, " + m3dj.skins.size() + " skins.");
+        }
+
+        if (m3dj.actions.isEmpty() || m3dj.bones.isEmpty() || m3dj.skins.isEmpty()) {
+            return null;
+        }
+
+        ModelAnimation[] animations = new ModelAnimation[m3dj.actions.size()];
+
+        for (int a = 0; a < m3dj.actions.size(); a++) {
+            animations[a] = new ModelAnimation();
+
+            animations[a].keyframeCount = m3dj.actions.get(a).animationLength / M3D_ANIMDELAY;
+            animations[a].boneCount = m3dj.bones.size() + 1;
+            BoneInfo[] bones = new BoneInfo[animations[a].boneCount];
+            animations[a].keyframePoses = new Transform[animations[a].keyframeCount][];
+
+            context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] animations[a] #" + a + ": " + m3dj.actions.get(a).animationLength +
+                    " msec, " + animations[a].keyframeCount + " frames.");
+
+            for (i = 0; i < m3dj.bones.size(); i++) {
+                bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
+            }
+
+            // A special, never transformed "no bone" bone, used for boneless vertices
+            bones[i] = new BoneInfo("NO BONE", -1);
+
+            // M3D stores frames at arbitrary intervals with sparse skeletons. We need full skeletons at
+            // regular intervals, so let the M3D SDK do the heavy lifting and calculate interpolated bones
+            for (i = 0; i < animations[a].keyframeCount; i++) {
+                animations[a].keyframePoses[i] = new Transform[m3dj.bones.size() + 1];
+
+                M3DJ_Bone[] pose = parser.Pose(m3dj, a, i * M3D_ANIMDELAY);
+
+                if (pose != null) {
+                    for (j = 0; j < m3dj.bones.size(); j++) {
+                        animations[a].keyframePoses[i][j] = new Transform();
+                        animations[a].keyframePoses[i][j].translation.x = (float) (m3dj.vertices.get(pose[j].position).x * m3dj.header.scale);
+                        animations[a].keyframePoses[i][j].translation.y = (float) (m3dj.vertices.get(pose[j].position).y * m3dj.header.scale);
+                        animations[a].keyframePoses[i][j].translation.z = (float) (m3dj.vertices.get(pose[j].position).z * m3dj.header.scale);
+                        animations[a].keyframePoses[i][j].rotation.x = (float) m3dj.vertices.get(pose[j].orientation).x;
+                        animations[a].keyframePoses[i][j].rotation.y = (float) m3dj.vertices.get(pose[j].orientation).y;
+                        animations[a].keyframePoses[i][j].rotation.z = (float) m3dj.vertices.get(pose[j].orientation).z;
+                        animations[a].keyframePoses[i][j].rotation.w = (float) m3dj.vertices.get(pose[j].orientation).w;
+                        animations[a].keyframePoses[i][j].rotation = QuaternionNormalize(animations[a].keyframePoses[i][j].rotation);
+                        animations[a].keyframePoses[i][j].scale.x = 1.0f;
+                        animations[a].keyframePoses[i][j].scale.y = 1.0f;
+                        animations[a].keyframePoses[i][j].scale.z = 1.0f;
+
+                        // Child bones are stored in parent bone relative space, convert that into model space
+                        if (bones[j].parent >= 0) {
+                            animations[a].keyframePoses[i][j].rotation = QuaternionMultiply(animations[a].keyframePoses[i][bones[j].parent].rotation, animations[a].keyframePoses[i][j].rotation);
+                            animations[a].keyframePoses[i][j].translation = Vector3RotateByQuaternion(animations[a].keyframePoses[i][j].translation, animations[a].keyframePoses[i][bones[j].parent].rotation);
+                            animations[a].keyframePoses[i][j].translation = Vector3Add(animations[a].keyframePoses[i][j].translation, animations[a].keyframePoses[i][bones[j].parent].translation);
+                            animations[a].keyframePoses[i][j].scale = Vector3Multiply(animations[a].keyframePoses[i][j].scale, animations[a].keyframePoses[i][bones[j].parent].scale);
+                        }
+                    }
+
+                    // Default transform for the "no bone" bone
+                    animations[a].keyframePoses[i][j] = new Transform();
+                    animations[a].keyframePoses[i][j].translation.x = 0.0f;
+                    animations[a].keyframePoses[i][j].translation.y = 0.0f;
+                    animations[a].keyframePoses[i][j].translation.z = 0.0f;
+                    animations[a].keyframePoses[i][j].rotation.x = 0.0f;
+                    animations[a].keyframePoses[i][j].rotation.y = 0.0f;
+                    animations[a].keyframePoses[i][j].rotation.z = 0.0f;
+                    animations[a].keyframePoses[i][j].rotation.w = 1.0f;
+                    animations[a].keyframePoses[i][j].scale.x = 1.0f;
+                    animations[a].keyframePoses[i][j].scale.y = 1.0f;
+                    animations[a].keyframePoses[i][j].scale.z = 1.0f;
+                }
+            }
+        }
+
+        return animations;
+    }
+
 }

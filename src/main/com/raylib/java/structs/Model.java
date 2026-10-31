@@ -31,19 +31,19 @@ public class Model implements Cloneable {
      */
     public int[] meshMaterial;
 
-    // Animation data
     /**
-     * Number of bones
+     * Skeleton for animation
      */
-    public int boneCount;
+    public ModelSkeleton skeleton;
+
     /**
-     * Bones information (skeleton)
+     * Current animation pose
      */
-    public BoneInfo[] bones;
+    public Transform[] currentPose;
     /**
-     * Bones base transformation (pose)
+     * Bones animated transformation matrices
      */
-    public Transform[] bindPose;
+    public Matrix[] boneMatrices;
 
     public Model() {
         transform = new Matrix();
@@ -58,14 +58,7 @@ public class Model implements Cloneable {
         }
         meshMaterial = new int[16];
 
-        bones = new BoneInfo[64];
-        for (int i = 0; i < bones.length; i++) {
-            bones[i] = new BoneInfo();
-        }
-        bindPose = new Transform[64];
-        for (int i = 0; i < bindPose.length; i++) {
-            bindPose[i] = new Transform();
-        }
+        skeleton = new ModelSkeleton();
     }
 
     @Override
@@ -82,10 +75,12 @@ public class Model implements Cloneable {
             clone.meshMaterial = new int[meshMaterial.length];
             System.arraycopy(meshMaterial, 0, clone.meshMaterial, 0, meshMaterial.length);
 
-            clone.bones = new BoneInfo[bones.length];
-            System.arraycopy(bones, 0, clone.bones, 0, bones.length);
-            clone.bindPose = new Transform[bindPose.length];
-            System.arraycopy(bindPose, 0, clone.bindPose, 0, bindPose.length);
+            clone.skeleton = skeleton.clone();
+
+            clone.currentPose = new Transform[currentPose.length];
+            System.arraycopy(currentPose, 0, clone.currentPose, 0, currentPose.length);
+            clone.boneMatrices = new Matrix[boneMatrices.length];
+            System.arraycopy(boneMatrices, 0, clone.boneMatrices, 0, boneMatrices.length);
 
             return clone;
         } catch(CloneNotSupportedException e) {

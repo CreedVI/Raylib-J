@@ -56,7 +56,7 @@ public class ModelAnimation {
 
         Model model = rlj.models.LoadModel("src/tests/resources/models/models/iqm/guy.iqm");                    // Load the animated model mesh and basic data
         Texture2D texture = rlj.textures.LoadTexture("src/tests/resources/models/models/iqm/guytex.png");         // Load model texture and set material
-        rlj.models.SetMaterialTexture(model.materials[0], MATERIAL_MAP_DIFFUSE.GetIndex(), texture);     // Set model material map texture
+        rlj.models.SetMaterialTexture(model.materials[0], MATERIAL_MAP_DIFFUSE, texture);     // Set model material map texture
 
         Vector3 position = new Vector3();            // Set model position
 
@@ -83,7 +83,7 @@ public class ModelAnimation {
             if (rlj.core.IsKeyDown(KEY_SPACE)) {
                 animFrameCounter++;
                 rlj.models.UpdateModelAnimation(model, anims[0], animFrameCounter);
-                if (animFrameCounter >= anims[0].frameCount) {
+                if (animFrameCounter >= anims[0].keyframeCount) {
                     animFrameCounter = 0;
                 }
             }
@@ -111,8 +111,8 @@ public class ModelAnimation {
 
             rlj.models.DrawModelEx(model, position, new Vector3(1.0f, 0.0f, 0.0f), -90.0f, new Vector3(1.0f, 1.0f, 1.0f), WHITE);
 
-            for (int i = 0; i < model.boneCount; i++) {
-                rlj.models.DrawCube(anims[0].framePoses[animFrameCounter][i].translation, 0.2f, 0.2f, 0.2f, RED);
+            for (int i = 0; i < model.skeleton.boneCount; i++) {
+                rlj.models.DrawCube(anims[0].keyframePoses[animFrameCounter][i].translation, 0.2f, 0.2f, 0.2f, RED);
             }
 
             rlj.models.DrawGrid(10, 1.0f);         // Draw a grid 

@@ -244,7 +244,7 @@ public class Config{
     /**
      * GPU skinning, disable if your GPU does not support more than 8 VBOs
      */
-    public static boolean RL_SUPPORT_MESH_GPU_SKINNING = true;
+    public static boolean RL_SUPPORT_GPU_SKINNING = true;
 
     // Default shader vertex attribute locations
     public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION = 0;
@@ -254,7 +254,7 @@ public class Config{
     public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT = 4;
     public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2 = 5;
     public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES = 6;
-    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEIDS = 7;
+    public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES = 7;
     public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS = 8;
     public static int RL_DEFAULT_SHADER_ATTRIB_LOCATION_INSTANCETRANSFORM = 9;
 

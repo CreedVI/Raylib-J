@@ -6,37 +6,38 @@ package com.raylib.java.structs;
 public class ModelAnimation implements Cloneable {
 
     /**
+     * Name of animation
+     */
+    public String name;
+    /**
      * Number of bones
      */
     public int boneCount;
     /**
      * Number of animation frames
      */
-    public int frameCount;
+    public int keyframeCount;
     /**
-     * Name of animation
+     * Animation sequence keyframe poses [keyframe][pose]
      */
-    public String name;
-    /**
-     * Bones information (skeleton)
-     */
-    public BoneInfo[] bones;
-    /**
-     * Poses array by frame
-     */
-    public Transform[][] framePoses;
+    public Transform[][] keyframePoses;
+
+    public ModelAnimation() {
+
+    }
 
     @Override
     public ModelAnimation clone() {
         try {
             ModelAnimation clone = (ModelAnimation) super.clone();
 
-            clone.bones = new BoneInfo[bones.length];
-            System.arraycopy(bones, 0, clone.bones, 0, bones.length);
+            clone.name = name;
+            clone.boneCount = boneCount;
+            clone.keyframeCount = keyframeCount;
 
-            for(int i = 0; i < framePoses.length; i++) {
-                clone.framePoses[i] = new Transform[framePoses[i].length];
-                System.arraycopy(framePoses[i], 0, clone.framePoses[i], 0, framePoses[i].length);
+            for(int i = 0; i < keyframePoses.length; i++) {
+                clone.keyframePoses[i] = new Transform[keyframePoses[i].length];
+                System.arraycopy(keyframePoses[i], 0, clone.keyframePoses[i], 0, keyframePoses[i].length);
             }
 
             return clone;

@@ -91,7 +91,7 @@ public class ModelLoading_GLTF {
             if (rlj.core.IsKeyPressed(KEY_RIGHT)) {
                 animCurrentFrame++;
 
-                if (animCurrentFrame >= modelAnimations[animIndex].frameCount) {
+                if (animCurrentFrame >= modelAnimations[animIndex].keyframeCount) {
                     animCurrentFrame = 0;
                 }
             }
@@ -99,7 +99,7 @@ public class ModelLoading_GLTF {
                 animCurrentFrame--;
 
                 if (animCurrentFrame < 0) {
-                    animCurrentFrame = modelAnimations[animIndex].frameCount - 1;
+                    animCurrentFrame = modelAnimations[animIndex].keyframeCount - 1;
                 }
             }
             else if (rlj.core.IsKeyPressed(KEY_SPACE)) {
@@ -108,7 +108,7 @@ public class ModelLoading_GLTF {
 
             // Update model animation
             ModelAnimation anim = modelAnimations[animIndex];
-            animCurrentFrame = (animCurrentFrame + 1) % anim.frameCount;
+            animCurrentFrame = (animCurrentFrame + 1) % anim.keyframeCount;
             rlj.models.UpdateModelAnimation(model, anim, animCurrentFrame);
             //----------------------------------------------------------------------------------
 
@@ -127,21 +127,22 @@ public class ModelLoading_GLTF {
                 rlj.models.DrawModelWires(model, position, 1.0f, WHITE);
             }
 
-            for (int i = 0; i < model.boneCount - 1; i++) {
+            for (int i = 0; i < model.skeleton.boneCount - 1; i++) {
                 // Display the bind-pose skeleton
-                rlj.models.DrawCube(model.bindPose[i].translation, 0.04f, 0.04f, 0.04f, DARKGREEN);
+                rlj.models.DrawCube(model.skeleton.bindPose[i].translation, 0.04f, 0.04f, 0.04f, DARKGREEN);
 
-                if (model.bones[i].parent >= 0) {
-                    rlj.models.DrawLine3D(model.bindPose[i].translation, model.bindPose[model.bones[i].parent].translation, GREEN);
+                if (model.skeleton.bones[i].parent >= 0) {
+                    rlj.models.DrawLine3D(model.skeleton.bindPose[i].translation, model.skeleton.bindPose[model.skeleton.bones[i].parent].translation, GREEN);
                 }
 
                 // Display the frame-pose skeleton
-                rlj.models.DrawCube(modelAnimations[animIndex].framePoses[animCurrentFrame][i].translation, 0.05f, 0.05f, 0.05f, RED);
-
+                rlj.models.DrawCube(modelAnimations[animIndex].keyframePoses[animCurrentFrame][i].translation, 0.05f, 0.05f, 0.05f, RED);
+                /*
                 if (modelAnimations[animIndex].bones[i].parent >= 0) {
-                    rlj.models.DrawLine3D(modelAnimations[animIndex].framePoses[animCurrentFrame][i].translation,
-                                          modelAnimations[animIndex].framePoses[animCurrentFrame][modelAnimations[animIndex].bones[i].parent].translation, RED);
+                    rlj.models.DrawLine3D(modelAnimations[animIndex].keyframePoses[animCurrentFrame][i].translation,
+                                          modelAnimations[animIndex].keyframePoses[animCurrentFrame][modelAnimations[animIndex].bones[i].parent].translation, RED);
                 }
+                 */
             }
 
             rlj.models.DrawGrid(10, 1.0f);

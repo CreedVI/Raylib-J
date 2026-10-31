@@ -84,7 +84,7 @@ public class ModelLoading_M3D {
                 if (rlj.core.IsKeyDown(KEY_SPACE) || rlj.core.IsKeyPressed(KEY_N)) {
                     animFrameCounter++;
 
-                    if (animFrameCounter >= anims[animId].frameCount) {
+                    if (animFrameCounter >= anims[animId].keyframeCount) {
                         animFrameCounter = 0;
                     }
 
@@ -134,27 +134,28 @@ public class ModelLoading_M3D {
                 // Loop to (boneCount - 1) because the last one is a special "no bone" bone,
                 // needed to workaround buggy models
                 // without a -1, we would always draw a cube at the origin
-                for (int i = 0; i < model.boneCount - 1; i++) {
+                for (int i = 0; i < model.skeleton.boneCount - 1; i++) {
                     // By default the model is loaded in bind-pose by LoadModel().
                     // But if UpdateModelAnimation() has been called at least once
                     // then the model is already in animation pose, so we need the animated skeleton
                     if (!animPlaying || animsCount == 0) {
                         // Display the bind-pose skeleton
-                        rlj.models.DrawCube(model.bindPose[i].translation, 0.04f, 0.04f, 0.04f, RED);
+                        rlj.models.DrawCube(model.skeleton.bindPose[i].translation, 0.04f, 0.04f, 0.04f, RED);
 
-                        if (model.bones[i].parent >= 0) {
-                            rlj.models.DrawLine3D(model.bindPose[i].translation,
-                                       model.bindPose[model.bones[i].parent].translation, RED);
+                        if (model.skeleton.bones[i].parent >= 0) {
+                            rlj.models.DrawLine3D(model.skeleton.bindPose[i].translation,
+                                       model.skeleton.bindPose[model.skeleton.bones[i].parent].translation, RED);
                         }
                     }
                     else {
                         // Display the frame-pose skeleton
-                        rlj.models.DrawCube(anims[animId].framePoses[animFrameCounter][i].translation, 0.05f, 0.05f, 0.05f, RED);
-
+                        rlj.models.DrawCube(anims[animId].keyframePoses[animFrameCounter][i].translation, 0.05f, 0.05f, 0.05f, RED);
+                        /*
                         if (anims[animId].bones[i].parent >= 0) {
-                            rlj.models.DrawLine3D(anims[animId].framePoses[animFrameCounter][i].translation,
-                                       anims[animId].framePoses[animFrameCounter][anims[animId].bones[i].parent].translation, RED);
+                            rlj.models.DrawLine3D(anims[animId].keyframePoses[animFrameCounter][i].translation,
+                                                  anims[animId].keyframePoses[animFrameCounter][anims[animId].bones[i].parent].translation, RED);
                         }
+                         */
                     }
                 }
             }
