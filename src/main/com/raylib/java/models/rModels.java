@@ -44,44 +44,44 @@ import static com.raylib.java.raymath.Raymath.*;
 import static com.raylib.java.rlgl.RLGL.*;
 
 /**
- rmodels - Basic functions to draw 3d shapes and load and draw 3d models <br/>
- &emsp;CONFIGURATION: <br/>
- &emsp;&emsp;#define SUPPORT_MODULE_RMODELS      1 <br/>
- &emsp;&emsp;&emsp;rmodels module is included in the build <br/>
- <br/>
- &emsp;&emsp;&emsp;#define SUPPORT_FILEFORMAT_OBJ      1 <br/>
- &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_MTL      1 <br/>
- &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_IQM      1 <br/>
- &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_GLTF     1 <br/>
- &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_GLTF_WRITE   0 <br/>
- &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_VOX      1 <br/>
- &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_M3D      1 <br/>
- &emsp;&emsp;&emsp;&emsp;Selected desired fileformats to be supported for model data loading <br/>
- <br/>
- &emsp;&emsp;&emsp;#define SUPPORT_MESH_GENERATION     1 <br/>
- &emsp;&emsp;&emsp;Support procedural mesh generation functions, uses external par_shapes.h library <br/>
- &emsp;&emsp;&emsp;NOTE: Some generated meshes DO NOT include generated texture coordinates <br/>
- <br/>
- <br/>
- &emsp;LICENSE: zlib/libpng
- <br/>
- &emsp;Copyright (c) 2013-2026 Ramon Santamaria (@raysan5) <br/>
- <br/>
- &emsp;This software is provided "as-is", without any express or implied warranty. In no event <br/>
- &emsp;will the authors be held liable for any damages arising from the use of this software. <br/>
- <br/>
- &emsp;Permission is granted to anyone to use this software for any purpose, including commercial <br/>
- &emsp;applications, and to alter it and redistribute it freely, subject to the following restrictions: <br/>
- <br/>
- &emsp;1. The origin of this software must not be misrepresented; you must not claim that you <br/>
- &emsp;wrote the original software. If you use this software in a product, an acknowledgment <br/>
- &emsp;in the product documentation would be appreciated but is not required. <br/>
- <br/>
- &emsp;2. Altered source versions must be plainly marked as such, and must not be misrepresented <br/>
- &emsp;as being the original software. <br/>
- <br/>
- &emsp;3. This notice may not be removed or altered from any source distribution. <br/>
- <br/>
+ * rmodels - Basic functions to draw 3d shapes and load and draw 3d models <br/>
+ * &emsp;CONFIGURATION: <br/>
+ * &emsp;&emsp;#define SUPPORT_MODULE_RMODELS      1 <br/>
+ * &emsp;&emsp;&emsp;rmodels module is included in the build <br/>
+ * <br/>
+ * &emsp;&emsp;&emsp;#define SUPPORT_FILEFORMAT_OBJ      1 <br/>
+ * &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_MTL      1 <br/>
+ * &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_IQM      1 <br/>
+ * &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_GLTF     1 <br/>
+ * &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_GLTF_WRITE   0 <br/>
+ * &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_VOX      1 <br/>
+ * &emsp;&emsp;&emsp;SUPPORT_FILEFORMAT_M3D      1 <br/>
+ * &emsp;&emsp;&emsp;&emsp;Selected desired fileformats to be supported for model data loading <br/>
+ * <br/>
+ * &emsp;&emsp;&emsp;#define SUPPORT_MESH_GENERATION     1 <br/>
+ * &emsp;&emsp;&emsp;Support procedural mesh generation functions, uses external par_shapes.h library <br/>
+ * &emsp;&emsp;&emsp;NOTE: Some generated meshes DO NOT include generated texture coordinates <br/>
+ * <br/>
+ * <br/>
+ * &emsp;LICENSE: zlib/libpng
+ * <br/>
+ * &emsp;Copyright (c) 2013-2026 Ramon Santamaria (@raysan5) <br/>
+ * <br/>
+ * &emsp;This software is provided "as-is", without any express or implied warranty. In no event <br/>
+ * &emsp;will the authors be held liable for any damages arising from the use of this software. <br/>
+ * <br/>
+ * &emsp;Permission is granted to anyone to use this software for any purpose, including commercial <br/>
+ * &emsp;applications, and to alter it and redistribute it freely, subject to the following restrictions: <br/>
+ * <br/>
+ * &emsp;1. The origin of this software must not be misrepresented; you must not claim that you <br/>
+ * &emsp;wrote the original software. If you use this software in a product, an acknowledgment <br/>
+ * &emsp;in the product documentation would be appreciated but is not required. <br/>
+ * <br/>
+ * &emsp;2. Altered source versions must be plainly marked as such, and must not be misrepresented <br/>
+ * &emsp;as being the original software. <br/>
+ * <br/>
+ * &emsp;3. This notice may not be removed or altered from any source distribution. <br/>
+ * <br/>
  */
 public class rModels {
 
@@ -153,7 +153,7 @@ public class rModels {
      */
     public rModels(Raylib context) {
         this.context = context;
-        if (RL_SUPPORT_GPU_SKINNING) {
+        if(RL_SUPPORT_GPU_SKINNING) {
             MAX_MESH_VERTEX_BUFFERS = 9;
         }
         else {
@@ -235,7 +235,7 @@ public class rModels {
         context.rlgl.rlRotatef(rotationAngle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
 
         context.rlgl.rlBegin(RL_LINES);
-        for (int i = 0; i < 360; i += 10) {
+        for(int i = 0; i < 360; i += 10) {
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
             context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i) * radius, (float) Math.cos(DEG2RAD * i) * radius, 0.0f);
@@ -270,15 +270,15 @@ public class rModels {
      * @param color  Color to use when drawing the triangles
      */
     public void DrawTriangleStrip3D(Vector3[] points, Color color) {
-        if (points.length < 3) {
+        if(points.length < 3) {
             return; // Security check
         }
 
         context.rlgl.rlBegin(RL_TRIANGLES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        for (int i = 2; i < points.length; i++) {
-            if ((i % 2) == 0) {
+        for(int i = 2; i < points.length; i++) {
+            if((i % 2) == 0) {
                 context.rlgl.rlVertex3f(points[i].x, points[i].y, points[i].z);
                 context.rlgl.rlVertex3f(points[i - 2].x, points[i - 2].y, points[i - 2].z);
                 context.rlgl.rlVertex3f(points[i - 1].x, points[i - 1].y, points[i - 1].z);
@@ -499,7 +499,7 @@ public class rModels {
      * @param color     Color to draw the sphere
      */
     public void DrawSphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color) {
-        if (false) {
+        if(false) {
             // Basic implementation, do not use it!
             // For a sphere with 16 rings and 16 slices it requires 8640 cos()/sin() function calls!
             // New optimized version below only requires 4 cos()/sin() calls
@@ -514,27 +514,27 @@ public class rModels {
             context.rlgl.rlBegin(RL_TRIANGLES);
             context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-            for (int i = 0; i < (rings + 2); i++) {
-                for (int j = 0; j < slices; j++) {
+            for(int i = 0; i < (rings + 2); i++) {
+                for(int j = 0; j < slices; j++) {
                     context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
                     context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
-                                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
                     context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
 
                     context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
                     context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
-                                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
-                                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i))),
+                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
                     context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
-                                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                            (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                            (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
                 }
             }
 
@@ -564,12 +564,12 @@ public class rModels {
             vertices[2] = new Vector3(0, 1, 0);
             vertices[3] = new Vector3(sinring, cosring, 0);
 
-            for (int i = 0; i < rings + 1; i++) {
-                for (int j = 0; j < slices; j++) {
+            for(int i = 0; i < rings + 1; i++) {
+                for(int j = 0; j < slices; j++) {
                     vertices[0] = vertices[2]; // Rotate around y axis to set up vertices for next face
                     vertices[1] = vertices[3];
-                    vertices[2] = new Vector3(cosslice*vertices[2].x - sinslice*vertices[2].z, vertices[2].y, sinslice*vertices[2].x + cosslice*vertices[2].z); // Rotation matrix around y axis
-                    vertices[3] = new Vector3(cosslice*vertices[3].x - sinslice*vertices[3].z, vertices[3].y, sinslice*vertices[3].x + cosslice*vertices[3].z);
+                    vertices[2] = new Vector3(cosslice * vertices[2].x - sinslice * vertices[2].z, vertices[2].y, sinslice * vertices[2].x + cosslice * vertices[2].z); // Rotation matrix around y axis
+                    vertices[3] = new Vector3(cosslice * vertices[3].x - sinslice * vertices[3].z, vertices[3].y, sinslice * vertices[3].x + cosslice * vertices[3].z);
 
                     context.rlgl.rlNormal3f(vertices[0].x, vertices[0].y, vertices[0].z);
                     context.rlgl.rlVertex3f(vertices[0].x, vertices[0].y, vertices[0].z);
@@ -614,28 +614,28 @@ public class rModels {
         context.rlgl.rlBegin(RL_LINES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        for (int i = 0; i < (rings + 2); i++) {
-            for (int j = 0; j < slices; j++) {
+        for(int i = 0; i < (rings + 2); i++) {
+            for(int j = 0; j < slices; j++) {
                 context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
                 context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
-                                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
 
                 context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * ((j + 1) * 360 / slices)),
-                                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * ((j + 1) * 360 / slices)));
                 context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
 
                 context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
-                                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * (i + 1))) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
                 context.rlgl.rlVertex3f((float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.sin(DEG2RAD * (j * 360 / slices)),
-                                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
-                                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
+                        (float) Math.sin(DEG2RAD * (270 + (180 / (rings + 1)) * i)),
+                        (float) Math.cos(DEG2RAD * (270 + (180 / (rings + 1)) * i)) * (float) Math.cos(DEG2RAD * (j * 360 / slices)));
             }
         }
 
@@ -655,7 +655,7 @@ public class rModels {
      * @param color        Color to draw the cylinder
      */
     public void DrawCylinder(Vector3 position, float radiusTop, float radiusBottom, float height, int sides, Color color) {
-        if (sides < 3) {
+        if(sides < 3) {
             sides = 3;
         }
 
@@ -667,9 +667,9 @@ public class rModels {
         context.rlgl.rlBegin(RL_TRIANGLES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        if (radiusTop > 0) {
+        if(radiusTop > 0) {
             // Draw Body -------------------------------------------------------------------------------------
-            for (int i = 0; i < sides; i++) {
+            for(int i = 0; i < sides; i++) {
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i * angleStep) * radiusBottom); //Bottom Left
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 1) * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 1) * angleStep) * radiusBottom); //Bottom Right
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 1) * angleStep) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 1) * angleStep) * radiusTop); //Top Right
@@ -680,7 +680,7 @@ public class rModels {
             }
 
             // Draw Cap --------------------------------------------------------------------------------------
-            for (int i = 0; i < sides; i++) {
+            for(int i = 0; i < sides; i++) {
                 context.rlgl.rlVertex3f(0, height, 0);
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i * angleStep) * radiusTop, height, (float) Math.cos(DEG2RAD * i * angleStep) * radiusTop);
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 1) * angleStep) * radiusTop, height, (float) Math.cos(DEG2RAD * (i + 1) * angleStep) * radiusTop);
@@ -688,7 +688,7 @@ public class rModels {
         }
         else {
             // Draw Cone -------------------------------------------------------------------------------------
-            for (int i = 0; i < sides; i++) {
+            for(int i = 0; i < sides; i++) {
                 context.rlgl.rlVertex3f(0, height, 0);
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i * angleStep) * radiusBottom);
                 context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 1) * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 1) * angleStep) * radiusBottom);
@@ -696,7 +696,7 @@ public class rModels {
         }
 
         // Draw Base -----------------------------------------------------------------------------------------
-        for (int i = 0; i < sides; i++) {
+        for(int i = 0; i < sides; i++) {
             context.rlgl.rlVertex3f(0, 0, 0);
             context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 1) * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 1) * angleStep) * radiusBottom);
             context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i * angleStep) * radiusBottom);
@@ -718,12 +718,12 @@ public class rModels {
      * @param color       Color to use when drawing the cylinder
      */
     public void DrawCylinderEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color) {
-        if (sides < 3) {
+        if(sides < 3) {
             sides = 3;
         }
 
         Vector3 direction = new Vector3(endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z);
-        if ((direction.x == 0) && (direction.y == 0) && (direction.z == 0)) {
+        if((direction.x == 0) && (direction.y == 0) && (direction.z == 0)) {
             return; // Security check
         }
 
@@ -736,7 +736,7 @@ public class rModels {
         context.rlgl.rlBegin(RL_TRIANGLES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        for (int i = 0; i < sides; i++) {
+        for(int i = 0; i < sides; i++) {
             // Compute the four vertices
             float s1 = (float) Math.sin(baseAngle * (i + 0)) * startRadius;
             float c1 = (float) Math.cos(baseAngle * (i + 0)) * startRadius;
@@ -754,7 +754,7 @@ public class rModels {
             float c4 = (float) Math.cos(baseAngle * (i + 1)) * endRadius;
             Vector3 w4 = new Vector3(endPos.x + s4 * b1.x + c4 * b2.x, endPos.y + s4 * b1.y + c4 * b2.y, endPos.z + s4 * b1.z + c4 * b2.z);
 
-            if (startRadius > 0) {
+            if(startRadius > 0) {
                 context.rlgl.rlVertex3f(startPos.x, startPos.y, startPos.z); // |
                 context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);                   // T0
                 context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);                   // |
@@ -768,7 +768,7 @@ public class rModels {
             context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);                       // T2            '.  \  |T3/
             context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);                       // |               '. \ | /
             //                   '.\|/
-            if (endRadius > 0) {                                             //                     'x w3
+            if(endRadius > 0) {                                             //                     'x w3
                 context.rlgl.rlVertex3f(endPos.x, endPos.y, endPos.z);       // |
                 context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);                   // T3
                 context.rlgl.rlVertex3f(w4.x, w4.y, w4.z);                   // |
@@ -789,7 +789,7 @@ public class rModels {
      * @param color        Color to draw the cylinder
      */
     public void DrawCylinderWires(Vector3 position, float radiusTop, float radiusBottom, float height, int sides, Color color) {
-        if (sides < 3) {
+        if(sides < 3) {
             sides = 3;
         }
 
@@ -803,7 +803,7 @@ public class rModels {
         context.rlgl.rlBegin(RL_LINES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        for (int i = 0; i < sides; i++) {
+        for(int i = 0; i < sides; i++) {
             context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * i * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * i * angleStep) * radiusBottom);
             context.rlgl.rlVertex3f((float) Math.sin(DEG2RAD * (i + 1) * angleStep) * radiusBottom, 0, (float) Math.cos(DEG2RAD * (i + 1) * angleStep) * radiusBottom);
 
@@ -829,16 +829,16 @@ public class rModels {
      * @param endPos      Position of the bottom face in 3D space
      * @param startRadius Length of the top radius
      * @param endRadius   Length of the bottom radius
-     * @param sides Number of sides to use when rendering the cylinder
-     * @param color Color to draw the cylinder
+     * @param sides       Number of sides to use when rendering the cylinder
+     * @param color       Color to draw the cylinder
      */
     public void DrawCylinderWiresEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color) {
-        if (sides < 3) {
+        if(sides < 3) {
             sides = 3;
         }
 
         Vector3 direction = new Vector3(endPos.x - startPos.x, endPos.y - startPos.y, endPos.z - startPos.z);
-        if ((direction.x == 0) && (direction.y == 0) && (direction.z == 0)) {
+        if((direction.x == 0) && (direction.y == 0) && (direction.z == 0)) {
             return; // Security check
         }
 
@@ -851,7 +851,7 @@ public class rModels {
         context.rlgl.rlBegin(RL_LINES);
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
-        for (int i = 0; i < sides; i++) {
+        for(int i = 0; i < sides; i++) {
             // Compute the four vertices
             float s1 = (float) Math.sin(baseAngle * (i + 0)) * startRadius;
             float c1 = (float) Math.cos(baseAngle * (i + 0)) * startRadius;
@@ -885,14 +885,14 @@ public class rModels {
      * Draw a capsule
      *
      * @param startPos Center position of the top endcap
-     * @param endPos Center position of the bottom endcap
-     * @param radius Length of the capsule's radius
-     * @param rings     Number of horizontal segments to use when rendering the sphere
-     * @param slices    Number of vertical segments to use when rendering the sphere
-     * @param color     Color to draw the sphere
+     * @param endPos   Center position of the bottom endcap
+     * @param radius   Length of the capsule's radius
+     * @param rings    Number of horizontal segments to use when rendering the sphere
+     * @param slices   Number of vertical segments to use when rendering the sphere
+     * @param color    Color to draw the sphere
      */
     void DrawCapsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color) {
-        if (slices < 3) {
+        if(slices < 3) {
             slices = 3;
         }
 
@@ -900,7 +900,7 @@ public class rModels {
 
         // draw a sphere if start and end points are the same
         boolean sphereCase = (direction.x == 0) && (direction.y == 0) && (direction.z == 0);
-        if (sphereCase) {
+        if(sphereCase) {
             direction = new Vector3(0.0f, 1.0f, 0.0f);
         }
 
@@ -917,9 +917,9 @@ public class rModels {
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         // render both caps
-        for (int c = 0; c < 2; c++) {
-            for (int i = 0; i < rings; i++) {
-                for (int j = 0; j < slices; j++) {
+        for(int c = 0; c < 2; c++) {
+            for(int i = 0; i < rings; i++) {
+                for(int j = 0; j < slices; j++) {
                     // Building up the rings from capCenter in the direction of the 'direction' vector computed earlier
 
                     // Compute the four vertices
@@ -956,7 +956,7 @@ public class rModels {
                     );
 
                     // Make sure cap triangle normals are facing outwards
-                    if (c == 0) {
+                    if(c == 0) {
                         context.rlgl.rlVertex3f(w1.x, w1.y, w1.z);
                         context.rlgl.rlVertex3f(w2.x, w2.y, w2.z);
                         context.rlgl.rlVertex3f(w3.x, w3.y, w3.z);
@@ -981,8 +981,8 @@ public class rModels {
         }
 
         // render middle
-        if (!sphereCase) {
-            for (int j = 0; j < slices; j++) {
+        if(!sphereCase) {
+            for(int j = 0; j < slices; j++) {
                 // compute the four vertices
                 float ringSin1 = (float) (Math.sin(baseSliceAngle * (j)) * radius);
                 float ringCos1 = (float) (Math.cos(baseSliceAngle * (j)) * radius);
@@ -1034,14 +1034,14 @@ public class rModels {
      * Draw capsule wires
      *
      * @param startPos Center position of the top endcap
-     * @param endPos Center position of the bottom endcap
-     * @param radius Length of the capsule's radius
-     * @param rings     Number of horizontal segments to use when rendering the sphere
-     * @param slices    Number of vertical segments to use when rendering the sphere
-     * @param color     Color to draw the sphere
+     * @param endPos   Center position of the bottom endcap
+     * @param radius   Length of the capsule's radius
+     * @param rings    Number of horizontal segments to use when rendering the sphere
+     * @param slices   Number of vertical segments to use when rendering the sphere
+     * @param color    Color to draw the sphere
      */
     void DrawCapsuleWires(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color) {
-        if (slices < 3) {
+        if(slices < 3) {
             slices = 3;
         }
 
@@ -1049,7 +1049,7 @@ public class rModels {
 
         // draw a sphere if start and end points are the same
         boolean sphereCase = (direction.x == 0) && (direction.y == 0) && (direction.z == 0);
-        if (sphereCase) {
+        if(sphereCase) {
             direction = new Vector3(0.0f, 1.0f, 0.0f);
         }
 
@@ -1066,9 +1066,9 @@ public class rModels {
         context.rlgl.rlColor4ub(color.r, color.g, color.b, color.a);
 
         // render both caps
-        for (int c = 0; c < 2; c++) {
-            for (int i = 0; i < rings; i++) {
-                for (int j = 0; j < slices; j++) {
+        for(int c = 0; c < 2; c++) {
+            for(int i = 0; i < rings; i++) {
+                for(int j = 0; j < slices; j++) {
                     // Building up the rings from capCenter in the direction of the 'direction' vector computed earlier
 
                     // Compute the four vertices
@@ -1125,8 +1125,8 @@ public class rModels {
         }
 
         // render middle
-        if (!sphereCase) {
-            for (int j = 0; j < slices; j++) {
+        if(!sphereCase) {
+            for(int j = 0; j < slices; j++) {
                 // compute the four vertices
                 float ringSin1 = (float) (Math.sin(baseSliceAngle * (j)) * radius);
                 float ringCos1 = (float) (Math.cos(baseSliceAngle * (j)) * radius);
@@ -1177,8 +1177,8 @@ public class rModels {
      * Draw a plane
      *
      * @param centerPos Center position of the plane in 3D space
-     * @param size Size of the plane
-     * @param color Color to draw the plane
+     * @param size      Size of the plane
+     * @param color     Color to draw the plane
      */
     public void DrawPlane(Vector3 centerPos, Vector2 size, Color color) {
 
@@ -1202,7 +1202,7 @@ public class rModels {
     /**
      * Draw a ray line
      *
-     * @param ray {@code Ray} to draw
+     * @param ray   {@code Ray} to draw
      * @param color Color to draw the ray
      */
     public void DrawRay(Ray ray, Color color) {
@@ -1227,8 +1227,8 @@ public class rModels {
         int halfSlices = slices / 2;
 
         context.rlgl.rlBegin(RL_LINES);
-        for (int i = -halfSlices; i <= halfSlices; i++) {
-            if (i == 0) {
+        for(int i = -halfSlices; i <= halfSlices; i++) {
+            if(i == 0) {
                 context.rlgl.rlColor3f(0.5f, 0.5f, 0.5f);
             }
             else {
@@ -1254,28 +1254,28 @@ public class rModels {
 
         Model model = new Model();
 
-        if (SUPPORT_FILEFORMAT_OBJ && context.files.IsFileExtension(fileName, ".obj")) {
+        if(SUPPORT_FILEFORMAT_OBJ && context.files.IsFileExtension(fileName, ".obj")) {
             model = LoadOBJ(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_IQM && context.files.IsFileExtension(fileName, ".iqm")) {
+        else if(SUPPORT_FILEFORMAT_IQM && context.files.IsFileExtension(fileName, ".iqm")) {
             model = LoadIQM(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_GLTF && ((context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb")))) {
+        else if(SUPPORT_FILEFORMAT_GLTF && ((context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb")))) {
             model = LoadGLTF(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_VOX && context.files.IsFileExtension(fileName, ".vox")) {
+        else if(SUPPORT_FILEFORMAT_VOX && context.files.IsFileExtension(fileName, ".vox")) {
             model = LoadVOX(fileName);
         }
-        else if (SUPPORT_FILEFORMAT_M3D && (context.files.IsFileExtension(fileName, ".m3d") || context.files.IsFileExtension(fileName, ".a3d"))) {
+        else if(SUPPORT_FILEFORMAT_M3D && (context.files.IsFileExtension(fileName, ".m3d") || context.files.IsFileExtension(fileName, ".a3d"))) {
             model = LoadM3D(fileName);
         }
 
         // Make sure model transform is set to identity matrix!
         model.transform = MatrixIdentity();
 
-        if ((model.meshCount != 0) && (model.meshes != null)) {
+        if((model.meshCount != 0) && (model.meshes != null)) {
             // Upload vertex data to GPU (static meshes)
-            for (int i = 0; i < model.meshCount; i++) {
+            for(int i = 0; i < model.meshCount; i++) {
                 UploadMesh(model.meshes[i], false);
             }
         }
@@ -1283,14 +1283,14 @@ public class rModels {
             context.tracelog.TRACELOG(LOG_WARNING, "MESH: [%s] Failed to load model mesh(es) data", fileName);
         }
 
-        if (model.materialCount == 0) {
+        if(model.materialCount == 0) {
             context.tracelog.TRACELOG(LOG_WARNING, "MATERIAL: [%s] Failed to load model material data, default to white material", fileName);
 
             model.materialCount = 1;
             model.materials = new Material[model.materialCount];
             model.materials[0] = LoadMaterialDefault();
 
-            if (model.meshMaterial == null) {
+            if(model.meshMaterial == null) {
                 model.meshMaterial = new int[model.meshCount];
                 Arrays.fill(model.meshMaterial, 0);
             }
@@ -1333,7 +1333,7 @@ public class rModels {
     public boolean IsModelValid(Model model) {
         boolean result = false;
 
-        if ((model.meshes != null) &&           // Validate model contains some mesh
+        if((model.meshes != null) &&           // Validate model contains some mesh
                 (model.materials != null) &&        // Validate model contains some material (at least default one)
                 (model.meshMaterial != null) &&     // Validate mesh-material linkage
                 (model.meshCount > 0) &&            // Validate mesh count
@@ -1343,40 +1343,40 @@ public class rModels {
 
         // NOTE: Many elements could be validated from a model, including every model mesh VAO/VBOs
         // but some VBOs could not be used, it depends on Mesh vertex data
-        for (int i = 0; i < model.meshCount; i++) {
-            if ((model.meshes[i].vertices != null) && (model.meshes[i].vboId[0] == 0)) {
+        for(int i = 0; i < model.meshCount; i++) {
+            if((model.meshes[i].vertices != null) && (model.meshes[i].vboId[0] == 0)) {
                 result = false;
                 break;
             }  // Vertex position buffer not uploaded to GPU
-            if ((model.meshes[i].texcoords != null) && (model.meshes[i].vboId[1] == 0)) {
+            if((model.meshes[i].texcoords != null) && (model.meshes[i].vboId[1] == 0)) {
                 result = false;
                 break;
             }  // Vertex textcoords buffer not uploaded to GPU
-            if ((model.meshes[i].normals != null) && (model.meshes[i].vboId[2] == 0)) {
+            if((model.meshes[i].normals != null) && (model.meshes[i].vboId[2] == 0)) {
                 result = false;
                 break;
             }  // Vertex normals buffer not uploaded to GPU
-            if ((model.meshes[i].colors != null) && (model.meshes[i].vboId[3] == 0)) {
+            if((model.meshes[i].colors != null) && (model.meshes[i].vboId[3] == 0)) {
                 result = false;
                 break;
             }  // Vertex colors buffer not uploaded to GPU
-            if ((model.meshes[i].tangents != null) && (model.meshes[i].vboId[4] == 0)) {
+            if((model.meshes[i].tangents != null) && (model.meshes[i].vboId[4] == 0)) {
                 result = false;
                 break;
             }  // Vertex tangents buffer not uploaded to GPU
-            if ((model.meshes[i].texcoords2 != null) && (model.meshes[i].vboId[5] == 0)) {
+            if((model.meshes[i].texcoords2 != null) && (model.meshes[i].vboId[5] == 0)) {
                 result = false;
                 break;
             }  // Vertex texcoords2 buffer not uploaded to GPU
-            if ((model.meshes[i].indices != null) && (model.meshes[i].vboId[6] == 0)) {
+            if((model.meshes[i].indices != null) && (model.meshes[i].vboId[6] == 0)) {
                 result = false;
                 break;
             }  // Vertex indices buffer not uploaded to GPU
-            if ((model.meshes[i].boneIndices != null) && (model.meshes[i].vboId[7] == 0)) {
+            if((model.meshes[i].boneIndices != null) && (model.meshes[i].vboId[7] == 0)) {
                 result = false;
                 break;
             }  // Vertex boneIds buffer not uploaded to GPU
-            if ((model.meshes[i].boneWeights != null) && (model.meshes[i].vboId[8] == 0)) {
+            if((model.meshes[i].boneWeights != null) && (model.meshes[i].vboId[8] == 0)) {
                 result = false;
                 break;
             }  // Vertex boneWeights buffer not uploaded to GPU
@@ -1399,7 +1399,7 @@ public class rModels {
     @Contract(mutates = "param")
     public void UnloadModel(Model model) {
         // Unload meshes
-        for (int i = 0; i < model.meshCount; i++) {
+        for(int i = 0; i < model.meshCount; i++) {
             UnloadMesh(model.meshes[i]);
         }
 
@@ -1407,7 +1407,7 @@ public class rModels {
         // NOTE: As the user could be sharing shaders and textures between models,
         // we don't unload the material but just free its maps,
         // the user is responsible for freeing models shaders and textures
-        for (int i = 0; i < model.materialCount; i++) {
+        for(int i = 0; i < model.materialCount; i++) {
             model.materials[i].maps = null;
         }
 
@@ -1432,11 +1432,11 @@ public class rModels {
     public BoundingBox GetModelBoundingBox(Model model) {
         BoundingBox bounds = new BoundingBox();
 
-        if (model.meshCount > 0) {
+        if(model.meshCount > 0) {
             Vector3 temp = new Vector3();
             bounds = GetMeshBoundingBox(model.meshes[0]);
 
-            for (int i = 1; i < model.meshCount; i++) {
+            for(int i = 1; i < model.meshCount; i++) {
                 BoundingBox tempBounds = GetMeshBoundingBox(model.meshes[i]);
 
                 temp.x = Math.min(bounds.min.x, tempBounds.min.x);
@@ -1463,11 +1463,11 @@ public class rModels {
     /**
      * Upload vertex data into a VAO (if supported) and VBO
      *
-     * @param mesh {@code Mesh} to upload
+     * @param mesh    {@code Mesh} to upload
      * @param dynamic {@code true} if {@code mesh} contains dynamic vertex buffers
      */
     public void UploadMesh(Mesh mesh, boolean dynamic) {
-        if (mesh.vaoId > 0) {
+        if(mesh.vaoId > 0) {
             // Check if mesh has already been loaded in GPU
             context.tracelog.TRACELOG(LOG_WARNING, "VAO: [ID " + mesh.vaoId + "] Trying to re-load an already loaded mesh");
             return;
@@ -1484,12 +1484,12 @@ public class rModels {
         mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2] = 0;     // Vertex buffer: texcoords2
         mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = 0;     // Vertex buffer: indices
 
-        if (RL_SUPPORT_GPU_SKINNING) {
+        if(RL_SUPPORT_GPU_SKINNING) {
             mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES] = 0;      // Vertex buffer: boneIndices
             mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS] = 0;  // Vertex buffer: boneWeights
         }
 
-        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             mesh.vaoId = context.rlgl.rlLoadVertexArray();
             context.rlgl.rlEnableVertexArray(mesh.vaoId);
 
@@ -1502,7 +1502,7 @@ public class rModels {
             context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION);
 
             // Enable vertex attributes: texcoords (shader-location = 1)
-            if (mesh.texcoords != null) {
+            if(mesh.texcoords != null) {
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords, dynamic);
                 context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD, 2, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD);
@@ -1514,7 +1514,7 @@ public class rModels {
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD);
             }
 
-            if (mesh.normals != null) {
+            if(mesh.normals != null) {
                 // Enable vertex attributes: normals (shader-location = 2)
                 float[] normals = (mesh.animNormals != null) ? mesh.animNormals : mesh.normals;
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL] = context.rlgl.rlLoadVertexBuffer(normals, dynamic);
@@ -1529,7 +1529,7 @@ public class rModels {
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL);
             }
 
-            if (mesh.colors != null) {
+            if(mesh.colors != null) {
                 // Enable vertex attribute: color (shader-location = 3)
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] = context.rlgl.rlLoadVertexBuffer(mesh.colors, dynamic);
                 context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR, 4, RL_UNSIGNED_BYTE, true, 0, 0);
@@ -1543,7 +1543,7 @@ public class rModels {
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR);
             }
 
-            if (mesh.tangents != null) {
+            if(mesh.tangents != null) {
                 // Enable vertex attribute: tangent (shader-location = 4)
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT] = context.rlgl.rlLoadVertexBuffer(mesh.tangents, dynamic);
                 context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT, 4, RL_FLOAT, false, 0, 0);
@@ -1557,7 +1557,7 @@ public class rModels {
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT);
             }
 
-            if (mesh.texcoords2 != null) {
+            if(mesh.texcoords2 != null) {
                 // Enable vertex attribute: texcoord2 (shader-location = 5)
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2] = context.rlgl.rlLoadVertexBuffer(mesh.texcoords2, dynamic);
                 context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2, 2, RL_FLOAT, false, 0, 0);
@@ -1571,8 +1571,8 @@ public class rModels {
                 context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2);
             }
 
-            if (RL_SUPPORT_GPU_SKINNING) {
-                if (mesh.boneIndices != null) {
+            if(RL_SUPPORT_GPU_SKINNING) {
+                if(mesh.boneIndices != null) {
                     // Enable vertex attribute: boneIndices (shader-location = 7)
                     mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES] = context.rlgl.rlLoadVertexBuffer(mesh.boneIndices, dynamic);
                     context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES, 4, RL_UNSIGNED_BYTE, false, 0, 0);
@@ -1581,14 +1581,14 @@ public class rModels {
                 else {
                     // Default vertex attribute: boneIds
                     // WARNING: Default value provided to shader if location available
-                    float[] value ={
-                        0.0f, 0.0f, 0.0f, 0.0f
-                    } ;
+                    float[] value = {
+                            0.0f, 0.0f, 0.0f, 0.0f
+                    };
                     context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES, value, SHADER_ATTRIB_VEC4, 4);
                     context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES);
                 }
 
-                if (mesh.boneWeights != null) {
+                if(mesh.boneWeights != null) {
                     // Enable vertex attribute: boneWeights (shader-location = 8)
                     mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS] = context.rlgl.rlLoadVertexBuffer(mesh.boneWeights, dynamic);
                     context.rlgl.rlSetVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS, 4, RL_FLOAT, false, 0, 0);
@@ -1597,23 +1597,23 @@ public class rModels {
                 else {
                     // Default vertex attribute: boneWeights
                     // WARNING: Default value provided to shader if location available
-                    float[] value ={
-                        0.0f, 0.0f, 0.0f, 0.0f
-                    } ;
+                    float[] value = {
+                            0.0f, 0.0f, 0.0f, 0.0f
+                    };
                     context.rlgl.rlSetVertexAttributeDefault(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS, value, SHADER_ATTRIB_VEC4, 2);
                     context.rlgl.rlDisableVertexAttribute(RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS);
                 }
             }
 
-            if (mesh.indices != null) {
+            if(mesh.indices != null) {
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = context.rlgl.rlLoadVertexBufferElement(mesh.indices, dynamic);
             }
 
-            if (mesh.indicesS != null) {
+            if(mesh.indicesS != null) {
                 mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES] = context.rlgl.rlLoadVertexBufferElement(mesh.indicesS, dynamic);
             }
 
-            if (mesh.vaoId > 0) {
+            if(mesh.vaoId > 0) {
                 context.tracelog.TRACELOG(LOG_INFO, "VAO: [ID " + mesh.vaoId + "] Mesh uploaded successfully to VRAM (GPU)");
             }
             else {
@@ -1627,9 +1627,9 @@ public class rModels {
     /**
      * Update mesh vertex data in GPU for a specific buffer index
      *
-     * @param mesh Mesh to update
-     * @param index VBO to update
-     * @param data data to upload to the VBO
+     * @param mesh   Mesh to update
+     * @param index  VBO to update
+     * @param data   data to upload to the VBO
      * @param offset Offset in {@code data} to upload
      */
     public void UpdateMeshBuffer(Mesh mesh, int index, byte[] data, int offset) {
@@ -1639,40 +1639,40 @@ public class rModels {
     /**
      * Draw a 3d mesh with material and transform
      *
-     * @param mesh Mesh to draw
-     * @param material Material to use when drawing {@code mesh}
+     * @param mesh      Mesh to draw
+     * @param material  Material to use when drawing {@code mesh}
      * @param transform Transform matrix to use when rendering {@code mesh}
      */
     public void DrawMesh(Mesh mesh, Material material, Matrix transform) {
-        if (GRAPHICS_API_OPENGL_11) {
+        if(GRAPHICS_API_OPENGL_11) {
             final int GL_VERTEX_ARRAY = 0x8074;
             final int GL_NORMAL_ARRAY = 0x8075;
             final int GL_COLOR_ARRAY = 0x8076;
             final int GL_TEXTURE_COORD_ARRAY = 0x8078;
 
-            if ((mesh.texcoords != null) && (material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture.id > 0)) {
+            if((mesh.texcoords != null) && (material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture.id > 0)) {
                 context.rlgl.rlEnableTexture(material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture.id);
             }
 
-            if (mesh.animVertices != null) {
+            if(mesh.animVertices != null) {
                 context.rlgl.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.animVertices);
             }
             else {
                 context.rlgl.rlEnableStatePointer(GL_VERTEX_ARRAY, mesh.vertices);
             }
 
-            if (mesh.texcoords != null) {
+            if(mesh.texcoords != null) {
                 context.rlgl.rlEnableStatePointer(GL_TEXTURE_COORD_ARRAY, mesh.texcoords);
             }
 
-            if (mesh.animNormals != null) {
+            if(mesh.animNormals != null) {
                 context.rlgl.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.animNormals);
             }
-            else if (mesh.normals != null) {
+            else if(mesh.normals != null) {
                 context.rlgl.rlEnableStatePointer(GL_NORMAL_ARRAY, mesh.normals);
             }
 
-            if (mesh.colors != null) {
+            if(mesh.colors != null) {
                 context.rlgl.rlEnableStatePointer(GL_COLOR_ARRAY, mesh.colors);
             }
 
@@ -1685,7 +1685,7 @@ public class rModels {
                     material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.a
             );
 
-            if (mesh.indices != null) {
+            if(mesh.indices != null) {
                 context.rlgl.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, mesh.indices);
             }
             else {
@@ -1701,18 +1701,18 @@ public class rModels {
             context.rlgl.rlDisableTexture();
         }
 
-        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             // Bind shader program
             context.rlgl.rlEnableShader(material.shader.id);
 
-            if (material.shader.locs == null) {
+            if(material.shader.locs == null) {
                 return;
             }
 
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
-            if (material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
                 float[] values = {
                         (float) material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.g / 255.0f,
@@ -1724,7 +1724,7 @@ public class rModels {
             }
 
             // Upload to shader material.colSpecular (if location available)
-            if (material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values = {
                         (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.g / 255.0f,
@@ -1746,10 +1746,10 @@ public class rModels {
             Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
             }
-            if (material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
             }
 
@@ -1759,7 +1759,7 @@ public class rModels {
             matModel = MatrixMultiply(transform, context.rlgl.rlGetMatrixTransform());
 
             // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
-            if (material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MODEL.GetLocation()], matModel);
             }
 
@@ -1767,19 +1767,19 @@ public class rModels {
             matModelView = MatrixMultiply(matModel, matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
             //-----------------------------------------------------
 
             // Bind active texture maps (if available)
-            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
-                if (material.maps[i].texture.id > 0) {
+            for(int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if(material.maps[i].texture.id > 0) {
                     // Select current shader texture slot
                     context.rlgl.rlActiveTextureSlot(i);
 
                     // Enable texture for active slot
-                    if ((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) || (i == MATERIAL_MAP_PREFILTER.GetIndex()) || (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
+                    if((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) || (i == MATERIAL_MAP_PREFILTER.GetIndex()) || (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
                         context.rlgl.rlEnableTextureCubemap(material.maps[i].texture.id);
                     }
                     else {
@@ -1794,7 +1794,7 @@ public class rModels {
             // WARNING: UploadMesh() enables all vertex attributes available in mesh and sets default attribute values
             // for shader expected vertex attributes that are not provided by the mesh (i.e. colors)
             // This could be a dangerous approach because different meshes with different shaders can enable/disable some attributes
-            if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
+            if(!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
                 context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION]);
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
@@ -1805,7 +1805,7 @@ public class rModels {
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
-                if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
@@ -1813,8 +1813,8 @@ public class rModels {
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
-                if (material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
-                    if (mesh.vboId[3] != 0) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
+                    if(mesh.vboId[3] != 0) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
@@ -1829,49 +1829,49 @@ public class rModels {
                 }
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
-                if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
-                if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
-                if (RL_SUPPORT_GPU_SKINNING) {
+                if(RL_SUPPORT_GPU_SKINNING) {
                     // Bind mesh VBO data: vertex bone ids (shader-location = 6, if available)
-                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
+                    if(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()], 4, RL_UNSIGNED_BYTE, false, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()]);
                     }
 
                     // Bind mesh VBO data: vertex bone weights (shader-location = 7, if available)
-                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()] != -1) {
+                    if(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()] != -1) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()], 4, RL_FLOAT, false, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()]);
                     }
                 }
 
-                if (mesh.indices != null || mesh.indicesS != null) {
+                if(mesh.indices != null || mesh.indicesS != null) {
                     context.rlgl.rlEnableVertexBufferElement(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES]);
                 }
             }
 
             int eyeCount = 1;
-            if (context.rlgl.rlIsStereoRendererEnabled()) {
+            if(context.rlgl.rlIsStereoRendererEnabled()) {
                 eyeCount = 2;
             }
 
-            for (int eye = 0; eye < eyeCount; eye++) {
+            for(int eye = 0; eye < eyeCount; eye++) {
                 // Calculate model-view-projection matrix (MVP)
                 Matrix matModelViewProjection = MatrixIdentity();
-                if (eyeCount == 1) {
+                if(eyeCount == 1) {
                     matModelViewProjection = MatrixMultiply(matModelView, matProjection);
                 }
                 else {
@@ -1884,7 +1884,7 @@ public class rModels {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
 
                 // Draw mesh
-                if (mesh.indices != null || mesh.indicesS != null) {
+                if(mesh.indices != null || mesh.indicesS != null) {
                     context.rlgl.rlDrawVertexArrayElements(0, mesh.triangleCount * 3, new float[0]);
                 }
                 else {
@@ -1893,12 +1893,12 @@ public class rModels {
             }
 
             // Unbind all bound texture maps
-            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+            for(int i = 0; i < MAX_MATERIAL_MAPS; i++) {
                 // Select current shader texture slot
                 context.rlgl.rlActiveTextureSlot(i);
 
                 // Disable texture for active slot
-                if ((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) || (i == MATERIAL_MAP_PREFILTER.GetIndex()) || (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
+                if((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) || (i == MATERIAL_MAP_PREFILTER.GetIndex()) || (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
                     context.rlgl.rlDisableTextureCubemap();
                 }
                 else {
@@ -1923,13 +1923,13 @@ public class rModels {
     /**
      * Draw multiple mesh instances with material and different transforms
      *
-     * @param mesh Mesh to draw
-     * @param material Material to use when drawing {@code mesh}
+     * @param mesh       Mesh to draw
+     * @param material   Material to use when drawing {@code mesh}
      * @param transforms {@code Matrix[]} of transform matrices to use for rendering
-     * @param instances Number of instances of {@code mesh} to draw
+     * @param instances  Number of instances of {@code mesh} to draw
      */
     public void DrawMeshInstanced(Mesh mesh, Material material, Matrix[] transforms, int instances) {
-        if (GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
+        if(GRAPHICS_API_OPENGL_33 || GRAPHICS_API_OPENGL_ES2) {
             // Instancing required variables
             float[] instanceTransform = null;
             int instancesVboId = 0;
@@ -1940,7 +1940,7 @@ public class rModels {
             // Send required data to shader (matrices, values)
             //-----------------------------------------------------
             // Upload to shader material.colDiffuse
-            if (material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_COLOR_DIFFUSE.GetLocation()] != -1) {
                 float[] values = {
                         (float) material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color.g / 255.0f,
@@ -1952,7 +1952,7 @@ public class rModels {
             }
 
             // Upload to shader material.colSpecular (if location available)
-            if (material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_COLOR_SPECULAR.GetLocation()] != -1) {
                 float[] values = {
                         (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.r / 255.0f,
                         (float) material.maps[MATERIAL_MAP_SPECULAR.GetIndex()].color.g / 255.0f,
@@ -1974,10 +1974,10 @@ public class rModels {
             Matrix matProjection = context.rlgl.rlGetMatrixProjection();
 
             // Upload view and projection matrices (if locations available)
-            if (material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_VIEW.GetLocation()], matView);
             }
-            if (material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION.GetLocation()], matProjection);
             }
 
@@ -1985,7 +1985,7 @@ public class rModels {
             instanceTransform = new float[instances * 16];
 
             // Fill buffer with instances transformations as float16 arrays
-            for (int i = 0; i < instances; i++) {
+            for(int i = 0; i < instances; i++) {
                 Float16 tmp = MatrixToFloatV(transforms[i]);
                 System.arraycopy(tmp.v, 0, instanceTransform, i * 16, tmp.v.length);
             }
@@ -2000,10 +2000,10 @@ public class rModels {
             instancesVboId = context.rlgl.rlLoadVertexBuffer(instanceTransform, false);
 
             // Instances transformation matrices are sent to shader attribute location: SHADER_LOC_VERTEX_INSTANCETRANSFORM
-            if (material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] != -1) {
-                for (int i = 0; i < 4; i++) {
+            if(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] != -1) {
+                for(int i = 0; i < 4; i++) {
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i);
-                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i, 4, RL_FLOAT, false, 16*Float.BYTES, i*4*Float.BYTES);
+                    context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i, 4, RL_FLOAT, false, 16 * Float.BYTES, i * 4 * Float.BYTES);
                     context.rlgl.rlSetVertexAttributeDivisor(material.shader.locs[SHADER_LOC_VERTEX_INSTANCETRANSFORM.GetLocation()] + i, 1);
                 }
             }
@@ -2016,19 +2016,19 @@ public class rModels {
             matModelView = MatrixMultiply(context.rlgl.rlGetMatrixTransform(), matView);
 
             // Upload model normal matrix (if locations available)
-            if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
+            if(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()] != -1) {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL.GetLocation()], MatrixTranspose(MatrixInvert(matModel)));
             }
             //-----------------------------------------------------
 
             // Bind active texture maps (if available)
-            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
-                if (material.maps[i].texture.id > 0) {
+            for(int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if(material.maps[i].texture.id > 0) {
                     // Select current shader texture slot
                     context.rlgl.rlActiveTextureSlot(i);
 
                     // Enable texture for active slot
-                    if ((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) || (i == MATERIAL_MAP_PREFILTER.GetIndex()) || (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
+                    if((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) || (i == MATERIAL_MAP_PREFILTER.GetIndex()) || (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
                         context.rlgl.rlEnableTextureCubemap(material.maps[i].texture.id);
                     }
                     else {
@@ -2041,7 +2041,7 @@ public class rModels {
 
             // Try binding vertex array objects (VAO)
             // or use VBOs if not possible
-            if (!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
+            if(!context.rlgl.rlEnableVertexArray(mesh.vaoId)) {
                 // Bind mesh VBO data: vertex position (shader-location = 0)
                 context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION]);
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION.GetLocation()], 3, RL_FLOAT, false, 0, 0);
@@ -2052,7 +2052,7 @@ public class rModels {
                 context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                 context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01.GetLocation()]);
 
-                if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()] != -1) {
                     // Bind mesh VBO data: vertex normals (shader-location = 2)
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL.GetLocation()], 3, RL_FLOAT, false, 0, 0);
@@ -2060,8 +2060,8 @@ public class rModels {
                 }
 
                 // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
-                if (material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
-                    if (mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] != 0) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()] != -1) {
+                    if(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] != 0) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()], 4, RL_UNSIGNED_BYTE, true, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
@@ -2078,54 +2078,54 @@ public class rModels {
                 }
 
                 // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
-                if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()], 4, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT.GetLocation()]);
                 }
 
                 // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
-                if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
+                if(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()] != -1) {
                     context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2]);
                     context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()], 2, RL_FLOAT, false, 0, 0);
                     context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02.GetLocation()]);
                 }
 
-                if (RL_SUPPORT_GPU_SKINNING) {
+                if(RL_SUPPORT_GPU_SKINNING) {
                     // Bind mesh VBO data: vertex bone ids (shader-location = 6, if available)
-                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
+                    if(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()] != -1) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEINDICES]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()], 4, RL_UNSIGNED_BYTE, false, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEIDS.GetLocation()]);
                     }
 
                     // Bind mesh VBO data: vertex bone weights (shader-location = 7, if available)
-                    if (material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()] != -1) {
+                    if(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()] != -1) {
                         context.rlgl.rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_BONEWEIGHTS]);
                         context.rlgl.rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()], 4, RL_FLOAT, false, 0, 0);
                         context.rlgl.rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_BONEWEIGHTS.GetLocation()]);
                     }
                 }
 
-                if (mesh.indices != null) {
+                if(mesh.indices != null) {
                     context.rlgl.rlEnableVertexBufferElement(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES]);
                 }
             }
 
             // WARNING: Disable vertex attribute color input if mesh can not provide that data (despite location being enabled in shader)
-            if (mesh.vboId[3] == 0) {
+            if(mesh.vboId[3] == 0) {
                 context.rlgl.rlDisableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR.GetLocation()]);
             }
 
             int eyeCount = 1;
-            if (context.rlgl.rlIsStereoRendererEnabled()) {
+            if(context.rlgl.rlIsStereoRendererEnabled()) {
                 eyeCount = 2;
             }
 
-            for (int eye = 0; eye < eyeCount; eye++) {
+            for(int eye = 0; eye < eyeCount; eye++) {
                 // Calculate model-view-projection matrix (MVP)
                 Matrix matModelViewProjection = MatrixIdentity();
-                if (eyeCount == 1) {
+                if(eyeCount == 1) {
                     matModelViewProjection = MatrixMultiply(matModelView, matProjection);
                 }
                 else {
@@ -2138,7 +2138,7 @@ public class rModels {
                 context.rlgl.rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MVP.GetLocation()], matModelViewProjection);
 
                 // Draw mesh instanced
-                if (mesh.indices != null) {
+                if(mesh.indices != null) {
                     context.rlgl.rlDrawVertexArrayElementsInstanced(0, mesh.triangleCount * 3, null, instances);
                 }
                 else {
@@ -2147,13 +2147,13 @@ public class rModels {
             }
 
             // Unbind all binded texture maps
-            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
-                if (material.maps[i].texture.id > 0) {
+            for(int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if(material.maps[i].texture.id > 0) {
                     // Select current shader texture slot
                     context.rlgl.rlActiveTextureSlot(i);
 
                     // Disable texture for active slot
-                    if ((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) ||
+                    if((i == MATERIAL_MAP_IRRADIANCE.GetIndex()) ||
                             (i == MATERIAL_MAP_PREFILTER.GetIndex()) ||
                             (i == MATERIAL_MAP_CUBEMAP.GetIndex())) {
                         context.rlgl.rlDisableTextureCubemap();
@@ -2187,8 +2187,8 @@ public class rModels {
         // Unload rlgl mesh vboId data
         context.rlgl.rlUnloadVertexArray(mesh.vaoId);
 
-        if (mesh.vboId != null) {
-            for (int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
+        if(mesh.vboId != null) {
+            for(int i = 0; i < MAX_MESH_VERTEX_BUFFERS; i++) {
                 context.rlgl.rlUnloadVertexBuffer(mesh.vboId[i]);
             }
         }
@@ -2215,14 +2215,14 @@ public class rModels {
     /**
      * Export mesh data to file
      *
-     * @param mesh Mesh to export
+     * @param mesh     Mesh to export
      * @param fileName Location to save file
      * @return {@code true} if file operation is successful
      */
     public boolean ExportMesh(Mesh mesh, String fileName) {
         boolean result = false;
 
-        if (context.files.IsFileExtension(fileName, ".obj")) {
+        if(context.files.IsFileExtension(fileName, ".obj")) {
             StringBuilder txtData = new StringBuilder();
 
             txtData.append("# //////////////////////////////////////////////////////////////////////////////////\n");
@@ -2240,29 +2240,28 @@ public class rModels {
 
             txtData.append("g mesh\n");
 
-            for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
+            for(int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
                 txtData.append("v " + String.format(String.valueOf(mesh.vertices[v]), "%.6f") + String.format(String.valueOf(mesh.vertices[v + 1]), "%.6f") + String.format(String.valueOf(mesh.vertices[v + 2]), "%.6f"));
             }
 
-            for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 2) {
+            for(int i = 0, v = 0; i < mesh.vertexCount; i++, v += 2) {
                 txtData.append("vt " + String.format(String.valueOf(mesh.texcoords[v]), "%.6f") + String.format(String.valueOf(mesh.texcoords[v + 1]), "%.6f"));
-
             }
 
-            for (int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
+            for(int i = 0, v = 0; i < mesh.vertexCount; i++, v += 3) {
                 txtData.append("v " + String.format(String.valueOf(mesh.normals[v]), "%.6f") + String.format(String.valueOf(mesh.normals[v + 1]), "%.6f") + String.format(String.valueOf(mesh.normals[v + 2]), "%.6f"));
             }
 
-            if (mesh.indices != null) {
-                for (int i = 0, v = 0; i < mesh.triangleCount; i++, v += 3) {
+            if(mesh.indices != null) {
+                for(int i = 0, v = 0; i < mesh.triangleCount; i++, v += 3) {
                     txtData.append("f " +
-                                           mesh.indices[v] + 1 + "/" + mesh.indices[v] + 1 + "/" + mesh.indices[v] + 1 + " " +
-                                           mesh.indices[v + 1] + 1 + "/" + mesh.indices[v + 1] + 1 + "/" + mesh.indices[v + 1] + 1 + " " +
-                                           mesh.indices[v + 2] + 1 + "/" + mesh.indices[v + 2] + 1 + "/" + mesh.indices[v + 2] + 1 + "\n");
+                            mesh.indices[v] + 1 + "/" + mesh.indices[v] + 1 + "/" + mesh.indices[v] + 1 + " " +
+                            mesh.indices[v + 1] + 1 + "/" + mesh.indices[v + 1] + 1 + "/" + mesh.indices[v + 1] + 1 + " " +
+                            mesh.indices[v + 2] + 1 + "/" + mesh.indices[v + 2] + 1 + "/" + mesh.indices[v + 2] + 1 + "\n");
                 }
             }
             else {
-                for (int i = 0, v = 1; i < mesh.triangleCount; i++, v += 3) {
+                for(int i = 0, v = 1; i < mesh.triangleCount; i++, v += 3) {
                     txtData.append("f " + v + "/" + v + "/" + v + " " + (v + 1) + "/" + (v + 1) + "/" + (v + 1) + " " + (v + 2) + "/" + (v + 2) + "/" + (v + 2) + "\n");
                 }
             }
@@ -2272,15 +2271,14 @@ public class rModels {
             // NOTE: Text data length exported is determined by '\0' (null) character
             try {
                 result = context.files.SaveFileText(fileName, txtData.toString());
-            }
-            catch (IOException e) {
+            } catch(IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        else if (context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb")) {
+        else if(context.files.IsFileExtension(fileName, ".gltf") || context.files.IsFileExtension(fileName, ".glb")) {
             // TODO: Implement gltf/glb support
         }
-        else if (context.files.IsFileExtension(fileName, ".raw")) {
+        else if(context.files.IsFileExtension(fileName, ".raw")) {
             // TODO: Support additional file formats to export mesh vertex data
         }
 
@@ -2290,7 +2288,7 @@ public class rModels {
     /**
      * Export mesh as code file (.h) defining multiple arrays of vertex attributes
      *
-     * @param mesh Mesh to export
+     * @param mesh     Mesh to export
      * @param fileName Location to save file
      * @return {@code true} if file operation is successful
      */
@@ -2323,75 +2321,74 @@ public class rModels {
 
         // Define vertex attributes data as separate arrays
         //-----------------------------------------------------------------------------------------
-        if (mesh.vertices != null) {
+        if(mesh.vertices != null) {
             // Vertex position (XYZ - 3 components per vertex - float)
-            txtData.append(String.format("static float %s_VERTEX_DATA[%d] = { ", varFileName, mesh.vertexCount*3));
-            for (int i = 0; i < mesh.vertexCount*3 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.vertices[i]));
+            txtData.append(String.format("static float %s_VERTEX_DATA[%d] = { ", varFileName, mesh.vertexCount * 3));
+            for(int i = 0; i < mesh.vertexCount * 3 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "%.3ff,\n" : "%.3ff, "), mesh.vertices[i]));
             }
-            txtData.append(String.format("%.3ff };\n\n", mesh.vertices[mesh.vertexCount*3 - 1]));
+            txtData.append(String.format("%.3ff };\n\n", mesh.vertices[mesh.vertexCount * 3 - 1]));
         }
 
-        if (mesh.texcoords != null) {
+        if(mesh.texcoords != null) {
             // Vertex texture coordinates (UV - 2 components per vertex - float)
-            txtData.append(String.format("static float %s_TEXCOORD_DATA[%d] = { ", varFileName, mesh.vertexCount*2));
-            for (int i = 0; i < mesh.vertexCount*2 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.texcoords[i]));
+            txtData.append(String.format("static float %s_TEXCOORD_DATA[%d] = { ", varFileName, mesh.vertexCount * 2));
+            for(int i = 0; i < mesh.vertexCount * 2 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "%.3ff,\n" : "%.3ff, "), mesh.texcoords[i]));
             }
-            txtData.append(String.format("%.3ff };\n\n", mesh.texcoords[mesh.vertexCount*2 - 1]));
+            txtData.append(String.format("%.3ff };\n\n", mesh.texcoords[mesh.vertexCount * 2 - 1]));
         }
 
-        if (mesh.texcoords2 != null) {
+        if(mesh.texcoords2 != null) {
             // Vertex texture coordinates (UV - 2 components per vertex - float)
-            txtData.append(String.format("static float %s_TEXCOORD2_DATA[%d] = { ", varFileName, mesh.vertexCount*2));
-            for (int i = 0; i < mesh.vertexCount*2 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.texcoords2[i]));
+            txtData.append(String.format("static float %s_TEXCOORD2_DATA[%d] = { ", varFileName, mesh.vertexCount * 2));
+            for(int i = 0; i < mesh.vertexCount * 2 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "%.3ff,\n" : "%.3ff, "), mesh.texcoords2[i]));
             }
-            txtData.append(String.format("%.3ff };\n\n", mesh.texcoords2[mesh.vertexCount*2 - 1]));
+            txtData.append(String.format("%.3ff };\n\n", mesh.texcoords2[mesh.vertexCount * 2 - 1]));
         }
 
-        if (mesh.normals != null) {
+        if(mesh.normals != null) {
             // Vertex normals (XYZ - 3 components per vertex - float)
-            txtData.append(String.format("static float %s_NORMAL_DATA[%d] = { ", varFileName, mesh.vertexCount*3));
-            for (int i = 0; i < mesh.vertexCount*3 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.normals[i]));
+            txtData.append(String.format("static float %s_NORMAL_DATA[%d] = { ", varFileName, mesh.vertexCount * 3));
+            for(int i = 0; i < mesh.vertexCount * 3 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "%.3ff,\n" : "%.3ff, "), mesh.normals[i]));
             }
-            txtData.append(String.format("%.3ff };\n\n", mesh.normals[mesh.vertexCount*3 - 1]));
+            txtData.append(String.format("%.3ff };\n\n", mesh.normals[mesh.vertexCount * 3 - 1]));
         }
 
-        if (mesh.tangents != null) {
+        if(mesh.tangents != null) {
             // Vertex tangents (XYZW - 4 components per vertex - float)
-            txtData.append(String.format("static float %s_TANGENT_DATA[%d] = { ", varFileName, mesh.vertexCount*4));
-            for (int i = 0; i < mesh.vertexCount*4 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%.3ff,\n" : "%.3ff, "), mesh.tangents[i]));
+            txtData.append(String.format("static float %s_TANGENT_DATA[%d] = { ", varFileName, mesh.vertexCount * 4));
+            for(int i = 0; i < mesh.vertexCount * 4 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "%.3ff,\n" : "%.3ff, "), mesh.tangents[i]));
             }
-            txtData.append(String.format("%.3ff };\n\n", mesh.tangents[mesh.vertexCount*4 - 1]));
+            txtData.append(String.format("%.3ff };\n\n", mesh.tangents[mesh.vertexCount * 4 - 1]));
         }
 
-        if (mesh.colors != null) {
+        if(mesh.colors != null) {
             // Vertex colors (RGBA - 4 components per vertex - unsigned char)
-            txtData.append(String.format("static unsigned char %s_COLOR_DATA[%d] = { ", varFileName, mesh.vertexCount*4));
-            for (int i = 0; i < mesh.vertexCount*4 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "0x%x,\n" : "0x%x, "), mesh.colors[i]));
+            txtData.append(String.format("static unsigned char %s_COLOR_DATA[%d] = { ", varFileName, mesh.vertexCount * 4));
+            for(int i = 0; i < mesh.vertexCount * 4 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "0x%x,\n" : "0x%x, "), mesh.colors[i]));
             }
-            txtData.append(String.format("0x%x };\n\n", mesh.colors[mesh.vertexCount*4 - 1]));
+            txtData.append(String.format("0x%x };\n\n", mesh.colors[mesh.vertexCount * 4 - 1]));
         }
 
-        if (mesh.indices != null) {
+        if(mesh.indices != null) {
             // Vertex indices (3 index per triangle - unsigned short)
-            txtData.append(String.format("static unsigned short %s_INDEX_DATA[%d] = { ", varFileName, mesh.triangleCount*3));
-            for (int i = 0; i < mesh.triangleCount*3 - 1; i++) {
-                txtData.append(String.format(((i%TEXT_BYTES_PER_LINE == 0)? "%d,\n" : "%d, "), mesh.indices[i]));
+            txtData.append(String.format("static unsigned short %s_INDEX_DATA[%d] = { ", varFileName, mesh.triangleCount * 3));
+            for(int i = 0; i < mesh.triangleCount * 3 - 1; i++) {
+                txtData.append(String.format(((i % TEXT_BYTES_PER_LINE == 0) ? "%d,\n" : "%d, "), mesh.indices[i]));
             }
-            txtData.append(String.format("%d };\n", (int) mesh.indices[mesh.triangleCount*3 - 1]));
+            txtData.append(String.format("%d };\n", (int) mesh.indices[mesh.triangleCount * 3 - 1]));
         }
         //-----------------------------------------------------------------------------------------
 
         // NOTE: Text data size exported is determined by '\0' (null) character
         try {
             result = context.files.SaveFileText(fileName, txtData.toString());
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -2403,8 +2400,9 @@ public class rModels {
 
     /**
      * Process OBJ Materials
+     *
      * @param loader {@code OBJLoader} used to load the OBJ file
-     * @param path Working path of the OBJ file
+     * @param path   Working path of the OBJ file
      * @return Array of {Material}s defined by the OBJ file
      * @see OBJLoader
      */
@@ -2412,7 +2410,7 @@ public class rModels {
         Material[] materials = new Material[loader.objInfo.totalMaterials];
         context.tracelog.TRACELOG(LOG_INFO, path);
         // Init model materials
-        for (int m = 0; m < loader.objInfo.totalMaterials; m++) {
+        for(int m = 0; m < loader.objInfo.totalMaterials; m++) {
             // Init material to default
             // NOTE: Uses default shader, which only supports MATERIAL_MAP_DIFFUSE
             materials[m] = LoadMaterialDefault();
@@ -2421,7 +2419,7 @@ public class rModels {
             // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
             materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = new Texture2D(context.rlgl.rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
-            if (loader.mtlInfo.materials[m].diffuse_texname != null) {
+            if(loader.mtlInfo.materials[m].diffuse_texname != null) {
                 materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTexture(path + loader.mtlInfo.materials[m].diffuse_texname);  //char *diffuse_texname; // map_Kd
             }
             else {
@@ -2434,7 +2432,7 @@ public class rModels {
             }
             materials[m].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].value = 0f;
 
-            if (loader.mtlInfo.materials[m].specular_texname != null) {
+            if(loader.mtlInfo.materials[m].specular_texname != null) {
                 materials[m].maps[MATERIAL_MAP_SPECULAR.GetIndex()].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].specular_texname);  //char *specular_texname; // map_Ks
             }
             materials[m].maps[MATERIAL_MAP_SPECULAR.GetIndex()].color = new Color(
@@ -2445,7 +2443,7 @@ public class rModels {
             );
             materials[m].maps[MATERIAL_MAP_SPECULAR.GetIndex()].value = 0.0f;
 
-            if (loader.mtlInfo.materials[m].bump_texname != null) {
+            if(loader.mtlInfo.materials[m].bump_texname != null) {
                 materials[m].maps[MATERIAL_MAP_NORMAL.GetIndex()].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].bump_texname);  //char *bump_texname; // map_bump, bump
             }
             materials[m].maps[MATERIAL_MAP_NORMAL.GetIndex()].color = WHITE;
@@ -2458,7 +2456,7 @@ public class rModels {
                     255
             );
 
-            if (loader.mtlInfo.materials[m].displacement_texname != null) {
+            if(loader.mtlInfo.materials[m].displacement_texname != null) {
                 materials[m].maps[MATERIAL_MAP_HEIGHT.GetIndex()].texture = context.textures.LoadTexture(loader.mtlInfo.materials[m].displacement_texname);  //char *displacement_texname; // disp
             }
 
@@ -2479,18 +2477,17 @@ public class rModels {
 
         // TODO: Support IQM and GLTF for materials parsing
 
-        if (SUPPORT_FILEFORMAT_MTL) {
-            if (context.files.IsFileExtension(fileName, ".mtl")) {
+        if(SUPPORT_FILEFORMAT_MTL) {
+            if(context.files.IsFileExtension(fileName, ".mtl")) {
                 OBJLoader loader = new OBJLoader();
                 String fileText;
                 try {
                     fileText = context.files.LoadFileText(fileName);
-                }
-                catch (IOException e) {
+                } catch(IOException e) {
                     throw new RuntimeException(e);
                 }
                 boolean result = loader.ReadMTL(context, fileText);
-                if (!result) {
+                if(!result) {
                     context.tracelog.TRACELOG(LOG_WARNING, "MATERIAL: [" + fileName + "] Failed to parse materials file");
                 }
 
@@ -2513,7 +2510,7 @@ public class rModels {
     public Material LoadMaterialDefault() {
         Material material = new Material();
         material.maps = new MaterialMap[MAX_MATERIAL_MAPS];
-        for (int i = 0; i < material.maps.length; i++) {
+        for(int i = 0; i < material.maps.length; i++) {
             material.maps[i] = new MaterialMap();
         }
 
@@ -2541,7 +2538,7 @@ public class rModels {
     public boolean IsMaterialValid(Material material) {
         boolean result = false;
 
-        if ((material.maps != null) &&      // Validate material contain some map
+        if((material.maps != null) &&      // Validate material contain some map
                 (material.shader.id > 0)) { // Validate material shader is valid
             result = true;
         }
@@ -2560,14 +2557,14 @@ public class rModels {
     @Contract(mutates = "param")
     public void UnloadMaterial(Material material) {
         // Unload material shader (avoid unloading default shader, managed by raylib)
-        if (material.shader.id != context.rlgl.rlGetShaderIdDefault()) {
+        if(material.shader.id != context.rlgl.rlGetShaderIdDefault()) {
             context.core.UnloadShader(material.shader);
         }
 
         // Unload loaded texture maps (avoid unloading default texture, managed by raylib)
-        if (material.maps != null) {
-            for (int i = 0; i < MAX_MATERIAL_MAPS; i++) {
-                if (material.maps[i].texture.id != context.rlgl.rlGetTextureIdDefault()) {
+        if(material.maps != null) {
+            for(int i = 0; i < MAX_MATERIAL_MAPS; i++) {
+                if(material.maps[i].texture.id != context.rlgl.rlGetTextureIdDefault()) {
                     context.rlgl.rlUnloadTexture(material.maps[i].texture.id);
                 }
             }
@@ -2580,8 +2577,8 @@ public class rModels {
      * Set texture for a material map type (MATERIAL_MAP_DIFFUSE, MATERIAL_MAP_SPECULAR...)
      *
      * @param material Material to map to
-     * @param mapType Material Map type
-     * @param texture Texture to map
+     * @param mapType  Material Map type
+     * @param texture  Texture to map
      * @see MaterialMapIndex
      */
     @Contract(mutates = "param1")
@@ -2592,16 +2589,16 @@ public class rModels {
     /**
      * Set the material for a mesh
      *
-     * @param model Model to modify the material of
-     * @param meshId Mesh to modify
+     * @param model      Model to modify the material of
+     * @param meshId     Mesh to modify
      * @param materialId Material to use for {@code meshId}
      */
     @Contract(mutates = "param1")
     public void SetModelMeshMaterial(Model model, int meshId, int materialId) {
-        if (meshId >= model.meshCount) {
+        if(meshId >= model.meshCount) {
             context.tracelog.TRACELOG(LOG_WARNING, "MESH: Id greater than mesh count");
         }
-        else if (materialId >= model.materialCount) {
+        else if(materialId >= model.materialCount) {
             context.tracelog.TRACELOG(LOG_WARNING, "MATERIAL: Id greater than material count");
         }
         else {
@@ -2611,24 +2608,25 @@ public class rModels {
 
     /**
      * Load model animations from file
+     *
      * @param fileName File to load
      * @return Array of {ModelAnimations} defined by the animation file
      */
     public ModelAnimation[] LoadModelAnimations(String fileName) {
         ModelAnimation[] animations = null;
 
-        if (SUPPORT_FILEFORMAT_IQM) {
-            if (context.files.IsFileExtension(fileName, ".iqm")) {
+        if(SUPPORT_FILEFORMAT_IQM) {
+            if(context.files.IsFileExtension(fileName, ".iqm")) {
                 animations = LoadModelAnimationsIQM(fileName);
             }
         }
-        if (SUPPORT_FILEFORMAT_M3D) {
-            if (context.files.IsFileExtension(fileName, ".m3d")) {
+        if(SUPPORT_FILEFORMAT_M3D) {
+            if(context.files.IsFileExtension(fileName, ".m3d")) {
                 animations = LoadModelAnimationsM3D(fileName);
             }
         }
-        if (SUPPORT_FILEFORMAT_GLTF) {
-            if (context.files.IsFileExtension(fileName, ".gltf;.glb")) {
+        if(SUPPORT_FILEFORMAT_GLTF) {
+            if(context.files.IsFileExtension(fileName, ".gltf;.glb")) {
                 animations = LoadModelAnimationsGLTF(fileName);
             }
         }
@@ -2645,31 +2643,36 @@ public class rModels {
      * NOTE 2: Updated vertex animation data is uploaded to GPU in case of CPU skinning, for GPU skinning, bone matrices are uploaded to shader on DrawModelEx()
      *
      * @param model Model to update
-     * @param anim Animation to use for transformation
+     * @param anim  Animation to use for transformation
      * @param frame Frame of the animation
      */
-    public void UpdateModelAnimation(Model model, ModelAnimation anim, int frame) {
-        if (model.boneMatrices == null) {
+    @Contract(mutates = "param1")
+    public void UpdateModelAnimation(Model model, ModelAnimation anim, float frame) {
+        if(model.boneMatrices == null) {
             return;
         }
 
         //UpdateModelAnimationEx(model, anim, frame, anim, frame, 0.0f);
 
         // Update model animated bones transform matrices for a given frame
-        if ((anim.keyframeCount > 0) && (model.skeleton.bones != null) && (anim.keyframePoses != null)) {
+        if((anim.keyframeCount > 0) && (model.skeleton.bones != null) && (anim.keyframePoses != null)) {
             // Get frame and blending from frame factor required
-            int currentFrame = (int)frame;
+            int currentFrame = (int) frame;
             int nextFrame = currentFrame + 1;
             float blend = frame - currentFrame;
             blend = Clamp(blend, 0.0f, 1.0f);
-            if (currentFrame >= anim.keyframeCount) currentFrame = currentFrame%anim.keyframeCount;
-            if (nextFrame >= anim.keyframeCount) nextFrame = nextFrame%anim.keyframeCount;
+            if(currentFrame >= anim.keyframeCount) {
+                currentFrame = currentFrame % anim.keyframeCount;
+            }
+            if(nextFrame >= anim.keyframeCount) {
+                nextFrame = nextFrame % anim.keyframeCount;
+            }
 
             Matrix bindPoseMatrix = new Matrix();
             Matrix currentPoseMatrix = new Matrix();
 
             // Update all bones and bone matrices of model
-            for (int boneIndex = 0; boneIndex < model.skeleton.boneCount; boneIndex++) {
+            for(int boneIndex = 0; boneIndex < model.skeleton.boneCount; boneIndex++) {
                 // Compute interpolated pose between current and next frame
                 // NOTE: Storing animation frame data in model.currentPose
                 model.currentPose[boneIndex].translation = Vector3Lerp(
@@ -2687,13 +2690,13 @@ public class rModels {
                 Transform bindPoseTransform = model.skeleton.bindPose[boneIndex].clone();
                 bindPoseMatrix = MatrixMultiply(
                         MatrixMultiply(MatrixScale(bindPoseTransform.scale.x, bindPoseTransform.scale.y, bindPoseTransform.scale.z),
-                                       QuaternionToMatrix(bindPoseTransform.rotation)),
+                                QuaternionToMatrix(bindPoseTransform.rotation)),
                         MatrixTranslate(bindPoseTransform.translation.x, bindPoseTransform.translation.y, bindPoseTransform.translation.z));
 
                 Transform currentPoseTransform = model.currentPose[boneIndex].clone();
                 currentPoseMatrix = MatrixMultiply(
                         MatrixMultiply(MatrixScale(currentPoseTransform.scale.x, currentPoseTransform.scale.y, currentPoseTransform.scale.z),
-                                       QuaternionToMatrix(currentPoseTransform.rotation)),
+                                QuaternionToMatrix(currentPoseTransform.rotation)),
                         MatrixTranslate(currentPoseTransform.translation.x, currentPoseTransform.translation.y, currentPoseTransform.translation.z));
 
                 model.boneMatrices[boneIndex] = MatrixMultiply(MatrixInvert(bindPoseMatrix), currentPoseMatrix);
@@ -2719,31 +2722,45 @@ public class rModels {
      * @param blend
      */
     public void UpdateModelAnimationEx(Model model, ModelAnimation animA, float frameA, ModelAnimation animB, float frameB, float blend) {
-        if (model.boneMatrices == null) return;
+        if(model.boneMatrices == null) {
+            return;
+        }
 
-        if ((animA.keyframeCount > 0) && (animA.keyframePoses != null) &&
+        if((animA.keyframeCount > 0) && (animA.keyframePoses != null) &&
                 (animB.keyframeCount > 0) && (animB.keyframePoses != null) &&
                 (blend >= 0.0f) && (blend <= 1.0f)) {
             // Inter-frame interpolation values for first animation
-            int currentFrameA = (int)frameA%animA.keyframeCount;
+            int currentFrameA = (int) frameA % animA.keyframeCount;
             int nextFrameA = currentFrameA + 1;
             float blendA = frameA - currentFrameA;
             blendA = Clamp(blendA, 0.0f, 1.0f);
-            if (currentFrameA >= animA.keyframeCount) currentFrameA = currentFrameA%animA.keyframeCount;
-            if (nextFrameA >= animA.keyframeCount) nextFrameA = nextFrameA%animA.keyframeCount;
+
+            if(currentFrameA >= animA.keyframeCount) {
+                currentFrameA = currentFrameA % animA.keyframeCount;
+            }
+
+            if(nextFrameA >= animA.keyframeCount) {
+                nextFrameA = nextFrameA % animA.keyframeCount;
+            }
 
             // Inter-frame interpolation values for second animation
-            int currentFrameB = (int)frameB%animB.keyframeCount;
+            int currentFrameB = (int) frameB % animB.keyframeCount;
             int nextFrameB = currentFrameB + 1;
             float blendB = frameB - currentFrameB;
             blendB = Clamp(blendB, 0.0f, 1.0f);
-            if (currentFrameB >= animB.keyframeCount) currentFrameB = currentFrameB%animB.keyframeCount;
-            if (nextFrameB >= animB.keyframeCount) nextFrameB = nextFrameB%animB.keyframeCount;
+
+            if(currentFrameB >= animB.keyframeCount) {
+                currentFrameB = currentFrameB % animB.keyframeCount;
+            }
+
+            if(nextFrameB >= animB.keyframeCount) {
+                nextFrameB = nextFrameB % animB.keyframeCount;
+            }
 
             Matrix bindPoseMatrix = new Matrix();
             Matrix currentPoseMatrix = new Matrix();
 
-            for (int boneIndex = 0; boneIndex < model.skeleton.boneCount; boneIndex++) {
+            for(int boneIndex = 0; boneIndex < model.skeleton.boneCount; boneIndex++) {
                 // Get frame-interpolation for first animation
                 Vector3 frameATranslation = Vector3Lerp(
                         animA.keyframePoses[currentFrameA][boneIndex].translation,
@@ -2777,13 +2794,13 @@ public class rModels {
                 Transform bindPoseTransform = model.skeleton.bindPose[boneIndex].clone();
                 bindPoseMatrix = MatrixMultiply(
                         MatrixMultiply(MatrixScale(bindPoseTransform.scale.x, bindPoseTransform.scale.y, bindPoseTransform.scale.z),
-                                       QuaternionToMatrix(bindPoseTransform.rotation)),
+                                QuaternionToMatrix(bindPoseTransform.rotation)),
                         MatrixTranslate(bindPoseTransform.translation.x, bindPoseTransform.translation.y, bindPoseTransform.translation.z));
 
                 Transform currentPoseTransform = model.currentPose[boneIndex].clone();
                 currentPoseMatrix = MatrixMultiply(
                         MatrixMultiply(MatrixScale(currentPoseTransform.scale.x, currentPoseTransform.scale.y, currentPoseTransform.scale.z),
-                                       QuaternionToMatrix(currentPoseTransform.rotation)),
+                                QuaternionToMatrix(currentPoseTransform.rotation)),
                         MatrixTranslate(currentPoseTransform.translation.x, currentPoseTransform.translation.y, currentPoseTransform.translation.z));
 
                 model.boneMatrices[boneIndex] = MatrixMultiply(MatrixInvert(bindPoseMatrix), currentPoseMatrix);
@@ -2828,14 +2845,15 @@ public class rModels {
     /**
      * Update model vertex animation buffers (positions and normals) <br/>
      * NOTE: Required for CPU skinning, uploads animated vertex buffers to GPU
+     *
      * @param model
      */
     private void UpdateModelAnimationVertexBuffers(Model model) {
-        for (int m = 0; m < model.meshCount; m++) {
+        for(int m = 0; m < model.meshCount; m++) {
             Mesh mesh = model.meshes[m];
             Vector3 animVertex;
             Vector3 animNormal;
-            int vertexValuesCount = mesh.vertexCount*3;
+            int vertexValuesCount = mesh.vertexCount * 3;
 
             int boneIndex = 0;
             int boneCounter = 0;
@@ -2843,51 +2861,55 @@ public class rModels {
             boolean bufferUpdateRequired = false; // Flag to check when anim vertex information is updated
 
             // Skip if missing bone data or missing anim buffers initialization
-            if ((mesh.boneWeights == null) || (mesh.boneIndices == null) || (mesh.animVertices == null) || (mesh.animNormals == null)) {
+            if((mesh.boneWeights == null) || (mesh.boneIndices == null) || (mesh.animVertices == null) || (mesh.animNormals == null)) {
                 continue;
             }
 
-            for (int vCounter = 0; vCounter < vertexValuesCount; vCounter += 3) {
+            for(int vCounter = 0; vCounter < vertexValuesCount; vCounter += 3) {
                 mesh.animVertices[vCounter] = 0;
                 mesh.animVertices[vCounter + 1] = 0;
                 mesh.animVertices[vCounter + 2] = 0;
-                if (mesh.animNormals != null) {
+
+                if(mesh.animNormals != null) {
                     mesh.animNormals[vCounter] = 0;
                     mesh.animNormals[vCounter + 1] = 0;
                     mesh.animNormals[vCounter + 2] = 0;
                 }
 
                 // Iterates over 4 bones per vertex
-                for (int j = 0; j < 4; j++, boneCounter++) {
+                for(int j = 0; j < 4; j++, boneCounter++) {
                     boneWeight = mesh.boneWeights[boneCounter];
                     boneIndex = mesh.boneIndices[boneCounter];
 
                     // Early stop when no transformation will be applied
-                    if (boneWeight == 0.0f) continue;
+                    if(boneWeight == 0.0f) {
+                        continue;
+                    }
+
                     animVertex = new Vector3(mesh.vertices[vCounter], mesh.vertices[vCounter + 1], mesh.vertices[vCounter + 2]);
                     animVertex = Vector3Transform(animVertex, model.boneMatrices[boneIndex]);
-                    mesh.animVertices[vCounter] += animVertex.x*boneWeight;
-                    mesh.animVertices[vCounter + 1] += animVertex.y*boneWeight;
-                    mesh.animVertices[vCounter + 2] += animVertex.z*boneWeight;
+                    mesh.animVertices[vCounter] += animVertex.x * boneWeight;
+                    mesh.animVertices[vCounter + 1] += animVertex.y * boneWeight;
+                    mesh.animVertices[vCounter + 2] += animVertex.z * boneWeight;
                     bufferUpdateRequired = true;
 
                     // Normals processing
                     // NOTE: Using meshes.baseNormals (default normal) to calculate meshes.normals (animated normals)
-                    if ((mesh.normals != null) && (mesh.animNormals != null )) {
+                    if((mesh.normals != null) && (mesh.animNormals != null)) {
                         animNormal = new Vector3(mesh.normals[vCounter], mesh.normals[vCounter + 1], mesh.normals[vCounter + 2]);
                         animNormal = Vector3Transform(animNormal, MatrixTranspose(MatrixInvert(model.boneMatrices[boneIndex])));
-                        mesh.animNormals[vCounter] += animNormal.x*boneWeight;
-                        mesh.animNormals[vCounter + 1] += animNormal.y*boneWeight;
-                        mesh.animNormals[vCounter + 2] += animNormal.z*boneWeight;
+                        mesh.animNormals[vCounter] += animNormal.x * boneWeight;
+                        mesh.animNormals[vCounter + 1] += animNormal.y * boneWeight;
+                        mesh.animNormals[vCounter + 2] += animNormal.z * boneWeight;
                     }
                 }
             }
 
-            if (bufferUpdateRequired) {
+            if(bufferUpdateRequired) {
                 // Update GPU vertex buffers with updated data (position + normals)
-                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_POSITION.GetLocation()], mesh.animVertices, mesh.vertexCount*3*Float.BYTES);
-                if (mesh.normals != null) {
-                    context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_NORMAL.GetLocation()], mesh.animNormals, mesh.vertexCount*3*Float.BYTES);
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_POSITION.GetLocation()], mesh.animVertices, 0);
+                if(mesh.normals != null) {
+                    context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_NORMAL.GetLocation()], mesh.animNormals, 0);
                 }
             }
         }
@@ -2895,12 +2917,13 @@ public class rModels {
 
     /**
      * Unload animation array data
+     *
      * @param animations Animation data to unload
      */
     @Contract(mutates = "param")
     public void UnloadModelAnimations(ModelAnimation[] animations) {
-        for (ModelAnimation animation : animations) {
-            for (int i = 0; i < animation.keyframeCount; i++) {
+        for(ModelAnimation animation : animations) {
+            for(int i = 0; i < animation.keyframeCount; i++) {
                 animation.keyframePoses[i] = null;
             }
 
@@ -2920,7 +2943,7 @@ public class rModels {
     public boolean IsModelAnimationValid(Model model, ModelAnimation anim) {
         boolean result = true;
 
-        if (model.skeleton.boneCount != anim.boneCount) {
+        if(model.skeleton.boneCount != anim.boneCount) {
             result = false;
         }
 
@@ -2932,14 +2955,14 @@ public class rModels {
     /**
      * Generate polygonal mesh
      *
-     * @param sides Number of sides on the polygon
+     * @param sides  Number of sides on the polygon
      * @param radius Distance from polygon center to the side
      * @return Mesh for a polygon defined by the parameters
      */
     public Mesh GenMeshPoly(int sides, float radius) {
         Mesh mesh = new Mesh();
 
-        if (sides < 3) {
+        if(sides < 3) {
             return mesh; // Security check
         }
 
@@ -2949,7 +2972,7 @@ public class rModels {
         Vector3[] vertices = new Vector3[vertexCount];
 
         float d = 0.0f, dStep = 360.0f / sides;
-        for (int v = 0; v < vertexCount - 2; v += 3) {
+        for(int v = 0; v < vertexCount - 2; v += 3) {
             vertices[v] = new Vector3(0.0f, 0.0f, 0.0f);
             vertices[v + 1] = new Vector3((float) Math.sin(DEG2RAD * d) * radius, 0.0f, (float) Math.cos(DEG2RAD * d) * radius);
             vertices[v + 2] = new Vector3((float) Math.sin(DEG2RAD * (d + dStep)) * radius, 0.0f, (float) Math.cos(DEG2RAD * (d + dStep)) * radius);
@@ -2958,13 +2981,13 @@ public class rModels {
 
         // Normals definition
         Vector3[] normals = new Vector3[vertexCount];
-        for (int n = 0; n < vertexCount; n++) {
+        for(int n = 0; n < vertexCount; n++) {
             normals[n] = new Vector3(0.0f, 1.0f, 0.0f);   // Vector3.up;
         }
 
         // TexCoords definition
         Vector2[] texcoords = new Vector2[vertexCount];
-        for (int n = 0; n < vertexCount; n++) {
+        for(int n = 0; n < vertexCount; n++) {
             texcoords[n] = new Vector2(0.0f, 0.0f);
         }
 
@@ -2975,20 +2998,20 @@ public class rModels {
         mesh.normals = new float[mesh.vertexCount * 3];
 
         // Mesh vertices position array
-        for (int i = 0; i < mesh.vertexCount; i++) {
+        for(int i = 0; i < mesh.vertexCount; i++) {
             mesh.vertices[3 * i] = vertices[i].x;
             mesh.vertices[3 * i + 1] = vertices[i].y;
             mesh.vertices[3 * i + 2] = vertices[i].z;
         }
 
         // Mesh texcoords array
-        for (int i = 0; i < mesh.vertexCount; i++) {
+        for(int i = 0; i < mesh.vertexCount; i++) {
             mesh.texcoords[2 * i] = texcoords[i].x;
             mesh.texcoords[2 * i + 1] = texcoords[i].y;
         }
 
         // Mesh normals array
-        for (int i = 0; i < mesh.vertexCount; i++) {
+        for(int i = 0; i < mesh.vertexCount; i++) {
             mesh.normals[3 * i] = normals[i].x;
             mesh.normals[3 * i + 1] = normals[i].y;
             mesh.normals[3 * i + 2] = normals[i].z;
@@ -3008,16 +3031,16 @@ public class rModels {
     /**
      * Generate plane mesh (with subdivisions)
      *
-     * @param width Width of the plane
+     * @param width  Width of the plane
      * @param length Length of the plane
-     * @param resX Width of the plane subdivisions
-     * @param resZ Length of the plane subdivisions
+     * @param resX   Width of the plane subdivisions
+     * @param resZ   Length of the plane subdivisions
      * @return Mesh of a plane defined by the parameters
      */
     public Mesh GenMeshPlane(float width, float length, int resX, int resZ) {
         Mesh mesh = new Mesh();
 
-        if (SUPPORT_CUSTOM_MESH_GEN_PLANE) {
+        if(SUPPORT_CUSTOM_MESH_GEN_PLANE) {
             resX++;
             resZ++;
 
@@ -3025,10 +3048,10 @@ public class rModels {
             int vertexCount = resX * resZ; // vertices get reused for the faces
 
             Vector3[] vertices = new Vector3[vertexCount];
-            for (int z = 0; z < resZ; z++) {
+            for(int z = 0; z < resZ; z++) {
                 // [-length/2, length/2]
                 float zPos = ((float) z / (resZ - 1) - 0.5f) * length;
-                for (int x = 0; x < resX; x++) {
+                for(int x = 0; x < resX; x++) {
                     // [-width/2, width/2]
                     float xPos = ((float) x / (resX - 1) - 0.5f) * width;
                     vertices[x + z * resX] = new Vector3(xPos, 0.0f, zPos);
@@ -3037,14 +3060,14 @@ public class rModels {
 
             // Normals definition
             Vector3[] normals = new Vector3[vertexCount];
-            for (int n = 0; n < vertexCount; n++) {
+            for(int n = 0; n < vertexCount; n++) {
                 normals[n] = new Vector3(0.0f, 1.0f, 0.0f);   // Vector3.up;
             }
 
             // TexCoords definition
             Vector2[] texcoords = new Vector2[vertexCount];
-            for (int v = 0; v < resZ; v++) {
-                for (int u = 0; u < resX; u++) {
+            for(int v = 0; v < resZ; v++) {
+                for(int u = 0; u < resX; u++) {
                     texcoords[u + v * resX] = new Vector2((float) u / (resX - 1), (float) v / (resZ - 1));
                 }
             }
@@ -3053,7 +3076,7 @@ public class rModels {
             int numFaces = (resX - 1) * (resZ - 1);
             int[] triangles = new int[numFaces * 6];
             int t = 0;
-            for (int face = 0; face < numFaces; face++) {
+            for(int face = 0; face < numFaces; face++) {
                 // Retrieve lower left corner from face ind
                 int i = face + face / (resX - 1);
 
@@ -3074,27 +3097,27 @@ public class rModels {
             mesh.indicesS = new short[mesh.triangleCount * 3];
 
             // Mesh vertices position array
-            for (int i = 0; i < mesh.vertexCount; i++) {
+            for(int i = 0; i < mesh.vertexCount; i++) {
                 mesh.vertices[3 * i] = vertices[i].x;
                 mesh.vertices[3 * i + 1] = vertices[i].y;
                 mesh.vertices[3 * i + 2] = vertices[i].z;
             }
 
             // Mesh texcoords array
-            for (int i = 0; i < mesh.vertexCount; i++) {
+            for(int i = 0; i < mesh.vertexCount; i++) {
                 mesh.texcoords[2 * i] = texcoords[i].x;
                 mesh.texcoords[2 * i + 1] = texcoords[i].y;
             }
 
             // Mesh normals array
-            for (int i = 0; i < mesh.vertexCount; i++) {
+            for(int i = 0; i < mesh.vertexCount; i++) {
                 mesh.normals[3 * i] = normals[i].x;
                 mesh.normals[3 * i + 1] = normals[i].y;
                 mesh.normals[3 * i + 2] = normals[i].z;
             }
 
             // Mesh indices array initialization
-            for (int i = 0; i < mesh.triangleCount * 3; i++) {
+            for(int i = 0; i < mesh.triangleCount * 3; i++) {
                 mesh.indicesS[i] = (short) triangles[i];
             }
         }
@@ -3117,7 +3140,7 @@ public class rModels {
             FloatBuffer tcoords = plane.tcoords(plane.ntriangles() * 3 * 2);
             IntBuffer triangles = plane.triangles(plane.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3142,7 +3165,7 @@ public class rModels {
     /**
      * Generated cuboid mesh
      *
-     * @param width Width of the cuboid
+     * @param width  Width of the cuboid
      * @param height Height of the cuboid
      * @param length Length of the cuboid
      * @return Cuboid mesh defined by the parameters
@@ -3150,7 +3173,7 @@ public class rModels {
     public Mesh GenMeshCube(float width, float height, float length) {
         Mesh mesh = new Mesh();
 
-        if (SUPPORT_CUSTOM_MESH_GEN_CUBE) {
+        if(SUPPORT_CUSTOM_MESH_GEN_CUBE) {
             mesh.vertices = new float[]{
                     -width / 2, -height / 2, length / 2,
                     width / 2, -height / 2, length / 2,
@@ -3235,7 +3258,7 @@ public class rModels {
             mesh.indicesS = new short[36];
 
             // Indices can be initialized right now
-            for (int i = 0, k = 0; i < 36; i += 6) {
+            for(int i = 0, k = 0; i < 36; i += 6) {
                 mesh.indicesS[i] = (short) (4 * k);
                 mesh.indicesS[i + 1] = (short) (4 * k + 1);
                 mesh.indicesS[i + 2] = (short) (4 * k + 2);
@@ -3265,12 +3288,12 @@ public class rModels {
             FloatBuffer points = cube.points(cube.ntriangles() * 3 * 3);
             FloatBuffer normals = cube.normals(cube.ntriangles() * 3 * 3);
             FloatBuffer tcoords = FloatBuffer.allocate(cube.npoints() * 2);
-            for (int i = 0; i < tcoords.limit(); i++) {
+            for(int i = 0; i < tcoords.limit(); i++) {
                 tcoords.put(0.0f);
             }
             IntBuffer triangles = cube.triangles(cube.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3296,14 +3319,14 @@ public class rModels {
      * Generate sphere mesh (standard sphere)
      *
      * @param radius Radius of the sphere
-     * @param rings Horizontal divisions of the sphere (Parallels)
+     * @param rings  Horizontal divisions of the sphere (Parallels)
      * @param slices Vertical divisions of the sphere (Meridians)
      * @return Sphere mesh defined by the parameters
      */
     public Mesh GenMeshSphere(float radius, int rings, int slices) {
         Mesh mesh = new Mesh();
 
-        if ((rings >= 3) && (slices >= 3)) {
+        if((rings >= 3) && (slices >= 3)) {
             ParShapes.par_shapes_set_epsilon_degenerate_sphere(0.0f);
             ParShapesMesh sphere = ParShapes.par_shapes_create_parametric_sphere(slices, rings);
             ParShapes.par_shapes_scale(sphere, radius, radius, radius);
@@ -3321,7 +3344,7 @@ public class rModels {
             FloatBuffer tcoords = sphere.tcoords(sphere.ntriangles() * 3 * 2);
             IntBuffer triangles = sphere.triangles(sphere.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3350,15 +3373,15 @@ public class rModels {
      * Generate hemi-sphere mesh (half sphere, no bottom cap)
      *
      * @param radius Radius of the sphere
-     * @param rings Horizontal divisions of the sphere (Parallels)
+     * @param rings  Horizontal divisions of the sphere (Parallels)
      * @param slices Vertical divisions of the sphere (Meridians)
      * @return Hemisphere mesh defined by the parameters
      */
     public Mesh GenMeshHemiSphere(float radius, int rings, int slices) {
         Mesh mesh = new Mesh();
 
-        if ((rings >= 3) && (slices >= 3)) {
-            if (radius < 0.0f) {
+        if((rings >= 3) && (slices >= 3)) {
+            if(radius < 0.0f) {
                 radius = 0.0f;
             }
 
@@ -3378,7 +3401,7 @@ public class rModels {
             FloatBuffer tcoords = sphere.tcoords(sphere.ntriangles() * 3 * 2);
             IntBuffer triangles = sphere.triangles(sphere.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3414,7 +3437,7 @@ public class rModels {
     public Mesh GenMeshCylinder(float radius, float height, int slices) {
         Mesh mesh = new Mesh();
 
-        if (slices >= 3) {
+        if(slices >= 3) {
             // Instance a cylinder that sits on the Z=0 plane using the given tessellation
             // levels across the UV domain.  Think of "slices" like a number of pizza
             // slices, and "stacks" like a number of stacked rings
@@ -3451,7 +3474,7 @@ public class rModels {
             FloatBuffer tcoords = cylinder.tcoords(cylinder.ntriangles() * 3 * 2);
             IntBuffer triangles = cylinder.triangles(cylinder.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3487,7 +3510,7 @@ public class rModels {
     public Mesh GenMeshCone(float radius, float height, int slices) {
         Mesh mesh = new Mesh();
 
-        if (slices >= 3) {
+        if(slices >= 3) {
             // Instance a cone that sits on the Z=0 plane using the given tessellation
             // levels across the UV domain.  Think of "slices" like a number of pizza
             // slices, and "stacks" like a number of stacked rings
@@ -3515,7 +3538,7 @@ public class rModels {
             FloatBuffer tcoords = cone.tcoords(cone.ntriangles() * 3 * 2);
             IntBuffer triangles = cone.triangles(cone.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3544,19 +3567,19 @@ public class rModels {
      * Generate torus mesh
      *
      * @param radius Radius of the torus
-     * @param size Thickness of the torus
+     * @param size   Thickness of the torus
      * @param radSeg Radial segments
-     * @param sides Vertical divisions of the torus (Meridians)
+     * @param sides  Vertical divisions of the torus (Meridians)
      * @return Torus mesh defined by the parameters
      */
     public Mesh GenMeshTorus(float radius, float size, int radSeg, int sides) {
         Mesh mesh = new Mesh();
 
-        if ((sides >= 3) && (radSeg >= 3)) {
-            if (radius > 1.0f) {
+        if((sides >= 3) && (radSeg >= 3)) {
+            if(radius > 1.0f) {
                 radius = 1.0f;
             }
-            else if (radius < 0.1f) {
+            else if(radius < 0.1f) {
                 radius = 0.1f;
             }
 
@@ -3577,7 +3600,7 @@ public class rModels {
             FloatBuffer tcoords = torus.tcoords(torus.ntriangles() * 3 * 2);
             IntBuffer triangles = torus.triangles(torus.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3606,19 +3629,19 @@ public class rModels {
      * Generate trefoil knot mesh
      *
      * @param radius Radius of the knot
-     * @param size Thickness of the knot
+     * @param size   Thickness of the knot
      * @param radSeg Radial segments
-     * @param sides Vertical divisions of the knot (Meridians)
+     * @param sides  Vertical divisions of the knot (Meridians)
      * @return Trefoil knot mesh defined by the parameters
      */
     public Mesh GenMeshKnot(float radius, float size, int radSeg, int sides) {
         Mesh mesh = new Mesh();
 
-        if ((sides >= 3) && (radSeg >= 3)) {
-            if (radius > 3.0f) {
+        if((sides >= 3) && (radSeg >= 3)) {
+            if(radius > 3.0f) {
                 radius = 3.0f;
             }
-            else if (radius < 0.5f) {
+            else if(radius < 0.5f) {
                 radius = 0.5f;
             }
 
@@ -3637,7 +3660,7 @@ public class rModels {
             FloatBuffer tcoords = knot.tcoords(knot.ntriangles() * 3 * 2);
             IntBuffer triangles = knot.triangles(knot.ntriangles() * 3 * 3);
 
-            for (int k = 0; k < mesh.vertexCount; k++) {
+            for(int k = 0; k < mesh.vertexCount; k++) {
                 mesh.vertices[k * 3] = points.get(triangles.get(k) * 3);
                 mesh.vertices[k * 3 + 1] = points.get(triangles.get(k) * 3 + 1);
                 mesh.vertices[k * 3 + 2] = points.get(triangles.get(k) * 3 + 2);
@@ -3667,7 +3690,7 @@ public class rModels {
      * NOTE: Vertex data is uploaded to GPU
      *
      * @param heightmap {@code Image} containing heightmap data
-     * @param size {@code Vector3} containing the desired (Width, Height, Depth) of the mesh
+     * @param size      {@code Vector3} containing the desired (Width, Height, Depth) of the mesh
      * @return Heightmap defined by the image and size
      */
     public Mesh GenMeshHeightmap(Image heightmap, Vector3 size) {
@@ -3699,8 +3722,8 @@ public class rModels {
         Vector3 vC = new Vector3();
         Vector3 vN = new Vector3();
 
-        for (int z = 0; z < mapZ - 1; z++) {
-            for (int x = 0; x < mapX - 1; x++) {
+        for(int z = 0; z < mapZ - 1; z++) {
+            for(int x = 0; x < mapX - 1; x++) {
                 // Fill vertices array with data
                 //----------------------------------------------------------
 
@@ -3754,7 +3777,7 @@ public class rModels {
 
                 // Fill normals array with data
                 //--------------------------------------------------------------
-                for (int i = 0; i < 18; i += 9) {
+                for(int i = 0; i < 18; i += 9) {
                     vA.x = mesh.vertices[nCounter + i];
                     vA.y = mesh.vertices[nCounter + i + 1];
                     vA.z = mesh.vertices[nCounter + i + 2];
@@ -3797,6 +3820,7 @@ public class rModels {
     /**
      * Generate a cube mesh from pixel data <br/>
      * NOTE: Vertex data is uploaded to the GPU
+     *
      * @param cubicmap
      * @param cubeSize
      * @return
@@ -3839,8 +3863,8 @@ public class rModels {
         Rectangle topTexUV = new Rectangle(0.0f, 0.5f, 0.5f, 0.5f);
         Rectangle bottomTexUV = new Rectangle(0.5f, 0.5f, 0.5f, 0.5f);
 
-        for (int z = 0; z < cubicmap.height; ++z) {
-            for (int x = 0; x < cubicmap.width; x++) {
+        for(int z = 0; z < cubicmap.height; ++z) {
+            for(int x = 0; x < cubicmap.width; x++) {
                 // Define the 8 vertex of the cube, to be combined accordingly later...
                 Vector3 v1 = new Vector3(w * (x - 0.5f), h2, h * (z - 0.5f));
                 Vector3 v2 = new Vector3(w * (x - 0.5f), h2, h * (z + 0.5f));
@@ -3852,7 +3876,7 @@ public class rModels {
                 Vector3 v8 = new Vector3(w * (x + 0.5f), 0, h * (z + 0.5f));
 
                 // Check pixel color to be WHITE -> draw full cube
-                if (COLOR_EQUAL(pixels[z * cubicmap.width + x], WHITE)) {
+                if(COLOR_EQUAL(pixels[z * cubicmap.width + x], WHITE)) {
                     // Define triangles and checking collateral cubes
                     //------------------------------------------------
 
@@ -3908,7 +3932,7 @@ public class rModels {
                     tcCounter += 6;
 
                     // Checking cube on bottom of current cube
-                    if (((z < cubicmap.height - 1) && COLOR_EQUAL(pixels[(z + 1) * cubicmap.width + x], BLACK)) || (z == cubicmap.height - 1)) {
+                    if(((z < cubicmap.height - 1) && COLOR_EQUAL(pixels[(z + 1) * cubicmap.width + x], BLACK)) || (z == cubicmap.height - 1)) {
                         // Define front triangles (2 tris, 6 vertex) --> v2 v7 v3, v3 v7 v8
                         // NOTE: Collateral occluded faces are not generated
                         mapVertices[vCounter] = v2;
@@ -3937,7 +3961,7 @@ public class rModels {
                     }
 
                     // Checking cube on top of current cube
-                    if (((z > 0) && COLOR_EQUAL(pixels[(z - 1) * cubicmap.width + x], BLACK)) || (z == 0)) {
+                    if(((z > 0) && COLOR_EQUAL(pixels[(z - 1) * cubicmap.width + x], BLACK)) || (z == 0)) {
                         // Define back triangles (2 tris, 6 vertex) --> v1 v5 v6, v1 v4 v5
                         // NOTE: Collateral occluded faces are not generated
                         mapVertices[vCounter] = v1;
@@ -3966,7 +3990,7 @@ public class rModels {
                     }
 
                     // Checking cube on right of current cube
-                    if (((x < cubicmap.width - 1) && COLOR_EQUAL(pixels[z * cubicmap.width + (x + 1)], BLACK)) || (x == cubicmap.width - 1)) {
+                    if(((x < cubicmap.width - 1) && COLOR_EQUAL(pixels[z * cubicmap.width + (x + 1)], BLACK)) || (x == cubicmap.width - 1)) {
                         // Define right triangles (2 tris, 6 vertex) --> v3 v8 v4, v4 v8 v5
                         // NOTE: Collateral occluded faces are not generated
                         mapVertices[vCounter] = v3;
@@ -3995,7 +4019,7 @@ public class rModels {
                     }
 
                     // Checking cube on left of current cube
-                    if (((x > 0) && COLOR_EQUAL(pixels[z * cubicmap.width + (x - 1)], BLACK)) || (x == 0)) {
+                    if(((x > 0) && COLOR_EQUAL(pixels[z * cubicmap.width + (x - 1)], BLACK)) || (x == 0)) {
                         // Define left triangles (2 tris, 6 vertex) --> v1 v7 v2, v1 v6 v7
                         // NOTE: Collateral occluded faces are not generated
                         mapVertices[vCounter] = v1;
@@ -4024,7 +4048,7 @@ public class rModels {
                     }
                 }
                 // Check pixel color to be BLACK, in that case only draw floor and roof
-                else if (COLOR_EQUAL(pixels[z * cubicmap.width + x], BLACK)) {
+                else if(COLOR_EQUAL(pixels[z * cubicmap.width + x], BLACK)) {
                     // Define top triangles (2 tris, 6 vertex --> v1-v2-v3, v1-v3-v4)
                     mapVertices[vCounter] = v1;
                     mapVertices[vCounter + 1] = v3;
@@ -4090,7 +4114,7 @@ public class rModels {
         int fCounter = 0;
 
         // Move vertices data
-        for (int i = 0; i < vCounter; i++) {
+        for(int i = 0; i < vCounter; i++) {
             mesh.vertices[fCounter] = mapVertices[i].x;
             mesh.vertices[fCounter + 1] = mapVertices[i].y;
             mesh.vertices[fCounter + 2] = mapVertices[i].z;
@@ -4100,7 +4124,7 @@ public class rModels {
         fCounter = 0;
 
         // Move normals data
-        for (int i = 0; i < nCounter; i++) {
+        for(int i = 0; i < nCounter; i++) {
             mesh.normals[fCounter] = mapNormals[i].x;
             mesh.normals[fCounter + 1] = mapNormals[i].y;
             mesh.normals[fCounter + 2] = mapNormals[i].z;
@@ -4110,7 +4134,7 @@ public class rModels {
         fCounter = 0;
 
         // Move texcoords data
-        for (int i = 0; i < tcCounter; i++) {
+        for(int i = 0; i < tcCounter; i++) {
             mesh.texcoords[fCounter] = mapTexcoords[i].x;
             mesh.texcoords[fCounter + 1] = mapTexcoords[i].y;
             fCounter += 2;
@@ -4142,11 +4166,11 @@ public class rModels {
         Vector3 minVertex = new Vector3();
         Vector3 maxVertex = new Vector3();
 
-        if (mesh.vertices != null) {
+        if(mesh.vertices != null) {
             minVertex = new Vector3(mesh.vertices[0], mesh.vertices[1], mesh.vertices[2]);
             maxVertex = new Vector3(mesh.vertices[0], mesh.vertices[1], mesh.vertices[2]);
 
-            for (int i = 1; i < mesh.vertexCount; i++) {
+            for(int i = 1; i < mesh.vertexCount; i++) {
                 minVertex = Vector3Min(minVertex, new Vector3(mesh.vertices[i * 3], mesh.vertices[i * 3 + 1], mesh.vertices[i * 3 + 2]));
                 maxVertex = Vector3Max(maxVertex, new Vector3(mesh.vertices[i * 3], mesh.vertices[i * 3 + 1], mesh.vertices[i * 3 + 2]));
             }
@@ -4159,69 +4183,70 @@ public class rModels {
     /**
      * Compute mesh tangents
      * NOTE: To calculate mesh tangents and binormals, we need mesh vertex positions and texture coordinates
+     *
      * @param mesh
      * @link <a href="https://answers.unity.com/questions/7789/calculating-tangents-vector4.html">Implementation based on</a>
      */
     @Contract(mutates = "param")
     public void GenMeshTangents(Mesh mesh) {
         // Check if input mesh data is useful
-        if ((mesh == null) || (mesh.vertices == null) || (mesh.texcoords == null) || (mesh.normals == null)) {
+        if((mesh == null) || (mesh.vertices == null) || (mesh.texcoords == null) || (mesh.normals == null)) {
             context.tracelog.TRACELOG(LOG_WARNING, "MESH: Tangents generation requires vertices, texcoords and normals vertex attribute data");
             return;
         }
 
         // Allocate or reallocate tangents data
-        if (mesh.tangents == null) {
-            mesh.tangents = new float[mesh.vertexCount*4];
+        if(mesh.tangents == null) {
+            mesh.tangents = new float[mesh.vertexCount * 4];
         }
         else {
             mesh.tangents = null;
-            mesh.tangents = new float[mesh.vertexCount*4];
+            mesh.tangents = new float[mesh.vertexCount * 4];
         }
 
         // Allocate temporary arrays for tangents calculation
         Vector3[] tan1 = new Vector3[mesh.vertexCount];
-        for (int i = 0; i < mesh.vertexCount; i++) {
+        for(int i = 0; i < mesh.vertexCount; i++) {
             tan1[i] = new Vector3();
         }
         Vector3[] tan2 = new Vector3[mesh.vertexCount];
-        for (int i = 0; i < mesh.vertexCount; i++) {
+        for(int i = 0; i < mesh.vertexCount; i++) {
             tan2[i] = new Vector3();
         }
 
-        if (tan1 == null || tan2 == null) {
+        if(tan1 == null || tan2 == null) {
             context.tracelog.TRACELOG(LOG_WARNING, "MESH: Failed to allocate temporary memory for tangent calculation");
             return;
         }
 
         // Process all triangles of the mesh
         // 'triangleCount' must be always valid
-        for (int t = 0; t < mesh.triangleCount; t++) {
+        for(int t = 0; t < mesh.triangleCount; t++) {
             // Get triangle vertex indices
             int i0 = 0, i1 = 0, i2 = 0;
 
-            if (mesh.indices != null) {
+            if(mesh.indices != null) {
                 // Use indices if available
-                i0 = (int) mesh.indices[t*3 + 0];
-                i1 = (int) mesh.indices[t*3 + 1];
-                i2 = (int) mesh.indices[t*3 + 2];
+                i0 = (int) mesh.indices[t * 3 + 0];
+                i1 = (int) mesh.indices[t * 3 + 1];
+                i2 = (int) mesh.indices[t * 3 + 2];
             }
             else {
                 // Sequential access for non-indexed mesh
-                i0 = t*3 + 0;
-                i1 = t*3 + 1;
-                i2 = t*3 + 2;
+                i0 = t * 3 + 0;
+                i1 = t * 3 + 1;
+                i2 = t * 3 + 2;
             }
 
             // Get triangle vertices position
-            Vector3 v1 = new Vector3(mesh.vertices[i0*3 + 0], mesh.vertices[i0*3 + 1], mesh.vertices[i0*3 + 2]);
-            Vector3 v2 = new Vector3(mesh.vertices[i1*3 + 0], mesh.vertices[i1*3 + 1], mesh.vertices[i1*3 + 2]);
-            Vector3 v3 = new Vector3(mesh.vertices[i2*3 + 0], mesh.vertices[i2*3 + 1], mesh.vertices[i2*3 + 2]);
+            Vector3 v1 = new Vector3(mesh.vertices[i0 * 3 + 0], mesh.vertices[i0 * 3 + 1], mesh.vertices[i0 * 3 + 2]);
+            Vector3 v2 = new Vector3(mesh.vertices[i1 * 3 + 0], mesh.vertices[i1 * 3 + 1], mesh.vertices[i1 * 3 + 2]);
+            Vector3 v3 = new Vector3(mesh.vertices[i2 * 3 + 0], mesh.vertices[i2 * 3 + 1], mesh.vertices[i2 * 3 + 2]);
 
             // Get triangle texcoords
-            Vector2 uv1 = new Vector2(mesh.texcoords[i0*2 + 0], mesh.texcoords[i0*2 + 1]);
-            Vector2 uv2 = new Vector2(mesh.texcoords[i1*2 + 0], mesh.texcoords[i1*2 + 1]);
-            Vector2 uv3 = new Vector2(mesh.texcoords[i2*2 + 0], mesh.texcoords[i2*2 + 1]);
+            Vector2 uv1 = new Vector2(mesh.texcoords[i0 * 2 + 0], mesh.texcoords[i0 * 2 + 1]);
+            Vector2 uv2 = new Vector2(mesh.texcoords[i1 * 2 + 0], mesh.texcoords[i1 * 2 + 1]);
+            Vector2 uv3 = new Vector2(mesh.texcoords[i2 * 2 + 0], mesh.texcoords[i2 * 2 + 1]);
 
             // Calculate triangle edges
             float x1 = v2.x - v1.x;
@@ -4238,12 +4263,12 @@ public class rModels {
             float t2 = uv3.y - uv1.y;
 
             // Calculate denominator and check for degenerate UV
-            float div = s1*t2 - s2*t1;
-            float r = (Math.abs(div) < 0.0001f)? 0.0f : 1.0f/div;
+            float div = s1 * t2 - s2 * t1;
+            float r = (Math.abs(div) < 0.0001f) ? 0.0f : 1.0f / div;
 
             // Calculate tangent and bitangent directions
-            Vector3 sdir = new Vector3((t2*x1 - t1*x2)*r, (t2*y1 - t1*y2)*r, (t2*z1 - t1*z2)*r);
-            Vector3 tdir = new Vector3((s1*x2 - s2*x1)*r, (s1*y2 - s2*y1)*r, (s1*z2 - s2*z1)*r);
+            Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+            Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
 
             // Accumulate tangents and bitangents for each vertex of the triangle
             tan1[i0] = Vector3Add(tan1[i0], sdir);
@@ -4256,20 +4281,24 @@ public class rModels {
         }
 
         // Calculate final tangents for each vertex
-        for (int i = 0; i < mesh.vertexCount; i++) {
-            Vector3 normal = new Vector3(mesh.normals[i*3 + 0], mesh.normals[i*3 + 1], mesh.normals[i*3 + 2]);
+        for(int i = 0; i < mesh.vertexCount; i++) {
+            Vector3 normal = new Vector3(mesh.normals[i * 3 + 0], mesh.normals[i * 3 + 1], mesh.normals[i * 3 + 2]);
             Vector3 tangent = tan1[i];
 
             // Handle zero tangent (can happen with degenerate UVs)
-            if (Vector3Length(tangent) < 0.0001f) {
+            if(Vector3Length(tangent) < 0.0001f) {
                 // Create a tangent perpendicular to the normal
-                if (Math.abs(normal.z) > 0.707f) tangent = new Vector3(1.0f, 0.0f, 0.0f);
-                else tangent = Vector3Normalize(new Vector3(-normal.y, normal.x, 0.0f ));
+                if(Math.abs(normal.z) > 0.707f) {
+                    tangent = new Vector3(1.0f, 0.0f, 0.0f);
+                }
+                else {
+                    tangent = Vector3Normalize(new Vector3(-normal.y, normal.x, 0.0f));
+                }
 
-                mesh.tangents[i*4 + 0] = tangent.x;
-                mesh.tangents[i*4 + 1] = tangent.y;
-                mesh.tangents[i*4 + 2] = tangent.z;
-                mesh.tangents[i*4 + 3] = 1.0f;
+                mesh.tangents[i * 4 + 0] = tangent.x;
+                mesh.tangents[i * 4 + 1] = tangent.y;
+                mesh.tangents[i * 4 + 2] = tangent.z;
+                mesh.tangents[i * 4 + 3] = 1.0f;
                 continue;
             }
 
@@ -4278,10 +4307,14 @@ public class rModels {
             Vector3 orthogonalized = Vector3Subtract(tangent, Vector3Scale(normal, Vector3DotProduct(normal, tangent)));
 
             // Handle cases where orthogonalized vector is too small
-            if (Vector3Length(orthogonalized) < 0.0001f) {
+            if(Vector3Length(orthogonalized) < 0.0001f) {
                 // Create a tangent perpendicular to the normal
-                if (Math.abs(normal.z) > 0.707f) orthogonalized = new Vector3(1.0f, 0.0f, 0.0f);
-                else orthogonalized = Vector3Normalize(new Vector3(-normal.y, normal.x, 0.0f));
+                if(Math.abs(normal.z) > 0.707f) {
+                    orthogonalized = new Vector3(1.0f, 0.0f, 0.0f);
+                }
+                else {
+                    orthogonalized = Vector3Normalize(new Vector3(-normal.y, normal.x, 0.0f));
+                }
             }
             else {
                 // Normalize the orthogonalized tangent
@@ -4289,12 +4322,12 @@ public class rModels {
             }
 
             // Store the calculated tangent
-            mesh.tangents[i*4 + 0] = orthogonalized.x;
-            mesh.tangents[i*4 + 1] = orthogonalized.y;
-            mesh.tangents[i*4 + 2] = orthogonalized.z;
+            mesh.tangents[i * 4 + 0] = orthogonalized.x;
+            mesh.tangents[i * 4 + 1] = orthogonalized.y;
+            mesh.tangents[i * 4 + 2] = orthogonalized.z;
 
             // Calculate the handedness (w component)
-            mesh.tangents[i*4 + 3] = (Vector3DotProduct(Vector3CrossProduct(normal, orthogonalized), tan2[i]) < 0.0f)? -1.0f : 1.0f;
+            mesh.tangents[i * 4 + 3] = (Vector3DotProduct(Vector3CrossProduct(normal, orthogonalized), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
         }
 
         // Free temporary arrays
@@ -4302,10 +4335,10 @@ public class rModels {
         tan2 = null;
 
         // Update vertex buffers if available
-        if (mesh.vboId != null) {
-            if (mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
+        if(mesh.vboId != null) {
+            if(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()] != 0) {
                 // Update existing tangent vertex buffer
-                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, mesh.vertexCount*4*Float.BYTES);
+                context.rlgl.rlUpdateVertexBuffer(mesh.vboId[SHADER_LOC_VERTEX_TANGENT.GetLocation()], mesh.tangents, 0);
             }
             else {
                 // Create new tangent vertex buffer
@@ -4325,10 +4358,10 @@ public class rModels {
     /**
      * Draw a model (with texture if set)
      *
-     * @param model Model to draw
+     * @param model    Model to draw
      * @param position Position to draw model at
-     * @param scale Amount to scale model by
-     * @param tint Tint to apply when drawing model
+     * @param scale    Amount to scale model by
+     * @param tint     Tint to apply when drawing model
      */
     public void DrawModel(Model model, Vector3 position, float scale, Color tint) {
         Vector3 vScale = new Vector3(scale, scale, scale);
@@ -4340,12 +4373,12 @@ public class rModels {
     /**
      * Draw a model with extended parameters
      *
-     * @param model Model to draw
-     * @param position Position to draw model at
-     * @param rotationAxis Axis about which to rotate model
+     * @param model         Model to draw
+     * @param position      Position to draw model at
+     * @param rotationAxis  Axis about which to rotate model
      * @param rotationAngle Amount to rotate model
-     * @param scale Amount to scale model on each axis by
-     * @param tint Tint to apply when drawing model
+     * @param scale         Amount to scale model on each axis by
+     * @param tint          Tint to apply when drawing model
      */
     public void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
         // Calculate transformation matrix from function parameters
@@ -4358,28 +4391,28 @@ public class rModels {
         // Combine model transformation matrix (model.transform) with matrix generated by function parameters (matTransform)
         Matrix transform = MatrixMultiply(model.transform, matTransform);
 
-        for (int i = 0; i < model.meshCount; i++) {
+        for(int i = 0; i < model.meshCount; i++) {
             Material mat = model.materials[model.meshMaterial[i]];
             Color colDiffuse = mat.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color;
 
             // Applying color tint directly to material diffuse map,
             // because is comes as an input paramter to the function
             Color colTinted = new Color();
-            colTinted.r = ((colDiffuse.r * tint.r)/255);
-            colTinted.g = ((colDiffuse.g * tint.g)/255);
-            colTinted.b = ((colDiffuse.b * tint.b)/255);
-            colTinted.a = ((colDiffuse.a * tint.a)/255);
+            colTinted.r = ((colDiffuse.r * tint.r) / 255);
+            colTinted.g = ((colDiffuse.g * tint.g) / 255);
+            colTinted.b = ((colDiffuse.b * tint.b) / 255);
+            colTinted.a = ((colDiffuse.a * tint.a) / 255);
 
             mat.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = colTinted;
 
             // Upload runtime bone transforms matrices, to compute skinning on the shader (GPU-skinning)
             // NOTE: Required location must be found and Mesh bones indices and weights must be also uploaded to shader
-            if ((mat.shader.locs != null) && (mat.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && (model.boneMatrices != null)) {
+            if((mat.shader.locs != null) && (mat.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()] != -1) && (model.boneMatrices != null)) {
                 context.rlgl.rlEnableShader(mat.shader.id); // Enable shader to set bone transform matrices
                 context.rlgl.rlSetUniformMatrices(mat.shader.locs[SHADER_LOC_MATRIX_BONETRANSFORMS.GetLocation()], model.boneMatrices);
             }
 
-            DrawMesh(model.meshes[i], mat, model.transform);
+            DrawMesh(model.meshes[i], mat, transform);
 
             // Restore material diffuse map color (before tint applied)
             mat.maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = colDiffuse;
@@ -4389,10 +4422,10 @@ public class rModels {
     /**
      * Draw a model wires (with texture if set)
      *
-     * @param model Model to draw
+     * @param model    Model to draw
      * @param position Position to draw model at
-     * @param scale Amount to scale model by
-     * @param tint Tint to apply when drawing model
+     * @param scale    Amount to scale model by
+     * @param tint     Tint to apply when drawing model
      */
     public void DrawModelWires(Model model, Vector3 position, float scale, Color tint) {
         context.rlgl.rlEnableWireMode();
@@ -4405,12 +4438,12 @@ public class rModels {
     /**
      * Draw a model wires (with texture if set) with extended parameters
      *
-     * @param model Model to draw
-     * @param position Position to draw model at
-     * @param rotationAxis Axis about which to rotate model
+     * @param model         Model to draw
+     * @param position      Position to draw model at
+     * @param rotationAxis  Axis about which to rotate model
      * @param rotationAngle Amount to rotate model
-     * @param scale Amount to scale model on each axis by
-     * @param tint Tint to apply when drawing model
+     * @param scale         Amount to scale model on each axis by
+     * @param tint          Tint to apply when drawing model
      */
     public void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint) {
         context.rlgl.rlEnableWireMode();
@@ -4423,11 +4456,11 @@ public class rModels {
     /**
      * Draw a billboard
      *
-     * @param camera Camera to use when drawing billboard
-     * @param texture Texture to draw as a billboard
+     * @param camera   Camera to use when drawing billboard
+     * @param texture  Texture to draw as a billboard
      * @param position Position in the world to draw the billboard
-     * @param scale Scaling factor used when drawing the billoard
-     * @param tint Color tint to apply when drawing billboard
+     * @param scale    Scaling factor used when drawing the billoard
+     * @param tint     Color tint to apply when drawing billboard
      */
     public void DrawBillboard(Camera3D camera, Texture2D texture, Vector3 position, float scale, Color tint) {
         Rectangle source = new Rectangle(0.0f, 0.0f, (float) texture.width, (float) texture.height);
@@ -4438,12 +4471,12 @@ public class rModels {
     /**
      * Draw a billboard from part of a texture defined by a rectangle
      *
-     * @param camera Camera to use when drawing billboard
-     * @param texture Texture to draw as a billboard
-     * @param source Region of the texture to render
+     * @param camera   Camera to use when drawing billboard
+     * @param texture  Texture to draw as a billboard
+     * @param source   Region of the texture to render
      * @param position Position in the world to draw the billboard
-     * @param size (Width, Height) pair defining billboard size
-     * @param tint Color tint to apply when drawing billboard
+     * @param size     (Width, Height) pair defining billboard size
+     * @param tint     Color tint to apply when drawing billboard
      */
     public void DrawBillboardRec(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector2 size, Color tint) {
         // NOTE: Billboard locked on axis-Y
@@ -4455,15 +4488,15 @@ public class rModels {
     /**
      * Draw a billboard with additional parameters
      *
-     * @param camera Camera to use when drawing billboard
-     * @param texture Texture to draw as a billboard
-     * @param source Region of the texture to render
+     * @param camera   Camera to use when drawing billboard
+     * @param texture  Texture to draw as a billboard
+     * @param source   Region of the texture to render
      * @param position Position in the world to draw the billboard
-     * @param up Upwards pointing vector of the billboard
-     * @param size (Width, Height) pair defining billboard size
-     * @param origin Centerpoint within the billboard
+     * @param up       Upwards pointing vector of the billboard
+     * @param size     (Width, Height) pair defining billboard size
+     * @param origin   Centerpoint within the billboard
      * @param rotation Rotation applied to the billboard about the up vector, in degrees
-     * @param tint Color tint to apply when drawing billboard
+     * @param tint     Color tint to apply when drawing billboard
      */
     public void DrawBillboardPro(Camera3D camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint) {
         // Compute the up vector and the right vector
@@ -4473,13 +4506,13 @@ public class rModels {
         up = Vector3Scale(up, size.y);
 
         // Flip the content of the billboard while maintaining the counterclockwise edge rendering order
-        if (size.x < 0.0f) {
+        if(size.x < 0.0f) {
             source.x -= size.x;
             source.width *= -1.0;
             right = Vector3Negate(right);
             origin.x *= -1.0f;
         }
-        if (size.y < 0.0f) {
+        if(size.y < 0.0f) {
             source.y -= size.y;
             source.height *= -1.0;
             up = Vector3Negate(up);
@@ -4500,7 +4533,7 @@ public class rModels {
         //  0 +---------------------------> 1
         //                right
         Vector3 forward = new Vector3();
-        if (rotation != 0.0) {
+        if(rotation != 0.0) {
             forward = Vector3CrossProduct(right, up);
         }
 
@@ -4512,9 +4545,9 @@ public class rModels {
         points[2] = Vector3Add(up, right);
         points[3] = up;
 
-        for (int i = 0; i < 4; i++) {
+        for(int i = 0; i < 4; i++) {
             points[i] = Vector3Subtract(points[i], origin3D);
-            if (rotation != 0.0) {
+            if(rotation != 0.0) {
                 points[i] = Vector3RotateByAxisAngle(points[i], forward, rotation * DEG2RAD);
             }
             points[i] = Vector3Add(points[i], position);
@@ -4530,7 +4563,7 @@ public class rModels {
         context.rlgl.rlBegin(RL_QUADS);
 
         context.rlgl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-        for (int i = 0; i < 4; i++) {
+        for(int i = 0; i < 4; i++) {
             context.rlgl.rlTexCoord2f(texcoords[i].x, texcoords[i].y);
             context.rlgl.rlVertex3f(points[i].x, points[i].y, points[i].z);
         }
@@ -4542,7 +4575,7 @@ public class rModels {
     /**
      * Draw a bounding box with wires
      *
-     * @param box BoundingBox to draw
+     * @param box   BoundingBox to draw
      * @param color Color to draw wires
      */
     public void DrawBoundingBox(BoundingBox box, Color color) {
@@ -4584,7 +4617,7 @@ public class rModels {
         // Check for distances squared to avoid sqrtf()
         float radSum = radius1 + radius2;
 
-        if (Vector3DistanceSqr(center1, center2) <= (radSum*radSum)) {
+        if(Vector3DistanceSqr(center1, center2) <= (radSum * radSum)) {
             collision = true;
         }
 
@@ -4601,11 +4634,11 @@ public class rModels {
     public boolean CheckCollisionBoxes(BoundingBox box1, BoundingBox box2) {
         boolean collision = true;
 
-        if ((box1.max.x >= box2.min.x) && (box1.min.x <= box2.max.x)) {
-            if ((box1.max.y < box2.min.y) || (box1.min.y > box2.max.y)) {
+        if((box1.max.x >= box2.min.x) && (box1.min.x <= box2.max.x)) {
+            if((box1.max.y < box2.min.y) || (box1.min.y > box2.max.y)) {
                 collision = false;
             }
-            if ((box1.max.z < box2.min.z) || (box1.min.z > box2.max.z)) {
+            if((box1.max.z < box2.min.z) || (box1.min.z > box2.max.z)) {
                 collision = false;
             }
         }
@@ -4619,7 +4652,7 @@ public class rModels {
     /**
      * Check collision between box and sphere
      *
-     * @param box {@code BoundingBox} to evaluate
+     * @param box    {@code BoundingBox} to evaluate
      * @param center Center point of the sphere
      * @param radius Radius of the sphere
      * @return {@code true} if there is overlap between the two shapes
@@ -4633,7 +4666,7 @@ public class rModels {
                 Clamp(center.z, box.min.z, box.max.z)
         );
 
-        if (Vector3DistanceSqr(center, closestPoint) <= (radius*radius)) {
+        if(Vector3DistanceSqr(center, closestPoint) <= (radius * radius)) {
             collision = true;
         }
 
@@ -4643,7 +4676,7 @@ public class rModels {
     /**
      * Get Collision info between ray and sphere
      *
-     * @param ray {@code Ray} to evaluate
+     * @param ray    {@code Ray} to evaluate
      * @param center Center point of the sphere
      * @param radius Radius of the sphere
      * @return {@code RayCollision} object containing collision information
@@ -4660,7 +4693,7 @@ public class rModels {
         collision.hit = d >= 0.0f;
 
         // Check if ray origin is inside the sphere to calculate the correct collision point
-        if (distance < radius) {
+        if(distance < radius) {
             collision.distance = (float) (vector + Math.sqrt(d));
 
             // Calculate collision point
@@ -4699,7 +4732,7 @@ public class rModels {
                 (ray.position.y > box.min.y) && (ray.position.y < box.max.y) &&
                 (ray.position.z > box.min.z) && (ray.position.z < box.max.z);
 
-        if (insideBox) {
+        if(insideBox) {
             ray.direction = Vector3Negate(ray.direction);
         }
 
@@ -4738,7 +4771,7 @@ public class rModels {
 
         collision.normal = Vector3Normalize(collision.normal);
 
-        if (insideBox) {
+        if(insideBox) {
             // Reset ray.direction
             ray.direction = Vector3Negate(ray.direction);
             // Fix result
@@ -4752,8 +4785,8 @@ public class rModels {
     /**
      * Get collision info between ray and mesh
      *
-     * @param ray {@code Ray} to evaluate
-     * @param mesh {@code Mesh} to evaluate
+     * @param ray       {@code Ray} to evaluate
+     * @param mesh      {@code Mesh} to evaluate
      * @param transform Transformation matrix to be used against the {@code mesh}
      * @return {@code RayCollision} object containing collision information
      * @see RayCollision
@@ -4762,19 +4795,19 @@ public class rModels {
         RayCollision collision = new RayCollision();
 
         // Check if mesh vertex data on CPU for testing
-        if (mesh.vertices != null) {
+        if(mesh.vertices != null) {
             int triangleCount = mesh.triangleCount;
 
             // Test against all triangles in mesh
-            for (int i = 0; i < triangleCount; i++) {
+            for(int i = 0; i < triangleCount; i++) {
                 Vector3 a, b, c;
                 Vector3[] vertdata = new Vector3[mesh.vertices.length];
 
-                for (int j = 0, k = 0; j < vertdata.length; j += 3, k++) {
+                for(int j = 0, k = 0; j < vertdata.length; j += 3, k++) {
                     vertdata[k] = new Vector3(mesh.vertices[j], mesh.vertices[j + 1], mesh.vertices[j + 2]);
                 }
 
-                if (mesh.indices != null) {
+                if(mesh.indices != null) {
                     a = vertdata[(int) mesh.indices[i * 3]];
                     b = vertdata[(int) mesh.indices[i * 3 + 1]];
                     c = vertdata[(int) mesh.indices[i * 3 + 2]];
@@ -4791,9 +4824,9 @@ public class rModels {
 
                 RayCollision triHitInfo = GetRayCollisionTriangle(ray, a, b, c);
 
-                if (triHitInfo.hit) {
+                if(triHitInfo.hit) {
                     // Save the closest hit triangle
-                    if ((!collision.hit) || (collision.distance > triHitInfo.distance)) {
+                    if((!collision.hit) || (collision.distance > triHitInfo.distance)) {
                         collision = triHitInfo;
                     }
                 }
@@ -4808,12 +4841,12 @@ public class rModels {
      * NOTE: The points are expected to be given in counter-clockwise winding
      *
      * @param ray {@code Ray} to evaluate
-     * @param p1 First vertex of the triangle
-     * @param p2 Second vertex of the triangle
-     * @param p3 Third vertex of the triangle
+     * @param p1  First vertex of the triangle
+     * @param p2  Second vertex of the triangle
+     * @param p3  Third vertex of the triangle
      * @return {@code RayCollision} object containing collision information
-     * @see RayCollision
      * @link <a href="https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm">Based on Trumbore Intersection Algorithm</a>
+     * @see RayCollision
      */
     public RayCollision GetRayCollisionTriangle(Ray ray, Vector3 p1, Vector3 p2, Vector3 p3) {
         float EPSILON = 0.000001f;        // A small number
@@ -4835,7 +4868,7 @@ public class rModels {
         det = Vector3DotProduct(edge1, p);
 
         // Avoid culling!
-        if ((det > -EPSILON) && (det < EPSILON)) {
+        if((det > -EPSILON) && (det < EPSILON)) {
             return collision;
         }
 
@@ -4848,7 +4881,7 @@ public class rModels {
         u = Vector3DotProduct(tv, p) * invDet;
 
         // The intersection lies outside of the triangle
-        if ((u < 0.0f) || (u > 1.0f)) {
+        if((u < 0.0f) || (u > 1.0f)) {
             return collision;
         }
 
@@ -4859,13 +4892,13 @@ public class rModels {
         v = Vector3DotProduct(ray.direction, q) * invDet;
 
         // The intersection lies outside of the triangle
-        if ((v < 0.0f) || ((u + v) > 1.0f)) {
+        if((v < 0.0f) || ((u + v) > 1.0f)) {
             return collision;
         }
 
         t = Vector3DotProduct(edge2, q) * invDet;
 
-        if (t > EPSILON) {
+        if(t > EPSILON) {
             // Ray hit, get hit point and normal
             collision.hit = true;
             collision.distance = t;
@@ -4881,10 +4914,10 @@ public class rModels {
      * NOTE: The points are expected to be given in counter-clockwise winding
      *
      * @param ray {@code Ray} to evaluate
-     * @param p1 First vertex of the quad
-     * @param p2 Second vertex of the quad
-     * @param p3 Third vertex of the quad
-     * @param p4 Fourth vertex of the quad
+     * @param p1  First vertex of the quad
+     * @param p2  Second vertex of the quad
+     * @param p3  Third vertex of the quad
+     * @param p4  Fourth vertex of the quad
      * @return {@code RayCollision} object containing collision information
      * @see RayCollision
      */
@@ -4893,7 +4926,7 @@ public class rModels {
 
         collision = GetRayCollisionTriangle(ray, p1, p2, p4);
 
-        if (!collision.hit) {
+        if(!collision.hit) {
             collision = GetRayCollisionTriangle(ray, p2, p3, p4);
         }
 
@@ -4918,9 +4951,9 @@ public class rModels {
     private Transform[] BuildPoseFromParentJoints(BoneInfo[] bones, Transform[] transforms) {
         Transform[] result = transforms.clone();
 
-        for (int i = 0; i < bones.length; i++) {
-            if (bones[i].parent >= 0) {
-                if (bones[i].parent > i) {
+        for(int i = 0; i < bones.length; i++) {
+            if(bones[i].parent >= 0) {
+                if(bones[i].parent > i) {
                     context.tracelog.TRACELOG(LOG_WARNING, "Skipping bone not topologically sorted: Bone %i has parent %i", i, bones[i].parent);
                     continue;
                 }
@@ -4948,7 +4981,7 @@ public class rModels {
             OBJLoader loader = new OBJLoader();
             boolean success = loader.ReadOBJ(context, fileName, true);
 
-            if (success) {
+            if(success) {
                 context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] OBJ data loaded successfully: " + loader.objInfo.shapes.length + " meshes/" + loader.objInfo.totalMaterials + " materials");
             }
             else {
@@ -4959,7 +4992,7 @@ public class rModels {
             model.meshCount = loader.objInfo.totalMaterials;
 
             // Init model materials array
-            if (loader.objInfo.totalMaterials > 0) {
+            if(loader.objInfo.totalMaterials > 0) {
                 model.materialCount = loader.objInfo.totalMaterials;
                 model.materials = new Material[model.materialCount];
                 context.tracelog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes.");
@@ -4976,8 +5009,8 @@ public class rModels {
             int[] matFaces = new int[model.meshCount];
 
             // if no materials are present use all faces on one mesh
-            if (loader.objInfo.totalMaterials > 0) {
-                for (int fi = 0; fi < loader.objInfo.totalFaces; fi++) {
+            if(loader.objInfo.totalMaterials > 0) {
+                for(int fi = 0; fi < loader.objInfo.totalFaces; fi++) {
                     int idx = loader.objInfo.materialIds[fi];
                     matFaces[idx]++;
                 }
@@ -4997,7 +5030,7 @@ public class rModels {
             int[] faceCount = new int[model.meshCount];
 
             // Allocate each of the material meshes
-            for (int mi = 0; mi < model.meshCount; mi++) {
+            for(int mi = 0; mi < model.meshCount; mi++) {
                 model.meshes[mi] = new Mesh();
                 model.meshes[mi].vertexCount = matFaces[mi] * 3;
                 model.meshes[mi].triangleCount = matFaces[mi];
@@ -5008,9 +5041,9 @@ public class rModels {
             }
 
             // Scan through the combined sub meshes and pick out each material mesh
-            for (int af = 0; af < loader.objInfo.totalFaces; af++) {
+            for(int af = 0; af < loader.objInfo.totalFaces; af++) {
                 int mm = loader.objInfo.materialIds[af];
-                if (mm == -1) {
+                if(mm == -1) {
                     mm = 0;
                 }
 
@@ -5021,22 +5054,22 @@ public class rModels {
 
                 // Fill vertices buffer (float) using vertex index of the face
                 // TODO: 11/07/2022 Eventually I'd like to be able to remove the - 1 from the following bits, but it works well enough for now...
-                for (int v = 0; v < 3; v++) {
+                for(int v = 0; v < 3; v++) {
                     model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx0.vIndex - 1) * 3 + v];
                 }
                 vCount[mm] += 3;
-                for (int v = 0; v < 3; v++) {
+                for(int v = 0; v < 3; v++) {
                     model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx1.vIndex - 1) * 3 + v];
                 }
                 vCount[mm] += 3;
-                for (int v = 0; v < 3; v++) {
+                for(int v = 0; v < 3; v++) {
                     model.meshes[mm].vertices[vCount[mm] + v] = loader.objInfo.vertices[(idx2.vIndex - 1) * 3 + v];
                 }
                 vCount[mm] += 3;
 
                 //System.out.println(Arrays.toString(model.meshes[mm].vertices));
 
-                if (loader.objInfo.totalTexcoords > 0) {
+                if(loader.objInfo.totalTexcoords > 0) {
                     // Fill texcoords buffer (float) using vertex index of the face
                     // NOTE: Y-coordinate must be flipped upside-down to account for
                     // raylib's upside down textures...
@@ -5052,17 +5085,17 @@ public class rModels {
 
                 }
 
-                if (loader.objInfo.totalNormals > 0) {
+                if(loader.objInfo.totalNormals > 0) {
                     // Fill normals buffer (float) using vertex index of the face
-                    for (int v = 0; v < 3; v++) {
+                    for(int v = 0; v < 3; v++) {
                         model.meshes[mm].normals[vnCount[mm] + v] = loader.objInfo.normals[(idx0.vnIndex - 1) * 3 + v];
                     }
                     vnCount[mm] += 3;
-                    for (int v = 0; v < 3; v++) {
+                    for(int v = 0; v < 3; v++) {
                         model.meshes[mm].normals[vnCount[mm] + v] = loader.objInfo.normals[(idx1.vnIndex - 1) * 3 + v];
                     }
                     vnCount[mm] += 3;
-                    for (int v = 0; v < 3; v++) {
+                    for(int v = 0; v < 3; v++) {
                         model.meshes[mm].normals[vnCount[mm] + v] = loader.objInfo.normals[(idx2.vnIndex - 1) * 3 + v];
                     }
                     vnCount[mm] += 3;
@@ -5072,8 +5105,7 @@ public class rModels {
             String path = fileName.substring(0, fileName.lastIndexOf("/") + 1);
             model.materials = ProcessMaterialsOBJ(loader, path);
 
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -5089,7 +5121,7 @@ public class rModels {
      * @return Integer value defined by bytes [0...3] of the byte array
      */
     private static int IQM_toInt(byte[] bytes) {
-        if (bytes.length < Integer.BYTES) {
+        if(bytes.length < Integer.BYTES) {
             return -1;
         }
         else {
@@ -5106,7 +5138,7 @@ public class rModels {
      * @return Float value defined by bytes [0...3] of the byte array
      */
     private static float IQM_toFloat(byte[] bytes) {
-        if (bytes.length < Float.BYTES) {
+        if(bytes.length < Float.BYTES) {
             return -1;
         }
         else {
@@ -5123,7 +5155,7 @@ public class rModels {
      * @return Short value defined by bytes [0...1] of the byte array
      */
     private static short IQM_toShort(byte[] bytes) {
-        if (bytes.length < Short.BYTES) {
+        if(bytes.length < Short.BYTES) {
             return -1;
         }
         else {
@@ -5140,7 +5172,7 @@ public class rModels {
     public Model LoadIQM(String fileName) {
         Model model = new Model();
 
-        try (ByteArrayInputStream fileData = new ByteArrayInputStream(context.files.LoadFileData(fileName))) {
+        try(ByteArrayInputStream fileData = new ByteArrayInputStream(context.files.LoadFileData(fileName))) {
 
             int dataSize = fileData.available();
 
@@ -5171,7 +5203,7 @@ public class rModels {
 
             // Read IQM Header
             fileDataPtr += fileData.read(tmpMagic);
-            for (int i = 0; i < header.magic.length; i++) {
+            for(int i = 0; i < header.magic.length; i++) {
                 header.magic[i] = (char) tmpMagic[i];
             }
             fileDataPtr += fileData.read(intBuffer);
@@ -5229,16 +5261,16 @@ public class rModels {
             fileDataPtr += fileData.read(intBuffer);
             header.ofs_extensions = IQM_toInt(intBuffer);
 
-            if (!IQM_MAGIC.equals(String.valueOf(header.magic))) {
+            if(!IQM_MAGIC.equals(String.valueOf(header.magic))) {
                 context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
             }
-            if (IQM_VERSION != header.version) {
+            if(IQM_VERSION != header.version) {
                 context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file version not supported (" + header.version + ")");
             }
 
             imesh = new IQMMesh[header.num_meshes];
             int off = 0;
-            for (int i = 0; i < imesh.length; i++) {
+            for(int i = 0; i < imesh.length; i++) {
                 imesh[i] = new IQMMesh();
                 fileData.reset();
                 fileData.skip(header.ofs_meshes + off);
@@ -5270,12 +5302,12 @@ public class rModels {
             char[] material = new char[MATERIAL_NAME_LENGTH];
             byte[] tmpMaterial = new byte[MATERIAL_NAME_LENGTH];
 
-            for (int i = 0; i < model.meshCount; i++) {
+            for(int i = 0; i < model.meshCount; i++) {
                 // Copy mesh name
                 fileData.reset();
                 fileData.skip(header.ofs_text + imesh[i].name);
                 fileData.read(tmpName);
-                for (int j = 0; j < MESH_NAME_LENGTH; j++) {
+                for(int j = 0; j < MESH_NAME_LENGTH; j++) {
                     name[j] = (char) tmpName[j];
                 }
 
@@ -5283,7 +5315,7 @@ public class rModels {
                 fileData.reset();
                 fileData.skip(header.ofs_text + imesh[i].material);
                 fileData.read(tmpMaterial);
-                for (int j = 0; j < MESH_NAME_LENGTH; j++) {
+                for(int j = 0; j < MESH_NAME_LENGTH; j++) {
                     material[j] = (char) tmpMaterial[j];
                 }
 
@@ -5314,18 +5346,18 @@ public class rModels {
             tri = new IQMTriangle[header.num_triangles];
             fileData.reset();
             fileData.skip(header.ofs_triangles);
-            for (int i = 0; i < tri.length; i++) {
+            for(int i = 0; i < tri.length; i++) {
                 tri[i] = new IQMTriangle();
-                for (int j = 0; j < tri[i].vertex.length; j++) {
+                for(int j = 0; j < tri[i].vertex.length; j++) {
                     fileData.read(intBuffer);
                     tri[i].vertex[j] = IQM_toInt(intBuffer);
                 }
             }
 
-            for (int m = 0; m < model.meshCount; m++) {
+            for(int m = 0; m < model.meshCount; m++) {
                 int tcounter = 0;
 
-                for (int i = imesh[m].first_triangle; i < (imesh[m].first_triangle + imesh[m].num_triangles); i++) {
+                for(int i = imesh[m].first_triangle; i < (imesh[m].first_triangle + imesh[m].num_triangles); i++) {
                     // IQM triangles indexes are stored in counter-clockwise, but raylib processes the index in linear order,
                     // expecting they point to the counter-clockwise vertex triangle, so we need to reverse triangle indexes
                     // NOTE: raylib renders vertex data in counter-clockwise order (standard convention) by default
@@ -5340,7 +5372,7 @@ public class rModels {
             va = new IQMVertexArray[header.num_vertexarrays];
             fileData.reset();
             fileData.skip(header.ofs_vertexarrays);
-            for (int i = 0; i < va.length; i++) {
+            for(int i = 0; i < va.length; i++) {
                 va[i] = new IQMVertexArray();
                 fileData.read(intBuffer);
                 va[i].type = IQMVertexDataType.values()[IQM_toInt(intBuffer)];
@@ -5354,20 +5386,20 @@ public class rModels {
                 va[i].offset = IQM_toInt(intBuffer);
             }
 
-            for (int i = 0; i < header.num_vertexarrays; i++) {
-                switch (va[i].type) {
+            for(int i = 0; i < header.num_vertexarrays; i++) {
+                switch(va[i].type) {
                     case IQM_POSITION: {
                         vertex = new float[header.num_vertexes * 3];
                         fileData.reset();
                         fileData.skip(va[i].offset);
-                        for (int j = 0; j < vertex.length; j++) {
+                        for(int j = 0; j < vertex.length; j++) {
                             fileData.read(floatBuffer);
                             vertex[j] = IQM_toFloat(floatBuffer);
                         }
 
-                        for (int m = 0; m < header.num_meshes; m++) {
+                        for(int m = 0; m < header.num_meshes; m++) {
                             int vCounter = 0;
-                            for (int j = imesh[m].first_vertex * 3; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 3; j++) {
+                            for(int j = imesh[m].first_vertex * 3; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 3; j++) {
                                 model.meshes[m].vertices[vCounter] = vertex[j];
                                 model.meshes[m].animVertices[vCounter] = vertex[j];
                                 vCounter++;
@@ -5379,15 +5411,15 @@ public class rModels {
                         text = new float[header.num_vertexes * 2];
                         fileData.reset();
                         fileData.skip(va[i].offset);
-                        for (int j = 0; j < text.length; j++) {
+                        for(int j = 0; j < text.length; j++) {
                             fileData.read(floatBuffer);
                             text[j] = IQM_toFloat(floatBuffer);
                         }
 
-                        for (int m = 0; m < header.num_meshes; m++) {
+                        for(int m = 0; m < header.num_meshes; m++) {
                             int vCounter = 0;
 
-                            for (int j = imesh[m].first_vertex * 2; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 2; j++) {
+                            for(int j = imesh[m].first_vertex * 2; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 2; j++) {
                                 model.meshes[m].texcoords[vCounter] = text[j];
                                 vCounter++;
                             }
@@ -5398,14 +5430,14 @@ public class rModels {
                         normal = new float[header.num_vertexes * 3];
                         fileData.reset();
                         fileData.skip(va[i].offset);
-                        for (int j = 0; j < normal.length; j++) {
+                        for(int j = 0; j < normal.length; j++) {
                             fileData.read(floatBuffer);
                             normal[j] = IQM_toFloat(floatBuffer);
                         }
 
-                        for (int m = 0; m < header.num_meshes; m++) {
+                        for(int m = 0; m < header.num_meshes; m++) {
                             int vCounter = 0;
-                            for (int j = imesh[m].first_vertex * 3; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 3; j++) {
+                            for(int j = imesh[m].first_vertex * 3; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 3; j++) {
                                 model.meshes[m].normals[vCounter] = normal[j];
                                 model.meshes[m].animNormals[vCounter] = normal[j];
                                 vCounter++;
@@ -5419,9 +5451,9 @@ public class rModels {
                         fileData.skip(va[i].offset);
                         fileData.read(blendi);
 
-                        for (int m = 0; m < header.num_meshes; m++) {
+                        for(int m = 0; m < header.num_meshes; m++) {
                             int boneCounter = 0;
-                            for (int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
+                            for(int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
                                 model.meshes[m].boneIndices[boneCounter] = blendi[j];
                                 boneCounter++;
                             }
@@ -5434,9 +5466,9 @@ public class rModels {
                         fileData.skip(va[i].offset);
                         fileData.read(blendw);
 
-                        for (int m = 0; m < header.num_meshes; m++) {
+                        for(int m = 0; m < header.num_meshes; m++) {
                             int boneCounter = 0;
-                            for (int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
+                            for(int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
                                 model.meshes[m].boneWeights[boneCounter] = Byte.toUnsignedInt(blendw[j]) / 255.0f;
                                 boneCounter++;
                             }
@@ -5449,11 +5481,11 @@ public class rModels {
                         fileData.skip(va[i].offset);
                         fileData.read(color);
 
-                        for (int m = 0; m < header.num_meshes; m++) {
+                        for(int m = 0; m < header.num_meshes; m++) {
                             model.meshes[m].colors = new byte[model.meshes[m].vertexCount * 4];
 
                             int vCounter = 0;
-                            for (int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
+                            for(int j = imesh[m].first_vertex * 4; j < (imesh[m].first_vertex + imesh[m].num_vertexes) * 4; j++) {
                                 model.meshes[m].colors[vCounter] = color[j];
                                 vCounter++;
                             }
@@ -5470,21 +5502,21 @@ public class rModels {
             joint = new IQMJoint[header.num_joints];
             fileData.reset();
             fileData.skip(header.ofs_joints);
-            for (int i = 0; i < joint.length; i++) {
+            for(int i = 0; i < joint.length; i++) {
                 joint[i] = new IQMJoint();
                 fileData.read(intBuffer);
                 joint[i].name = IQM_toInt(intBuffer);
                 fileData.read(intBuffer);
                 joint[i].parent = IQM_toInt(intBuffer);
-                for (int j = 0; j < joint[i].translate.length; j++) {
+                for(int j = 0; j < joint[i].translate.length; j++) {
                     fileData.read(floatBuffer);
                     joint[i].translate[j] = IQM_toFloat(floatBuffer);
                 }
-                for (int j = 0; j < joint[i].rotate.length; j++) {
+                for(int j = 0; j < joint[i].rotate.length; j++) {
                     fileData.read(floatBuffer);
                     joint[i].rotate[j] = IQM_toFloat(floatBuffer);
                 }
-                for (int j = 0; j < joint[i].scale.length; j++) {
+                for(int j = 0; j < joint[i].scale.length; j++) {
                     fileData.read(floatBuffer);
                     joint[i].scale[j] = IQM_toFloat(floatBuffer);
                 }
@@ -5494,7 +5526,7 @@ public class rModels {
             model.skeleton.bones = new BoneInfo[header.num_joints];
             model.skeleton.bindPose = new Transform[header.num_joints];
 
-            for (int i = 0; i < header.num_joints; i++) {
+            for(int i = 0; i < header.num_joints; i++) {
                 // Bones
                 model.skeleton.bones[i] = new BoneInfo();
                 model.skeleton.bones[i].parent = joint[i].parent;
@@ -5503,7 +5535,7 @@ public class rModels {
                 fileData.reset();
                 fileData.skip(header.ofs_text + joint[i].name);
                 fileData.read(tmp);
-                for (int j = 0; j < BONE_NAME_LENGTH; j++) {
+                for(int j = 0; j < BONE_NAME_LENGTH; j++) {
                     bonetmp[j] = (char) tmp[j];
                 }
                 model.skeleton.bones[i].name = bonetmp.toString();
@@ -5526,16 +5558,17 @@ public class rModels {
 
             model.skeleton.bindPose = BuildPoseFromParentJoints(model.skeleton.bones, model.skeleton.bindPose);
 
-            for (int i = 0; i < model.meshCount; i++) {
-                model.meshes[i].boneCount = model.skeleton.boneCount;
-                model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
-                for (int j = 0; j < model.meshes[i].boneMatrices.length; j++) {
-                    model.meshes[i].boneMatrices[j] = MatrixIdentity();
-                }
+            // Initialize runtime animation data: current pose and bone matrices
+            model.currentPose = new Transform[model.skeleton.boneCount];
+            for (int j = 0; j < model.skeleton.boneCount; j++) {
+                model.currentPose[j] = new Transform();
+            }
+            model.boneMatrices = new Matrix[model.skeleton.boneCount];
+            for (int j = 0; j < model.skeleton.boneCount; j++) {
+                model.boneMatrices[j] = MatrixIdentity();
             }
 
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -5544,6 +5577,7 @@ public class rModels {
 
     /**
      * Load IQM animation data
+     *
      * @param fileName Location of the IQM file
      * @return Array of {@code ModelAnimation}s as defined by the IQM file
      */
@@ -5557,7 +5591,7 @@ public class rModels {
 
         ModelAnimation[] animations;
 
-        try (ByteArrayInputStream fileData = new ByteArrayInputStream(context.files.LoadFileData(fileName))) {
+        try(ByteArrayInputStream fileData = new ByteArrayInputStream(context.files.LoadFileData(fileName))) {
             fileSize = fileData.available();
 
             IQMHeader iqmHeader = new IQMHeader();
@@ -5569,7 +5603,7 @@ public class rModels {
 
             // Read IQM Header
             fileDataPtr += fileData.read(tmpMagic);
-            for (int i = 0; i < iqmHeader.magic.length; i++) {
+            for(int i = 0; i < iqmHeader.magic.length; i++) {
                 iqmHeader.magic[i] = (char) tmpMagic[i];
             }
             fileDataPtr += fileData.read(intBuffer);
@@ -5627,10 +5661,10 @@ public class rModels {
             fileDataPtr += fileData.read(intBuffer);
             iqmHeader.ofs_extensions = IQM_toInt(intBuffer);
 
-            if (!IQM_MAGIC.equals(String.valueOf(iqmHeader.magic))) {
+            if(!IQM_MAGIC.equals(String.valueOf(iqmHeader.magic))) {
                 context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file is not a valid model");
             }
-            if (IQM_VERSION != iqmHeader.version) {
+            if(IQM_VERSION != iqmHeader.version) {
                 context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] IQM file version not supported (" + iqmHeader.version + ")");
             }
 
@@ -5639,17 +5673,17 @@ public class rModels {
             fileData.reset();
             fileData.skip(iqmHeader.ofs_poses);
             fileDataPtr = iqmHeader.ofs_poses;
-            for (int i = 0; i < poses.length; i++) {
+            for(int i = 0; i < poses.length; i++) {
                 poses[i] = new IQMPose();
                 fileDataPtr += fileData.read(intBuffer);
                 poses[i].parent = IQM_toInt(intBuffer);
                 fileDataPtr += fileData.read(intBuffer);
                 poses[i].mask = IQM_toInt(intBuffer);
-                for (int j = 0; j < poses[i].channeloffset.length; j++) {
+                for(int j = 0; j < poses[i].channeloffset.length; j++) {
                     fileDataPtr += fileData.read(floatBuffer);
                     poses[i].channeloffset[j] = IQM_toFloat(floatBuffer);
                 }
-                for (int j = 0; j < poses[i].channelscale.length; j++) {
+                for(int j = 0; j < poses[i].channelscale.length; j++) {
                     fileDataPtr += fileData.read(floatBuffer);
                     poses[i].channelscale[j] = IQM_toFloat(floatBuffer);
                 }
@@ -5662,7 +5696,7 @@ public class rModels {
             fileData.reset();
             fileData.skip(iqmHeader.ofs_anims);
             fileDataPtr = iqmHeader.ofs_anims;
-            for (int i = 0; i < anim.length; i++) {
+            for(int i = 0; i < anim.length; i++) {
                 anim[i] = new IQMAnim();
                 fileDataPtr += fileData.read(intBuffer);
                 anim[i].name = IQM_toInt(intBuffer);
@@ -5684,103 +5718,103 @@ public class rModels {
             fileData.skip(iqmHeader.ofs_frames);
             fileDataPtr = iqmHeader.ofs_frames;
 
-            for (int i = 0; i < framedata.length; i++) {
+            for(int i = 0; i < framedata.length; i++) {
                 fileDataPtr += fileData.read(shortbuffer);
                 framedata[i] = Short.toUnsignedInt(IQM_toShort(shortbuffer));
             }
 
-            for (int a = 0; a < iqmHeader.num_anims; a++) {
+            for(int a = 0; a < iqmHeader.num_anims; a++) {
                 animations[a] = new ModelAnimation();
                 animations[a].boneCount = iqmHeader.num_poses;
                 BoneInfo[] bones = new BoneInfo[iqmHeader.num_poses];
-                
+
                 animations[a].keyframeCount = anim[a].num_frames;
                 animations[a].keyframePoses = new Transform[anim[a].num_frames][];
                 // animations[a].framerate = anim.framerate;     // TODO: Use framerate?
 
-                for (int j = 0; j < iqmHeader.num_poses; j++) {
+                for(int j = 0; j < iqmHeader.num_poses; j++) {
                     bones[j] = new BoneInfo();
                     bones[j].name = "ANIMJOINTNAME";
                     bones[j].parent = poses[j].parent;
                 }
 
-                for (int j = 0; j < anim[a].num_frames; j++) {
+                for(int j = 0; j < anim[a].num_frames; j++) {
                     animations[a].keyframePoses[j] = new Transform[iqmHeader.num_poses];
-                    for (int i = 0; i < iqmHeader.num_poses; i++) {
+                    for(int i = 0; i < iqmHeader.num_poses; i++) {
                         animations[a].keyframePoses[j][i] = new Transform();
                     }
                 }
 
                 int dcounter = anim[a].first_frame * iqmHeader.num_framechannels;
 
-                for (int frame = 0; frame < anim[a].num_frames; frame++) {
-                    for (int i = 0; i < iqmHeader.num_poses; i++) {
+                for(int frame = 0; frame < anim[a].num_frames; frame++) {
+                    for(int i = 0; i < iqmHeader.num_poses; i++) {
                         animations[a].keyframePoses[frame][i].translation.x = poses[i].channeloffset[0];
 
-                        if ((poses[i].mask & 0x01) == 1) {
+                        if((poses[i].mask & 0x01) == 1) {
                             animations[a].keyframePoses[frame][i].translation.x += framedata[dcounter] * poses[i].channelscale[0];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].translation.y = poses[i].channeloffset[1];
 
-                        if ((poses[i].mask & 0x02) == 2) {
+                        if((poses[i].mask & 0x02) == 2) {
                             animations[a].keyframePoses[frame][i].translation.y += framedata[dcounter] * poses[i].channelscale[1];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].translation.z = poses[i].channeloffset[2];
 
-                        if ((poses[i].mask & 0x04) == 4) {
+                        if((poses[i].mask & 0x04) == 4) {
                             animations[a].keyframePoses[frame][i].translation.z += framedata[dcounter] * poses[i].channelscale[2];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].rotation.x = poses[i].channeloffset[3];
 
-                        if ((poses[i].mask & 0x08) == 8) {
+                        if((poses[i].mask & 0x08) == 8) {
                             animations[a].keyframePoses[frame][i].rotation.x += framedata[dcounter] * poses[i].channelscale[3];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].rotation.y = poses[i].channeloffset[4];
 
-                        if ((poses[i].mask & 0x10) == 16) {
+                        if((poses[i].mask & 0x10) == 16) {
                             animations[a].keyframePoses[frame][i].rotation.y += framedata[dcounter] * poses[i].channelscale[4];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].rotation.z = poses[i].channeloffset[5];
 
-                        if ((poses[i].mask & 0x20) == 32) {
+                        if((poses[i].mask & 0x20) == 32) {
                             animations[a].keyframePoses[frame][i].rotation.z += framedata[dcounter] * poses[i].channelscale[5];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].rotation.w = poses[i].channeloffset[6];
 
-                        if ((poses[i].mask & 0x40) == 64) {
+                        if((poses[i].mask & 0x40) == 64) {
                             animations[a].keyframePoses[frame][i].rotation.w += framedata[dcounter] * poses[i].channelscale[6];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].scale.x = poses[i].channeloffset[7];
 
-                        if ((poses[i].mask & 0x80) == 128) {
+                        if((poses[i].mask & 0x80) == 128) {
                             animations[a].keyframePoses[frame][i].scale.x += framedata[dcounter] * poses[i].channelscale[7];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].scale.y = poses[i].channeloffset[8];
 
-                        if ((poses[i].mask & 0x100) == 256) {
+                        if((poses[i].mask & 0x100) == 256) {
                             animations[a].keyframePoses[frame][i].scale.y += framedata[dcounter] * poses[i].channelscale[8];
                             dcounter++;
                         }
 
                         animations[a].keyframePoses[frame][i].scale.z = poses[i].channeloffset[9];
 
-                        if ((poses[i].mask & 0x200) == 512) {
+                        if((poses[i].mask & 0x200) == 512) {
                             animations[a].keyframePoses[frame][i].scale.z += framedata[dcounter] * poses[i].channelscale[9];
                             dcounter++;
                         }
@@ -5790,9 +5824,9 @@ public class rModels {
                 }
 
                 // Build frameposes
-                for (int frame = 0; frame < anim[a].num_frames; frame++) {
-                    for (int i = 0; i < animations[a].boneCount; i++) {
-                        if (bones[i].parent >= 0) {
+                for(int frame = 0; frame < anim[a].num_frames; frame++) {
+                    for(int i = 0; i < animations[a].boneCount; i++) {
+                        if(bones[i].parent >= 0) {
                             animations[a].keyframePoses[frame][i].rotation = QuaternionMultiply(animations[a].keyframePoses[frame][bones[i].parent].rotation, animations[a].keyframePoses[frame][i].rotation);
                             animations[a].keyframePoses[frame][i].translation = Vector3RotateByQuaternion(animations[a].keyframePoses[frame][i].translation, animations[a].keyframePoses[frame][bones[i].parent].rotation);
                             animations[a].keyframePoses[frame][i].translation = Vector3Add(animations[a].keyframePoses[frame][i].translation, animations[a].keyframePoses[frame][bones[i].parent].translation);
@@ -5801,8 +5835,7 @@ public class rModels {
                     }
                 }
             }
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -5819,14 +5852,14 @@ public class rModels {
     private Image LoadImageFromCgltfImage(ImageModel img, BufferViewModel bufferView, String texPath) {
         Image image = new Image();
 
-        if (img.getUri() != null) {
-            if (img.getUri().length() > 5 && img.getUri().startsWith("data:")) {
+        if(img.getUri() != null) {
+            if(img.getUri().length() > 5 && img.getUri().startsWith("data:")) {
                 int i = 0;
-                while ((img.getUri().charAt(i) != ',') && (i != img.getUri().length())) {
+                while((img.getUri().charAt(i) != ',') && (i != img.getUri().length())) {
                     i++;
                 }
 
-                if (i == img.getUri().length()) {
+                if(i == img.getUri().length()) {
                     context.tracelog.TRACELOG(LOG_WARNING, "IMAGE: glTF data URI is not a valid image");
                 }
                 else {
@@ -5834,7 +5867,7 @@ public class rModels {
                     String encoded = uri.substring(uri.lastIndexOf(",") + 1);
                     byte[] data = Base64.getDecoder().decode(encoded);
 
-                    if (data != null) {
+                    if(data != null) {
                         image = context.textures.LoadImageFromMemory(".png", data);
                     }
 
@@ -5844,14 +5877,14 @@ public class rModels {
                 image = context.textures.LoadImage(texPath + "/" + img.getUri());
             }
         }
-        else if (bufferView.getBufferViewData() != null) {
+        else if(bufferView.getBufferViewData() != null) {
             byte[] data = new byte[bufferView.getByteLength()];
             bufferView.getBufferViewData().get(data);
 
-            if (img.getMimeType().equals("image\\/png") || img.getMimeType().equals("image/png")) {
+            if(img.getMimeType().equals("image\\/png") || img.getMimeType().equals("image/png")) {
                 image = context.textures.LoadImageFromMemory(".png", data);
             }
-            else if (img.getMimeType().equals("image\\/jpeg") || img.getMimeType().equals("image/jpeg")) {
+            else if(img.getMimeType().equals("image\\/jpeg") || img.getMimeType().equals("image/jpeg")) {
                 image = context.textures.LoadImageFromMemory(".jpg", data);
             }
             else {
@@ -5867,7 +5900,7 @@ public class rModels {
         int boneCount = skin.getJoints().size();
         BoneInfo[] bones = new BoneInfo[boneCount];
 
-        for (int i = 0; i < boneCount; i++) {
+        for(int i = 0; i < boneCount; i++) {
             NodeModel node = skin.getJoints().get(i);
             bones[i] = new BoneInfo();
             bones[i].name = node.getName();
@@ -5875,8 +5908,8 @@ public class rModels {
             // Find parent bone index
             int parentIndex = -1;
 
-            for (int j = 0; j < boneCount; j++) {
-                if (node.getParent().equals(skin.getJoints().get(j))) {
+            for(int j = 0; j < boneCount; j++) {
+                if(node.getParent().equals(skin.getJoints().get(j))) {
                     parentIndex = j;
                     break;
                 }
@@ -5886,7 +5919,7 @@ public class rModels {
         }
 
         int i = 0;
-        for (BoneInfo bone : bones) {
+        for(BoneInfo bone : bones) {
             System.out.println(i + ": " + bone.name + ", " + bone.parent);
             i++;
         }
@@ -5926,16 +5959,15 @@ public class rModels {
 
         try {
             gltf = new GltfModelReader().read(Paths.get(fileName));
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
             return model;
         }
 
-        if (context.files.GetFileExtension(fileName).equalsIgnoreCase(".glb")) {
+        if(context.files.GetFileExtension(fileName).equalsIgnoreCase(".glb")) {
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glb) loaded successfully");
         }
-        else if (context.files.GetFileExtension(fileName).equalsIgnoreCase(".gltf")) {
+        else if(context.files.GetFileExtension(fileName).equalsIgnoreCase(".gltf")) {
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Model basic data (glTF) loaded successfully");
         }
 
@@ -5947,7 +5979,7 @@ public class rModels {
 
         int primitivesCount = 0;
         // NOTE: We will load every primitive in the glTF as a separate raylib mesh
-        for (int i = 0; i < gltf.getMeshModels().size(); i++) {
+        for(int i = 0; i < gltf.getMeshModels().size(); i++) {
             primitivesCount += gltf.getMeshModels().get(i).getMeshPrimitiveModels().size();
         }
         context.tracelog.TRACELOG(LOG_DEBUG, "    > Primitives (triangles only) count based on hierarchy : " + primitivesCount);
@@ -5955,7 +5987,7 @@ public class rModels {
         // Load our model data: meshes and materials
         model.meshCount = primitivesCount;
         model.meshes = new Mesh[model.meshCount];
-        for (int i = 0; i < model.meshCount; i++) {
+        for(int i = 0; i < model.meshCount; i++) {
             model.meshes[i] = new Mesh();
         }
 
@@ -5969,18 +6001,18 @@ public class rModels {
 
         // Load materials data
         //----------------------------------------------------------------------------------------------------
-        for (int i = 0, j = 1; i < gltf.getMaterialModels().size(); i++, j++) {
+        for(int i = 0, j = 1; i < gltf.getMaterialModels().size(); i++, j++) {
             model.materials[j] = LoadMaterialDefault();
             String texPath = context.files.GetDirectoryPath(fileName);
             MaterialModelV2 material = (MaterialModelV2) gltf.getMaterialModels().get(i);
 
             // Check glTF material flow: PBR metallic/roughness flow
             // NOTE: Alternatively, materials can follow PBR specular/glossiness flow
-            if (material != null) {
+            if(material != null) {
                 // Load base color texture (albedo)
-                if (material.getBaseColorTexture() != null) {
+                if(material.getBaseColorTexture() != null) {
                     Image imAlbedo = LoadImageFromCgltfImage(material.getBaseColorTexture().getImageModel(), material.getBaseColorTexture().getImageModel().getBufferViewModel(), texPath);
-                    if (imAlbedo.getData() != null) {
+                    if(imAlbedo.getData() != null) {
                         model.materials[j].maps[MATERIAL_MAP_ALBEDO.GetIndex()].texture = context.textures.LoadTextureFromImage(imAlbedo);
                     }
                 }
@@ -5992,9 +6024,9 @@ public class rModels {
                 model.materials[j].maps[MATERIAL_MAP_ALBEDO.GetIndex()].color.a = (int) (material.getBaseColorFactor()[3] * 255);
 
                 //Load metallic/roughness texture
-                if (material.getMetallicRoughnessTexture() != null) {
+                if(material.getMetallicRoughnessTexture() != null) {
                     Image imMetallicRoughness = LoadImageFromCgltfImage(material.getMetallicRoughnessTexture().getImageModel(), material.getMetallicRoughnessTexture().getImageModel().getBufferViewModel(), texPath);
-                    if (imMetallicRoughness.getData() != null) {
+                    if(imMetallicRoughness.getData() != null) {
                         model.materials[j].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].texture = context.textures.LoadTextureFromImage(imMetallicRoughness);
                     }
 
@@ -6004,25 +6036,25 @@ public class rModels {
                 }
 
                 //Load normal texture
-                if (material.getNormalTexture() != null) {
+                if(material.getNormalTexture() != null) {
                     Image imNormal = LoadImageFromCgltfImage(material.getNormalTexture().getImageModel(), material.getNormalTexture().getImageModel().getBufferViewModel(), texPath);
-                    if (imNormal.getData() != null) {
+                    if(imNormal.getData() != null) {
                         model.materials[j].maps[MATERIAL_MAP_NORMAL.GetIndex()].texture = context.textures.LoadTextureFromImage(imNormal);
                     }
                 }
 
                 //Load ambient occlusion texture
-                if (material.getOcclusionTexture() != null) {
+                if(material.getOcclusionTexture() != null) {
                     Image imOcclusion = LoadImageFromCgltfImage(material.getOcclusionTexture().getImageModel(), material.getOcclusionTexture().getImageModel().getBufferViewModel(), texPath);
-                    if (imOcclusion.getData() != null) {
+                    if(imOcclusion.getData() != null) {
                         model.materials[j].maps[MATERIAL_MAP_OCCLUSION.GetIndex()].texture = context.textures.LoadTextureFromImage(imOcclusion);
                     }
                 }
 
                 //Load emission texture
-                if (material.getEmissiveTexture() != null) {
+                if(material.getEmissiveTexture() != null) {
                     Image imEmissive = LoadImageFromCgltfImage(material.getEmissiveTexture().getImageModel(), material.getEmissiveTexture().getImageModel().getBufferViewModel(), texPath);
-                    if (imEmissive.getData() != null) {
+                    if(imEmissive.getData() != null) {
                         model.materials[j].maps[MATERIAL_MAP_EMISSION.GetIndex()].texture = context.textures.LoadTextureFromImage(imEmissive);
                     }
 
@@ -6047,10 +6079,10 @@ public class rModels {
         // transform applied.
         // NOTE: The code below disregards the scenes defined in the file, all nodes are used.
         //----------------------------------------------------------------------------------------------------
-        for (int i = 0, meshIndex = 0; i < gltf.getNodeModels().size(); i++) {
+        for(int i = 0, meshIndex = 0; i < gltf.getNodeModels().size(); i++) {
             // NOTE: meshIndex accumulates primitives
             NodeModel node = gltf.getNodeModels().get(i);
-            if (node.getMeshModels().isEmpty()) {
+            if(node.getMeshModels().isEmpty()) {
                 continue;
             }
             MeshModel mesh = node.getMeshModels().get(0);
@@ -6065,26 +6097,26 @@ public class rModels {
             );
             Matrix worldMatrixNormals = MatrixTranspose(MatrixInvert(worldMatrix));
 
-            for (int p = 0; p < mesh.getMeshPrimitiveModels().size(); p++) {
+            for(int p = 0; p < mesh.getMeshPrimitiveModels().size(); p++) {
                 // NOTE: We only support primitives defined by triangles
                 // Other alternatives: points, lines, line_strip, triangle_strip
-                if (mesh.getMeshPrimitiveModels().get(p).getMode() != RL_TRIANGLES) {
+                if(mesh.getMeshPrimitiveModels().get(p).getMode() != RL_TRIANGLES) {
                     continue;
                 }
 
                 // NOTE: Attributes data could be provided in several data formats (8, 8u, 16u, 32...),
                 // Only some formats for each attribute type are supported, read info at the top of this function!
 
-                for (int j = 0; j < mesh.getMeshPrimitiveModels().get(p).getAttributes().size(); j++) {
+                for(int j = 0; j < mesh.getMeshPrimitiveModels().get(p).getAttributes().size(); j++) {
                     // Check the different attributes for every primitive
 
                     // POSITION
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("POSITION")) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("POSITION")) {
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("POSITION");
 
                         // WARNING: SPECS: POSITION accessor MUST have its min and max properties defined.
 
-                        if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC3)) {
+                        if((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC3)) {
                             // Init raylib mesh vertices to copy glTF attribute data
                             model.meshes[meshIndex].vertexCount = attribute.getCount();
                             model.meshes[meshIndex].vertices = new float[attribute.getCount() * 3];
@@ -6093,7 +6125,7 @@ public class rModels {
                             attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(model.meshes[meshIndex].vertices);
 
                             // Transform the vertices
-                            for (int k = 0; k < attribute.getCount(); k++) {
+                            for(int k = 0; k < attribute.getCount(); k++) {
                                 Vector3 vt = Vector3Transform(
                                         new Vector3(
                                                 model.meshes[meshIndex].vertices[3 * k],
@@ -6112,17 +6144,17 @@ public class rModels {
                         }
                     }
                     // NORMAL
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("NORMAL")) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("NORMAL")) {
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("NORMAL");
 
-                        if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC3)) {
+                        if((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC3)) {
                             // Init raylib mesh normals to copy glTF attribute data
                             model.meshes[meshIndex].normals = new float[attribute.getCount() * 3];
 
                             // Load 3 components of float data type into mesh.normals
                             attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(model.meshes[meshIndex].normals);
 
-                            for (int k = 0; k < attribute.getCount(); k++) {
+                            for(int k = 0; k < attribute.getCount(); k++) {
                                 Vector3 nt = Vector3Transform(
                                         new Vector3(
                                                 model.meshes[meshIndex].normals[3 * k],
@@ -6141,17 +6173,17 @@ public class rModels {
                         }
                     }
                     // TANGENT
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TANGENT")) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TANGENT")) {
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TANGENT");
 
-                        if ((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC4)) {
+                        if((attribute.getComponentDataType() == float.class) && (attribute.getElementType() == ElementType.VEC4)) {
                             // Init raylib mesh tangent to copy glTF attribute data
                             model.meshes[meshIndex].tangents = new float[attribute.getCount() * 4];
 
                             // Load 4 components of float data type into mesh.tangents
                             attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(model.meshes[meshIndex].tangents);
 
-                            for (int k = 0; k < attribute.getCount(); k++) {
+                            for(int k = 0; k < attribute.getCount(); k++) {
                                 Vector3 tt = Vector3Transform(
                                         new Vector3(
                                                 model.meshes[meshIndex].tangents[3 * k],
@@ -6170,22 +6202,22 @@ public class rModels {
                         }
                     }
                     // TEXCOORD_n, vec2, float/byte/short
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") || mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_1")) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") || mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_1")) {
                         float[] texcoords = new float[0];
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TEXCOORD_0");
-                        if (attribute == null) {
+                        if(attribute == null) {
                             attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("TEXCOORD_1");
                         }
 
-                        if (attribute.getElementType() == ElementType.VEC2) {
-                            if (attribute.getComponentDataType() == float.class) {
+                        if(attribute.getElementType() == ElementType.VEC2) {
+                            if(attribute.getComponentDataType() == float.class) {
                                 // Init raylib mesh texcoords to copy glTF attribute data
                                 texcoords = new float[attribute.getCount() * 2];
 
                                 // Load 2 components of float data type into mesh.texcoords
                                 attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(texcoords);
                             }
-                            else if (attribute.getComponentDataType() == byte.class) {
+                            else if(attribute.getComponentDataType() == byte.class) {
                                 // Init raylib mesh texcoords to copy glTF attribute data
                                 texcoords = new float[attribute.getCount() * 2];
 
@@ -6194,11 +6226,11 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().get(tmp);
 
                                 // Convert data to raylib texcoord data type (float)
-                                for (int t = 0; t < attribute.getCount() * 2; t++) {
+                                for(int t = 0; t < attribute.getCount() * 2; t++) {
                                     texcoords[t] = (float) tmp[t] / 255;
                                 }
                             }
-                            else if (attribute.getComponentDataType() == short.class) {
+                            else if(attribute.getComponentDataType() == short.class) {
                                 // Init raylib mesh texcoords to copy glTF attribute data
                                 texcoords = new float[attribute.getCount() * 2];
 
@@ -6207,7 +6239,7 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().asShortBuffer().get(tmp);
 
                                 // Convert data to raylib texcoord data type (float)
-                                for (int t = 0; t < attribute.getCount() * 2; t++) {
+                                for(int t = 0; t < attribute.getCount() * 2; t++) {
                                     texcoords[t] = (float) tmp[t] / 65535;
                                 }
                             }
@@ -6221,10 +6253,10 @@ public class rModels {
 
                         int index = mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_0") ? 0 :
                                 mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("TEXCOORD_1") ? 1 : -1;
-                        if (index == 0) {
+                        if(index == 0) {
                             model.meshes[meshIndex].texcoords = texcoords;
                         }
-                        else if (index == 1) {
+                        else if(index == 1) {
                             model.meshes[meshIndex].texcoords2 = texcoords;
                         }
                         else {
@@ -6232,14 +6264,14 @@ public class rModels {
                         }
                     }
                     // COLOR_0
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().get("COLOR_0") != null) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().get("COLOR_0") != null) {
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("COLOR_0");
 
                         // WARNING: SPECS: All components of each COLOR_n accessor element MUST be clamped to [0.0, 1.0] range.
 
                         // RGB
-                        if (attribute.getElementType() == ElementType.VEC3) {
-                            if (attribute.getComponentDataType() == byte.class) {
+                        if(attribute.getElementType() == ElementType.VEC3) {
+                            if(attribute.getComponentDataType() == byte.class) {
                                 // Init raylib mesh color to copy glTF attribute data
                                 model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
@@ -6248,14 +6280,14 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().get(tmp);
 
                                 //Convert data to raylib color data type (4 bytes)
-                                for (int c = 0, k = 0; c < (attribute.getCount() * 4) - 3; c += 4, k += 3) {
+                                for(int c = 0, k = 0; c < (attribute.getCount() * 4) - 3; c += 4, k += 3) {
                                     model.meshes[meshIndex].colors[c] = tmp[k];
                                     model.meshes[meshIndex].colors[c + 1] = tmp[k + 1];
                                     model.meshes[meshIndex].colors[c + 2] = tmp[k + 2];
                                     model.meshes[meshIndex].colors[c + 3] = (byte) 255;
                                 }
                             }
-                            else if (attribute.getComponentDataType() == short.class) {
+                            else if(attribute.getComponentDataType() == short.class) {
                                 // Init raylib mesh color to copy glTF attribute data
                                 model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
@@ -6264,14 +6296,14 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().asShortBuffer().get(tmp);
 
                                 //Convert data to raylib color data type (4 bytes)
-                                for (int c = 0, k = 0; c < (attribute.getCount() * 4) - 3; c += 4, k += 3) {
+                                for(int c = 0, k = 0; c < (attribute.getCount() * 4) - 3; c += 4, k += 3) {
                                     model.meshes[meshIndex].colors[c] = (byte) (((float) tmp[k] / 65535.0f) * 255.0f);
                                     model.meshes[meshIndex].colors[c + 1] = (byte) (((float) tmp[k + 1] / 65535.0f) * 255.0f);
                                     model.meshes[meshIndex].colors[c + 2] = (byte) (((float) tmp[k + 2] / 65535.0f) * 255.0f);
                                     model.meshes[meshIndex].colors[c + 3] = (byte) 255;
                                 }
                             }
-                            else if (attribute.getComponentDataType() == float.class) {
+                            else if(attribute.getComponentDataType() == float.class) {
                                 // Init raylib mesh color to copy glTF attribute data
                                 model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
@@ -6280,7 +6312,7 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(tmp);
 
                                 //Convert data to raylib color data type (4 bytes)
-                                for (int c = 0, k = 0; c < (attribute.getCount() * 4) - 3; c += 4, k += 3) {
+                                for(int c = 0, k = 0; c < (attribute.getCount() * 4) - 3; c += 4, k += 3) {
                                     model.meshes[meshIndex].colors[c] = (byte) (tmp[k] * 255);
                                     model.meshes[meshIndex].colors[c + 1] = (byte) (tmp[k + 1] * 255);
                                     model.meshes[meshIndex].colors[c + 2] = (byte) (tmp[k + 2] * 255);
@@ -6289,15 +6321,15 @@ public class rModels {
                             }
                         }
                         // RGBA
-                        else if (attribute.getElementType() == ElementType.VEC4) {
-                            if (attribute.getComponentDataType() == byte.class) {
+                        else if(attribute.getElementType() == ElementType.VEC4) {
+                            if(attribute.getComponentDataType() == byte.class) {
                                 // Init raylib mesh color to copy glTF attribute data
                                 model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
                                 // Load 4 components of unsigned char data type into mesh.colors
                                 attribute.getBufferViewModel().getBufferViewData().get(model.meshes[meshIndex].colors);
                             }
-                            else if (attribute.getComponentDataType() == short.class) {
+                            else if(attribute.getComponentDataType() == short.class) {
                                 // Init raylib mesh color to copy glTF attribute data
                                 model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
@@ -6306,11 +6338,11 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().asShortBuffer().get(tmp);
 
                                 //Convert data to raylib color data type (4 bytes)
-                                for (int c = 0; c < (attribute.getCount() * 4); c++) {
+                                for(int c = 0; c < (attribute.getCount() * 4); c++) {
                                     model.meshes[meshIndex].colors[c] = (byte) (((float) tmp[c] / 65535.0f) * 255.0f);
                                 }
                             }
-                            else if (attribute.getComponentDataType() == float.class) {
+                            else if(attribute.getComponentDataType() == float.class) {
                                 // Init raylib mesh color to copy glTF attribute data
                                 model.meshes[meshIndex].colors = new byte[attribute.getCount() * 4];
 
@@ -6319,7 +6351,7 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().asFloatBuffer().get(tmp);
 
                                 //Convert data to raylib color data type (4 bytes)
-                                for (int c = 0, k = 0; c < (attribute.getCount() * 4); c++) {
+                                for(int c = 0, k = 0; c < (attribute.getCount() * 4); c++) {
                                     model.meshes[meshIndex].colors[c] = (byte) (tmp[k] * 255);
                                 }
                             }
@@ -6334,19 +6366,19 @@ public class rModels {
                 }
 
                 // Load primitive indices data (if provided)
-                if (mesh.getMeshPrimitiveModels().get(p).getIndices() != null) {
+                if(mesh.getMeshPrimitiveModels().get(p).getIndices() != null) {
                     AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getIndices();
 
                     model.meshes[meshIndex].triangleCount = attribute.getCount() / 3;
 
-                    if (attribute.getComponentDataType() == short.class) {
+                    if(attribute.getComponentDataType() == short.class) {
                         // Init raylib mesh indices to copy glTF attribute data
                         model.meshes[meshIndex].indicesS = new short[attribute.getCount()];
 
                         // Load unsigned short data type into mesh.indices
                         attribute.getBufferViewModel().getBufferViewData().asShortBuffer().get(model.meshes[meshIndex].indicesS);
                     }
-                    else if (attribute.getComponentDataType() == byte.class) {
+                    else if(attribute.getComponentDataType() == byte.class) {
                         // Init raylib mesh indices to copy glTF attribute data
                         model.meshes[meshIndex].indicesS = new short[attribute.getCount()];
 
@@ -6356,11 +6388,11 @@ public class rModels {
                         attribute.getBufferViewModel().getBufferViewData().get(temp);
 
                         // Convert data to raylib indices data type (unsigned short)
-                        for (int d = 0; d < attribute.getCount(); d++) {
+                        for(int d = 0; d < attribute.getCount(); d++) {
                             model.meshes[meshIndex].indicesS[d] = temp[d];
                         }
                     }
-                    else if (attribute.getComponentDataType() == int.class) {
+                    else if(attribute.getComponentDataType() == int.class) {
                         // Init raylib mesh indices to copy glTF attribute data
                         model.meshes[meshIndex].indicesS = new short[attribute.getCount()];
 
@@ -6370,7 +6402,7 @@ public class rModels {
                         attribute.getBufferViewModel().getBufferViewData().asIntBuffer().get(temp);
 
                         // Convert data to raylib indices data type (unsigned short)
-                        for (int d = 0; d < attribute.getCount(); d++) {
+                        for(int d = 0; d < attribute.getCount(); d++) {
                             model.meshes[meshIndex].indicesS[d] = (short) temp[d];
                         }
 
@@ -6386,12 +6418,12 @@ public class rModels {
 
                 // Assign to the primitive mesh the corresponding material index
                 // NOTE: If no material defined, mesh uses the already assigned default material (index: 0)
-                for (int m = 0; m < gltf.getMaterialModels().size(); m++) {
+                for(int m = 0; m < gltf.getMaterialModels().size(); m++) {
                     // The primitive actually keeps the pointer to the corresponding material,
                     // raylib instead assigns to the mesh the by its index, as loaded in model.materials array
                     // To get the index, we check if material pointers match and we assign the corresponding index,
                     // skipping index 0, the default material
-                    if (gltf.getMaterialModels().get(m) == mesh.getMeshPrimitiveModels().get(p).getMaterialModel()) {
+                    if(gltf.getMaterialModels().get(m) == mesh.getMeshPrimitiveModels().get(p).getMaterialModel()) {
                         model.meshMaterial[meshIndex] = m + 1;
                         break;
                     }
@@ -6410,13 +6442,13 @@ public class rModels {
         //  - Only supports linear interpolation (default method in Blender when checked "Always Sample Animations" when exporting a GLTF file)
         //  - Only supports translation/rotation/scale animation channel.path, weights not considered (i.e. morph targets)
         //----------------------------------------------------------------------------------------------------
-        if (!gltf.getSkinModels().isEmpty()) {
+        if(!gltf.getSkinModels().isEmpty()) {
             SkinModel skin = gltf.getSkinModels().get(0);
             model.skeleton.bones = LoadBoneInfoGLTF(skin);
             model.skeleton.boneCount = model.skeleton.bones.length;
             model.skeleton.bindPose = new Transform[model.skeleton.boneCount];
 
-            for (int i = 0; i < model.skeleton.boneCount; i++) {
+            for(int i = 0; i < model.skeleton.boneCount; i++) {
                 model.skeleton.bindPose[i] = new Transform();
                 float[] worldTransform = new float[16];
                 skin.getJoints().get(i).computeGlobalTransform(worldTransform);
@@ -6430,25 +6462,25 @@ public class rModels {
             }
         }
 
-        if (gltf.getSkinModels().size() > 1) {
+        if(gltf.getSkinModels().size() > 1) {
             context.tracelog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] can only load one skin (armature) per model, but gltf skins_count == " + gltf.getSkinModels().size());
         }
 
-        for (int i = 0, meshIndex = 0; i < gltf.getMeshModels().size(); i++) {
+        for(int i = 0, meshIndex = 0; i < gltf.getMeshModels().size(); i++) {
             MeshModel mesh = gltf.getMeshModels().get(i);
             NodeModel node = gltf.getNodeModels().get(i);
 
-            for (int p = 0; p < gltf.getMeshModels().get(i).getMeshPrimitiveModels().size(); p++) {
+            for(int p = 0; p < gltf.getMeshModels().get(i).getMeshPrimitiveModels().size(); p++) {
                 boolean hasJoints = false;
 
                 // NOTE: We only support primitives defined by triangles
-                if (mesh.getMeshPrimitiveModels().get(p).getMode() != RL_TRIANGLES) {
+                if(mesh.getMeshPrimitiveModels().get(p).getMode() != RL_TRIANGLES) {
                     continue;
                 }
 
-                for (int j = 0; j < mesh.getMeshPrimitiveModels().get(p).getAttributes().size(); j++) {
+                for(int j = 0; j < mesh.getMeshPrimitiveModels().get(p).getAttributes().size(); j++) {
                     // NOTE: JOINTS_1 + WEIGHT_1 will be used for +4 joints influencing a vertex -> Not supported by raylib
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("JOINTS_0")) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("JOINTS_0")) {
                         hasJoints = true;
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("JOINTS_0");
 
@@ -6459,8 +6491,8 @@ public class rModels {
                         // if data is provided in any other format, it is converted to supported format but
                         // it could imply data loss (a warning message is issued in that case)
 
-                        if (attribute.getElementType() == ElementType.VEC4) {
-                            if (attribute.getComponentDataType() == byte.class) {
+                        if(attribute.getElementType() == ElementType.VEC4) {
+                            if(attribute.getComponentDataType() == byte.class) {
                                 // Init raylib mesh bone ids to copy glTF attribute data
                                 model.meshes[meshIndex].boneIndices = new byte[model.meshes[meshIndex].vertexCount * 4];
 
@@ -6468,7 +6500,7 @@ public class rModels {
                                 BufferViewModel bufferView = attribute.getBufferViewModel();
                                 bufferView.getBufferViewData().get(model.meshes[meshIndex].boneIndices);
                             }
-                            else if (attribute.getComponentDataType() == short.class) {
+                            else if(attribute.getComponentDataType() == short.class) {
                                 // Init raylib mesh bone ids to copy glTF attribute data
                                 model.meshes[meshIndex].boneIndices = new byte[model.meshes[meshIndex].vertexCount * 4];
 
@@ -6478,8 +6510,8 @@ public class rModels {
 
                                 // Convert data to raylib data type
                                 boolean boneIdOverflowWarning = false;
-                                for (int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
-                                    if ((tmp[b] > 255) && !boneIdOverflowWarning) {
+                                for(int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
+                                    if((tmp[b] > 255) && !boneIdOverflowWarning) {
                                         context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format (short) overflow");
                                         boneIdOverflowWarning = true;
                                     }
@@ -6496,12 +6528,12 @@ public class rModels {
                             context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Joint attribute data format not supported");
                         }
                     }
-                    if (mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("WEIGHTS_0")) {
+                    if(mesh.getMeshPrimitiveModels().get(p).getAttributes().containsKey("WEIGHTS_0")) {
                         // WEIGHTS_n (vec4 / u8, u16, f32)
                         AccessorModel attribute = mesh.getMeshPrimitiveModels().get(p).getAttributes().get("WEIGHTS_0");
 
-                        if (attribute.getElementType() == ElementType.VEC4) {
-                            if (attribute.getComponentDataType() == byte.class) {
+                        if(attribute.getElementType() == ElementType.VEC4) {
+                            if(attribute.getComponentDataType() == byte.class) {
                                 // Init raylib bone weigths to copy glTF attribute data
                                 model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount * 4];
 
@@ -6510,11 +6542,11 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().get(temp);
 
                                 // Convert data to raylib bone weight data type
-                                for (int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
+                                for(int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
                                     model.meshes[meshIndex].boneWeights[b] = (float) temp[b] / 255;
                                 }
                             }
-                            else if (attribute.getComponentDataType() == short.class) {
+                            else if(attribute.getComponentDataType() == short.class) {
                                 // Init raylib bone weights to copy glTF attribute data
                                 model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount * 4];
 
@@ -6523,11 +6555,11 @@ public class rModels {
                                 attribute.getBufferViewModel().getBufferViewData().asShortBuffer().get(temp);
 
                                 // Convert data to raylib bone weight data type
-                                for (int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
+                                for(int b = 0; b < model.meshes[meshIndex].vertexCount * 4; b++) {
                                     model.meshes[meshIndex].boneWeights[b] = (float) temp[b] / 65535;
                                 }
                             }
-                            else if (attribute.getComponentDataType() == float.class) {
+                            else if(attribute.getComponentDataType() == float.class) {
                                 // Init raylib mesh bone weight to copy glTF attribute data
                                 model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount * 4];
 
@@ -6549,42 +6581,50 @@ public class rModels {
 
                 // Check if we are animated, and the mesh was not given any bone assignments, but is the child of a bone node
                 // in this case we need to fully attach all the verts to the parent bone so it will animate with the bone
-                if (!gltf.getSkinModels().isEmpty() && !hasJoints && node.getParent() != null && !node.getParent().getMeshModels().isEmpty()) {
+                if(!gltf.getSkinModels().isEmpty() && !hasJoints && node.getParent() != null && !node.getParent().getMeshModels().isEmpty()) {
                     int parentBoneId = -1;
-                    for (int joint = 0; joint < model.skeleton.boneCount; joint++) {
-                        if (gltf.getSkinModels().get(0).getJoints().get(joint) == node.getParent()) {
+                    for(int joint = 0; joint < model.skeleton.boneCount; joint++) {
+                        if(gltf.getSkinModels().get(0).getJoints().get(joint) == node.getParent()) {
                             parentBoneId = joint;
                             break;
                         }
                     }
 
-                    if (parentBoneId >= 0) {
+                    if(parentBoneId >= 0) {
                         model.meshes[meshIndex].boneIndices = new byte[model.meshes[meshIndex].vertexCount * 4];
                         model.meshes[meshIndex].boneWeights = new float[model.meshes[meshIndex].vertexCount * 4];
 
-                        for (int vertexIndex = 0; vertexIndex < model.meshes[meshIndex].vertexCount * 4; vertexIndex += 4) {
+                        for(int vertexIndex = 0; vertexIndex < model.meshes[meshIndex].vertexCount * 4; vertexIndex += 4) {
                             model.meshes[meshIndex].boneIndices[vertexIndex] = (byte) parentBoneId;
                             model.meshes[meshIndex].boneWeights[vertexIndex] = 1.0f;
                         }
                     }
                 }
 
-                // Animated vertex data
-                model.meshes[meshIndex].animVertices = new float[model.meshes[meshIndex].vertexCount * 3];
-                System.arraycopy(model.meshes[meshIndex].vertices, 0, model.meshes[meshIndex].animVertices, 0, model.meshes[meshIndex].vertexCount * 3);
-                model.meshes[meshIndex].animNormals = new float[model.meshes[meshIndex].vertexCount * 3];
-                if (model.meshes[meshIndex].normals != null) {
-                    System.arraycopy(model.meshes[meshIndex].normals, 0, model.meshes[meshIndex].animNormals, 0, model.meshes[meshIndex].vertexCount * 3);
-                }
 
-                // Bone Transform Matrices
+                if(RL_SUPPORT_GPU_SKINNING) {
+                    // Animated vertex data (CPU skinning)
+                    model.meshes[meshIndex].animVertices = new float[model.meshes[meshIndex].vertexCount * 3];
+                    System.arraycopy(model.meshes[meshIndex].vertices, 0, model.meshes[meshIndex].animVertices, 0, model.meshes[meshIndex].vertexCount * 3);
+                    model.meshes[meshIndex].animNormals = new float[model.meshes[meshIndex].vertexCount * 3];
+                    if (model.meshes[meshIndex].normals != null) {
+                        System.arraycopy(model.meshes[meshIndex].normals, 0, model.meshes[meshIndex].animNormals, 0, model.meshes[meshIndex].vertexCount * 3);
+                    }
+                }
                 model.meshes[meshIndex].boneCount = model.skeleton.boneCount;
-                model.meshes[meshIndex].boneMatrices = new Matrix[model.meshes[meshIndex].boneCount];
 
-                for (int j = 0; j < model.meshes[meshIndex].boneCount; j++) {
-                    model.meshes[meshIndex].boneMatrices[j] = MatrixIdentity();
+                // Initialize runtime animation data: current pose and bone matrices
+                model.currentPose = new Transform[model.skeleton.boneCount];
+                for (int j = 0; j < model.skeleton.boneCount; j++) {
+                    model.currentPose[j] = new Transform();
                 }
-                meshIndex++;       // Move to next mesh
+                model.boneMatrices = new Matrix[model.skeleton.boneCount];
+                for (int j = 0; j < model.skeleton.boneCount; j++) {
+                    model.boneMatrices[j] = MatrixIdentity();
+                }
+                //----------------------------------------------------------------------------------------------------
+
+                meshIndex++; // Move to next mesh
             }
         }
 
@@ -6593,6 +6633,7 @@ public class rModels {
 
     /**
      * Get interpolated pose for bone sampler at a specific time. Returns true on success
+     *
      * @param interpolationType
      * @param input
      * @param output
@@ -6610,17 +6651,17 @@ public class rModels {
         FloatBuffer inputData = input.getBufferViewModel().getBufferViewData().asFloatBuffer();
         FloatBuffer outputData = output.getBufferViewModel().getBufferViewData().asFloatBuffer();
 
-        for (int i = 0; i < input.getCount() - 1; i++) {
+        for(int i = 0; i < input.getCount() - 1; i++) {
             tStart = inputData.get(i);
             tEnd = inputData.get(i + 1);
 
-            if ((tStart <= time) && (time < tEnd)) {
+            if((tStart <= time) && (time < tEnd)) {
                 keyframe = i;
                 break;
             }
         }
 
-        if (tStart == tEnd) {
+        if(tStart == tEnd) {
             return null;
         }
 
@@ -6629,14 +6670,14 @@ public class rModels {
         t = Math.max(t, 0.0f);
         t = Math.min(t, 1.0f);
 
-        if (output.getComponentDataType() != float.class) {
+        if(output.getComponentDataType() != float.class) {
             return null;
         }
 
         int advance = output.getPaddedElementSizeInBytes() / Float.BYTES;
-        if (output.getElementType() == ElementType.VEC3) {
+        if(output.getElementType() == ElementType.VEC3) {
             Vector3 v1, v2, r;
-            switch (interpolationType) {
+            switch(interpolationType) {
                 case STEP:
                     v1 = new Vector3(outputData.get(keyframe * advance), outputData.get(keyframe * advance + 1), outputData.get(keyframe * advance + 2));
                     pose = new float[]{v1.x, v1.y, v1.z};
@@ -6652,9 +6693,9 @@ public class rModels {
                     break;
             }
         }
-        else if (output.getElementType() == ElementType.VEC4) {
+        else if(output.getElementType() == ElementType.VEC4) {
             Quaternion q1, q2, r;
-            switch (interpolationType) {
+            switch(interpolationType) {
                 case STEP:
                     q1 = new Quaternion(outputData.get(keyframe), outputData.get(keyframe + 1), outputData.get(keyframe + 2), outputData.get(keyframe + 3));
                     pose = new float[]{q1.x, q1.y, q1.z, q1.w};
@@ -6698,57 +6739,56 @@ public class rModels {
 
         try {
             gltf = new GltfModelReader().read(Paths.get(fileName));
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load glTF data");
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + fileName + "] Failed to load animation buffers");
 
             return animations;
         }
 
-        if (!gltf.getSkinModels().isEmpty()) {
+        if(!gltf.getSkinModels().isEmpty()) {
             SkinModel skin = gltf.getSkinModels().get(0);
             animations = new ModelAnimation[gltf.getAnimationModels().size()];
 
-            for (int i = 0; i < gltf.getAnimationModels().size(); i++) {
+            for(int i = 0; i < gltf.getAnimationModels().size(); i++) {
                 animations[i] = new ModelAnimation();
                 BoneInfo[] bones = LoadBoneInfoGLTF(skin);
                 animations[i].boneCount = bones.length;
 
                 AnimationModel animData = gltf.getAnimationModels().get(i);
                 Channels[] boneChannels = new Channels[animations[i].boneCount];
-                for (int j = 0; j < boneChannels.length; j++) {
+                for(int j = 0; j < boneChannels.length; j++) {
                     boneChannels[j] = new Channels();
                 }
 
                 float animDuration = 0.0f;
 
-                for (int j = 0; j < animData.getChannels().size(); j++) {
+                for(int j = 0; j < animData.getChannels().size(); j++) {
                     AnimationModel.Channel channel = animData.getChannels().get(j);
                     int boneIndex = -1;
 
-                    for (int k = 0; k < skin.getJoints().size(); k++) {
-                        if (skin.getJoints().get(k).equals(channel.getNodeModel())) {
+                    for(int k = 0; k < skin.getJoints().size(); k++) {
+                        if(skin.getJoints().get(k).equals(channel.getNodeModel())) {
                             boneIndex = k;
                             break;
                         }
                     }
 
-                    if (boneIndex == -1) {
+                    if(boneIndex == -1) {
                         // Animation channel for a node not in the armature
                         continue;
                     }
 
                     boneChannels[boneIndex].interpolationType = animData.getChannels().get(j).getSampler().getInterpolation();
 
-                    if (channel.getSampler().getInterpolation() == AnimationModel.Interpolation.LINEAR) {
-                        if (channel.getPath().equalsIgnoreCase("TRANSLATION")) {
+                    if(channel.getSampler().getInterpolation() == AnimationModel.Interpolation.LINEAR) {
+                        if(channel.getPath().equalsIgnoreCase("TRANSLATION")) {
                             boneChannels[boneIndex].translate = channel;
                         }
-                        else if (channel.getPath().equalsIgnoreCase("ROTATION")) {
+                        else if(channel.getPath().equalsIgnoreCase("ROTATION")) {
                             boneChannels[boneIndex].rotate = channel;
                         }
-                        else if (channel.getPath().equalsIgnoreCase("SCALE")) {
+                        else if(channel.getPath().equalsIgnoreCase("SCALE")) {
                             boneChannels[boneIndex].scale = channel;
                         }
                         else {
@@ -6762,7 +6802,7 @@ public class rModels {
                     AccessorModel inputAccessor = channel.getSampler().getInput();
                     float t = inputAccessor.getBufferViewModel().getBufferViewData().getFloat(inputAccessor.getBufferViewModel().getByteLength() - Float.BYTES);
 
-                    if (t <= 0f) {
+                    if(t <= 0f) {
                         context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load input time");
                         continue;
                     }
@@ -6770,26 +6810,26 @@ public class rModels {
                     animDuration = Math.max(t, animDuration);
                 }
 
-                if (animData.getName() != null) {
+                if(animData.getName() != null) {
                     animations[i].name = animData.getName();
                 }
 
                 animations[i].keyframeCount = (int) (((animDuration * 1000.0f) / GLTF_ANIMDELAY) + 1);
                 animations[i].keyframePoses = new Transform[animations[i].keyframeCount][];
 
-                for (int j = 0; j < animations[i].keyframeCount; j++) {
+                for(int j = 0; j < animations[i].keyframeCount; j++) {
                     animations[i].keyframePoses[j] = new Transform[animations[i].boneCount];
                     float time = ((float) j * GLTF_ANIMDELAY) / 1000.0f;
 
-                    for (int k = 0; k < animations[i].boneCount; k++) {
+                    for(int k = 0; k < animations[i].boneCount; k++) {
                         Vector3 translation = new Vector3(0, 0, 0);
                         Quaternion rotation = new Quaternion(0, 0, 0, 1);
                         Vector3 scale = new Vector3(1, 1, 1);
 
-                        if (skin.getJoints().get(k).getTranslation() != null) {
+                        if(skin.getJoints().get(k).getTranslation() != null) {
                             translation = new Vector3(skin.getJoints().get(k).getTranslation()[0], skin.getJoints().get(k).getTranslation()[1], skin.getJoints().get(k).getTranslation()[2]);
                             float[] tTranslate = GetPoseAtTimeGLTF(boneChannels[k].interpolationType, boneChannels[k].translate.getSampler().getInput(), boneChannels[k].translate.getSampler().getOutput(), time);
-                            if (tTranslate != null) {
+                            if(tTranslate != null) {
                                 translation = new Vector3(tTranslate[0], tTranslate[1], tTranslate[2]);
                             }
                             else {
@@ -6797,11 +6837,11 @@ public class rModels {
                             }
                         }
 
-                        if (skin.getJoints().get(k).getRotation() != null) {
+                        if(skin.getJoints().get(k).getRotation() != null) {
                             rotation = new Quaternion(skin.getJoints().get(k).getRotation()[0], skin.getJoints().get(k).getRotation()[1], skin.getJoints().get(k).getRotation()[2], skin.getJoints().get(k).getRotation()[3]);
 
                             float[] tRotate = GetPoseAtTimeGLTF(boneChannels[k].interpolationType, boneChannels[k].rotate.getSampler().getInput(), boneChannels[k].rotate.getSampler().getOutput(), time);
-                            if (tRotate != null) {
+                            if(tRotate != null) {
                                 rotation = new Quaternion(tRotate[0], tRotate[1], tRotate[2], tRotate[3]);
                             }
                             else {
@@ -6809,11 +6849,11 @@ public class rModels {
                             }
                         }
 
-                        if (skin.getJoints().get(k).getScale() != null) {
+                        if(skin.getJoints().get(k).getScale() != null) {
                             scale = new Vector3(skin.getJoints().get(k).getScale()[0], skin.getJoints().get(k).getScale()[1], skin.getJoints().get(k).getScale()[2]);
 
                             float[] tScale = GetPoseAtTimeGLTF(boneChannels[k].interpolationType, boneChannels[k].scale.getSampler().getInput(), boneChannels[k].scale.getSampler().getOutput(), time);
-                            if (tScale != null) {
+                            if(tScale != null) {
                                 scale = new Vector3(tScale[0], tScale[1], tScale[2]);
                             }
                             else {
@@ -6831,7 +6871,7 @@ public class rModels {
             }
         }
 
-        if (gltf.getSkinModels().size() > 1) {
+        if(gltf.getSkinModels().size() > 1) {
             context.tracelog.TRACELOG(LOG_ERROR, "MODEL: [" + fileName + "] expected exactly one skin to load animation data from, but found " + gltf.getSkinModels().size());
         }
 
@@ -6854,11 +6894,10 @@ public class rModels {
         // Read vox file into buffer
         try {
             fileData = context.files.LoadFileData(fileName);
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
-        if (fileData == null) {
+        if(fileData == null) {
             context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX file");
             return model;
         }
@@ -6868,7 +6907,7 @@ public class rModels {
         int ret = voxLoader.Vox_LoadFromMemory(fileData);
         VoxLoader.VoxArray3D voxarray = voxLoader.pvoxArray;
 
-        if (ret != VoxLoader.VOX_SUCCESS) {
+        if(ret != VoxLoader.VOX_SUCCESS) {
             context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + fileName + "] Failed to load VOX data");
             return model;
         }
@@ -6885,7 +6924,7 @@ public class rModels {
 
         model.meshCount = meshescount;
         model.meshes = new Mesh[model.meshCount];
-        for (int i = 0; i < model.meshCount; i++) {
+        for(int i = 0; i < model.meshCount; i++) {
             model.meshes[i] = new Mesh();
         }
 
@@ -6912,7 +6951,7 @@ public class rModels {
 
         int size = 0;
 
-        for (int i = 0; i < meshescount; i++) {
+        for(int i = 0; i < meshescount; i++) {
             Mesh pmesh = new Mesh();
 
             // Copy vertices
@@ -6920,7 +6959,7 @@ public class rModels {
 
             size = pmesh.vertexCount * 3;
             pmesh.vertices = new float[size];
-            for (int j = 0, k = pverticesPointer; j < pmesh.vertices.length; j += 3, k++) {
+            for(int j = 0, k = pverticesPointer; j < pmesh.vertices.length; j += 3, k++) {
                 pmesh.vertices[j] = pvertices[k].x;
                 pmesh.vertices[j + 1] = pvertices[k].y;
                 pmesh.vertices[j + 2] = pvertices[k].z;
@@ -6940,7 +6979,7 @@ public class rModels {
             // Copy colors
             size = pmesh.vertexCount * 4;
             pmesh.colors = new byte[size];
-            for (int j = 0, k = pcolorsPointer; j < pmesh.colors.length; j += 4, k++) {
+            for(int j = 0, k = pcolorsPointer; j < pmesh.colors.length; j += 4, k++) {
                 pmesh.colors[j] = pcolors[k].r;
                 pmesh.colors[j + 1] = pcolors[k].g;
                 pmesh.colors[j + 2] = pcolors[k].b;
@@ -6974,8 +7013,7 @@ public class rModels {
 
         try {
             m3dj = parser.LoadFile(filePath);
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -6983,11 +7021,11 @@ public class rModels {
         int i, j, k, l, n, mi = -2, vcolor;
 
         // no faces? this is probably just a material library
-        if (m3dj.faces.isEmpty()) {
+        if(m3dj.faces.isEmpty()) {
             return model;
         }
 
-        if (!m3dj.materials.isEmpty()) {
+        if(!m3dj.materials.isEmpty()) {
             model.meshCount = model.materialCount = m3dj.materials.size();
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: model has " + model.materialCount + " material meshes");
         }
@@ -7024,33 +7062,33 @@ public class rModels {
         */
 
         model.meshes = new Mesh[model.meshCount];
-        for (int m = 0; m < model.meshes.length; m++) {
+        for(int m = 0; m < model.meshes.length; m++) {
             model.meshes[m] = new Mesh();
         }
 
         model.meshMaterial = new int[model.meshCount];
 
         model.materials = new Material[model.materialCount + 1];
-        for (int m = 0; m < model.materials.length; m++) {
+        for(int m = 0; m < model.materials.length; m++) {
             model.materials[m] = new Material();
         }
 
         // Map no material to index 0 with default shader, everything else materialId + 1
         model.materials[0] = context.models.LoadMaterialDefault();
 
-        for (i = l = 0, k = -1; i < m3dj.faces.size(); i++, l++) {
+        for(i = l = 0, k = -1; i < m3dj.faces.size(); i++, l++) {
             // Materials are grouped together
-            if (mi != m3dj.faces.get(i).materialId) {
+            if(mi != m3dj.faces.get(i).materialId) {
                 // There should be only one material switch per material kind,
                 // but be bulletproof for non-optimal model files
-                if (k + 1 >= model.meshCount) {
+                if(k + 1 >= model.meshCount) {
                     model.meshCount++;
 
                     // Create a second buffer for mesh re-allocation
                     Mesh[] tempMeshes = new Mesh[model.meshCount];
                     System.arraycopy(model.meshes, 0, tempMeshes, 0, model.meshCount - 1);
                     model.meshes = tempMeshes;
-                    for (int m = 0; m < model.meshes.length; m++) {
+                    for(int m = 0; m < model.meshes.length; m++) {
                         model.meshes[m] = new Mesh();
                     }
 
@@ -7065,8 +7103,8 @@ public class rModels {
 
                 // Only allocate colors VertexBuffer if there's a color vertices in the model for this material batch
                 // if all colors are fully transparent black for all vertices of this material, then we assume no vertices colors
-                for (j = i, l = vcolor = 0; (j < m3dj.faces.size()) && (mi == m3dj.faces.get(j).materialId); j++, l++) {
-                    if (
+                for(j = i, l = vcolor = 0; (j < m3dj.faces.size()) && (mi == m3dj.faces.get(j).materialId); j++, l++) {
+                    if(
                             m3dj.vertices.get(m3dj.faces.get(j).vertices[0]).colorIndex != M3D_UNDEF ||
                                     m3dj.vertices.get(m3dj.faces.get(j).vertices[1]).colorIndex != M3D_UNDEF ||
                                     m3dj.vertices.get(m3dj.faces.get(j).vertices[2]).colorIndex != M3D_UNDEF
@@ -7083,16 +7121,16 @@ public class rModels {
 
                 // If no map is provided, or we have colors defined, we allocate storage for vertices colors
                 // M3D specs only consider vertices colors if no material is provided, however raylib uses both and mixes the colors
-                if ((mi == M3D_UNDEF) || vcolor != 0) {
+                if((mi == M3D_UNDEF) || vcolor != 0) {
                     model.meshes[k].colors = new byte[model.meshes[k].vertexCount * 4];
                 }
 
                 // If no map is provided, and we allocated vertices colors, set them to white
-                if ((mi == M3D_UNDEF) && (model.meshes[k].colors != null)) {
+                if((mi == M3D_UNDEF) && (model.meshes[k].colors != null)) {
                     Arrays.fill(model.meshes[k].colors, (byte) 255);
                 }
 
-                if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
+                if(!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
                     model.meshes[k].boneIndices = new byte[model.meshes[k].vertexCount * 4];
                     model.meshes[k].boneWeights = new float[model.meshes[k].vertexCount * 4];
                     model.meshes[k].animVertices = new float[model.meshes[k].vertexCount * 3];
@@ -7115,20 +7153,20 @@ public class rModels {
             model.meshes[k].vertices[l * 9 + 8] = (float) (m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).z * m3dj.header.scale);
 
             // Without vertices color (full transparency), we use the default color
-            if (model.meshes[k].colors != null && !m3dj.colors.isEmpty()) {
-                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a > 0) {
+            if(model.meshes[k].colors != null && !m3dj.colors.isEmpty()) {
+                if(m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a > 0) {
                     model.meshes[k].colors[l * 12 + 0] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).a;
                     model.meshes[k].colors[l * 12 + 1] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).b;
                     model.meshes[k].colors[l * 12 + 2] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).g;
                     model.meshes[k].colors[l * 12 + 3] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[0]).colorIndex).r;
                 }
-                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a > 0) {
+                if(m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a > 0) {
                     model.meshes[k].colors[l * 12 + 4] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).a;
                     model.meshes[k].colors[l * 12 + 5] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).b;
                     model.meshes[k].colors[l * 12 + 6] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).g;
                     model.meshes[k].colors[l * 12 + 7] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[1]).colorIndex).r;
                 }
-                if (m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a > 0) {
+                if(m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a > 0) {
                     model.meshes[k].colors[l * 12 + 8] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).a;
                     model.meshes[k].colors[l * 12 + 9] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).b;
                     model.meshes[k].colors[l * 12 + 10] = (byte) m3dj.colors.get(m3dj.vertices.get(m3dj.faces.get(i).vertices[2]).colorIndex).g;
@@ -7136,7 +7174,7 @@ public class rModels {
                 }
             }
 
-            if (m3dj.faces.get(i).texCoords[0] != M3D_UNDEF) {
+            if(m3dj.faces.get(i).texCoords[0] != M3D_UNDEF) {
                 model.meshes[k].texcoords[l * 6 + 0] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[0]).u;
                 model.meshes[k].texcoords[l * 6 + 1] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[0]).v);
                 model.meshes[k].texcoords[l * 6 + 2] = (float) m3dj.textureMap.get(m3dj.faces.get(i).texCoords[1]).u;
@@ -7145,7 +7183,7 @@ public class rModels {
                 model.meshes[k].texcoords[l * 6 + 5] = (float) (1.0f - m3dj.textureMap.get(m3dj.faces.get(i).texCoords[2]).v);
             }
 
-            if (m3dj.faces.get(i).normals[0] != M3D_UNDEF) {
+            if(m3dj.faces.get(i).normals[0] != M3D_UNDEF) {
                 model.meshes[k].normals[l * 9 + 0] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).x;
                 model.meshes[k].normals[l * 9 + 1] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).y;
                 model.meshes[k].normals[l * 9 + 2] = (float) m3dj.vertices.get(m3dj.faces.get(i).normals[0]).z;
@@ -7158,13 +7196,13 @@ public class rModels {
             }
 
             // Add skin (vertices / bone weight pairs)
-            if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
-                for (n = 0; n < 3; n++) {
+            if(!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
+                for(n = 0; n < 3; n++) {
                     int skinId = m3dj.vertices.get(m3dj.faces.get(i).vertices[n]).skinIndex;
 
                     // Check if there is a skin for this mesh, should be, just failsafe
-                    if ((skinId != M3D_UNDEF) && (skinId < m3dj.skins.size())) {
-                        for (j = 0; j < 4; j++) {
+                    if((skinId != M3D_UNDEF) && (skinId < m3dj.skins.size())) {
+                        for(j = 0; j < 4; j++) {
                             model.meshes[k].boneIndices[l * 12 + n * 4 + j] = (byte) m3dj.skins.get(skinId).boneIds[j];
                             model.meshes[k].boneWeights[l * 12 + n * 4 + j] = m3dj.skins.get(skinId).weights[j];
                         }
@@ -7180,37 +7218,37 @@ public class rModels {
         }
 
         // Load materials
-        for (i = 0; i < m3dj.materials.size(); i++) {
+        for(i = 0; i < m3dj.materials.size(); i++) {
             model.materials[i + 1] = context.models.LoadMaterialDefault();
 
-            for (j = 0; j < m3dj.materials.get(i).properties.size(); j++) {
+            for(j = 0; j < m3dj.materials.get(i).properties.size(); j++) {
                 M3DJ_Property property = m3dj.materials.get(i).properties.get(j);
 
-                if (property.key.equals("m3dp_Kd")) {
+                if(property.key.equals("m3dp_Kd")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
                     model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].value = 0.0f;
                 }
-                else if (property.key.equals("m3dp_Ks")) {
+                else if(property.key.equals("m3dp_Ks")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
                 }
-                else if (property.key.equals("m3dp_Ns")) {
+                else if(property.key.equals("m3dp_Ns")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].value = (int) property.GetPropertyValue();
                 }
-                else if (property.key.equals("m3dp_Ke")) {
+                else if(property.key.equals("m3dp_Ke")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].color = context.textures.GetColor((int) property.GetPropertyValue());
                     model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].value = 0.0f;
                 }
-                else if (property.key.equals("m3dp_Pm")) {
+                else if(property.key.equals("m3dp_Pm")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_METALNESS.GetIndex()].value = (float) property.GetPropertyValue();
                 }
-                else if (property.key.equals("m3dp_Pr")) {
+                else if(property.key.equals("m3dp_Pr")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].value = (float) property.GetPropertyValue();
                 }
-                else if (property.key.equals("m3dp_Ps")) {
+                else if(property.key.equals("m3dp_Ps")) {
                     model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].color = WHITE;
                     model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].value = (float) property.GetPropertyValue();
                 }
-                else if (property.id >= 128) {
+                else if(property.id >= 128) {
                     Image image = new Image();
                     image.data = m3dj.textures.get((int) property.GetPropertyValue()).textureData;
                     image.width = m3dj.textures.get((int) property.GetPropertyValue()).width;
@@ -7221,22 +7259,22 @@ public class rModels {
                                     ((m3dj.textures.get((int) property.GetPropertyValue()).format == 3) ? PIXELFORMAT_UNCOMPRESSED_R8G8B8 :
                                             ((m3dj.textures.get((int) property.GetPropertyValue()).format == 2) ? PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : PIXELFORMAT_UNCOMPRESSED_GRAYSCALE));
 
-                    if (property.key.equals("m3dp_map_Kd")) {
+                    if(property.key.equals("m3dp_map_Kd")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_DIFFUSE.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
                     }
-                    else if (property.key.equals("m3dp_map_Ks")) {
+                    else if(property.key.equals("m3dp_map_Ks")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_SPECULAR.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
                     }
-                    else if (property.key.equals("m3dp_map_Ke")) {
+                    else if(property.key.equals("m3dp_map_Ke")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_EMISSION.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
                     }
-                    else if (property.key.equals("m3dp_map_Km")) {
+                    else if(property.key.equals("m3dp_map_Km")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_NORMAL.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
                     }
-                    else if (property.key.equals("m3dp_map_Ka")) {
+                    else if(property.key.equals("m3dp_map_Ka")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_OCCLUSION.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
                     }
-                    else if (property.key.equals("m3dp_map_Pm")) {
+                    else if(property.key.equals("m3dp_map_Pm")) {
                         model.materials[i + 1].maps[MATERIAL_MAP_ROUGHNESS.GetIndex()].texture = context.textures.LoadTextureFromImage(image);
                     }
                 }
@@ -7244,12 +7282,12 @@ public class rModels {
         }
 
         // Load bones
-        if (!m3dj.bones.isEmpty()) {
+        if(!m3dj.bones.isEmpty()) {
             model.skeleton.boneCount = m3dj.bones.size() + 1;
             model.skeleton.bones = new BoneInfo[model.skeleton.boneCount];
             model.skeleton.bindPose = new Transform[model.skeleton.boneCount];
 
-            for (i = 0; i < m3dj.bones.size(); i++) {
+            for(i = 0; i < m3dj.bones.size(); i++) {
                 model.skeleton.bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
                 model.skeleton.bindPose[i] = new Transform();
                 model.skeleton.bindPose[i].translation.x = (float) (m3dj.vertices.get(m3dj.bones.get(i).position).x * m3dj.header.scale);
@@ -7265,7 +7303,7 @@ public class rModels {
                 model.skeleton.bindPose[i].scale.x = model.skeleton.bindPose[i].scale.y = model.skeleton.bindPose[i].scale.z = 1.0f;
 
                 // Child bones are stored in parent bone relative space, convert that into model space
-                if (model.skeleton.bones[i].parent >= 0) {
+                if(model.skeleton.bones[i].parent >= 0) {
                     model.skeleton.bindPose[i].rotation = QuaternionMultiply(model.skeleton.bindPose[model.skeleton.bones[i].parent].rotation, model.skeleton.bindPose[i].rotation);
                     model.skeleton.bindPose[i].translation = Vector3RotateByQuaternion(model.skeleton.bindPose[i].translation, model.skeleton.bindPose[model.skeleton.bones[i].parent].rotation);
                     model.skeleton.bindPose[i].translation = Vector3Add(model.skeleton.bindPose[i].translation, model.skeleton.bindPose[model.skeleton.bones[i].parent].translation);
@@ -7288,16 +7326,24 @@ public class rModels {
 
         // Load bone-pose default mesh into animations[a] vertices. These will be updated when UpdateModelAnimation gets
         // called, but not before, however DrawMesh uses these if they exist (so not good if they are left empty)
-        if (!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
-            for (i = 0; i < model.meshCount; i++) {
-                System.arraycopy(model.meshes[i].vertices, 0, model.meshes[i].animVertices, 0, model.meshes[i].vertexCount * 3);
-                System.arraycopy(model.meshes[i].normals, 0, model.meshes[i].animNormals, 0, model.meshes[i].vertexCount * 3);
-
+        if(!m3dj.bones.isEmpty() && !m3dj.skins.isEmpty()) {
+            for(i = 0; i < model.meshCount; i++) {
                 model.meshes[i].boneCount = model.skeleton.boneCount;
-                model.meshes[i].boneMatrices = new Matrix[model.meshes[i].boneCount];
-                for (int bm = 0; bm < model.meshes[i].boneMatrices.length; bm++) {
-                    model.meshes[i].boneMatrices[bm] = MatrixIdentity();
+
+                if(!RL_SUPPORT_GPU_SKINNING) {
+                    System.arraycopy(model.meshes[i].vertices, 0, model.meshes[i].animVertices, 0, model.meshes[i].vertexCount * 3);
+                    System.arraycopy(model.meshes[i].normals, 0, model.meshes[i].animNormals, 0, model.meshes[i].vertexCount * 3);
                 }
+            }
+
+            model.currentPose = new Transform[model.skeleton.boneCount];
+            for(int p = 0; p < model.skeleton.boneCount; p++) {
+                model.currentPose[p] = new Transform();
+            }
+
+            model.boneMatrices = new Matrix[model.skeleton.boneCount];
+            for(int bm = 0; bm < model.boneMatrices.length; bm++) {
+                model.boneMatrices[bm] = MatrixIdentity();
             }
         }
 
@@ -7316,12 +7362,11 @@ public class rModels {
 
         try {
             m3dj = parser.LoadFile(filePath);
-        }
-        catch (IOException e) {
+        } catch(IOException e) {
             throw new RuntimeException(e);
         }
 
-        if (m3dj == null) {
+        if(m3dj == null) {
             context.tracelog.TRACELOG(LOG_WARNING, "MODEL: [" + filePath + "] Failed to load M3D.");
             return null;
         }
@@ -7330,13 +7375,13 @@ public class rModels {
                     m3dj.actions.size() + " animations[a](s), " + m3dj.bones.size() + " bones, " + m3dj.skins.size() + " skins.");
         }
 
-        if (m3dj.actions.isEmpty() || m3dj.bones.isEmpty() || m3dj.skins.isEmpty()) {
+        if(m3dj.actions.isEmpty() || m3dj.bones.isEmpty() || m3dj.skins.isEmpty()) {
             return null;
         }
 
         ModelAnimation[] animations = new ModelAnimation[m3dj.actions.size()];
 
-        for (int a = 0; a < m3dj.actions.size(); a++) {
+        for(int a = 0; a < m3dj.actions.size(); a++) {
             animations[a] = new ModelAnimation();
 
             animations[a].keyframeCount = m3dj.actions.get(a).animationLength / M3D_ANIMDELAY;
@@ -7347,7 +7392,7 @@ public class rModels {
             context.tracelog.TRACELOG(LOG_INFO, "MODEL: [" + filePath + "] animations[a] #" + a + ": " + m3dj.actions.get(a).animationLength +
                     " msec, " + animations[a].keyframeCount + " frames.");
 
-            for (i = 0; i < m3dj.bones.size(); i++) {
+            for(i = 0; i < m3dj.bones.size(); i++) {
                 bones[i] = new BoneInfo(m3dj.bones.get(i).name, m3dj.bones.get(i).parentIndex);
             }
 
@@ -7356,13 +7401,13 @@ public class rModels {
 
             // M3D stores frames at arbitrary intervals with sparse skeletons. We need full skeletons at
             // regular intervals, so let the M3D SDK do the heavy lifting and calculate interpolated bones
-            for (i = 0; i < animations[a].keyframeCount; i++) {
+            for(i = 0; i < animations[a].keyframeCount; i++) {
                 animations[a].keyframePoses[i] = new Transform[m3dj.bones.size() + 1];
 
                 M3DJ_Bone[] pose = parser.Pose(m3dj, a, i * M3D_ANIMDELAY);
 
-                if (pose != null) {
-                    for (j = 0; j < m3dj.bones.size(); j++) {
+                if(pose != null) {
+                    for(j = 0; j < m3dj.bones.size(); j++) {
                         animations[a].keyframePoses[i][j] = new Transform();
                         animations[a].keyframePoses[i][j].translation.x = (float) (m3dj.vertices.get(pose[j].position).x * m3dj.header.scale);
                         animations[a].keyframePoses[i][j].translation.y = (float) (m3dj.vertices.get(pose[j].position).y * m3dj.header.scale);
@@ -7377,7 +7422,7 @@ public class rModels {
                         animations[a].keyframePoses[i][j].scale.z = 1.0f;
 
                         // Child bones are stored in parent bone relative space, convert that into model space
-                        if (bones[j].parent >= 0) {
+                        if(bones[j].parent >= 0) {
                             animations[a].keyframePoses[i][j].rotation = QuaternionMultiply(animations[a].keyframePoses[i][bones[j].parent].rotation, animations[a].keyframePoses[i][j].rotation);
                             animations[a].keyframePoses[i][j].translation = Vector3RotateByQuaternion(animations[a].keyframePoses[i][j].translation, animations[a].keyframePoses[i][bones[j].parent].rotation);
                             animations[a].keyframePoses[i][j].translation = Vector3Add(animations[a].keyframePoses[i][j].translation, animations[a].keyframePoses[i][bones[j].parent].translation);
