@@ -1,0 +1,15 @@
+package com.raylib.java.math;
+
+import com.raylib.java.raymath.Raymath;
+import com.raylib.java.structs.Quaternion;
+import com.raylib.java.structs.Vector3;
+import org.junit.jupiter.api.Test;
+
+class Vector3RotateByQuaternionTest {
+    @Test
+    void testMethod() {
+        float half = (float) Math.sqrt(0.5);
+        TestHelpers.assertVector3(0.0f, 1.0f, 0.0f,
+                Raymath.Vector3RotateByQuaternion(new Vector3(1.0f, 0.0f, 0.0f), new Quaternion(0.0f, 0.0f, half, half)));
+    }
+}

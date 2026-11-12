@@ -56,6 +56,9 @@ dependencies {
     implementation("org.lwjgl:lwjgl-stb")
     implementation("org.lwjgl:lwjgl-renderdoc")
 
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     runtimeOnly("org.lwjgl:lwjgl::$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-assimp::$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-glfw::$lwjglNatives")
@@ -83,6 +86,10 @@ sourceSets {
         java.srcDir('src/tests')
         resources.srcDir('src/tests/resources')
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 mavenPublishing {

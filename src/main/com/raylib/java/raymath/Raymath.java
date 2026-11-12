@@ -4,66 +4,64 @@ import com.raylib.java.structs.*;
 import com.raylib.java.structs.*;
 import org.jetbrains.annotations.Contract;
 
+/**
+ *   raymath v2.0 - Math functions to work with Vector2, Vector3, Matrix and Quaternions <br/>
+ *
+ *   CONVENTIONS: <br/>
+ *     - Matrix structure is defined as row-major (memory layout) but parameters naming AND all
+ *       math operations performed by the library consider the structure as it was column-major
+ *       It is like transposed versions of the matrices are used for all the maths
+ *       It benefits some functions making them cache-friendly and also avoids matrix
+ *       transpositions sometimes required by OpenGL <br/>
+ *       Example: In memory order, row0 is [m0 m4 m8 m12] but in semantic math row0 is [m0 m1 m2 m3]
+ *     - Functions are always self-contained, no function use another raymath function inside,
+ *       required code is directly re-implemented inside <br/>
+ *     - Functions input parameters are always received by value (2 unavoidable exceptions) <br/>
+ *     - Functions use always a "result" variable for return (except C++ operators) <br/>
+ *     - Functions are always defined inline <br/>
+ *     - Angles are always in radians (DEG2RAD/RAD2DEG macros provided for convenience)<br/>
+ *     - No compound literals used to make sure the library is compatible with C++ <br/>
+ *
+ *   CONFIGURATION:
+ *       #define RAYMATH_IMPLEMENTATION
+ *           Generates the implementation of the library into the included file
+ *           If not defined, the library is in header only mode and can be included in other headers
+ *           or source files without problems. But only ONE file should hold the implementation
+ *
+ *       #define RAYMATH_STATIC_INLINE
+ *           Define static inline functions code, so #include header suffices for use
+ *           This may use up lots of memory
+ *
+ *       #define RAYMATH_DISABLE_CPP_OPERATORS
+ *           Disables C++ operator overloads for raymath types.
+ *
+ *       #define RAYMATH_USE_SIMD_INTRINSICS   1
+ *           Try to enable SIMD intrinsics for MatrixMultiply()
+ *           Note that users enabling it must be aware of the target platform where application will
+ *           run to support the selected SIMD intrinsic, for now, only SSE is supported
+ *
+ *   LICENSE: zlib/libpng
+ *
+ *   Copyright (c) 2015-2026 Ramon Santamaria (@raysan5)
+ *
+ *   This software is provided "as-is", without any express or implied warranty. In no event
+ *   will the authors be held liable for any damages arising from the use of this software.
+ *
+ *   Permission is granted to anyone to use this software for any purpose, including commercial
+ *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+ *
+ *     1. The origin of this software must not be misrepresented; you must not claim that you
+ *     wrote the original software. If you use this software in a product, an acknowledgment
+ *     in the product documentation would be appreciated but is not required.
+ *
+ *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+ *     as being the original software.
+ *
+ *     3. This notice may not be removed or altered from any source distribution.
+ *
+ **********************************************************************************************/
+
 public class Raymath {
-
-    /**********************************************************************************************
-     *
-     *   raymath v2.0 - Math functions to work with Vector2, Vector3, Matrix and Quaternions
-     *
-     *   CONVENTIONS:
-     *     - Matrix structure is defined as row-major (memory layout) but parameters naming AND all
-     *       math operations performed by the library consider the structure as it was column-major
-     *       It is like transposed versions of the matrices are used for all the maths
-     *       It benefits some functions making them cache-friendly and also avoids matrix
-     *       transpositions sometimes required by OpenGL
-     *       Example: In memory order, row0 is [m0 m4 m8 m12] but in semantic math row0 is [m0 m1 m2 m3]
-     *     - Functions are always self-contained, no function use another raymath function inside,
-     *       required code is directly re-implemented inside
-     *     - Functions input parameters are always received by value (2 unavoidable exceptions)
-     *     - Functions use always a "result" variable for return (except C++ operators)
-     *     - Functions are always defined inline
-     *     - Angles are always in radians (DEG2RAD/RAD2DEG macros provided for convenience)
-     *     - No compound literals used to make sure the library is compatible with C++
-     *
-     *   CONFIGURATION:
-     *       #define RAYMATH_IMPLEMENTATION
-     *           Generates the implementation of the library into the included file
-     *           If not defined, the library is in header only mode and can be included in other headers
-     *           or source files without problems. But only ONE file should hold the implementation
-     *
-     *       #define RAYMATH_STATIC_INLINE
-     *           Define static inline functions code, so #include header suffices for use
-     *           This may use up lots of memory
-     *
-     *       #define RAYMATH_DISABLE_CPP_OPERATORS
-     *           Disables C++ operator overloads for raymath types.
-     *
-     *       #define RAYMATH_USE_SIMD_INTRINSICS   1
-     *           Try to enable SIMD intrinsics for MatrixMultiply()
-     *           Note that users enabling it must be aware of the target platform where application will
-     *           run to support the selected SIMD intrinsic, for now, only SSE is supported
-     *
-     *   LICENSE: zlib/libpng
-     *
-     *   Copyright (c) 2015-2026 Ramon Santamaria (@raysan5)
-     *
-     *   This software is provided "as-is", without any express or implied warranty. In no event
-     *   will the authors be held liable for any damages arising from the use of this software.
-     *
-     *   Permission is granted to anyone to use this software for any purpose, including commercial
-     *   applications, and to alter it and redistribute it freely, subject to the following restrictions:
-     *
-     *     1. The origin of this software must not be misrepresented; you must not claim that you
-     *     wrote the original software. If you use this software in a product, an acknowledgment
-     *     in the product documentation would be appreciated but is not required.
-     *
-     *     2. Altered source versions must be plainly marked as such, and must not be misrepresented
-     *     as being the original software.
-     *
-     *     3. This notice may not be removed or altered from any source distribution.
-     *
-     **********************************************************************************************/
-
 
     public static float PI = 3.14159265358979323846f;
     public static float EPSILON = 0.000001f;
@@ -101,7 +99,7 @@ public class Raymath {
     }
 
     /**
-     * Normalize input value within input range
+     * Normalize input value within the input range
      *
      * @param value value to normalise
      * @param start
@@ -225,7 +223,7 @@ public class Raymath {
      * @return Length of v
      */
     public static float Vector2Length(Vector2 v) {
-        return (float) Math.sqrt((v.x * v.x) + (v.y + v.y));
+        return (float) Math.sqrt((v.x * v.x) + (v.y * v.y));
     }
 
     /**
@@ -341,7 +339,7 @@ public class Raymath {
      * @return
      */
     public static Vector2 Vector2Multiply(Vector2 v1, Vector2 v2) {
-        return new Vector2(v1.x * v2.x, v2.x * v2.y);
+        return new Vector2(v1.x * v2.x, v1.y * v2.y);
     }
 
     /**
@@ -971,11 +969,15 @@ public class Raymath {
      * @return Transformed vector
      */
     public static Vector3 Vector3Transform(Vector3 v, Matrix m) {
-        Vector3 result = new Vector3(v.x, v.y, v.z);
+        Vector3 result = new Vector3();
 
-        result.x = (m.m0 * result.x) + (m.m4 * result.y) + (m.m8 * result.z) + m.m12;
-        result.y = (m.m1 * result.x) + (m.m5 * result.y) + (m.m9 * result.z) + m.m13;
-        result.z = (m.m2 * result.x) + (m.m6 * result.y) + (m.m10 * result.z) + m.m14;
+        float x = v.x;
+        float y = v.y;
+        float z = v.z;
+
+        result.x = (m.m0 * x) + (m.m4 * y) + (m.m8 * z) + m.m12;
+        result.y = (m.m1 * x) + (m.m5 * y) + (m.m9 * z) + m.m13;
+        result.z = (m.m2 * x) + (m.m6 * y) + (m.m10 * z) + m.m14;
 
         return result;
     }
@@ -1979,22 +1981,22 @@ public class Raymath {
     public static Matrix MatrixMultiply(Matrix left, Matrix right) {
         Matrix result = new Matrix();
 
-        result.m0 = left.m0 * right.m0 + left.m1 * right.m4 + left.m2 * right.m8 + left.m3 * right.m12;
-        result.m1 = left.m0 * right.m1 + left.m1 * right.m5 + left.m2 * right.m9 + left.m3 * right.m13;
-        result.m2 = left.m0 * right.m2 + left.m1 * right.m6 + left.m2 * right.m10 + left.m3 * right.m14;
-        result.m3 = left.m0 * right.m3 + left.m1 * right.m7 + left.m2 * right.m11 + left.m3 * right.m15;
-        result.m4 = left.m4 * right.m0 + left.m5 * right.m4 + left.m6 * right.m8 + left.m7 * right.m12;
-        result.m5 = left.m4 * right.m1 + left.m5 * right.m5 + left.m6 * right.m9 + left.m7 * right.m13;
-        result.m6 = left.m4 * right.m2 + left.m5 * right.m6 + left.m6 * right.m10 + left.m7 * right.m14;
-        result.m7 = left.m4 * right.m3 + left.m5 * right.m7 + left.m6 * right.m11 + left.m7 * right.m15;
-        result.m8 = left.m8 * right.m0 + left.m9 * right.m4 + left.m10 * right.m8 + left.m11 * right.m12;
-        result.m9 = left.m8 * right.m1 + left.m9 * right.m5 + left.m10 * right.m9 + left.m11 * right.m13;
-        result.m10 = left.m8 * right.m2 + left.m9 * right.m6 + left.m10 * right.m10 + left.m11 * right.m14;
-        result.m11 = left.m8 * right.m3 + left.m9 * right.m7 + left.m10 * right.m11 + left.m11 * right.m15;
-        result.m12 = left.m12 * right.m0 + left.m13 * right.m4 + left.m14 * right.m8 + left.m15 * right.m12;
-        result.m13 = left.m12 * right.m1 + left.m13 * right.m5 + left.m14 * right.m9 + left.m15 * right.m13;
-        result.m14 = left.m12 * right.m2 + left.m13 * right.m6 + left.m14 * right.m10 + left.m15 * right.m14;
-        result.m15 = left.m12 * right.m3 + left.m13 * right.m7 + left.m14 * right.m11 + left.m15 * right.m15;
+        result.m0 = (left.m0 * right.m0) + (left.m1 * right.m4) + (left.m2 * right.m8) + (left.m3 * right.m12);
+        result.m1 = (left.m0 * right.m1) + (left.m1 * right.m5) + (left.m2 * right.m9) + (left.m3 * right.m13);
+        result.m2 = (left.m0 * right.m2) + (left.m1 * right.m6) + (left.m2 * right.m10) + (left.m3 * right.m14);
+        result.m3 = (left.m0 * right.m3) + (left.m1 * right.m7) + (left.m2 * right.m11) + (left.m3 * right.m15);
+        result.m4 = (left.m4 * right.m0) + (left.m5 * right.m4) + (left.m6 * right.m8) + (left.m7 * right.m12);
+        result.m5 = (left.m4 * right.m1) + (left.m5 * right.m5) + (left.m6 * right.m9) + (left.m7 * right.m13);
+        result.m6 = (left.m4 * right.m2) + (left.m5 * right.m6) + (left.m6 * right.m10) + (left.m7 * right.m14);
+        result.m7 = (left.m4 * right.m3) + (left.m5 * right.m7) + (left.m6 * right.m11) + (left.m7 * right.m15);
+        result.m8 = (left.m8 * right.m0) + (left.m9 * right.m4) + (left.m10 * right.m8) + (left.m11 * right.m12);
+        result.m9 = (left.m8 * right.m1) + (left.m9 * right.m5) + (left.m10 * right.m9) + (left.m11 * right.m13);
+        result.m10 = (left.m8 * right.m2) + (left.m9 * right.m6) + (left.m10 * right.m10) + (left.m11 * right.m14);
+        result.m11 = (left.m8 * right.m3) + (left.m9 * right.m7) + (left.m10 * right.m11) + (left.m11 * right.m15);
+        result.m12 = (left.m12 * right.m0) + (left.m13 * right.m4) + (left.m14 * right.m8) + (left.m15 * right.m12);
+        result.m13 = (left.m12 * right.m1) + (left.m13 * right.m5) + (left.m14 * right.m9) + (left.m15 * right.m13);
+        result.m14 = (left.m12 * right.m2) + (left.m13 * right.m6) + (left.m14 * right.m10) + (left.m15 * right.m14);
+        result.m15 = (left.m12 * right.m3) + (left.m13 * right.m7) + (left.m14 * right.m11) + (left.m15 * right.m15);
 
         return result;
     }
@@ -2944,13 +2946,13 @@ public class Raymath {
     }
 
     /**
-     * Returns the rotation angle and axis for a given quaternion
+     * Returns the rotation axis for a given quaternion
      *
      * @param q
-     * @param outAxis
-     * @param outAngle
      */
-    public static void QuaternionToAxisAngle(Quaternion q, Vector3 outAxis, float outAngle) {
+    public static Vector3 QuaternionToAxis(Quaternion q) {
+        Vector3 result = new Vector3();
+
         if (Math.abs(q.w) > 1.0f) {
             q = QuaternionNormalize(q);
         }
@@ -2970,8 +2972,21 @@ public class Raymath {
             resAxis.x = 1.0f;
         }
 
-        outAxis = resAxis;
-        outAngle = resAngle;
+        result = resAxis;
+
+        return result;
+    }
+
+    /**
+     * Returns the rotation angle equivalent to quaternion
+     *
+     * @param q
+     * @return
+     */
+    public static float QuaternionToAngle(Quaternion q) {
+        float resAngle = (float) (2.0f * Math.acos(q.w));
+
+        return resAngle;
     }
 
     /**
